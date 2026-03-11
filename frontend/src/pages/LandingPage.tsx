@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LogIn, UserPlus, ShieldCheck, Banknote } from 'lucide-react';
+import { ShieldCheck, Banknote, ArrowRight } from 'lucide-react';
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -53,7 +53,14 @@ export default function LandingPage() {
           </div>
 
           {/* Bottom Call to Actions */}
-          <div className="flex flex-col gap-3">
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (intendedRole === 'TENANT' && !rentAmount) return;
+              navigate('/signup');
+            }} 
+            className="flex flex-col gap-3"
+          >
             
             {/* Conditional Rent Amount Input for Tenants */}
             {intendedRole === 'TENANT' && (
@@ -63,6 +70,7 @@ export default function LandingPage() {
                 </div>
                 <input 
                   type="number" 
+                  required
                   placeholder="Specific Rent Amount (KSh)"
                   value={rentAmount}
                   onChange={(e) => setRentAmount(e.target.value)}
@@ -72,18 +80,13 @@ export default function LandingPage() {
             )}
             
             <button 
-              onClick={() => navigate('/login')}
-              className="w-full bg-white text-[#512DA8] py-4 rounded-[1.2rem] font-bold text-[16px] shadow-[0_8px_20px_-6px_rgba(0,0,0,0.3)] flex items-center justify-center gap-2 transition active:scale-[0.98] hover:bg-gray-50"
+              type="submit"
+              disabled={intendedRole === 'TENANT' && !rentAmount}
+              className={`w-full bg-white text-[#512DA8] py-4 rounded-[1.2rem] font-bold text-[16px] shadow-[0_8px_20px_-6px_rgba(0,0,0,0.3)] flex items-center justify-center gap-2 transition ${intendedRole === 'TENANT' && !rentAmount ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.98] hover:bg-white/90'}`}
             >
-              <LogIn size={20} strokeWidth={2} /> Sign In to Welile
+              Continue <ArrowRight size={20} strokeWidth={2} />
             </button>
-            <button 
-              onClick={() => navigate('/signup')} /* Placeholder for future signup page */
-              className="w-full bg-transparent border border-white/30 text-white backdrop-blur-sm py-4 rounded-[1.2rem] font-bold text-[16px] flex items-center justify-center gap-2 hover:bg-white/10 transition active:scale-[0.98]"
-            >
-              <UserPlus size={20} strokeWidth={2} /> Create an Account
-            </button>
-          </div>
+          </form>
           
         </div>
       </div>
