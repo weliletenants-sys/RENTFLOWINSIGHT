@@ -4,6 +4,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // We will build these shortly
 import RootDashboard from './pages/dashboard/RootDashboard';
+import Login from './pages/auth/Login';
+import Signup from './pages/auth/Signup';
+import RoleSelection from './pages/auth/RoleSelection';
+import ProtectedRoute from './components/ProtectedRoute';
+import LandingPage from './pages/LandingPage';
 
 const queryClient = new QueryClient();
 
@@ -13,10 +18,22 @@ function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard/*" element={<RootDashboard />} />
-            {/* Catch-all */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            {/* Entry point: Choose your path */}
+            <Route path="/" element={<RoleSelection />} />
+            
+            {/* Gateway: Landing hero with Signup/Login choices */}
+            <Route path="/welcome" element={<LandingPage />} />
+            
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            
+            {/* Protected Routes require User Auth */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/dashboard/*" element={<RootDashboard />} />
+            </Route>
+
+            {/* Redirects */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

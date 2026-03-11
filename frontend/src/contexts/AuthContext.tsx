@@ -17,19 +17,19 @@ interface AuthContextType {
   login: (userData: User) => void;
   logout: () => void;
   switchRoleMode: (newRole: Role) => void;
+  intendedRole: Role;
+  setIntendedRole: (role: Role) => void;
+  rentAmount: string;
+  setRentAmount: (amount: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  // Start with a mock user as "TENANT" for easy testing
-  const [user, setUser] = useState<User | null>({
-    id: 'mock-uuid',
-    email: 'tenant@welile.com',
-    firstName: 'Paul',
-    lastName: 'Ndlovu',
-    role: 'TENANT'
-  });
+  // Start with no user to force the auth flow
+  const [user, setUser] = useState<User | null>(null);
+  const [intendedRole, setIntendedRole] = useState<Role>('TENANT');
+  const [rentAmount, setRentAmount] = useState<string>('');
 
   const login = (userData: User) => setUser(userData);
   const logout = () => setUser(null);
@@ -38,19 +38,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const switchRoleMode = (newRole: Role) => {
     if (user) {
       setUser({ ...user, role: newRole });
-    } else {
-      setUser({
-        id: 'mock-uuid',
-        email: `mock@${newRole?.toLowerCase()}.com`,
-        firstName: 'Test',
-        lastName: 'User',
-        role: newRole
-      });
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, role: user?.role || null, login, logout, switchRoleMode }}>
+    <AuthContext.Provider value={{ user, role: user?.role || intendedRole, login, logout, switchRoleMode, intendedRole, setIntendedRole, rentAmount, setRentAmount }}>
       {children}
     </AuthContext.Provider>
   );
