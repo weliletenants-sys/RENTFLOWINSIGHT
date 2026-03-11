@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { ShieldCheck, Banknote, ArrowRight } from 'lucide-react';
+import { ShieldCheck, ArrowRight } from 'lucide-react';
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const { intendedRole, rentAmount, setRentAmount } = useAuth();
+  const { intendedRole } = useAuth();
 
   return (
     <div className="min-h-screen bg-[#8155FF] sm:p-4 flex justify-center items-center relative overflow-hidden">
@@ -53,40 +53,23 @@ export default function LandingPage() {
           </div>
 
           {/* Bottom Call to Actions */}
-          <form 
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (intendedRole === 'TENANT' && !rentAmount) return;
-              navigate('/signup');
-            }} 
-            className="flex flex-col gap-3"
-          >
-            
-            {/* Conditional Rent Amount Input for Tenants */}
-            {intendedRole === 'TENANT' && (
-              <div className="mb-2 relative">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-200">
-                  <Banknote size={20} strokeWidth={1.5} />
-                </div>
-                <input 
-                  type="number" 
-                  required
-                  placeholder="Specific Rent Amount (KSh)"
-                  value={rentAmount}
-                  onChange={(e) => setRentAmount(e.target.value)}
-                  className="w-full bg-white/10 border border-white/20 text-white placeholder:text-purple-200 rounded-[1.2rem] py-4 pl-12 pr-4 font-semibold text-[15px] focus:outline-none focus:border-white/50 focus:bg-white/20 focus:ring-4 focus:ring-white/10 transition backdrop-blur-md"
-                />
-              </div>
+          <div className="flex flex-col gap-3">
+            {intendedRole === 'TENANT' ? (
+              <button 
+                onClick={() => navigate('/rent-request')}
+                className="w-full bg-white text-[#512DA8] py-4 rounded-[1.2rem] font-bold text-[16px] shadow-[0_8px_20px_-6px_rgba(0,0,0,0.3)] flex items-center justify-center gap-2 transition active:scale-[0.98] hover:bg-white/90"
+              >
+                Request Rent <ArrowRight size={20} strokeWidth={2} />
+              </button>
+            ) : (
+              <button 
+                onClick={() => navigate('/signup')}
+                className="w-full bg-white text-[#512DA8] py-4 rounded-[1.2rem] font-bold text-[16px] shadow-[0_8px_20px_-6px_rgba(0,0,0,0.3)] flex items-center justify-center gap-2 transition active:scale-[0.98] hover:bg-white/90"
+              >
+                Continue <ArrowRight size={20} strokeWidth={2} />
+              </button>
             )}
-            
-            <button 
-              type="submit"
-              disabled={intendedRole === 'TENANT' && !rentAmount}
-              className={`w-full bg-white text-[#512DA8] py-4 rounded-[1.2rem] font-bold text-[16px] shadow-[0_8px_20px_-6px_rgba(0,0,0,0.3)] flex items-center justify-center gap-2 transition ${intendedRole === 'TENANT' && !rentAmount ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.98] hover:bg-white/90'}`}
-            >
-              Continue <ArrowRight size={20} strokeWidth={2} />
-            </button>
-          </form>
+          </div>
           
         </div>
       </div>

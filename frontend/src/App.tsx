@@ -9,6 +9,7 @@ import Signup from './pages/auth/Signup';
 import RoleSelection from './pages/auth/RoleSelection';
 import ProtectedRoute from './components/ProtectedRoute';
 import LandingPage from './pages/LandingPage';
+import RentRequestForm from './pages/auth/RentRequestForm';
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ function App() {
             
             {/* Gateway: Landing hero with Signup/Login choices */}
             <Route path="/welcome" element={<LandingPage />} />
+            <Route path="/rent-request" element={<RentRequestForm />} />
             
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
