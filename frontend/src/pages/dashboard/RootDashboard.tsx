@@ -1,10 +1,9 @@
 import { useAuth } from '../../contexts/AuthContext';
 import DashboardLayout from '../../layouts/DashboardLayout';
-import RoleSwitcher from '../../components/RoleSwitcher';
 
 import TenantDashboard from '../../tenant/TenantDashboard';
 import AgentDashboard from '../../agent/AgentDashboard';
-import LandlordDashboard from '../../landlords/LandlordDashboard';
+import LandlordDashboard from '../../owner/LandlordDashboard';
 import FunderDashboard from '../../funder/FunderDashboard';
 
 export default function RootDashboard() {
@@ -32,11 +31,6 @@ export default function RootDashboard() {
 
   return (
     <DashboardLayout>
-      {/* A floating component accessible on all views to demo the role changes directly */}
-      <div className="mb-4">
-        <RoleSwitcher />
-      </div>
-
       {renderDashboardContent()}
     </DashboardLayout>
   );

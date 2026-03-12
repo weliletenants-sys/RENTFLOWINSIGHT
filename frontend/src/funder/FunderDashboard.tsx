@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 export default function FunderDashboard() {
   return (
-    <div className="flex flex-col gap-4 pb-6 mt-2 relative z-10 w-full overflow-hidden">
+    <div className="flex flex-col gap-4 -mt-2 relative z-10 w-full">
       
       {/* Portfolio Combined Card */}
       <div className="relative mt-2">

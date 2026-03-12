@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Lock, Mail, User, Phone, ArrowRight } from 'lucide-react';
+import { Lock, Mail, User, Phone, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export default function Signup() {
   const [firstName, setFirstName] = useState('');
@@ -10,8 +10,18 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  
   const { login, intendedRole } = useAuth();
   const navigate = useNavigate();
+
+  const handleSendOtp = () => {
+    if (!phone) return alert('Enter phone number first');
+    setOtpSent(true);
+    alert('Mock OTP sent to ' + phone);
+  };
 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,22 +29,29 @@ export default function Signup() {
       alert("Passwords do not match!");
       return;
     }
-    // Mock signup action then login
+    if (!otpSent || !otpCode) {
+      alert("Please verify your phone number first!");
+      return;
+    }
+
     login({
       id: 'mock-uuid-' + Date.now(),
       email: email || 'user@welile.com',
       firstName: firstName || 'New',
       lastName: lastName || 'User',
-      role: intendedRole, // Assign the role they clicked at step 1
+      role: intendedRole, 
     });
     
-    // Send straight to dashboard
-    navigate('/dashboard');
+    // According to onboarding flow, tenants go to Agreement next
+    if (intendedRole === 'TENANT') {
+      navigate('/tenant-agreement');
+    } else {
+      navigate('/dashboard');
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#8155FF] sm:p-4 flex justify-center items-center relative overflow-hidden">
-      {/* Decorative background */}
       <div className="absolute inset-0 opacity-20 pointer-events-none flex justify-center items-center">
         <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" className="w-[150vw] h-[150vh]">
            <path d="M0,500 Q250,300 500,500 T1000,500" stroke="white" strokeWidth="2" fill="none"/>
@@ -43,7 +60,6 @@ export default function Signup() {
       </div>
 
       <div className="w-full max-w-[420px] h-[100dvh] sm:h-[880px] max-h-screen bg-[#F8F9FA] relative flex flex-col sm:rounded-[40px] shadow-2xl overflow-hidden z-10 border-[12px] border-gray-900 sm:border-[14px]">
-        {/* Fake iPhone Notch */}
         <div className="hidden sm:block absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[30px] bg-gray-900 rounded-b-3xl z-50"></div>
 
         <div className="flex-1 flex flex-col pt-16 px-8 relative z-10 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
@@ -59,16 +75,13 @@ export default function Signup() {
           <form onSubmit={handleSignup} className="flex flex-col gap-4 pb-8 shrink-0">
             <div className="flex gap-3">
               <div className="relative flex-1">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                  <User size={18} strokeWidth={1.5} />
-                </div>
                 <input 
                   type="text" 
                   required
-                  placeholder="JOSHUA"
+                  placeholder="First Name"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full bg-[#EFF4FA] border border-[#DEE7F5] rounded-2xl py-3.5 pl-10 pr-3 text-gray-800 font-semibold text-sm focus:outline-none focus:border-[#51319E] focus:ring-4 focus:ring-purple-500/10 transition"
+                  className="w-full bg-[#EFF4FA] border border-[#DEE7F5] rounded-2xl py-3.5 px-4 text-gray-800 font-semibold text-sm focus:outline-none focus:border-[#51319E] focus:ring-4 focus:ring-purple-500/10 transition"
                 />
               </div>
               
@@ -76,7 +89,7 @@ export default function Signup() {
                 <input 
                   type="text" 
                   required
-                  placeholder="WANDA"
+                  placeholder="Last Name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   className="w-full bg-[#EFF4FA] border border-[#DEE7F5] rounded-2xl py-3.5 px-4 text-gray-800 font-semibold text-sm focus:outline-none focus:border-[#51319E] focus:ring-4 focus:ring-purple-500/10 transition"
@@ -84,21 +97,48 @@ export default function Signup() {
               </div>
             </div>
 
-            <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                <Phone size={18} strokeWidth={1.5} />
+            <div className="relative flex gap-2">
+              <div className="relative flex-1">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                  <Phone size={18} strokeWidth={1.5} />
+                </div>
+                <input 
+                  type="tel" 
+                  required
+                  placeholder="Phone Number"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full bg-white border border-gray-200 rounded-2xl py-3.5 pl-10 pr-4 text-gray-800 font-medium text-sm focus:outline-none focus:border-[#51319E] focus:ring-4 focus:ring-purple-500/10 transition"
+                />
               </div>
-              <input 
-                type="tel" 
-                required
-                placeholder="Phone Number"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full bg-white border border-gray-200 rounded-2xl py-3.5 pl-10 pr-4 text-gray-800 font-medium text-sm focus:outline-none focus:border-[#51319E] focus:ring-4 focus:ring-purple-500/10 transition"
-              />
             </div>
 
-            <div className="relative">
+            {/* OTP Verification Section */}
+            {!otpSent ? (
+              <button 
+                type="button" 
+                onClick={handleSendOtp}
+                className="w-full bg-purple-100 text-purple-700 py-3 rounded-xl font-bold text-sm hover:bg-purple-200 transition"
+              >
+                Send OTP
+              </button>
+            ) : (
+               <div className="relative">
+                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500">
+                    <ShieldCheck size={18} strokeWidth={1.5} />
+                 </div>
+                 <input 
+                    type="text" 
+                    required
+                    placeholder="Enter 4-digit OTP"
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value)}
+                    className="w-full bg-emerald-50 border border-emerald-200 rounded-2xl py-3.5 pl-10 pr-4 text-gray-800 font-medium text-sm focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition"
+                 />
+               </div>
+            )}
+
+            <div className="relative mt-2">
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
                 <Mail size={18} strokeWidth={1.5} />
               </div>
@@ -140,7 +180,7 @@ export default function Signup() {
             </div>
 
             <button type="submit" className="w-full bg-[#51319E] hover:bg-[#412780] text-white py-4 rounded-2xl font-bold text-[15px] shadow-lg flex items-center justify-center gap-2 transition active:scale-[0.98] mt-2">
-              Create Account <ArrowRight size={18} />
+              Continue <ArrowRight size={18} />
             </button>
             
             <p className="text-center text-gray-500 font-medium mt-4 text-[13px]">
