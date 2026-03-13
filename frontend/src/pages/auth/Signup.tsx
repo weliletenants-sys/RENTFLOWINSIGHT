@@ -13,6 +13,7 @@ export default function Signup() {
   
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
+  const [error, setError] = useState('');
   
   const { login, intendedRole } = useAuth();
   const navigate = useNavigate();
@@ -25,12 +26,19 @@ export default function Signup() {
 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+
+    if (!firstName || !lastName || !phone || !password || !confirmPassword) {
+      setError("Please fill out all required fields.");
+      return;
+    }
+
     if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+      setError("Passwords do not match!");
       return;
     }
     if (!otpSent || !otpCode) {
-      alert("Please verify your phone number first!");
+      setError("Please verify your phone number first!");
       return;
     }
 
@@ -77,7 +85,6 @@ export default function Signup() {
               <div className="relative flex-1">
                 <input 
                   type="text" 
-                  required
                   placeholder="First Name"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
@@ -88,7 +95,6 @@ export default function Signup() {
               <div className="relative flex-1">
                 <input 
                   type="text" 
-                  required
                   placeholder="Last Name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
@@ -104,7 +110,6 @@ export default function Signup() {
                 </div>
                 <input 
                   type="tel" 
-                  required
                   placeholder="Phone Number"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
@@ -129,7 +134,6 @@ export default function Signup() {
                  </div>
                  <input 
                     type="text" 
-                    required
                     placeholder="Enter 4-digit OTP"
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value)}
@@ -157,7 +161,6 @@ export default function Signup() {
               </div>
               <input 
                 type="password" 
-                required
                 placeholder="Secure Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -171,7 +174,6 @@ export default function Signup() {
               </div>
               <input 
                 type="password" 
-                required
                 placeholder="Confirm Password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -179,6 +181,8 @@ export default function Signup() {
               />
             </div>
 
+            {error && <p className="text-red-500 text-center font-bold text-sm bg-red-50 py-2 rounded-xl border border-red-100">{error}</p>}
+            
             <button type="submit" className="w-full bg-[#51319E] hover:bg-[#412780] text-white py-4 rounded-2xl font-bold text-[15px] shadow-lg flex items-center justify-center gap-2 transition active:scale-[0.98] mt-2">
               Continue <ArrowRight size={18} />
             </button>

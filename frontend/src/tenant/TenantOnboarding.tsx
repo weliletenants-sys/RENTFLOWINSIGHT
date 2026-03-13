@@ -33,11 +33,27 @@ export default function TenantOnboarding() {
 
   const calculateFees = () => {
     const rent = parseFloat(formData.rentAmount) || 0;
-    const accessFee = rent > 200000 ? 20000 : 10000;
-    const totalRepayment = rent + accessFee;
-    const paybackPeriodDays = 30; // standard 30 days
-    const dailyRepayment = totalRepayment / paybackPeriodDays;
-    return { accessFee, totalRepayment, paybackPeriodDays, dailyRepayment: dailyRepayment.toFixed(0) };
+    const durationMonths = parseFloat(formData.rentPeriod) || 1;
+    const paybackPeriodDays = durationMonths * 30; // standard 30 days per month
+    
+    // Request Fee: 10k if <= 200k, else 20k
+    const requestFee = rent > 200000 ? 20000 : 10000;
+    
+    // Access Fee (Interest): 33% monthly compounding
+    // Formula: accessFee = rentAmount × ((1 + monthlyRate)^(durationDays / 30) − 1)
+    const monthlyRate = 0.33;
+    const accessFee = rent * (Math.pow(1 + monthlyRate, paybackPeriodDays / 30) - 1);
+    
+    const totalRepayment = rent + accessFee + requestFee;
+    const dailyRepayment = Math.ceil(totalRepayment / paybackPeriodDays);
+    
+    return { 
+      accessFee: Math.ceil(accessFee), 
+      requestFee, 
+      totalRepayment: Math.ceil(totalRepayment), 
+      paybackPeriodDays, 
+      dailyRepayment 
+    };
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
@@ -136,8 +152,12 @@ export default function TenantOnboarding() {
                       <span className="font-bold text-gray-900">UGX {parseFloat(formData.rentAmount || '0').toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Marketplace Access Fee:</span>
+                      <span className="text-gray-500">Marketplace Access Fee (33%):</span>
                       <span className="font-bold text-gray-900">UGX {calculateFees().accessFee.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Processing Fee:</span>
+                      <span className="font-bold text-gray-900">UGX {calculateFees().requestFee.toLocaleString()}</span>
                     </div>
                     <div className="h-px w-full bg-gray-100 my-2"></div>
                     <div className="flex justify-between text-sm">
@@ -146,7 +166,7 @@ export default function TenantOnboarding() {
                     </div>
                     <div className="flex justify-between text-sm mt-4 bg-gray-50 p-3 rounded-lg border border-gray-100">
                       <span className="text-gray-600 font-medium">Daily Repayment:</span>
-                      <span className="font-bold text-gray-900">UGX {Number(calculateFees().dailyRepayment).toLocaleString()} / day</span>
+                      <span className="font-bold text-gray-900">UGX {calculateFees().dailyRepayment.toLocaleString()} / day</span>
                     </div>
                     <p className="text-[11px] text-gray-400 text-center mt-2">Repayments start automatically the day after rent is paid.</p>
                   </div>
@@ -171,16 +191,16 @@ export default function TenantOnboarding() {
                   <div>
                     <label className="block text-xs font-bold text-gray-700 mb-2 uppercase">National ID (Front)</label>
                     <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center bg-gray-50 hover:bg-purple-50 hover:border-purple-300 transition cursor-pointer relative overflow-hidden">
-                      <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'idFront')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
-                      {formData.idFront ? <div className="flex items-center gap-2 text-[#512DA8] font-bold"><Check size={20}/> Uploaded</div> : <><Upload className="text-gray-400 mb-2" size={24} /><p className="text-sm text-gray-500">Tap to upload front</p></>}
+                      <input type="file" accept="image/*,.pdf" onChange={(e) => handleFileChange(e, 'idFront')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+                      {formData.idFront ? <div className="flex items-center gap-2 text-[#512DA8] font-bold"><Check size={20}/> Uploaded</div> : <><Upload className="text-gray-400 mb-2" size={24} /><p className="text-sm text-gray-500">Take photo or upload PDF</p></>}
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-gray-700 mb-2 uppercase">National ID (Back)</label>
                     <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center bg-gray-50 hover:bg-purple-50 hover:border-purple-300 transition cursor-pointer relative overflow-hidden">
-                      <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'idBack')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
-                      {formData.idBack ? <div className="flex items-center gap-2 text-[#512DA8] font-bold"><Check size={20}/> Uploaded</div> : <><Upload className="text-gray-400 mb-2" size={24} /><p className="text-sm text-gray-500">Tap to upload back</p></>}
+                      <input type="file" accept="image/*,.pdf" onChange={(e) => handleFileChange(e, 'idBack')} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+                      {formData.idBack ? <div className="flex items-center gap-2 text-[#512DA8] font-bold"><Check size={20}/> Uploaded</div> : <><Upload className="text-gray-400 mb-2" size={24} /><p className="text-sm text-gray-500">Take photo or upload PDF</p></>}
                     </div>
                   </div>
 

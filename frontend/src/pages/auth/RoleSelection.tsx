@@ -12,11 +12,12 @@ export default function RoleSelection() {
     if (role) {
       setIntendedRole(role);
     }
-    // 2. Redirect to the Auth Entry Gateway
     if (role === 'AGENT') {
       navigate('/agent-welcome');
-    } else {
+    } else if (role === 'TENANT') {
       navigate('/welcome');
+    } else {
+      navigate('/signup');
     }
   };
 

@@ -9,6 +9,7 @@ interface User {
   firstName: string;
   lastName: string;
   role: Role;
+  isVerified?: boolean;
 }
 
 interface AuthContextType {

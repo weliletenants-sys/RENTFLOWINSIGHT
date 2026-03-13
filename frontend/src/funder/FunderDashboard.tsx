@@ -1,98 +1,187 @@
-import { Download, ArrowRightLeft, Banknote, ChevronDown, ChevronRight, HelpCircle, MessageSquare, Lock, Cpu } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { useState, useEffect } from 'react';
+import { ArrowUpRight, Calendar, Clock, Activity, Download, Banknote } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import FunderInvestModal from './FunderInvestModal';
 
 export default function FunderDashboard() {
-  return (
-    <div className="flex flex-col gap-4 -mt-2 relative z-10 w-full">
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  
+  const [stats, setStats] = useState({ totalContribution: 0, returnPerMonth: 0, portfoliosCount: 0 });
+  const [virtualHouses, setVirtualHouses] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // In a real app we'd get a token from AuthContext to pass in headers
+  const fetchDashboardData = async () => {
+    try {
+      // Check onboarding verification
+      if (user && user.isVerified === false) {
+        navigate('/funder-onboarding');
+        return;
+      }
+
+      if (!user) navigate('/login');
+      // const headers = { Authorization: `Bearer ${user.token}` };
       
-      {/* Portfolio Combined Card */}
-      <div className="relative mt-2">
-        {/* Bottom layer (Light Purple Action Area) */}
-        <div className="absolute top-16 inset-x-0 bg-[#E9DDFD] pt-[110px] pb-6 px-4 rounded-[2rem] flex justify-between items-center z-0">
-          <ActionBtn icon={<Download size={24} strokeWidth={1.5} />} label="Add money" />
-          <ActionBtn icon={<ArrowRightLeft size={24} strokeWidth={1.5} />} label="Transfer" />
-          <ActionBtn icon={<Banknote size={24} strokeWidth={1.5} />} label="Withdraw" />
-          <ActionBtn icon={<ChevronDown size={24} strokeWidth={1.5} />} label="More" />
+      // Fallback to empty data for showcase
+      setStats({
+        totalContribution: 5000000,
+        returnPerMonth: 750000,
+        portfoliosCount: 2
+      });
+      
+      setVirtualHouses([
+        { id: 'VH-8F9B2A', rentAmount: 200000, health: 'GREEN', fundedAt: new Date().toISOString() },
+        { id: 'VH-3C4D5E', rentAmount: 450000, health: 'YELLOW', fundedAt: new Date(Date.now() - 15 * 86400000).toISOString() },
+      ]);
+    } catch (error) {
+      console.error('Failed to load funder data');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  if (isLoading) return <div className="p-8 text-center text-gray-500">Loading portfolio...</div>;
+
+  return (
+    <div className="flex flex-col gap-6 -mt-2 w-full max-w-md mx-auto relative z-10">
+      
+      {/* Pending status example */}
+      {stats.portfoliosCount === 0 && (
+        <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-2xl flex items-center gap-3 mx-1">
+          <Clock className="text-yellow-600 shrink-0" size={24} />
+          <div>
+            <h4 className="font-bold text-yellow-900 text-sm">No Active Portfolios</h4>
+            <p className="text-xs text-yellow-700 mt-0.5">Fund the Rent Pool to start earning 15% monthly.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Hero Card: Core Metric (Uniform with TenantDashboard) */}
+      <div className="bg-[#512DA8] p-6 rounded-[2rem] text-white shadow-xl shadow-purple-500/20 relative overflow-hidden mx-1">
+        {/* Abstract pattern matching Tenant UI */}
+        <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+        <div className="absolute -left-8 -bottom-8 w-24 h-24 bg-purple-400/20 rounded-full blur-xl pointer-events-none"></div>
+        
+        <div className="relative z-10 flex justify-between items-start mb-6">
+          <p className="text-purple-200 font-medium text-sm">Total Contribution</p>
+          <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold backdrop-blur-md border border-white/20 shadow-sm">
+            Active Portfolio
+          </span>
+        </div>
+        
+        <h2 className="relative z-10 text-[32px] font-black tracking-tight mb-6">
+          <span className="text-xl font-bold opacity-80 mr-1">UGX</span>
+          {stats.totalContribution.toLocaleString()}
+        </h2>
+
+        {/* Instead of a progress bar, we show ROI indicator */}
+        <div className="relative z-10 space-y-2">
+          <div className="flex justify-between text-xs text-purple-100/90 font-medium">
+            <span>Projected Growth (12mo)</span>
+            <span className="text-[#00E676] font-bold">+15% monthly</span>
+          </div>
+          <div className="w-full bg-black/20 h-2 rounded-full overflow-hidden">
+            <div 
+              className="bg-[#00E676] h-full rounded-full transition-all duration-500 ease-out"
+              style={{ width: `100%` }}
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Action Focus (Uniform with Tenant Pay Now focus) */}
+      <div className="bg-white border-2 border-[#512DA8]/10 rounded-[2rem] p-5 shadow-sm flex items-center justify-between mx-1">
+        <div>
+          <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-1">Monthly Return</p>
+          <p className="text-xl font-black text-gray-900">UGX {stats.returnPerMonth.toLocaleString()}</p>
+        </div>
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="bg-[#512DA8] hover:bg-[#412387] text-white px-5 py-3 rounded-2xl font-bold shadow-lg transition active:scale-95 flex items-center gap-2 text-sm"
+        >
+          Fund Pool <ArrowUpRight size={18} strokeWidth={2.5}/>
+        </button>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="flex justify-between items-center px-3 mt-1">
+        <div className="flex flex-col items-center gap-2 cursor-pointer group w-1/3">
+          <div className="w-14 h-14 bg-white rounded-full flex justify-center items-center shadow-[0_2px_10px_-4px_rgba(0,0,0,0.1)] text-[#512DA8] group-hover:bg-purple-50 group-active:scale-95 transition">
+            <Download size={24} strokeWidth={1.5} />
+          </div>
+          <span className="text-[11px] font-bold text-gray-600 group-hover:text-[#512DA8]">Deposit</span>
+        </div>
+        <div className="flex flex-col items-center gap-2 cursor-pointer group w-1/3">
+          <div className="w-14 h-14 bg-white rounded-full flex justify-center items-center shadow-[0_2px_10px_-4px_rgba(0,0,0,0.1)] text-blue-500 group-hover:bg-blue-50 group-active:scale-95 transition">
+            <Banknote size={24} strokeWidth={1.5} />
+          </div>
+          <span className="text-[11px] font-bold text-gray-600 group-hover:text-blue-500">Withdraw</span>
+        </div>
+        <div className="flex flex-col items-center gap-2 cursor-pointer group w-1/3">
+          <div className="w-14 h-14 bg-white rounded-full flex justify-center items-center shadow-[0_2px_10px_-4px_rgba(0,0,0,0.1)] text-orange-500 group-hover:bg-orange-50 group-active:scale-95 transition">
+            <Calendar size={24} strokeWidth={1.5} />
+          </div>
+          <span className="text-[11px] font-bold text-gray-600 group-hover:text-orange-500">History</span>
+        </div>
+      </div>
+
+      {/* Detailed Info Card - Virtual Houses List */}
+      <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 mx-1 mt-1 mb-8">
+        <div className="flex justify-between items-center mb-5">
+          <h3 className="font-bold text-gray-900 text-[17px]">Virtual Houses</h3>
+          <Activity size={18} className="text-gray-400" />
         </div>
 
-        {/* Top layer (Dark Purple Gradient Portfolio Card) */}
-        <div className="bg-gradient-to-br from-[#915BFE] to-[#713BF0] p-6 rounded-[2rem] text-white relative z-10 overflow-hidden min-h-[180px] shadow-[0_10px_20px_-10px_rgba(113,59,240,0.5)]">
-          {/* Abstract wavy lines decoration */}
-          <div className="absolute -bottom-6 -right-6 opacity-30">
-             <svg width="180" height="180" viewBox="0 0 100 100">
-               <path d="M0,50 Q25,20 50,50 T100,50" stroke="white" strokeWidth="1" fill="none"/>
-               <path d="M0,70 Q25,40 50,70 T100,70" stroke="white" strokeWidth="1" fill="none"/>
-             </svg>
-          </div>
-          <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-bl-full pointer-events-none"></div>
-          
-          <div className="flex justify-between items-start mb-6 text-[13.5px] font-medium text-purple-200 relative z-10">
-            <p className="text-white/80">Your portfolio</p>
-            <p className="text-white/80">May 10, 2023</p>
-          </div>
-          
-          <div className="flex justify-between items-end mt-2 relative z-10">
-            <div>
-              <p className="text-white/90 text-[14px] mb-1">Total balance:</p>
-              <h2 className="text-[2.6rem] leading-none font-bold tracking-tight text-white">$4,003.46</h2>
-            </div>
-            <div className="text-right pb-1 flex flex-col items-center">
-              <p className="text-white/80 text-[11px] mb-1.5 font-medium">Month-to-date</p>
-              <div className="bg-[#5CE182] text-green-900 px-3 py-1.5 rounded-full text-[11px] font-bold flex items-center justify-center gap-1.5 shadow-sm min-w-[70px]">
-                <span className="text-[9px]">▲</span> + 4.12%
+        <div className="space-y-4">
+          {virtualHouses.map((house: any, idx: number) => (
+            <div key={idx} className={`flex justify-between items-center pb-3 ${idx !== virtualHouses.length - 1 ? 'border-b border-gray-50' : ''}`}>
+              <div className="flex flex-col">
+                <span className="text-gray-900 font-bold tracking-tight">{house.id}</span>
+                <span className="text-gray-500 text-[11px] font-medium mt-0.5">Funded {new Date(house.fundedAt).toLocaleDateString()}</span>
+              </div>
+              
+              <div className="flex flex-col items-end">
+                <span className="text-gray-900 font-bold mb-1 tracking-tight">UGX {house.rentAmount.toLocaleString()}</span>
+                {house.health === 'GREEN' && (
+                  <span className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">On Track</span>
+                )}
+                {house.health === 'YELLOW' && (
+                  <span className="bg-yellow-50 text-yellow-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Delayed</span>
+                )}
+                {house.health === 'RED' && (
+                  <span className="bg-red-50 text-red-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">At Risk</span>
+                )}
               </div>
             </div>
-          </div>
-        </div>
+          ))}
 
-        {/* Spacer to push content below the absolute positioned action area */}
-        <div className="h-[125px]"></div>
+          {virtualHouses.length === 0 && (
+            <div className="text-center py-4 text-gray-400 text-sm font-medium">
+              No virtual houses funded yet.
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* AI Assistant Banner */}
-      <div className="bg-gradient-to-r from-[#8E5BF9] to-[#7340F2] rounded-[1.5rem] p-4 flex items-center shadow-sm cursor-pointer hover:shadow-md transition group mt-6 mx-0.5">
-        <div className="bg-white/20 p-2.5 rounded-full text-white mr-4 shrink-0">
-          <Cpu size={24} strokeWidth={1.5} />
-        </div>
-        <div className="flex-1">
-          <h3 className="text-white font-semibold text-[15px] mb-0.5">AI StockBit Assistant</h3>
-          <p className="text-purple-100/90 text-[11px] max-w-[200px] leading-snug font-medium">Get up to 150% profit on your investment portfolio</p>
-        </div>
-        <ChevronRight className="text-white/70 group-hover:text-white transition group-hover:translate-x-1 shrink-0" size={24} strokeWidth={1.5} />
-      </div>
-
-      {/* Support List */}
-      <div className="bg-white rounded-[1.5rem] shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] mt-2 px-2 py-1 mx-0.5">
-        <ListItem icon={<HelpCircle size={22} strokeWidth={1.5} className="text-gray-700" />} label="Help & Support" />
-        <div className="h-[1px] bg-gray-50 mx-10"></div>
-        <ListItem icon={<MessageSquare size={22} strokeWidth={1.5} className="text-gray-700" />} label="Contact us" />
-        <div className="h-[1px] bg-gray-50 mx-10"></div>
-        <ListItem icon={<Lock size={22} strokeWidth={1.5} className="text-gray-700" />} label="Privacy policy" />
-      </div>
-      
+      <FunderInvestModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        walletBalance={20000000} // Mock balance
+        onSuccess={(amount) => {
+          setStats(prev => ({
+            ...prev,
+            totalContribution: prev.totalContribution + amount,
+            returnPerMonth: prev.returnPerMonth + (amount * 0.15)
+          }));
+        }}
+      />
     </div>
-  );
-}
-
-function ActionBtn({ icon, label }: { icon: ReactNode, label: string }) {
-  return (
-    <button className="flex flex-col items-center justify-center gap-3 group w-1/4">
-      <div className="w-[52px] h-[52px] bg-white rounded-full flex justify-center items-center text-gray-700 shadow-sm group-hover:bg-gray-50 transition border border-white/50">
-        {icon}
-      </div>
-      <span className="text-[12px] font-medium text-gray-800 tracking-tight">{label}</span>
-    </button>
-  );
-}
-
-function ListItem({ icon, label }: { icon: ReactNode, label: string }) {
-  return (
-    <button className="w-full flex items-center py-4 px-4 hover:bg-gray-50 rounded-2xl transition group">
-      <div className="mr-5">
-        {icon}
-      </div>
-      <span className="flex-1 text-left font-semibold text-gray-800 text-[14.5px]">{label}</span>
-      <ChevronRight className="text-gray-400 group-hover:text-gray-600 transition" size={20} strokeWidth={1.5} />
-    </button>
   );
 }

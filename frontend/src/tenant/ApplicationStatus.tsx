@@ -1,9 +1,6 @@
-import { useNavigate } from 'react-router-dom';
-import { Clock, ArrowRight } from 'lucide-react';
+import { Clock } from 'lucide-react';
 
 export default function ApplicationStatus() {
-  const navigate = useNavigate();
-
   return (
     <div className="min-h-screen bg-[#F8F9FA] sm:p-4 flex justify-center items-center relative overflow-hidden">
       <div className="w-full max-w-[420px] h-[100dvh] sm:h-[880px] max-h-screen bg-white relative flex flex-col sm:rounded-[40px] shadow-2xl border-[12px] border-gray-900 sm:border-[14px]">
@@ -28,12 +25,9 @@ export default function ApplicationStatus() {
             Your application is pending approval. Our verification team is reviewing your information and will contact you shortly if we need anything else.
           </p>
 
-          <button 
-            onClick={() => navigate('/dashboard')}
-            className="w-full bg-[#F8F9FA] text-gray-700 border border-gray-200 py-4 rounded-2xl font-bold text-[16px] flex items-center justify-center gap-2 transition active:scale-[0.98] hover:bg-gray-100 mt-auto"
-          >
-            Go to Dashboard <ArrowRight size={20} />
-          </button>
+          <div className="mt-auto w-full text-center">
+             <p className="text-sm text-gray-400 font-medium">Please wait for notification before proceeding.</p>
+          </div>
 
         </div>
       </div>

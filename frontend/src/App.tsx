@@ -18,6 +18,7 @@ import AgentSignup from './agent/AgentSignup';
 import AgentAgreement from './agent/AgentAgreement';
 import AgentKYC from './agent/AgentKYC';
 import AgentKYCReview from './agent/AgentKYCReview';
+import FunderOnboarding from './funder/FunderOnboarding';
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ function App() {
             <Route path="/tenant-onboarding" element={<TenantOnboarding />} />
             <Route path="/application-status" element={<ApplicationStatus />} />
             <Route path="/rent-request" element={<RentRequestForm />} />
+            <Route path="/funder-onboarding" element={<FunderOnboarding />} />
             
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard/*" element={<RootDashboard />} />

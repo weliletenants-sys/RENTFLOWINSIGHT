@@ -9,6 +9,7 @@ export default function AgentDashboard() {
   const navigate = useNavigate();
   const { isOnline } = useOfflineAgentDashboard();
   const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const [isInvestModalOpen, setIsInvestModalOpen] = useState(false);
   
   // MOCK KYC STATUS: 'NONE' | 'UNDER_REVIEW' | 'APPROVED'
   const [kycStatus] = useState<'NONE' | 'UNDER_REVIEW' | 'APPROVED'>('NONE');
@@ -102,6 +103,29 @@ export default function AgentDashboard() {
         {/* Daily Operations Summary Card (Existing functionality) */}
         <AgentDailyOpsCard />
 
+        {/* Invest for Partner Button */}
+        <button 
+          onClick={() => {
+            if (kycStatus === 'APPROVED') {
+              alert('Opening Invest for Partner flow');
+              setIsInvestModalOpen(true);
+            }
+          }}
+          disabled={kycStatus !== 'APPROVED'}
+          className={`w-full py-5 rounded-[1.5rem] flex flex-col items-center justify-center gap-1 transition group relative overflow-hidden mb-2 ${
+             kycStatus === 'APPROVED'
+               ? 'bg-[#10B981] hover:bg-[#059669] text-white shadow-[0_8px_20px_-6px_rgba(16,185,129,0.5)] active:scale-[0.98]'
+               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          }`}
+        >
+          <div className="relative z-10 flex items-center gap-3">
+            <div className="bg-white/20 p-2 rounded-xl border border-white/20">
+              <Navigation size={24} strokeWidth={2} />
+            </div>
+            <span className="font-bold text-lg tracking-wide">Invest for Partner</span>
+          </div>
+        </button>
+
         {/* Visit Tenant Button */}
         <button 
           onClick={() => setIsWizardOpen(true)}
@@ -123,6 +147,16 @@ export default function AgentDashboard() {
       </div>
 
       <VisitPaymentWizard isOpen={isWizardOpen} onClose={() => setIsWizardOpen(false)} />
+
+      {isInvestModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 p-4">
+           <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-sm">
+             <h3 className="font-bold text-lg mb-2">Invest for Partner</h3>
+             <p className="text-sm text-gray-500 mb-4">You are acting on behalf of a partner to invest into the Rent Pool.</p>
+             <button onClick={() => setIsInvestModalOpen(false)} className="bg-gray-200 w-full py-2 rounded-lg font-bold">Close</button>
+           </div>
+        </div>
+      )}
     </div>
   );
 }
