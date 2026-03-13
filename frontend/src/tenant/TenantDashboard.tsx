@@ -4,7 +4,6 @@ import DashboardHeader from './components/DashboardHeader';
 import WalletCard from './components/WalletCard';
 import RentProgressCard from './components/RentProgressCard';
 import RecentActivitiesCard from './components/RecentActivitiesCard';
-import TenantBottomNav from './components/TenantBottomNav';
 import FullScreenWalletSheet from './components/FullScreenWalletSheet';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -44,32 +43,35 @@ export default function TenantDashboard() {
           onNotificationClick={() => console.log('Notifications')}
         />
 
-        <main className="flex-1 p-4 space-y-6 pb-24 border-0">
+        <main className="flex-1 p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           
-          {/* Wallet Card */}
-          <WalletCard 
-            balance={wallet.balance} 
-            onDeposit={() => setIsWalletOpen(true)}
-            onWithdraw={() => setIsWalletOpen(true)}
-            onTransfer={() => setIsWalletOpen(true)}
-          />
+          <div className="flex flex-col gap-6">
+            {/* Wallet Card */}
+            <WalletCard 
+              balance={wallet.balance} 
+              onDeposit={() => setIsWalletOpen(true)}
+              onWithdraw={() => setIsWalletOpen(true)}
+              onTransfer={() => setIsWalletOpen(true)}
+            />
+          </div>
 
-          {/* Rent Progress Section */}
-          <RentProgressCard 
-            amountPaid={activeRent.amountPaid}
-            totalRent={activeRent.totalRent}
-            daysLeft={activeRent.daysLeft}
-            remainingAmount={activeRent.remainingAmount}
-            currentMonth={activeRent.currentMonth}
-          />
+          <div className="flex flex-col gap-6 xl:col-span-2">
+            {/* Rent Progress Section */}
+            <RentProgressCard 
+              amountPaid={activeRent.amountPaid}
+              totalRent={activeRent.totalRent}
+              daysLeft={activeRent.daysLeft}
+              remainingAmount={activeRent.remainingAmount}
+              currentMonth={activeRent.currentMonth}
+            />
 
-          {/* Quick Actions / Recent */}
-          <RecentActivitiesCard />
+            {/* Quick Actions / Recent */}
+            <RecentActivitiesCard />
+          </div>
 
         </main>
 
-        {/* Bottom Navigation */}
-        <TenantBottomNav />
+
 
         {/* Action Sheets */}
         <FullScreenWalletSheet 

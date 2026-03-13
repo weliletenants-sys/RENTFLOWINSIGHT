@@ -4,7 +4,6 @@ import AgentHeader from './components/AgentHeader';
 import CommissionWalletCard from './components/CommissionWalletCard';
 import RecruitmentProgressCard from './components/RecruitmentProgressCard';
 import AgentToolsGrid from './components/AgentToolsGrid';
-import AgentBottomNav from './components/AgentBottomNav';
 import VisitPaymentWizard from './components/VisitPaymentWizard';
 import AgentDepositDialog from './components/dialogs/AgentDepositDialog';
 import AgentWithdrawalDialog from './components/dialogs/AgentWithdrawalDialog';
@@ -44,10 +43,10 @@ export default function AgentDashboard() {
         onNotificationClick={() => console.log('Notifications clicked')}
       />
 
-      <main className="flex-1">
+      <main className="flex-1 p-4 lg:p-8">
         {/* Offline Alert */}
         {!isOnline && (
-          <div className="mx-4 mt-4 bg-amber-50 text-amber-800 text-xs py-2 px-4 text-center font-medium rounded-xl border border-amber-200 shadow-sm animate-pulse">
+          <div className="mb-4 bg-amber-50 text-amber-800 text-xs py-2 px-4 text-center font-medium rounded-xl border border-amber-200 shadow-sm animate-pulse">
             You are currently offline. Field operations may be restricted.
           </div>
         )}
@@ -56,38 +55,40 @@ export default function AgentDashboard() {
         {kycStatus === 'NONE' && (
           <div 
             onClick={() => navigate('/agent-kyc')}
-            className="mx-4 mt-4 bg-blue-50 text-blue-800 text-sm py-3 px-4 rounded-xl text-center font-medium border border-blue-200 shadow-sm flex items-center justify-center gap-2 cursor-pointer hover:bg-blue-100 transition"
+            className="mb-6 bg-blue-50 text-blue-800 text-sm py-3 px-4 rounded-xl text-center font-medium border border-blue-200 shadow-sm flex items-center justify-center gap-2 cursor-pointer hover:bg-blue-100 transition"
           >
             <ShieldAlert size={16} /> Tap to complete KYC verification to unlock withdraws.
           </div>
         )}
         {kycStatus === 'UNDER_REVIEW' && (
-          <div className="mx-4 mt-4 bg-amber-50 text-amber-800 text-sm py-3 px-4 rounded-xl text-center font-medium border border-amber-200 shadow-sm flex items-center justify-center gap-2">
+          <div className="mb-6 bg-amber-50 text-amber-800 text-sm py-3 px-4 rounded-xl text-center font-medium border border-amber-200 shadow-sm flex items-center justify-center gap-2">
             <Clock size={16} /> KYC under review. Expected time: 24h.
           </div>
         )}
 
-        {/* 2. Wallet Banner */}
-        <CommissionWalletCard 
-          balance={12000} 
-          onDeposit={() => setIsDepositOpen(true)}
-          onWithdraw={() => {
-            if (kycStatus === 'APPROVED') {
-               setIsWithdrawalOpen(true);
-            } else {
-               alert('You must complete KYC verification before withdrawing commissions.');
-               navigate('/agent-kyc');
-            }
-          }}
-          onTransfer={() => setIsTopUpOpen(true)}
-        />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* 2. Wallet Banner */}
+          <CommissionWalletCard 
+            balance={12000} 
+            onDeposit={() => setIsDepositOpen(true)}
+            onWithdraw={() => {
+              if (kycStatus === 'APPROVED') {
+                 setIsWithdrawalOpen(true);
+              } else {
+                 alert('You must complete KYC verification before withdrawing commissions.');
+                 navigate('/agent-kyc');
+              }
+            }}
+            onTransfer={() => setIsTopUpOpen(true)}
+          />
 
-        {/* 3. Recruitment Progress */}
-        <RecruitmentProgressCard 
-          totalClients={128}
-          pendingPayments={36}
-          conversionRate={64}
-        />
+          {/* 3. Recruitment Progress */}
+          <RecruitmentProgressCard 
+            totalClients={128}
+            pendingPayments={36}
+            conversionRate={64}
+          />
+        </div>
 
         {/* 4. Agent Tools */}
         <AgentToolsGrid 
@@ -95,8 +96,6 @@ export default function AgentDashboard() {
         />
       </main>
 
-      {/* 5. Bottom Navigation */}
-      <AgentBottomNav />
 
       {/* Feature Modals & Dialogs */}
       <AgentDepositDialog isOpen={isDepositOpen} onClose={() => setIsDepositOpen(false)} />
