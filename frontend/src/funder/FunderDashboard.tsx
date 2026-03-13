@@ -6,7 +6,6 @@ import FunderDashboardHeader from './components/FunderDashboardHeader';
 import FunderWalletCard from './components/FunderWalletCard';
 import FunderActionButtons from './components/FunderActionButtons';
 import FunderPortfolioList from './components/FunderPortfolioList';
-import FunderBottomNav from './components/FunderBottomNav';
 
 export default function FunderDashboard() {
   const navigate = useNavigate();
@@ -52,8 +51,8 @@ export default function FunderDashboard() {
   if (isLoading) return <div className="p-8 text-center text-gray-500">Loading portfolio...</div>;
 
   return (
-    <div className="bg-[#f7f6f8] min-h-screen font-sans text-slate-900 pb-24 relative overflow-x-hidden">
-      <div className="flex flex-col w-full max-w-md mx-auto relative z-10 bg-white min-h-screen shadow-xl">
+    <div className="bg-white min-h-screen font-sans text-slate-900 relative overflow-x-hidden">
+      <div className="flex flex-col w-full relative z-10 min-h-screen">
         
         <FunderDashboardHeader 
           user={{
@@ -64,24 +63,29 @@ export default function FunderDashboard() {
           onAvatarClick={() => navigate('/settings')}
         />
 
-        <FunderWalletCard 
-          balance={stats.walletBalance}
-          principal={stats.principalInvested}
-          expectedAmount={stats.expectedAmount}
-        />
+        <main className="flex-1 p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="flex flex-col gap-6">
+            <FunderWalletCard 
+              balance={stats.walletBalance}
+              principal={stats.principalInvested}
+              expectedAmount={stats.expectedAmount}
+            />
 
-        <FunderActionButtons 
-          onDeposit={() => setIsModalOpen(true)}
-          onWithdraw={() => console.log('Withdraw requested')}
-        />
+            <FunderActionButtons 
+              onDeposit={() => setIsModalOpen(true)}
+              onWithdraw={() => console.log('Withdraw requested')}
+            />
+          </div>
 
-        <FunderPortfolioList 
-          portfolios={virtualHouses}
-          onCashOut={(id) => console.log('Cashout requested for', id)}
-          onAddAsset={() => setIsModalOpen(true)}
-        />
+          <div className="lg:col-span-2">
+            <FunderPortfolioList 
+              portfolios={virtualHouses}
+              onCashOut={(id) => console.log('Cashout requested for', id)}
+              onAddAsset={() => setIsModalOpen(true)}
+            />
+          </div>
+        </main>
 
-        <FunderBottomNav />
 
         <FunderInvestModal 
           isOpen={isModalOpen}
