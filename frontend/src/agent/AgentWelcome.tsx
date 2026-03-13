@@ -1,91 +1,146 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { ArrowRight, Briefcase } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// Distinct notes to pull from the phone
+const MONEY_NOTES = [
+  { value: 10000, color: 'bg-green-600' },
+  { value: 20000, color: 'bg-blue-600' },
+  { value: 50000, color: 'bg-yellow-600' },
+];
+
+interface FloatingNote {
+  id: number;
+  value: number;
+  color: string;
+}
 
 export default function AgentWelcome() {
   const navigate = useNavigate();
   // We keep intendedRole in context if needed, but not strictly used here
   const { } = useAuth();
   
-  const [earningsCount, setEarningsCount] = useState(0);
-  const targetEarnings = 35600000;
+  const [earningsCount, setEarningsCount] = useState(35600000);
+  const [floatingNotes, setFloatingNotes] = useState<FloatingNote[]>([]);
+  const [idCounter, setIdCounter] = useState(0);
 
-  // Animated counter effect
+  // Spawner for money notes
   useEffect(() => {
-    let startTimestamp: number | null = null;
-    const duration = 2000; // 2 seconds
+    const interval = setInterval(() => {
+      setFloatingNotes(prev => {
+        if (prev.length > 8) return prev; // Limit notes on screen
+        
+        const randomNote = MONEY_NOTES[Math.floor(Math.random() * MONEY_NOTES.length)];
+        return [...prev, {
+          id: idCounter,
+          value: randomNote.value,
+          color: randomNote.color
+        }];
+      });
+      setIdCounter(prev => prev + 1);
+    }, 1500); // Pull money every 1.5s
 
-    const step = (timestamp: number) => {
-      if (!startTimestamp) startTimestamp = timestamp;
-      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-      // easeOutExpo
-      const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
-      
-      setEarningsCount(Math.floor(easeProgress * targetEarnings));
+    return () => clearInterval(interval);
+  }, [idCounter]);
 
-      if (progress < 1) {
-        window.requestAnimationFrame(step);
-      }
-    };
-
-    window.requestAnimationFrame(step);
-  }, []);
+  const handleNoteComplete = (id: number, value: number) => {
+    setFloatingNotes(prev => prev.filter(n => n.id !== id));
+    setEarningsCount(prev => prev + value);
+  };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] sm:p-4 flex justify-center items-center relative overflow-hidden">
-      <div className="w-full max-w-md bg-white sm:rounded-[2rem] sm:shadow-xl sm:border border-gray-100 min-h-screen sm:min-h-0 relative flex flex-col">
+    <div className="min-h-screen bg-[#351A82] sm:p-4 flex justify-center items-center relative overflow-hidden text-white font-sans">
+      <div className="w-full max-w-[420px] h-[100dvh] sm:h-[880px] max-h-screen bg-[#351A82] relative flex flex-col sm:rounded-[40px] shadow-2xl overflow-hidden z-10 sm:border-[14px] border-gray-900 border-0">
         
-        {/* Decorative Top */}
-        <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-br from-[#4A3AFF] to-[#2B1B99] sm:rounded-t-[2rem]">
-          <div className="absolute inset-0 bg-white/10" style={{ backgroundImage: 'radial-gradient(circle at 10% 20%, rgba(255,255,255,0.1) 0%, transparent 20%)', backgroundSize: '20px 20px' }} />
-        </div>
+        {/* Fake iPhone Notch */}
+        <div className="hidden sm:block absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[30px] bg-gray-900 rounded-b-3xl z-50"></div>
 
-        <div className="pt-32 px-6 pb-6 relative flex flex-col flex-1 z-10">
+        <div className="flex-1 flex flex-col px-6 pt-16 pb-10 relative z-20 h-full">
           
-          <div className="bg-white mx-auto w-16 h-16 rounded-2xl shadow-lg flex items-center justify-center mb-6 border border-[#EBEAED]">
-            <Briefcase className="w-8 h-8 text-[#4A3AFF]" />
-          </div>
-
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2 font-display">
-              Welile Agents Network
-            </h1>
-            <p className="text-[#6B7280] text-sm">
+          <div className="text-center z-30 mb-6 mt-2 animate-fade-in relative text-white">
+            <h1 className="text-[34px] font-black mb-3 tracking-tight drop-shadow-md">Welile Agents</h1>
+            <p className="text-white/90 text-[15px] font-medium max-w-[280px] mx-auto leading-relaxed drop-shadow">
               Earn by connecting businesses and people to Welile services.
             </p>
           </div>
 
-          <div className="bg-gradient-to-br from-[#4A3AFF]/5 to-[#4A3AFF]/10 p-6 rounded-2xl border border-[#4A3AFF]/20 mb-auto relative overflow-hidden">
-            <div className="absolute right-0 top-0 w-32 h-32 bg-[#4A3AFF]/10 rounded-full blur-3xl -mr-16 -mt-16" />
-            <h2 className="text-sm font-medium text-[#4A3AFF] mb-1">Total Agent Earnings Today</h2>
-            <div className="flex items-baseline gap-1">
-              <span className="text-lg font-bold text-gray-900">UGX</span>
-              <span className="text-4xl font-extrabold text-gray-900 tabular-nums tracking-tight">
-                {earningsCount.toLocaleString()}
-              </span>
+          <div className="flex-1 flex items-center justify-center relative w-full mt-2">
+            
+            {/* The Animated "Phone" Screen */}
+            <div className="relative w-[180px] h-[320px] bg-gradient-to-b from-[#8155E8] to-[#4A3AFF] rounded-[32px] border-[6px] border-[#9273F6]/40 shadow-[0_0_50px_rgba(74,58,255,0.5)] flex flex-col items-center justify-end overflow-hidden z-30">
+              
+              {/* Inner glow and notch for the internal phone */}
+              <div className="absolute top-2 w-12 h-1.5 bg-black/20 rounded-full"></div>
+              <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none"></div>
+
+              {/* Hand Icon Pulling Money */}
+              <motion.div 
+                className="absolute top-1/2 left-1/2 text-6xl drop-shadow-xl z-40"
+                style={{ marginLeft: '-30px', marginTop: '-10px' }}
+                animate={{ y: [0, -30, 0], scale: [1, 0.95, 1] }}
+                transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+              >
+                🖐🏽
+              </motion.div>
+
+              {/* Money Flying Out Animation */}
+              <AnimatePresence>
+                {floatingNotes.map((note) => (
+                  <motion.div
+                    key={note.id}
+                    initial={{ opacity: 0, y: 80, scale: 0.5, rotate: -10 }}
+                    animate={{ opacity: [0, 1, 1, 0], y: -200, scale: 1, rotate: [10, -5, 10] }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                    onAnimationComplete={() => handleNoteComplete(note.id, note.value)}
+                    className={`absolute bottom-[80px] w-24 h-12 ${note.color} rounded-md shadow-2xl flex items-center justify-center border-2 border-white/20 z-30`}
+                  >
+                    <div className="w-[85%] h-[75%] border border-white/30 rounded flex items-center justify-center">
+                       <span className="text-white font-bold text-xs">{note.value / 1000}k</span>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+
+              {/* Bottom Earnings Display inside the "Phone" */}
+              <div className="relative z-40 w-full bg-black/30 backdrop-blur-md pb-5 pt-4 px-2 text-center border-t border-white/10">
+                <p className="text-white/80 font-bold uppercase tracking-[0.05em] text-[10px] mb-1">Total Agent Earnings</p>
+                <motion.div 
+                  key={earningsCount}
+                  initial={{ scale: 1.1, color: "#4ADE80" }}
+                  animate={{ scale: 1, color: "#ffffff" }}
+                  className="font-black text-white text-[22px] tracking-tight"
+                >
+                  <span className="text-[12px] font-semibold mr-1 align-top relative top-[3px]">UGX</span>
+                  {earningsCount.toLocaleString()}
+                </motion.div>
+              </div>
+
             </div>
-            <p className="text-xs text-gray-500 mt-2">
-              Total commissions paid to agents today
-            </p>
           </div>
 
-          <div className="mt-8 space-y-4">
-            <button
-              onClick={() => navigate('/agent-signup')}
-              className="w-full bg-[#4A3AFF] text-white py-4 rounded-xl font-medium shadow-lg shadow-[#4A3AFF]/25 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+          <div className="z-30 mt-auto pt-8 space-y-4">
+            <button 
+              onClick={() => navigate('/agent-signup')} 
+              className="w-full bg-white text-[#512DA8] py-[18px] rounded-full font-black text-[17px] shadow-2xl flex items-center justify-center gap-2 transition active:scale-[0.98] hover:bg-slate-50 border border-white"
             >
-              Become an Agent
-              <ArrowRight className="w-5 h-5" />
+              Become an Agent <ArrowRight size={22} strokeWidth={2.5} className="ml-1" />
             </button>
             <button
               onClick={() => navigate('/login')}
-              className="w-full bg-white text-gray-700 py-4 rounded-xl font-medium border border-gray-200 transition-all active:bg-gray-50"
+              className="w-full bg-[#351A82] text-white py-[16px] rounded-full font-bold text-[16px] border border-white/30 transition-all hover:bg-white/10"
             >
               Log In
             </button>
           </div>
 
+        </div>
+
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 z-0 opacity-40 pointer-events-none">
+          <div className="absolute top-[-10%] left-[-20%] w-[400px] h-[400px] bg-[#8155E8] rounded-full blur-[100px]"></div>
+          <div className="absolute bottom-[-10%] right-[-20%] w-[400px] h-[400px] bg-[#673AB7] rounded-full blur-[100px]"></div>
         </div>
       </div>
     </div>

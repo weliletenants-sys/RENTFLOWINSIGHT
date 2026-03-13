@@ -10,7 +10,7 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
+  const [rentAmount, setRentAmount] = useState('');  
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [error, setError] = useState('');
@@ -140,6 +140,21 @@ export default function Signup() {
                     className="w-full bg-emerald-50 border border-emerald-200 rounded-2xl py-3.5 pl-10 pr-4 text-gray-800 font-medium text-sm focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition"
                  />
                </div>
+            )}
+
+            {intendedRole === 'TENANT' && (
+              <div className="relative mt-1">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">
+                  UGX
+                </div>
+                <input 
+                  type="number" 
+                  placeholder="How much rent do you want?"
+                  value={rentAmount}
+                  onChange={(e) => setRentAmount(e.target.value)}
+                  className="w-full bg-white border border-gray-200 rounded-2xl py-3.5 pl-12 pr-4 text-gray-800 font-medium text-sm focus:outline-none focus:border-[#51319E] focus:ring-4 focus:ring-purple-500/10 transition"
+                />
+              </div>
             )}
 
             <div className="relative mt-2">
