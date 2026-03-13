@@ -21,13 +21,14 @@ export default function FunderDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Fake Data load matching template figures
+  // DEV: Fake Data load — auth check disabled for frontend development
   useEffect(() => {
     try {
-      if (user && user.isVerified === false) {
-        navigate('/funder-onboarding');
-        return;
-      }
+      // Commented out for frontend dev — re-enable before production
+      // if (user && user.isVerified === false) {
+      //   navigate('/funder-onboarding');
+      //   return;
+      // }
 
       // Exact values matching the FUNDER.html template showcase
       setStats({
