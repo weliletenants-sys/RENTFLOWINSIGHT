@@ -29,8 +29,15 @@ export default function RootDashboard() {
     }
   };
 
+  const noHeaderRoles = ['AGENT', 'TENANT'];
+  const shouldHideHeader = role ? noHeaderRoles.includes((role as string).toUpperCase()) : false;
+
+  if (role === 'AGENT') {
+    return <AgentDashboard />;
+  }
+
   return (
-    <DashboardLayout>
+    <DashboardLayout hideHeader={shouldHideHeader}>
       {renderDashboardContent()}
     </DashboardLayout>
   );

@@ -5,9 +5,12 @@ import BottomNavigation from '../components/layout/BottomNavigation';
 interface DashboardLayoutProps {
   children: ReactNode;
   title?: string; // Optional title override
+  hideHeader?: boolean; // Hides the universal SharedHeader
+  customBottomNav?: ReactNode; // Replaces the universal BottomNavigation
+  fullWidth?: boolean; // Removes the horizontal padding from the main scroll container
 }
 
-export default function DashboardLayout({ children, title }: DashboardLayoutProps) {
+export default function DashboardLayout({ children, title, hideHeader, customBottomNav, fullWidth }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-[#8155FF] sm:p-4 flex justify-center items-center relative overflow-hidden">
       {/* Decorative background lines/curves */}
@@ -27,17 +30,19 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
         <div className="hidden sm:block absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[30px] bg-gray-900 rounded-b-3xl z-50"></div>
 
         {/* Universal Top Header */}
-        <header className="px-6 pt-12 pb-2 bg-transparent z-10 shrink-0">
-          <SharedHeader title={title} />
-        </header>
+        {!hideHeader && (
+          <header className="px-6 pt-12 pb-2 bg-transparent z-10 shrink-0">
+            <SharedHeader title={title} />
+          </header>
+        )}
 
         {/* Main Content Area (Scrollable) */}
-        <main className="flex-1 overflow-y-auto px-6 pb-28 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] z-10">
+        <main className={`flex-1 overflow-y-auto pb-28 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] z-10 ${fullWidth ? '' : 'px-6'} ${hideHeader ? 'pt-8 sm:pt-10' : ''}`}>
           {children}
         </main>
 
-        {/* Universal Bottom Navigation */}
-        <BottomNavigation />
+        {/* Bottom Navigation */}
+        {customBottomNav ? customBottomNav : <BottomNavigation />}
       </div>
     </div>
   );
