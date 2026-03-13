@@ -1,95 +1,154 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Banknote, MapPin, Calendar, ArrowRight, Home } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 export default function RentRequestForm() {
   const { rentAmount, setRentAmount } = useAuth();
-  const [location, setLocation] = useState('');
-  const [duration, setDuration] = useState('');
+  
+  // Example states for the new form fields
+  const [occupation, setOccupation] = useState('');
+  const [workAddress, setWorkAddress] = useState('');
+  const [homeAddress, setHomeAddress] = useState('');
+  const [district, setDistrict] = useState('');
+  const [subCounty, setSubCounty] = useState('');
+  const [parish, setParish] = useState('');
+  const [village, setVillage] = useState('');
+
   const navigate = useNavigate();
 
-  const handleContinue = (e: React.FormEvent) => {
+  const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
-    // After filling out rent details, proceed to sign up flow to provision an account
-    navigate('/signup');
+    // Move to step 2 (currently we'll just navigate or show a toast)
+    console.log("Proceeding to next step...");
+    navigate('/signup'); // Or wherever step 2 should actually go
   };
 
   return (
-    <div className="min-h-screen bg-[#8155FF] sm:p-4 flex justify-center items-center relative overflow-hidden">
-      {/* Decorative background */}
-      <div className="absolute inset-0 opacity-20 pointer-events-none flex justify-center items-center">
-        <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" className="w-[150vw] h-[150vh]">
-           <path d="M0,500 Q250,300 500,500 T1000,500" stroke="white" strokeWidth="2" fill="none"/>
-           <path d="M0,700 Q250,500 500,700 T1000,700" stroke="white" strokeWidth="2" fill="none"/>
-        </svg>
-      </div>
-
-      <div className="w-full max-w-[420px] h-[100dvh] sm:h-[880px] max-h-screen bg-[#F8F9FA] relative flex flex-col sm:rounded-[40px] shadow-2xl overflow-hidden z-10 border-[12px] border-gray-900 sm:border-[14px]">
-        {/* Fake iPhone Notch */}
-        <div className="hidden sm:block absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[30px] bg-gray-900 rounded-b-3xl z-50"></div>
-
-        <div className="flex-1 flex flex-col pt-16 px-8 relative z-10 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+    <div className="min-h-screen bg-[#111827] sm:p-4 flex justify-center items-center relative overflow-hidden font-sans">
+      
+      {/* Phone container */}
+      <div className="w-full max-w-[420px] h-[100dvh] sm:h-[880px] max-h-screen bg-white relative flex flex-col sm:rounded-[32px] overflow-hidden z-10 border-8 border-[#1C2434] sm:border-[16px]">
+        
+        {/* Header Section */}
+        <div className="pt-12 pb-4 px-6 flex items-center justify-between bg-white relative z-20">
+          <button 
+            onClick={() => navigate(-1)}
+            className="w-10 h-10 bg-gray-50 flex items-center justify-center rounded-full hover:bg-gray-100 transition"
+          >
+            <ArrowLeft className="w-5 h-5 text-gray-700" />
+          </button>
           
-          <div className="text-center mb-8 shrink-0">
-            <div className="w-16 h-16 bg-gradient-to-br from-[#915BFE] to-[#713BF0] rounded-[1.2rem] mx-auto mb-4 flex items-center justify-center shadow-lg shadow-purple-500/30">
-              <Home className="text-white" size={30} strokeWidth={1.5} />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight mb-2">Request Rent</h1>
-            <p className="text-gray-500 font-medium text-sm">Tell us about your housing needs.</p>
+          <div className="text-center flex-1 pr-10"> {/* pr-10 to offset the back button visually */}
+            <h1 className="text-lg font-bold text-[#0F172A] tracking-tight">Rent Financing</h1>
+            <p className="text-[#64748B] text-sm">Step 1 of 4</p>
+          </div>
+        </div>
+
+        {/* Step Progress Bar */}
+        <div className="w-full flex h-1 bg-gray-100 relative mb-6">
+           {/* Active Step Indicator */}
+           <div className="w-1/4 h-full bg-[#51319E] absolute left-0 top-0"></div>
+        </div>
+
+        {/* Scrollable Form Content */}
+        <div className="flex-1 overflow-y-auto px-6 pb-28 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          
+          {/* Mock Auto-filled Section */}
+          <div className="bg-[#FAF8FF] border border-[#F1EAFC] rounded-2xl p-4 mb-8">
+            <h3 className="text-[#2F1069] font-bold text-[15px] mb-1">Personal Info (Auto-filled)</h3>
+            <p className="text-[#6A4EAA] text-sm leading-relaxed">
+              Name: Kahunde Florence<br/>
+              Phone: Verified (+256...)
+            </p>
           </div>
 
-          <form onSubmit={handleContinue} className="flex flex-col gap-4 pb-8 shrink-0">
-
-            <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                <Banknote size={18} strokeWidth={1.5} />
-              </div>
-              <input 
-                type="number" 
-                required
-                placeholder="Specific Rent Amount (KSh)"
-                value={rentAmount}
-                onChange={(e) => setRentAmount(e.target.value)}
-                className="w-full bg-white border border-gray-200 rounded-2xl py-3.5 pl-10 pr-4 text-gray-800 font-medium text-sm focus:outline-none focus:border-[#51319E] focus:ring-4 focus:ring-purple-500/10 transition"
-              />
-            </div>
-
-            <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                <MapPin size={18} strokeWidth={1.5} />
-              </div>
+          <form onSubmit={handleNextStep}>
+            
+            {/* Location & Work Section */}
+            <h2 className="text-lg font-black text-[#0F172A] mb-4">Location & Work</h2>
+            
+            <div className="space-y-4 mb-8">
               <input 
                 type="text" 
-                required
-                placeholder="Property Location (e.g., Kilimani)"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                className="w-full bg-white border border-gray-200 rounded-2xl py-3.5 pl-10 pr-4 text-gray-800 font-medium text-sm focus:outline-none focus:border-[#51319E] focus:ring-4 focus:ring-purple-500/10 transition"
+                placeholder="Occupation"
+                value={occupation}
+                onChange={(e) => setOccupation(e.target.value)}
+                className="w-full bg-[#F4F6F9] border border-transparent hover:border-gray-200 rounded-[14px] py-4 px-4 text-gray-800 text-sm focus:outline-none focus:border-[#51319E] focus:bg-white transition placeholder-[#94A3B8]"
               />
-            </div>
-            
-            <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                <Calendar size={18} strokeWidth={1.5} />
-              </div>
               <input 
-                type="number" 
-                required
-                placeholder="Lease Duration (Months)"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-                className="w-full bg-white border border-gray-200 rounded-2xl py-3.5 pl-10 pr-4 text-gray-800 font-medium text-sm focus:outline-none focus:border-[#51319E] focus:ring-4 focus:ring-purple-500/10 transition"
+                type="text" 
+                placeholder="Work Address"
+                value={workAddress}
+                onChange={(e) => setWorkAddress(e.target.value)}
+                className="w-full bg-[#F4F6F9] border border-transparent hover:border-gray-200 rounded-[14px] py-4 px-4 text-gray-800 text-sm focus:outline-none focus:border-[#51319E] focus:bg-white transition placeholder-[#94A3B8]"
+              />
+              <input 
+                type="text" 
+                placeholder="Home Address"
+                value={homeAddress}
+                onChange={(e) => setHomeAddress(e.target.value)}
+                className="w-full bg-[#F4F6F9] border border-transparent hover:border-gray-200 rounded-[14px] py-4 px-4 text-gray-800 text-sm focus:outline-none focus:border-[#51319E] focus:bg-white transition placeholder-[#94A3B8]"
+              />
+              <input 
+                type="text" 
+                placeholder="District"
+                value={district}
+                onChange={(e) => setDistrict(e.target.value)}
+                className="w-full bg-[#F4F6F9] border border-transparent hover:border-gray-200 rounded-[14px] py-4 px-4 text-gray-800 text-sm focus:outline-none focus:border-[#51319E] focus:bg-white transition placeholder-[#94A3B8]"
+              />
+              
+              <div className="flex gap-3">
+                <input 
+                  type="text" 
+                  placeholder="Sub-County"
+                  value={subCounty}
+                  onChange={(e) => setSubCounty(e.target.value)}
+                  className="w-1/2 bg-[#F4F6F9] border border-transparent hover:border-gray-200 rounded-[14px] py-4 px-4 text-gray-800 text-sm focus:outline-none focus:border-[#51319E] focus:bg-white transition placeholder-[#94A3B8]"
+                />
+                <input 
+                  type="text" 
+                  placeholder="Parish"
+                  value={parish}
+                  onChange={(e) => setParish(e.target.value)}
+                  className="w-1/2 bg-[#F4F6F9] border border-transparent hover:border-gray-200 rounded-[14px] py-4 px-4 text-gray-800 text-sm focus:outline-none focus:border-[#51319E] focus:bg-white transition placeholder-[#94A3B8]"
+                />
+              </div>
+
+              <input 
+                type="text" 
+                placeholder="Village / Cell"
+                value={village}
+                onChange={(e) => setVillage(e.target.value)}
+                className="w-full bg-[#F4F6F9] border border-transparent hover:border-gray-200 rounded-[14px] py-4 px-4 text-gray-800 text-sm focus:outline-none focus:border-[#51319E] focus:bg-white transition placeholder-[#94A3B8]"
               />
             </div>
 
-            <button type="submit" className="w-full bg-[#51319E] hover:bg-[#412780] text-white py-4 rounded-2xl font-bold text-[15px] shadow-lg flex items-center justify-center gap-2 transition active:scale-[0.98] mt-2">
-              Continue to Sign Up <ArrowRight size={18} />
-            </button>
+            {/* Rent Details Section */}
+            <h2 className="text-lg font-black text-[#0F172A] mb-4">Rent Details</h2>
+            <div className="space-y-4">
+               <input 
+                  type="number" 
+                  placeholder="Requested Rent Amount (UGX)"
+                  value={rentAmount}
+                  onChange={(e) => setRentAmount(e.target.value)}
+                  className="w-full bg-[#F4F6F9] border border-transparent hover:border-gray-200 rounded-[14px] py-4 px-4 text-gray-800 text-sm focus:outline-none focus:border-[#51319E] focus:bg-white transition placeholder-[#94A3B8]"
+                />
+            </div>
 
           </form>
-
         </div>
+
+        {/* Fixed Bottom Action Bar */}
+        <div className="absolute bottom-0 left-0 w-full bg-white/90 backdrop-blur-sm pt-4 pb-8 px-6 border-t border-gray-50 flex justify-center z-30">
+           <button 
+             onClick={handleNextStep}
+             className="w-[95%] bg-[#51319E] hover:bg-[#412780] text-white py-[18px] rounded-2xl font-bold text-[16px] shadow-lg shadow-purple-900/20 flex items-center justify-center gap-2 transition active:scale-[0.98]"
+           >
+             Next Step <ArrowRight size={20} strokeWidth={2.5} />
+           </button>
+        </div>
+
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -22,38 +23,62 @@ import FunderOnboarding from './funder/FunderOnboarding';
 
 const queryClient = new QueryClient();
 
+class GlobalErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: any}> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: 20, background: 'red', color: 'white', fontFamily: 'monospace' }}>
+          <h2>Something went wrong.</h2>
+          <pre>{this.state.error?.toString()}</pre>
+          <pre>{this.state.error?.stack}</pre>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/role-selection" element={<RoleSelection />} />
-            <Route path="/welcome" element={<WelcomePage />} />
-            <Route path="/agent-welcome" element={<AgentWelcome />} />
-            <Route path="/agent-signup" element={<AgentSignup />} />
-            <Route path="/agent-agreement" element={<AgentAgreement />} />
-            <Route path="/agent-kyc" element={<AgentKYC />} />
-            <Route path="/agent-kyc-review" element={<AgentKYCReview />} />
-            
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/tenant-agreement" element={<TenantAgreement />} />
-            <Route path="/tenant-onboarding" element={<TenantOnboarding />} />
-            <Route path="/application-status" element={<ApplicationStatus />} />
-            <Route path="/rent-request" element={<RentRequestForm />} />
-            <Route path="/funder-onboarding" element={<FunderOnboarding />} />
-            
-            <Route element={<ProtectedRoute />}>
-              <Route path="/dashboard/*" element={<RootDashboard />} />
-            </Route>
-
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </QueryClientProvider>
+    <GlobalErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/role-selection" element={<RoleSelection />} />
+              <Route path="/welcome" element={<WelcomePage />} />
+              <Route path="/agent-welcome" element={<AgentWelcome />} />
+              <Route path="/agent-signup" element={<AgentSignup />} />
+              <Route path="/agent-agreement" element={<AgentAgreement />} />
+              <Route path="/agent-kyc" element={<AgentKYC />} />
+              <Route path="/agent-kyc-review" element={<AgentKYCReview />} />
+              
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/tenant-agreement" element={<TenantAgreement />} />
+              <Route path="/tenant-onboarding" element={<TenantOnboarding />} />
+              <Route path="/application-status" element={<ApplicationStatus />} />
+              <Route path="/rent-request" element={<RentRequestForm />} />
+              <Route path="/funder-onboarding" element={<FunderOnboarding />} />
+              
+              <Route element={<ProtectedRoute />}>
+                <Route path="/dashboard/*" element={<RootDashboard />} />
+              </Route>
+  
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
+      </QueryClientProvider>
+    </GlobalErrorBoundary>
   );
 }
 

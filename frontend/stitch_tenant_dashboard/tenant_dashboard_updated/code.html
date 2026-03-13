@@ -1,0 +1,177 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Tenant Dashboard | RentPay</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7f13ec",
+                        "background-light": "#f7f6f8",
+                        "background-dark": "#191022",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="max-w-md mx-auto bg-white dark:bg-slate-900 min-h-screen flex flex-col shadow-xl">
+<!-- Header Section -->
+<header class="flex items-center justify-between p-4 border-b border-primary/10">
+<div class="flex items-center gap-3">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 border-2 border-primary/20" data-alt="Professional portrait of a young male tenant" style="background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuA1jW-onhgRw-5USmfPzS5wcaRIFUeG0_sLluPM9hK0WIO3Jn_f4cLLQOxBVCn1wKwVk7fFptUygsplT9ErJBf0HWKzv_VzU-Tpo6ptMFncRmkFbChZP13NZT0HEVGJwEACTviQreykJjyjWR2l4-rVWWX552_RZq6VYks5JbxGf6yZX2IAYY4USYX05_CvsJJIXYbOZ37NKtJ53ohfAUGwerwJJ8fAMhM7bC3jhxbQFbfFNPuAupJH8kkHMJ3K4jcmK5JyKy6vC78&quot;);">
+</div>
+<div class="absolute bottom-0 right-0 size-3 bg-green-500 border-2 border-white rounded-full"></div>
+</div>
+<div>
+<h1 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight" style="">Alex Johnson</h1>
+<p class="text-primary text-xs font-semibold uppercase tracking-wider" style="">Tenant</p>
+</div>
+</div>
+<button class="relative p-2 text-slate-600 dark:text-slate-400 hover:bg-primary/5 rounded-full transition-colors" style="">
+<span class="material-symbols-outlined text-2xl" style="">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border border-white"></span>
+</button>
+</header>
+<main class="flex-1 p-4 space-y-6">
+<!-- Wallet Card -->
+<section class="bg-primary rounded-xl p-6 text-white shadow-lg shadow-primary/20 relative overflow-hidden">
+<div class="absolute -right-10 -top-10 size-32 bg-white/10 rounded-full blur-3xl"></div>
+<div class="relative z-10">
+<div class="flex items-center justify-between mb-2">
+<span class="text-white/80 text-sm font-medium" style="">Wallet Balance</span>
+<span class="material-symbols-outlined text-white/80" style="">account_balance_wallet</span>
+</div>
+<div class="text-3xl font-bold mb-6" style="">UGX 24,000</div>
+<div class="grid grid-cols-3 gap-2">
+<button class="flex flex-col items-center justify-center gap-1 py-3 bg-white/15 hover:bg-white/25 rounded-lg transition-colors" style="">
+<span class="material-symbols-outlined text-xl" style="">add_circle</span>
+<span class="text-[10px] font-bold uppercase" style="">Deposit</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 py-3 bg-white/15 hover:bg-white/25 rounded-lg transition-colors" style="">
+<span class="material-symbols-outlined text-xl" style="">payments</span>
+<span class="text-[10px] font-bold uppercase" style="">Withdraw</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-1 py-3 bg-white/15 hover:bg-white/25 rounded-lg transition-colors" style="">
+<span class="material-symbols-outlined text-xl" style="">swap_horiz</span>
+<span class="text-[10px] font-bold uppercase" style="">Transfer</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Rent Progress Section -->
+<section class="bg-white dark:bg-slate-800 border border-primary/5 rounded-xl p-5 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-slate-900 dark:text-slate-100 font-bold" style="">Rent Progress</h3>
+<span class="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded" style="">June 2024</span>
+</div>
+<div class="space-y-4">
+<div class="flex items-end justify-between text-sm">
+<div class="flex flex-col">
+<span class="text-slate-500 dark:text-slate-400 text-xs" style="">Paid so far</span>
+<span class="text-slate-900 dark:text-slate-100 font-bold text-lg" style="">123,000/=</span>
+</div>
+<div class="text-right flex flex-col">
+<span class="text-slate-500 dark:text-slate-400 text-xs" style="">Total Rent</span>
+<span class="text-slate-900 dark:text-slate-100 font-bold text-lg" style="">185,000/=</span>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="w-full bg-primary/10 rounded-full h-3 overflow-hidden">
+<div class="bg-primary h-full rounded-full transition-all duration-500" style="width: 65%;"></div>
+</div>
+<!-- Countdown / Stats -->
+<div class="grid grid-cols-2 gap-4 pt-2">
+<div class="bg-background-light dark:bg-slate-700/50 p-3 rounded-lg flex items-center gap-3">
+<div class="size-10 bg-primary/20 rounded-lg flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="">calendar_today</span>
+</div>
+<div>
+<p class="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold" style="">Days Left</p>
+<p class="text-lg font-bold text-primary" style="">08 Days</p>
+</div>
+</div>
+<div class="bg-background-light dark:bg-slate-700/50 p-3 rounded-lg flex items-center gap-3">
+<div class="size-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center text-orange-600">
+<span class="material-symbols-outlined" style="">pending_actions</span>
+</div>
+<div>
+<p class="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold" style="">Remaining</p>
+<p class="text-lg font-bold text-orange-600" style="">65,000/=</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Quick Actions / Recent -->
+<section class="space-y-3">
+<div class="flex items-center justify-between">
+<h3 class="text-slate-900 dark:text-slate-100 font-bold" style="">Recent Activities</h3>
+<a class="text-primary text-xs font-bold" href="#" style="">View All</a>
+</div>
+<div class="space-y-3">
+<div class="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border border-primary/5">
+<div class="flex items-center gap-3">
+<div class="size-10 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-xl" style="">arrow_downward</span>
+</div>
+<div>
+<p class="text-sm font-bold" style="">Deposit Confirmed</p>
+<p class="text-[10px] text-slate-500" style="">Yesterday, 4:30 PM</p>
+</div>
+</div>
+<span class="text-sm font-bold text-green-600" style="">+$500.00</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border border-primary/5">
+<div class="flex items-center gap-3">
+<div class="size-10 bg-primary/10 text-primary rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-xl" style="">car_rental</span>
+</div>
+<div>
+<p class="text-sm font-bold" style="">Partial Rent Paid</p>
+<p class="text-[10px] text-slate-500" style="">June 01, 2024</p>
+</div>
+</div>
+<span class="text-sm font-bold text-slate-900 dark:text-slate-100" style="">-$1,200.00</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation -->
+<nav class="sticky bottom-0 bg-white dark:bg-slate-900 border-t border-primary/10 flex justify-around items-center px-4 py-3">
+<a class="flex flex-col items-center gap-1 text-primary" href="#" style="">
+<span class="material-symbols-outlined fill-1" style="">home</span>
+<span class="text-[10px] font-bold" style="">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#" style="">
+<span class="material-symbols-outlined" style="">payments</span>
+<span class="text-[10px] font-bold" style="">Payments</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#" style="">
+<span class="material-symbols-outlined" style="">receipt_long</span>
+<span class="text-[10px] font-bold" style="">History</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#" style="">
+<span class="material-symbols-outlined" style="">person</span>
+<span class="text-[10px] font-bold" style="">Profile</span>
+</a>
+</nav>
+</div>
+</body></html>
