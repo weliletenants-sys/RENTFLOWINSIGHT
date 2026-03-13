@@ -20,6 +20,7 @@ import AgentAgreement from './agent/AgentAgreement';
 import AgentKYC from './agent/AgentKYC';
 import AgentKYCReview from './agent/AgentKYCReview';
 import FunderOnboarding from './funder/FunderOnboarding';
+import FunderDashboard from './funder/FunderDashboard';
 
 const queryClient = new QueryClient();
 
@@ -68,6 +69,8 @@ function App() {
               <Route path="/application-status" element={<ApplicationStatus />} />
               <Route path="/rent-request" element={<RentRequestForm />} />
               <Route path="/funder-onboarding" element={<FunderOnboarding />} />
+              {/* DEV ONLY: unprotected funder dashboard for frontend development */}
+              <Route path="/funder-dashboard" element={<FunderDashboard />} />
               
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard/*" element={<RootDashboard />} />

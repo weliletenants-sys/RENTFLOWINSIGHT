@@ -1,0 +1,5 @@
+-> Framer motion
+-> Lucide React
+-> React Router DOM
+-> Tailwind CSS
+-> React Hot Toast
