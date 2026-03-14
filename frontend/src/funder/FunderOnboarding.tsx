@@ -1,42 +1,63 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
-import { ArrowLeft, Check, Upload, Camera, Shield, Home, TrendingUp, Banknote, Repeat, ChevronRight } from 'lucide-react';
+import {
+  ArrowLeft, Check, Shield, Home, TrendingUp, Banknote,
+  ChevronRight, BadgeCheck, Eye, EyeOff, Mail, Phone, Lock,
+} from 'lucide-react';
 import { useCurrency, formatCurrencyCompact } from '../utils/currency';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type InvestPath = 'tenant' | 'pool' | null;
-type PayoutMode = 'payout' | 'compound' | null;
 
 interface FormState {
+  // Step 1
   understoodRole: boolean;
+  // Step 2
   investPath: InvestPath;
-  payoutMode: PayoutMode;
-  idFront: File | null;
-  idBack: File | null;
-  selfie: File | null;
-  acknowledgedNotice: boolean;
+  // Step 3
+  email: string;
+  password: string;
+  confirmPassword: string;
+  phone: string;
   agreedToTerms: boolean;
+}
+
+// ─── Password Strength ───────────────────────────────────────────────────────
+function getStrength(pw: string): { score: number; label: string; color: string } {
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  const map = [
+    { label: 'Too short', color: '#EF4444' },
+    { label: 'Weak', color: '#F97316' },
+    { label: 'Fair', color: '#EAB308' },
+    { label: 'Good', color: '#22C55E' },
+    { label: 'Strong', color: '#9234EA' },
+  ];
+  return { score, ...map[score] };
 }
 
 // ─── Animation Variants ───────────────────────────────────────────────────────
 const slideVariants = {
   enter: { x: 40, opacity: 0 },
-  center: { x: 0, opacity: 1, transition: { duration: 0.35, ease: 'easeOut' } },
-  exit: { x: -40, opacity: 0, transition: { duration: 0.22, ease: 'easeIn' } },
+  center: { x: 0, opacity: 1, transition: { duration: 0.35, ease: 'easeOut' as const } },
+  exit: { x: -40, opacity: 0, transition: { duration: 0.22, ease: 'easeIn' as const } },
 };
 
 const stagger = {
+  hidden: {},
   show: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
 };
 
 const fadeUp = {
   hidden: { opacity: 0, y: 18 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' as const } },
 };
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
+// ─── StepDots ────────────────────────────────────────────────────────────────
 function StepDots({ total, current }: { total: number; current: number }) {
   return (
     <div className="flex items-center gap-1.5">
@@ -55,30 +76,21 @@ function StepDots({ total, current }: { total: number; current: number }) {
   );
 }
 
+// ─── ChoiceCard ───────────────────────────────────────────────────────────────
 function ChoiceCard({
-  selected,
-  onClick,
-  icon: Icon,
-  title,
-  body,
-  badge,
+  selected, onClick, icon: Icon, title, body, badge,
 }: {
-  selected: boolean;
-  onClick: () => void;
-  icon: React.ElementType;
-  title: string;
-  body: string;
-  badge: string;
+  selected: boolean; onClick: () => void; icon: React.ElementType;
+  title: string; body: string; badge: string;
 }) {
   return (
     <motion.button
       type="button"
       onClick={onClick}
       whileTap={{ scale: 0.985 }}
-      className={`w-full text-left p-5 rounded-2xl border-2 transition-all duration-200 relative overflow-hidden ${selected
-          ? 'border-[#9234EA] bg-[#F3F0FF]'
-          : 'border-gray-100 bg-white hover:border-purple-200'
-        }`}
+      className={`w-full text-left p-5 rounded-2xl border-2 transition-all duration-200 relative overflow-hidden ${
+        selected ? 'border-[#9234EA] bg-[#F3F0FF]' : 'border-gray-100 bg-white hover:border-purple-200'
+      }`}
     >
       {selected && (
         <motion.div
@@ -87,21 +99,17 @@ function ChoiceCard({
         />
       )}
       <div className="flex items-start gap-4 relative z-10">
-        <div
-          className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${selected ? 'bg-[#9234EA] text-white' : 'bg-purple-50 text-[#9234EA]'
-            }`}
-        >
+        <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+          selected ? 'bg-[#9234EA] text-white' : 'bg-purple-50 text-[#9234EA]'
+        }`}>
           <Icon size={20} strokeWidth={1.75} />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2 mb-1">
             <h4 className="font-bold text-gray-900 text-sm">{title}</h4>
-            <span
-              className={`text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 ${selected ? 'bg-[#9234EA] text-white' : 'bg-purple-100 text-[#9234EA]'
-                }`}
-            >
-              {badge}
-            </span>
+            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 ${
+              selected ? 'bg-[#9234EA] text-white' : 'bg-purple-100 text-[#9234EA]'
+            }`}>{badge}</span>
           </div>
           <p className="text-xs text-gray-500 leading-relaxed">{body}</p>
         </div>
@@ -112,69 +120,14 @@ function ChoiceCard({
           animate={{ scale: 1 }}
           className="absolute top-0 right-0 w-5 h-5 rounded-full bg-[#9234EA] flex items-center justify-center"
         >
-          <Check size={11} className="text-white top-1" strokeWidth={3} />
+          <Check size={11} className="text-white" strokeWidth={3} />
         </motion.div>
       )}
     </motion.button>
   );
 }
 
-function UploadZone({
-  label,
-  file,
-  onFile,
-  capture,
-  icon: Icon,
-}: {
-  label: string;
-  file: File | null;
-  onFile: (f: File) => void;
-  capture?: 'user' | 'environment';
-  icon: React.ElementType;
-}) {
-  return (
-    <div>
-      <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">{label}</p>
-      <label
-        className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-2xl py-7 cursor-pointer transition-all ${file
-            ? 'border-[#9234EA] bg-purple-50'
-            : 'border-gray-200 bg-white hover:border-purple-300 hover:bg-purple-50/40'
-          }`}
-      >
-        <input
-          type="file"
-          accept="image/*"
-          capture={capture}
-          className="hidden"
-          onChange={(e) => {
-            if (e.target.files?.[0]) onFile(e.target.files[0]);
-          }}
-        />
-        {file ? (
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="flex flex-col items-center gap-1"
-          >
-            <div className="w-10 h-10 rounded-full bg-[#9234EA] flex items-center justify-center">
-              <Check size={18} className="text-white" strokeWidth={2.5} />
-            </div>
-            <p className="text-xs text-[#9234EA] font-bold">{file.name.slice(0, 22)}{file.name.length > 22 ? '…' : ''}</p>
-          </motion.div>
-        ) : (
-          <>
-            <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-300">
-              <Icon size={20} strokeWidth={1.5} />
-            </div>
-            <p className="text-xs text-gray-400 font-medium">Tap to upload</p>
-          </>
-        )}
-      </label>
-    </div>
-  );
-}
-
-// ─── Projection Mini Chart ─────────────────────────────────────────────────────
+// ─── Projection Mini Chart ────────────────────────────────────────────────────
 function ProjectionBar({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
   return (
     <div className="flex items-center gap-3">
@@ -207,7 +160,6 @@ function CountUp({ to, suffix = '', duration = 1400 }: { to: number; suffix?: st
     let raf: number;
     const step = (now: number) => {
       const progress = Math.min((now - start) / duration, 1);
-      // ease-out cubic
       const eased = 1 - Math.pow(1 - progress, 3);
       setCount(Math.round(eased * to));
       if (progress < 1) raf = requestAnimationFrame(step);
@@ -223,127 +175,7 @@ function CountUp({ to, suffix = '', duration = 1400 }: { to: number; suffix?: st
   );
 }
 
-// ─── Steps ───────────────────────────────────────────────────────────────────
-
-function Step1({ form, setForm }: { form: FormState; setForm: React.Dispatch<React.SetStateAction<FormState>> }) {
-  const cards = [
-    {
-      icon: Home,
-      title: 'You Fund the Rent',
-      body: 'Your capital enters the Rent Management Pool. Welile deploys it to pay landlords on behalf of verified tenants.',
-      highlight: false,
-    },
-    {
-      icon: Banknote,
-      title: '15% Monthly, Every 30 Days',
-      body: 'You earn 15% of your active contribution each month, credited to your wallet automatically on a strict 30-day cycle.',
-      highlight: true,
-    },
-    {
-      icon: Shield,
-      title: 'Fully Managed by Welile',
-      body: 'We verify tenants, manage collections, and handle all repayments. You see anonymised Virtual Houses, never personal details.',
-      highlight: false,
-    },
-  ];
-
-  return (
-    <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-7">
-
-      {/* ── Hero ─────────────────────────────────────────────── */}
-      <motion.div variants={fadeUp} className="pt-2">
-        {/* Small decorative badge   NOT the focal point */}
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-xl bg-[#9234EA]/10 flex items-center justify-center">
-            <Shield size={16} className="text-[#9234EA]" strokeWidth={1.75} />
-          </div>
-          <span className="text-xs font-bold text-[#9234EA] tracking-wide uppercase">Welile Housing Partner</span>
-        </div>
-
-        {/* Headline   dominant focal point */}
-        <h2 className="text-[28px] font-black text-gray-900 tracking-tight leading-[1.15]">
-          Put Your Money<br />
-          <span className="text-[#9234EA]">to Work for Families.</span>
-        </h2>
-
-        {/* Subtext */}
-        <p className="text-[13.5px] text-gray-500 mt-3 leading-relaxed">
-          You contribute capital. Welile pays rent for verified tenants, manages collections, and credits your wallet every 30 days. You don't manage anything.
-        </p>
-      </motion.div>
-
-      {/* ── Value Cards ──────────────────────────────────────── */}
-      <motion.div variants={fadeUp} className="space-y-3">
-        {cards.map(({ icon: Icon, title, body, highlight }) => (
-          <div
-            key={title}
-            className={`relative flex items-start gap-4 rounded-2xl p-4 border transition-all ${
-              highlight
-                ? 'bg-[#F3F0FF] border-[#9234EA]/25 shadow-sm shadow-purple-100'
-                : 'bg-white border-gray-100 shadow-sm'
-            }`}
-          >
-            {/* Verified badge on highlighted card */}
-            {highlight && (
-              <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[#9234EA] flex items-center justify-center shadow-md shadow-purple-200">
-                <Check size={12} className="text-white" strokeWidth={3} />
-              </div>
-            )}
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-              highlight ? 'bg-[#9234EA] text-white' : 'bg-purple-50 text-[#9234EA]'
-            }`}>
-              <Icon size={17} strokeWidth={1.75} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className={`text-sm font-bold ${highlight ? 'text-[#9234EA]' : 'text-gray-800'}`}>{title}</p>
-              <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{body}</p>
-            </div>
-          </div>
-        ))}
-      </motion.div>
-
-      {/* ── Trust stat counters ───────────────────────────────── */}
-      <motion.div variants={fadeUp} className="grid grid-cols-3 gap-3">
-        {[
-          { icon: Home,     to: 1200, suffix: '+', label: 'Homes Supported'    },
-          { icon: Banknote, to: 15,   suffix: '%', label: 'Average ROI'     },
-          { icon: Shield,   to: 30,   suffix:  'd', label: 'Payout Cycle'    },
-        ].map(({ icon: Icon, to, suffix, label }) => (
-          <div key={label} className="flex flex-col items-center gap-1.5 bg-white border border-gray-100 rounded-2xl py-3 px-2 shadow-sm">
-            <div className="w-7 h-7 rounded-xl bg-purple-50 flex items-center justify-center text-[#9234EA]">
-              <Icon size={14} strokeWidth={1.75} />
-            </div>
-            <CountUp to={to} suffix={suffix} />
-            <p className="text-[10px] text-gray-400 font-medium text-center leading-tight">{label}</p>
-          </div>
-        ))}
-      </motion.div>
-
-      {/* ── Consent checkbox ─────────────────────────────────── */}
-      <motion.label
-        variants={fadeUp}
-        className="flex items-start gap-3 bg-gray-50 border border-gray-100 rounded-xl p-4 cursor-pointer"
-      >
-        <div
-          className={`w-5 h-5 rounded border-2 shrink-0 mt-0.5 flex items-center justify-center transition-colors ${
-            form.understoodRole ? 'bg-[#9234EA] border-[#9234EA]' : 'border-gray-300'
-          }`}
-          onClick={() => setForm(p => ({ ...p, understoodRole: !p.understoodRole }))}
-        >
-          {form.understoodRole && <Check size={11} className="text-white" strokeWidth={3} />}
-        </div>
-        <p className="text-[12.5px] text-gray-500 leading-snug">
-          I understand I am a capital facilitator, not a lender.
-Welile manages tenant relationships, collections, and monthly payouts.
-        </p>
-      </motion.label>
-
-    </motion.div>
-  );
-}
-
-
-// ─── Investment Projection Graph ─────────────────────────────────────────────
+// ─── Investment Graph ─────────────────────────────────────────────────────────
 const MONTHS = 12;
 const PRINCIPAL = 1_000_000;
 
@@ -358,19 +190,12 @@ function buildPoints(mode: 'tenant' | 'pool', principal: number): number[] {
   return pts;
 }
 
-
-
 function InvestmentGraph({ mode }: { mode: 'tenant' | 'pool' }) {
   const [hovered, setHovered] = useState<number | null>(null);
   const [rawInput, setRawInput] = useState('1,000,000');
-
-  // Detect currency via IP geolocation (updates async, starts with UGX)
   const currency = useCurrency();
-
-  // Parse the raw input to a usable number (strip commas)
   const principal = Math.max(10_000, Number(rawInput.replace(/,/g, '')) || PRINCIPAL);
 
-  // Format with commas as user types
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const digits = e.target.value.replace(/[^0-9]/g, '');
     const formatted = digits ? Number(digits).toLocaleString() : '';
@@ -384,7 +209,7 @@ function InvestmentGraph({ mode }: { mode: 'tenant' | 'pool' }) {
   const points = buildPoints(mode, principal);
   const maxVal = points[MONTHS];
   const minVal = principal;
-  const range = maxVal - minVal || 1;  // guard div-by-zero
+  const range = maxVal - minVal || 1;
 
   const xOf = (i: number) => PAD.left + (i / MONTHS) * innerW;
   const yOf = (v: number) => PAD.top + innerH - ((v - minVal) / range) * innerH;
@@ -410,13 +235,11 @@ function InvestmentGraph({ mode }: { mode: 'tenant' | 'pool' }) {
       transition={{ duration: 0.35, ease: 'easeOut' }}
       className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm"
     >
-      {/* Header row */}
       <div className="flex items-start justify-between mb-3 gap-3">
         <div className="flex-1 min-w-0">
           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
             {mode === 'tenant' ? 'Monthly rewards · 12 months' : 'Compounding growth · 12 months'}
           </p>
-          {/* Inline amount calculator */}
           <div className="flex items-center gap-1.5 mt-1.5 bg-purple-50 border border-purple-100 rounded-xl px-3 py-1.5">
             <span className="text-[11px] font-bold text-[#9234EA] shrink-0">{currency.symbol}</span>
             <input
@@ -439,75 +262,33 @@ function InvestmentGraph({ mode }: { mode: 'tenant' | 'pool' }) {
         </motion.span>
       </div>
 
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        className="w-full"
-        style={{ touchAction: 'none' }}
-        onMouseLeave={() => setHovered(null)}
-      >
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ touchAction: 'none' }} onMouseLeave={() => setHovered(null)}>
         <defs>
           <linearGradient id={`area-${mode}`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={color} stopOpacity="0.18" />
             <stop offset="100%" stopColor={color} stopOpacity="0" />
           </linearGradient>
           <clipPath id={pathId}>
-            <motion.rect
-              x={PAD.left}
-              y={0}
-              height={H}
-              initial={{ width: 0 }}
-              animate={{ width: innerW }}
-              transition={{ duration: 1.1, ease: 'easeOut', delay: 0.1 }}
-            />
+            <motion.rect x={PAD.left} y={0} height={H} initial={{ width: 0 }} animate={{ width: innerW }} transition={{ duration: 1.1, ease: 'easeOut', delay: 0.1 }} />
           </clipPath>
         </defs>
-
         <path d={areaD} fill={`url(#area-${mode})`} clipPath={`url(#${pathId})`} />
-
-        <path
-          d={pathD}
-          fill="none"
-          stroke={color}
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          clipPath={`url(#${pathId})`}
-        />
-
+        <path d={pathD} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" clipPath={`url(#${pathId})`} />
         {points.map((_, i) => {
           if (i % labelStep !== 0 || i === 0) return null;
-          return (
-            <text key={i} x={xOf(i)} y={H - 6} textAnchor="middle" fontSize="8" fill="#9CA3AF">
-              M{i}
-            </text>
-          );
+          return <text key={i} x={xOf(i)} y={H - 6} textAnchor="middle" fontSize="8" fill="#9CA3AF">M{i}</text>;
         })}
-
         {points.map((v, i) => (
           <g key={i}>
-            <rect
-              x={xOf(i) - 12}
-              y={0}
-              width={24}
-              height={H - PAD.bottom}
-              fill="transparent"
-              onMouseEnter={() => setHovered(i)}
-              style={{ cursor: 'crosshair' }}
-            />
+            <rect x={xOf(i) - 12} y={0} width={24} height={H - PAD.bottom} fill="transparent" onMouseEnter={() => setHovered(i)} style={{ cursor: 'crosshair' }} />
             {hovered === i && (
               <g>
-                <line
-                  x1={xOf(i)} y1={PAD.top}
-                  x2={xOf(i)} y2={PAD.top + innerH}
-                  stroke={color} strokeWidth="1" strokeDasharray="3 3" opacity="0.5"
-                />
+                <line x1={xOf(i)} y1={PAD.top} x2={xOf(i)} y2={PAD.top + innerH} stroke={color} strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
                 <circle cx={xOf(i)} cy={yOf(v)} r={4} fill={color} />
                 <circle cx={xOf(i)} cy={yOf(v)} r={7} fill={color} opacity="0.15" />
                 <g transform={`translate(${Math.min(xOf(i) + 6, W - 82)},${Math.max(yOf(v) - 28, PAD.top)})`}>
                   <rect width="78" height="22" rx="6" fill={color} />
-                  <text x="39" y="14" textAnchor="middle" fontSize="9" fill="white" fontWeight="700">
-                    {formatCurrencyCompact(v, currency)}
-                  </text>
+                  <text x="39" y="14" textAnchor="middle" fontSize="9" fill="white" fontWeight="700">{formatCurrencyCompact(v, currency)}</text>
                 </g>
               </g>
             )}
@@ -515,7 +296,6 @@ function InvestmentGraph({ mode }: { mode: 'tenant' | 'pool' }) {
         ))}
       </svg>
 
-      {/* Bottom summary - reactive to typed amount */}
       <div className="flex justify-between items-center pt-2 border-t border-gray-50 mt-1">
         <div>
           <p className="text-[10px] text-gray-400">After 12 months</p>
@@ -526,12 +306,7 @@ function InvestmentGraph({ mode }: { mode: 'tenant' | 'pool' }) {
             }
           </p>
         </div>
-        <motion.p
-          key={points[MONTHS]}
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-base font-black text-[#9234EA]"
-        >
+        <motion.p key={points[MONTHS]} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-base font-black text-[#9234EA]">
           {formatCurrencyCompact(points[MONTHS], currency)}
         </motion.p>
       </div>
@@ -539,6 +314,122 @@ function InvestmentGraph({ mode }: { mode: 'tenant' | 'pool' }) {
   );
 }
 
+// ─── Step 1 — Welcome ─────────────────────────────────────────────────────────
+function Step1({ form, setForm }: { form: FormState; setForm: React.Dispatch<React.SetStateAction<FormState>> }) {
+  const cards = [
+    {
+      icon: Home,
+      title: 'You Fund the Rent',
+      body: 'Your capital enters the Rent Management Pool. Welile deploys it to pay landlords on behalf of verified tenants.',
+      highlight: false,
+    },
+    {
+      icon: Banknote,
+      title: '15% Monthly, Every 30 Days',
+      body: 'You earn 15% of your active contribution each month, credited to your wallet automatically on a strict 30-day cycle.',
+      highlight: true,
+    },
+    {
+      icon: Shield,
+      title: 'Fully Managed by Welile',
+      body: 'We verify tenants, manage collections, and handle all repayments. You see anonymised Virtual Houses, never personal details.',
+      highlight: false,
+    },
+  ];
+
+  return (
+    <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-7">
+
+      {/* Hero */}
+      <motion.div variants={fadeUp} className="pt-2">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-8 h-8 rounded-xl bg-[#9234EA]/10 flex items-center justify-center">
+            <Shield size={16} className="text-[#9234EA]" strokeWidth={1.75} />
+          </div>
+          <span className="text-xs font-bold text-[#9234EA] tracking-wide uppercase">Welile Housing Partner</span>
+        </div>
+        <h2 className="text-[28px] font-black text-gray-900 tracking-tight leading-[1.15]">
+          Put Your Money<br />
+          <span className="text-[#9234EA]">to Work for Families.</span>
+        </h2>
+        <p className="text-[13.5px] text-gray-500 mt-3 leading-relaxed">
+          You contribute capital. Welile pays rent for verified tenants, manages collections, and credits your wallet every 30 days. You don't manage anything.
+        </p>
+      </motion.div>
+
+      {/* Value Cards */}
+      <motion.div variants={fadeUp} className="space-y-3">
+        {cards.map(({ icon: Icon, title, body, highlight }) => (
+          <div
+            key={title}
+            className={`relative flex items-start gap-4 rounded-2xl p-4 border transition-all ${
+              highlight
+                ? 'bg-[#F3F0FF] border-[#9234EA]/25 shadow-sm shadow-purple-100'
+                : 'bg-white border-gray-100 shadow-sm'
+            }`}
+          >
+            {highlight && (
+              <BadgeCheck
+                size={22}
+                className="absolute -top-1 -right-1 drop-shadow-md"
+                style={{ color: '#9234EA' }}
+                strokeWidth={1.75}
+                fill="white"
+              />
+            )}
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+              highlight ? 'bg-[#9234EA] text-white' : 'bg-purple-50 text-[#9234EA]'
+            }`}>
+              <Icon size={17} strokeWidth={1.75} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={`text-sm font-bold ${highlight ? 'text-[#9234EA]' : 'text-gray-800'}`}>{title}</p>
+              <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{body}</p>
+            </div>
+          </div>
+        ))}
+      </motion.div>
+
+      {/* Trust stat counters */}
+      <motion.div variants={fadeUp} className="grid grid-cols-3 gap-3">
+        {[
+          { icon: Home,     to: 1200, suffix: '+', label: 'Homes Supported' },
+          { icon: Banknote, to: 15,   suffix: '%', label: 'Average ROI'     },
+          { icon: Shield,   to: 30,   suffix: 'd', label: 'Payout Cycle'    },
+        ].map(({ icon: Icon, to, suffix, label }) => (
+          <div key={label} className="flex flex-col items-center gap-1.5 bg-white border border-gray-100 rounded-2xl py-3 px-2 shadow-sm">
+            <div className="w-7 h-7 rounded-xl bg-purple-50 flex items-center justify-center text-[#9234EA]">
+              <Icon size={14} strokeWidth={1.75} />
+            </div>
+            <CountUp to={to} suffix={suffix} />
+            <p className="text-[10px] text-gray-400 font-medium text-center leading-tight">{label}</p>
+          </div>
+        ))}
+      </motion.div>
+
+      {/* Consent */}
+      <motion.label
+        variants={fadeUp}
+        className="flex items-start gap-3 bg-gray-50 border border-gray-100 rounded-xl p-4 cursor-pointer"
+      >
+        <div
+          className={`w-5 h-5 rounded border-2 shrink-0 mt-0.5 flex items-center justify-center transition-colors ${
+            form.understoodRole ? 'bg-[#9234EA] border-[#9234EA]' : 'border-gray-300'
+          }`}
+          onClick={() => setForm(p => ({ ...p, understoodRole: !p.understoodRole }))}
+        >
+          {form.understoodRole && <Check size={11} className="text-white" strokeWidth={3} />}
+        </div>
+        <p className="text-[12.5px] text-gray-500 leading-snug">
+          I understand I am a capital facilitator, not a lender.{' '}
+          Welile manages tenant relationships, collections, and monthly payouts.
+        </p>
+      </motion.label>
+    </motion.div>
+  );
+}
+
+// ─── Step 2 — Invest ──────────────────────────────────────────────────────────
 function Step2({ form, setForm }: { form: FormState; setForm: React.Dispatch<React.SetStateAction<FormState>> }) {
   return (
     <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6">
@@ -546,7 +437,7 @@ function Step2({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
         <h2 className="text-2xl font-black text-gray-900 tracking-tight leading-tight">
           How Would You Like<br />to Contribute?
         </h2>
-        <p className="text-sm text-gray-400 mt-2">Choose your contribution style   you can always adjust later.</p>
+        <p className="text-sm text-gray-400 mt-2">Choose your contribution style — you can always adjust later.</p>
       </motion.div>
 
       <motion.div variants={fadeUp} className="space-y-3">
@@ -563,7 +454,7 @@ function Step2({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
           onClick={() => setForm(p => ({ ...p, investPath: 'pool' }))}
           icon={TrendingUp}
           title="Grow Your Contribution"
-          body="Add to the housing pool. Your monthly rewards build on themselves   each cycle your base grows and so does the next reward."
+          body="Add to the housing pool. Your monthly rewards build on themselves — each cycle your base grows and so does the next reward."
           badge="Compounding"
         />
       </motion.div>
@@ -577,172 +468,231 @@ function Step2({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
   );
 }
 
+// ─── Step 3 — Register ────────────────────────────────────────────────────────
 function Step3({ form, setForm }: { form: FormState; setForm: React.Dispatch<React.SetStateAction<FormState>> }) {
-  // Projections at 15% on UGX 1,000,000
-  const monthly = 1_000_000 + (150_000 * 6);  // flat
-  const compound = Math.round(1_000_000 * Math.pow(1.15, 6)); // compounded
+  const [showPw, setShowPw] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const strength = form.password.length > 0 ? getStrength(form.password) : null;
+  const passwordsMatch = form.password === form.confirmPassword;
 
   return (
     <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6">
+
+      {/* Hero */}
       <motion.div variants={fadeUp}>
         <h2 className="text-2xl font-black text-gray-900 tracking-tight leading-tight">
-          Choose Your<br />Reward Style
+          Create Your<br />Account
         </h2>
-        <p className="text-sm text-gray-400 mt-2">How do you want to receive your monthly participation rewards?</p>
+        <p className="text-sm text-gray-400 mt-2">You're seconds away from your first contribution.</p>
       </motion.div>
 
+      {/* Google SSO */}
+      <motion.div variants={fadeUp}>
+        <button
+          type="button"
+          onClick={() => {/* Google OAuth — wire when backend ready */}}
+          className="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 rounded-2xl py-3.5 px-4 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 active:scale-[0.98]"
+        >
+          {/* Google G SVG */}
+          <svg className="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05" />
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+          </svg>
+          <span className="text-sm font-bold text-gray-700">Continue with Google</span>
+        </button>
+      </motion.div>
+
+      {/* Divider */}
+      <motion.div variants={fadeUp} className="flex items-center gap-3">
+        <div className="flex-1 h-px bg-gray-100" />
+        <span className="text-[11px] text-gray-400 font-medium">or create an account</span>
+        <div className="flex-1 h-px bg-gray-100" />
+      </motion.div>
+
+      {/* Form Fields */}
       <motion.div variants={fadeUp} className="space-y-3">
-        <ChoiceCard
-          selected={form.payoutMode === 'payout'}
-          onClick={() => setForm(p => ({ ...p, payoutMode: 'payout' }))}
-          icon={Banknote}
-          title="Monthly Cash Rewards"
-          body="Every 30 days your reward lands in your wallet   ready to spend, withdraw, or re-contribute however you like."
-          badge="Steady Income"
-        />
-        <ChoiceCard
-          selected={form.payoutMode === 'compound'}
-          onClick={() => setForm(p => ({ ...p, payoutMode: 'compound' }))}
-          icon={Repeat}
-          title="Let It Grow"
-          body="Your rewards are quietly added to your balance each month. Next month you earn on the bigger number   a quiet multiplier working for you."
-          badge="Max Growth"
-        />
-      </motion.div>
 
-      <motion.div variants={fadeUp} className="bg-white border border-gray-100 rounded-2xl p-4 space-y-3 shadow-sm">
-        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
-          UGX 1M projection   6 months
-        </p>
-        <ProjectionBar label="Monthly Cash" value={monthly} max={compound} color="#A78BFA" />
-        <ProjectionBar label="Let It Grow" value={compound} max={compound} color="#9234EA" />
-        <p className="text-[11px] text-gray-400 pt-1">
-          Compounding earns <span className="text-[#9234EA] font-bold">UGX {((compound - monthly) / 1000).toFixed(0)}K more</span> over 6 months on the same contribution.
-        </p>
-      </motion.div>
-    </motion.div>
-  );
-}
+        {/* Email */}
+        <div className="relative">
+          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <Mail size={16} strokeWidth={1.75} />
+          </div>
+          <input
+            type="email"
+            placeholder="Email address"
+            value={form.email}
+            onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
+            className="w-full bg-white border border-gray-200 rounded-2xl pl-10 pr-4 py-3.5 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#9234EA] focus:ring-2 focus:ring-[#9234EA]/10 transition-all"
+          />
+        </div>
 
-function Step4({ form, setForm }: { form: FormState; setForm: React.Dispatch<React.SetStateAction<FormState>> }) {
-  return (
-    <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6">
-      <motion.div variants={fadeUp}>
-        <h2 className="text-2xl font-black text-gray-900 tracking-tight leading-tight">
-          Secure Your<br />Account
-        </h2>
-        <p className="text-sm text-gray-400 mt-2">Required to protect your contributions and ensure secure payouts to you.</p>
-      </motion.div>
+        {/* Phone */}
+        <div className="relative">
+          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+            <Phone size={16} strokeWidth={1.75} />
+          </div>
+          <input
+            type="tel"
+            placeholder="Phone number"
+            value={form.phone}
+            onChange={e => setForm(p => ({ ...p, phone: e.target.value }))}
+            className="w-full bg-white border border-gray-200 rounded-2xl pl-10 pr-4 py-3.5 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#9234EA] focus:ring-2 focus:ring-[#9234EA]/10 transition-all"
+          />
+        </div>
 
-      <motion.div variants={fadeUp} className="space-y-4">
-        <UploadZone
-          label="National ID   Front"
-          file={form.idFront}
-          icon={Upload}
-          onFile={(f) => setForm(p => ({ ...p, idFront: f }))}
-        />
-        <UploadZone
-          label="National ID   Back"
-          file={form.idBack}
-          icon={Upload}
-          onFile={(f) => setForm(p => ({ ...p, idBack: f }))}
-        />
-        <UploadZone
-          label="Live Selfie"
-          file={form.selfie}
-          icon={Camera}
-          capture="user"
-          onFile={(f) => setForm(p => ({ ...p, selfie: f }))}
-        />
-      </motion.div>
-    </motion.div>
-  );
-}
-
-function Step5({
-  form,
-  setForm,
-}: {
-  form: FormState;
-  setForm: React.Dispatch<React.SetStateAction<FormState>>;
-}) {
-  return (
-    <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6">
-      <motion.div variants={fadeUp}>
-        <h2 className="text-2xl font-black text-gray-900 tracking-tight leading-tight">
-          Partner<br />Commitment
-        </h2>
-        <p className="text-sm text-gray-400 mt-2">Almost there   just two things to confirm before you begin.</p>
-      </motion.div>
-
-      <motion.div
-        variants={fadeUp}
-        className="bg-amber-50 border border-amber-200 rounded-2xl p-5 relative overflow-hidden"
-      >
-        <div className="absolute -right-3 -top-3 w-20 h-20 rounded-full bg-amber-100/60" />
-        <h4 className="font-black text-amber-900 text-sm mb-2 relative z-10">90-Day Exit Notice</h4>
-        <p className="text-xs text-amber-800 leading-relaxed relative z-10">
-          To keep the housing pool stable for all tenants and partners, withdrawing your principal contribution requires a{' '}
-          <strong>90-day notice period</strong>. Monthly rewards are paused the moment a withdrawal request is submitted.
-        </p>
-      </motion.div>
-
-      <motion.div variants={fadeUp} className="space-y-3">
-        {[
-          {
-            key: 'acknowledgedNotice' as keyof FormState,
-            label: 'I understand the 90-day notice period and that monthly rewards pause during this time.',
-          },
-          {
-            key: 'agreedToTerms' as keyof FormState,
-            label: 'I agree to the Welile Partner Participation Terms and Conditions.',
-          },
-        ].map(({ key, label }) => (
-          <label
-            key={key}
-            className="flex items-start gap-3 bg-white border border-gray-100 rounded-xl p-4 cursor-pointer shadow-sm"
-          >
-            <div
-              className={`w-5 h-5 rounded border-2 shrink-0 mt-0.5 flex items-center justify-center transition-colors ${form[key] ? 'bg-[#9234EA] border-[#9234EA]' : 'border-gray-300'
-                }`}
-              onClick={() => setForm(p => ({ ...p, [key]: !p[key] }))}
-            >
-              {form[key] && <Check size={11} className="text-white" strokeWidth={3} />}
+        {/* Password */}
+        <div>
+          <div className="relative">
+            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+              <Lock size={16} strokeWidth={1.75} />
             </div>
-            <p className="text-[13px] text-gray-600 font-medium leading-snug">{label}</p>
-          </label>
-        ))}
+            <input
+              type={showPw ? 'text' : 'password'}
+              placeholder="Password (min. 8 characters)"
+              value={form.password}
+              onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
+              className="w-full bg-white border border-gray-200 rounded-2xl pl-10 pr-11 py-3.5 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#9234EA] focus:ring-2 focus:ring-[#9234EA]/10 transition-all"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPw(v => !v)}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              {showPw ? <EyeOff size={16} strokeWidth={1.75} /> : <Eye size={16} strokeWidth={1.75} />}
+            </button>
+          </div>
+
+          {/* Strength meter */}
+          <AnimatePresence>
+            {strength && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-2 overflow-hidden"
+              >
+                <div className="flex gap-1 mb-1">
+                  {[0, 1, 2, 3].map(i => (
+                    <motion.div
+                      key={i}
+                      className="flex-1 h-1 rounded-full"
+                      animate={{ backgroundColor: i < strength.score ? strength.color : '#E5E7EB' }}
+                      transition={{ duration: 0.3 }}
+                    />
+                  ))}
+                </div>
+                <p className="text-[11px] font-bold" style={{ color: strength.color }}>
+                  {strength.label}
+                  {strength.score < 4 && <span className="text-gray-400 font-normal"> — add uppercase, numbers, or symbols</span>}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Confirm Password */}
+        <div>
+          <div className="relative">
+            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+              <Lock size={16} strokeWidth={1.75} />
+            </div>
+            <input
+              type={showConfirm ? 'text' : 'password'}
+              placeholder="Confirm password"
+              value={form.confirmPassword}
+              onChange={e => setForm(p => ({ ...p, confirmPassword: e.target.value }))}
+              className={`w-full bg-white border rounded-2xl pl-10 pr-11 py-3.5 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-all focus:ring-2 ${
+                form.confirmPassword.length > 0
+                  ? passwordsMatch
+                    ? 'border-green-400 focus:border-green-400 focus:ring-green-100'
+                    : 'border-red-400 focus:border-red-400 focus:ring-red-100'
+                  : 'border-gray-200 focus:border-[#9234EA] focus:ring-[#9234EA]/10'
+              }`}
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirm(v => !v)}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              {showConfirm ? <EyeOff size={16} strokeWidth={1.75} /> : <Eye size={16} strokeWidth={1.75} />}
+            </button>
+            {/* Match indicator */}
+            {form.confirmPassword.length > 0 && (
+              <div className={`absolute right-10 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full flex items-center justify-center ${
+                passwordsMatch ? 'bg-green-500' : 'bg-red-400'
+              }`}>
+                <Check size={9} className="text-white" strokeWidth={3} />
+              </div>
+            )}
+          </div>
+          <AnimatePresence>
+            {form.confirmPassword.length > 0 && !passwordsMatch && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-[11px] text-red-500 font-medium mt-1"
+              >
+                Passwords don't match
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </div>
       </motion.div>
+
+      {/* Terms */}
+      <motion.label variants={fadeUp} className="flex items-start gap-3 cursor-pointer">
+        <div
+          className={`w-5 h-5 rounded border-2 shrink-0 mt-0.5 flex items-center justify-center transition-colors ${
+            form.agreedToTerms ? 'bg-[#9234EA] border-[#9234EA]' : 'border-gray-300'
+          }`}
+          onClick={() => setForm(p => ({ ...p, agreedToTerms: !p.agreedToTerms }))}
+        >
+          {form.agreedToTerms && <Check size={11} className="text-white" strokeWidth={3} />}
+        </div>
+        <p className="text-[12.5px] text-gray-500 leading-snug">
+          I agree to the Welile{' '}
+          <span className="text-[#9234EA] font-semibold underline underline-offset-2 cursor-pointer">Terms of Service</span>
+          {' '}and{' '}
+          <span className="text-[#9234EA] font-semibold underline underline-offset-2 cursor-pointer">Privacy Policy</span>.
+        </p>
+      </motion.label>
     </motion.div>
   );
 }
 
-// ─── Step Validity ─────────────────────────────────────────────────────────────
+// ─── Step Validity ────────────────────────────────────────────────────────────
 function isValid(step: number, form: FormState): boolean {
   if (step === 1) return form.understoodRole;
   if (step === 2) return form.investPath !== null;
-  if (step === 3) return form.payoutMode !== null;
-  if (step === 4) return !!(form.idFront && form.idBack && form.selfie);
-  if (step === 5) return form.acknowledgedNotice && form.agreedToTerms;
+  if (step === 3) {
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
+    const pwOk = form.password.length >= 8;
+    const matchOk = form.password === form.confirmPassword;
+    const phoneOk = form.phone.trim().length >= 7;
+    return emailOk && pwOk && matchOk && phoneOk && form.agreedToTerms;
+  }
   return false;
 }
 
-const STEP_LABELS = ['Welcome', 'Invest', 'Reward Style', 'Identity', 'Agreement'];
+const STEP_LABELS = ['Welcome', 'Invest', 'Create Account'];
 
-// ─── Main Component ────────────────────────────────────────────────────────────
+// ─── Main Component ───────────────────────────────────────────────────────────
 export default function FunderOnboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const TOTAL = 5;
+  const TOTAL = 3;
 
   const [form, setForm] = useState<FormState>({
     understoodRole: false,
     investPath: null,
-    payoutMode: null,
-    idFront: null,
-    idBack: null,
-    selfie: null,
-    acknowledgedNotice: false,
+    email: '',
+    password: '',
+    confirmPassword: '',
+    phone: '',
     agreedToTerms: false,
   });
 
@@ -762,19 +712,16 @@ export default function FunderOnboarding() {
     1: <Step1 form={form} setForm={setForm} />,
     2: <Step2 form={form} setForm={setForm} />,
     3: <Step3 form={form} setForm={setForm} />,
-    4: <Step4 form={form} setForm={setForm} />,
-    5: <Step5 form={form} setForm={setForm} />,
   };
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col">
+
       {/* Header */}
       <div className="bg-white/90 backdrop-blur-sm border-b border-gray-100 shrink-0 sticky top-0 z-20">
-        {/* Dots row sits at very top */}
         <div className="flex items-center justify-center pt-10 pb-2">
           <StepDots total={TOTAL} current={step} />
         </div>
-        {/* Nav row */}
         <div className="px-5 pb-3 flex items-center justify-between">
           <button
             onClick={handleBack}
@@ -782,11 +729,9 @@ export default function FunderOnboarding() {
           >
             <ArrowLeft size={18} />
           </button>
-
           <p className="text-[13px] font-black text-gray-800 tracking-tight uppercase">
             {STEP_LABELS[step - 1]}
           </p>
-
           <div className="w-9" />
         </div>
       </div>
@@ -806,34 +751,55 @@ export default function FunderOnboarding() {
         </AnimatePresence>
       </div>
 
-      {/* Footer */}
-      <div className="px-5 pb-8 pt-4 bg-white border-t border-gray-100 shrink-0">
-        <motion.button
-          onClick={handleNext}
-          disabled={!valid}
-          whileTap={valid ? { scale: 0.97 } : {}}
-          className={`w-full py-4 rounded-2xl font-bold text-[15px] flex items-center justify-center gap-2 transition-all duration-200 ${valid
-              ? step === TOTAL
-                ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200 hover:bg-emerald-600'
-                : 'bg-[#9234EA] text-white shadow-lg shadow-purple-200 hover:bg-[#7B2AC5]'
-              : 'bg-gray-100 text-gray-300 cursor-not-allowed'
-            }`}
-        >
-          {step === TOTAL ? (
-            <>
-              Complete Setup <Check size={18} strokeWidth={2.5} />
-            </>
-          ) : (
-            <>
-              Continue <ChevronRight size={18} strokeWidth={2.5} />
-            </>
-          )}
-        </motion.button>
+      {/* Footer CTA — slides up when step is valid */}
+      <AnimatePresence>
+        {valid && (
+          <motion.div
+            key={`footer-${step}`}
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1, transition: { type: 'spring', stiffness: 320, damping: 28 } }}
+            exit={{ y: 80, opacity: 0, transition: { duration: 0.18 } }}
+            className="px-5 pb-8 pt-4 bg-white border-t border-gray-100 shrink-0"
+          >
+            <motion.button
+              onClick={handleNext}
+              whileTap={{ scale: 0.97 }}
+              className={`w-full py-4 rounded-2xl font-bold text-[15px] flex items-center justify-center gap-2 transition-all duration-200 ${
+                step === TOTAL
+                  ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200 hover:bg-emerald-600'
+                  : 'bg-[#9234EA] text-white shadow-lg shadow-purple-200 hover:bg-[#7B2AC5]'
+              }`}
+            >
+              {step === TOTAL ? (
+                <>Create Account <Check size={18} strokeWidth={2.5} /></>
+              ) : (
+                <>Continue <ChevronRight size={18} strokeWidth={2.5} /></>
+              )}
+            </motion.button>
+            <p className="text-center text-[11px] text-gray-400 mt-3">
+              Step {step} of {TOTAL} · {STEP_LABELS[step - 1]}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-        <p className="text-center text-[11px] text-gray-400 mt-3">
-          Step {step} of {TOTAL} · {STEP_LABELS[step - 1]}
-        </p>
-      </div>
+      {/* Hint when button is hidden on Step 1 */}
+      <AnimatePresence>
+        {!valid && step === 1 && (
+          <motion.div
+            key="hint"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="pb-8 pt-4 flex flex-col items-center gap-1"
+          >
+            <div className="w-6 h-6 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center animate-pulse">
+              <ChevronRight size={12} className="text-gray-400" />
+            </div>
+            <p className="text-[11px] text-gray-400 font-medium">Read &amp; confirm above to continue</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
