@@ -33,8 +33,8 @@ export default function RoleSelection() {
 
       <div className="w-full min-h-screen bg-[#F8F9FA] relative flex flex-col shadow-2xl overflow-hidden z-10">
 
-        <div className="py-12 px-6 flex flex-col h-full bg-gradient-to-b from-[#E9DDFD] to-[#F8F9FA]">
-          <div className="mt-8 mb-10 text-center">
+        <div className="py-12 px-6 flex flex-col justify-center h-full w-full max-w-2xl mx-auto bg-gradient-to-b from-[#E9DDFD] to-[#F8F9FA]">
+          <div className="mb-10 text-center">
             <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-3">Choose Your Path</h1>
             <p className="text-gray-600 font-medium">Select how you want to use Welile today.</p>
           </div>
@@ -43,10 +43,10 @@ export default function RoleSelection() {
             
             <button 
               onClick={() => handleSelectRole('TENANT')}
-              className="bg-white p-5 rounded-[1.5rem] shadow-[0_4px_15px_-5px_rgba(0,0,0,0.05)] border border-white hover:border-purple-300 hover:shadow-purple-200 transition group flex items-center justify-between text-left"
+              className="bg-white p-5 rounded-[1.5rem] shadow-lg hover:shadow-xl hover:-translate-y-1 transform border border-transparent hover:border-purple-300 transition-all duration-300 group flex items-center justify-between text-left"
             >
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition">
+                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
                   <Home size={24} strokeWidth={1.5} />
                 </div>
                 <div>
@@ -54,15 +54,15 @@ export default function RoleSelection() {
                   <p className="text-gray-500 text-sm font-medium">Access rent credit and housing</p>
                 </div>
               </div>
-              <ArrowRight className="text-gray-300 group-hover:text-purple-600 transition" />
+              <ArrowRight className="text-gray-300 group-hover:text-purple-600 transition-colors duration-300" />
             </button>
 
             <button 
               onClick={() => handleSelectRole('AGENT')}
-              className="bg-white p-5 rounded-[1.5rem] shadow-[0_4px_15px_-5px_rgba(0,0,0,0.05)] border border-white hover:border-purple-300 hover:shadow-purple-200 transition group flex items-center justify-between text-left"
+              className="bg-white p-5 rounded-[1.5rem] shadow-lg hover:shadow-xl hover:-translate-y-1 transform border border-transparent hover:border-blue-300 transition-all duration-300 group flex items-center justify-between text-left"
             >
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
                   <Briefcase size={24} strokeWidth={1.5} />
                 </div>
                 <div>
@@ -70,15 +70,15 @@ export default function RoleSelection() {
                   <p className="text-gray-500 text-sm font-medium">Manage collections and tenants</p>
                 </div>
               </div>
-              <ArrowRight className="text-gray-300 group-hover:text-blue-600 transition" />
+              <ArrowRight className="text-gray-300 group-hover:text-blue-600 transition-colors duration-300" />
             </button>
 
             <button 
               onClick={() => handleSelectRole('LANDLORD')}
-              className="bg-white p-5 rounded-[1.5rem] shadow-[0_4px_15px_-5px_rgba(0,0,0,0.05)] border border-white hover:border-purple-300 hover:shadow-purple-200 transition group flex items-center justify-between text-left"
+              className="bg-white p-5 rounded-[1.5rem] shadow-lg hover:shadow-xl hover:-translate-y-1 transform border border-transparent hover:border-orange-300 transition-all duration-300 group flex items-center justify-between text-left"
             >
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition">
+                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-colors duration-300">
                   <Key size={24} strokeWidth={1.5} />
                 </div>
                 <div>
@@ -86,15 +86,15 @@ export default function RoleSelection() {
                   <p className="text-gray-500 text-sm font-medium">Monitor properties & payouts</p>
                 </div>
               </div>
-              <ArrowRight className="text-gray-300 group-hover:text-orange-600 transition" />
+              <ArrowRight className="text-gray-300 group-hover:text-orange-600 transition-colors duration-300" />
             </button>
 
             <button 
               onClick={() => handleSelectRole('FUNDER')}
-              className="bg-white p-5 rounded-[1.5rem] shadow-[0_4px_15px_-5px_rgba(0,0,0,0.05)] border border-white hover:border-purple-300 hover:shadow-purple-200 transition group flex items-center justify-between text-left"
+              className="bg-white p-5 rounded-[1.5rem] shadow-lg hover:shadow-xl hover:-translate-y-1 transform border border-transparent hover:border-emerald-300 transition-all duration-300 group flex items-center justify-between text-left"
             >
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition">
+                <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
                   <Layers size={24} strokeWidth={1.5} />
                 </div>
                 <div>
@@ -102,7 +102,7 @@ export default function RoleSelection() {
                   <p className="text-gray-500 text-sm font-medium">Fund rent pools for ROI</p>
                 </div>
               </div>
-              <ArrowRight className="text-gray-300 group-hover:text-emerald-600 transition" />
+              <ArrowRight className="text-gray-300 group-hover:text-emerald-600 transition-colors duration-300" />
             </button>
 
           </div>

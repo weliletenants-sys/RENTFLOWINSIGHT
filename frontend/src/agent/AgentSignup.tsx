@@ -54,7 +54,7 @@ export default function AgentSignup() {
   };
 
   return (
-    <div className="min-h-screen bg-[#4A3AFF] sm:p-4 flex justify-center items-center relative overflow-hidden">
+    <div className="min-h-screen bg-[#4A3AFF] sm:p-8 flex justify-center items-center relative overflow-hidden font-sans">
       <div className="absolute inset-0 opacity-20 pointer-events-none flex justify-center items-center">
         <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" className="w-[150vw] h-[150vh]">
            <path d="M0,500 Q250,300 500,500 T1000,500" stroke="white" strokeWidth="2" fill="none"/>
@@ -62,9 +62,9 @@ export default function AgentSignup() {
         </svg>
       </div>
 
-      <div className="w-full min-h-screen bg-[#F8F9FA] relative flex flex-col shadow-2xl overflow-hidden z-10">
+      <div className="w-full sm:max-w-xl min-h-screen sm:min-h-0 sm:h-[90vh] bg-white relative flex flex-col shadow-2xl sm:rounded-[2rem] overflow-hidden z-10">
 
-        <div className="flex-1 flex flex-col pt-16 px-8 relative z-10 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="flex-1 flex flex-col pt-12 sm:pt-16 px-6 sm:px-10 pb-6 relative z-10 overflow-y-auto custom-scrollbar">
           
           <div className="text-center mb-8 shrink-0">
             <div className="w-16 h-16 bg-gradient-to-br from-[#4A3AFF] to-[#2B1B99] rounded-[1.2rem] mx-auto mb-4 flex items-center justify-center shadow-lg shadow-blue-500/30">

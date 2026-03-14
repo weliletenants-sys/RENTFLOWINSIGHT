@@ -73,7 +73,7 @@ export default function WelcomePage() {
     <div className="min-h-screen bg-[#351A82] sm:p-4 flex justify-center items-center relative overflow-hidden text-white font-sans">
       <div className="w-full min-h-screen bg-[#351A82] relative flex flex-col overflow-hidden z-10">
 
-        <div className="flex-1 flex flex-col px-6 pt-16 pb-10 relative z-20 h-full">
+        <div className="flex-1 flex flex-col px-6 pt-16 pb-10 relative z-20 h-full w-full max-w-xl mx-auto justify-center">
           
           <div className="text-center z-30 mb-8 mt-4 animate-fade-in relative">
             <h1 className="text-[34px] font-black mb-3 text-white tracking-tight drop-shadow-md">Welcome to Welile</h1>

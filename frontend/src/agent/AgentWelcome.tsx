@@ -51,19 +51,19 @@ export default function AgentWelcome() {
   };
 
   return (
-    <div className="min-h-screen bg-[#351A82] sm:p-4 flex justify-center items-center relative overflow-hidden text-white font-sans">
-      <div className="w-full min-h-screen bg-[#351A82] relative flex flex-col shadow-2xl overflow-hidden z-10">
+    <div className="min-h-screen bg-[#F8F9FA] sm:p-8 flex justify-center items-center relative overflow-hidden font-sans">
+      <div className="w-full sm:max-w-xl min-h-screen sm:min-h-0 sm:h-[85vh] bg-[#351A82] relative flex flex-col shadow-2xl sm:rounded-[2rem] overflow-hidden z-10">
 
-        <div className="flex-1 flex flex-col px-6 pt-16 pb-10 relative z-20 h-full">
+        <div className="flex-1 flex flex-col px-6 pt-12 sm:pt-16 pb-10 relative z-20 h-full overflow-y-auto custom-scrollbar">
           
-          <div className="text-center z-30 mb-6 mt-2 animate-fade-in relative text-white">
+          <div className="text-center z-30 mb-8 sm:mb-12 mt-2 animate-fade-in relative text-white">
             <h1 className="text-[34px] font-black mb-3 tracking-tight drop-shadow-md">Welile Agents</h1>
             <p className="text-white/90 text-[15px] font-medium max-w-[280px] mx-auto leading-relaxed drop-shadow">
               Earn by connecting businesses and people to Welile services.
             </p>
           </div>
 
-          <div className="flex-1 flex items-center justify-center relative w-full mt-2">
+          <div className="flex-1 flex items-center justify-center relative w-full mb-8">
             
             {/* The Animated "Phone" Screen */}
             <div className="relative w-[180px] h-[320px] bg-gradient-to-b from-[#8155E8] to-[#4A3AFF] rounded-[32px] border-[6px] border-[#9273F6]/40 shadow-[0_0_50px_rgba(74,58,255,0.5)] flex flex-col items-center justify-end overflow-hidden z-30">
@@ -117,7 +117,7 @@ export default function AgentWelcome() {
             </div>
           </div>
 
-          <div className="z-30 mt-auto pt-8 space-y-4">
+          <div className="z-30 mt-auto pt-4 space-y-4 shrink-0">
             <button 
               onClick={() => navigate('/agent-signup')} 
               className="w-full bg-white text-[#512DA8] py-[18px] rounded-full font-black text-[17px] shadow-2xl flex items-center justify-center gap-2 transition active:scale-[0.98] hover:bg-slate-50 border border-white"

@@ -73,27 +73,47 @@ export default function TenantOnboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] sm:p-4 flex justify-center items-center relative">
-      <div className="w-full min-h-screen bg-white relative flex flex-col shadow-2xl overflow-hidden z-10">
+    <div className="min-h-screen bg-[#F8F9FA] sm:p-8 flex justify-center items-center relative">
+      <div className="w-full sm:max-w-3xl min-h-screen sm:min-h-0 sm:h-[85vh] bg-white relative flex flex-col shadow-2xl sm:rounded-[2rem] overflow-hidden z-10">
 
         {/* Header */}
         <div className="pt-14 px-6 pb-4 bg-white border-b border-gray-100 flex items-center justify-between shrink-0">
-          <button onClick={step === 1 ? () => navigate('/tenant-agreement') : handleBack} className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-gray-900">
+          <button onClick={step === 1 ? () => navigate('/tenant-agreement') : handleBack} className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-gray-900 z-20">
             <ArrowLeft size={20} />
           </button>
-          <div className="flex flex-col items-center">
-            <h1 className="font-bold text-gray-900">Rent Financing</h1>
-            <p className="text-xs text-gray-500 font-medium">Step {step} of {totalSteps}</p>
-          </div>
-          <div className="w-10"></div>
-        </div>
+          
+          <div className="flex-1 flex flex-col items-center relative px-4 sm:px-12">
+            <h1 className="font-bold text-gray-900 mb-4 z-20 bg-white px-4">Rent Financing</h1>
+            
+            {/* Visual Stepper */}
+            <div className="flex items-center justify-between w-full max-w-[300px] relative">
+              {/* Connecting Lines Context */}
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[2px] w-full bg-gray-100 -z-10"></div>
+              
+              <div 
+                className="absolute left-0 top-1/2 -translate-y-1/2 h-[2px] bg-[#512DA8] -z-10 transition-all duration-300"
+                style={{ width: `${((step - 1) / (totalSteps - 1)) * 100}%` }}
+              ></div>
 
-        {/* Progress Bar */}
-        <div className="w-full bg-gray-100 h-1 shrink-0">
-          <div 
-            className="bg-[#512DA8] h-1 transition-all duration-300"
-            style={{ width: `${(step / totalSteps) * 100}%` }}
-          ></div>
+              {[1, 2, 3, 4].map((s) => (
+                <div key={s} className="relative z-10 flex flex-col items-center">
+                  <div 
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+                      s < step 
+                        ? 'bg-[#10B981] text-white shadow-md ring-4 ring-white' 
+                        : s === step 
+                          ? 'bg-[#512DA8] text-white shadow-md ring-4 ring-white' 
+                          : 'bg-white text-gray-400 border-2 border-gray-200'
+                    }`}
+                  >
+                    {s < step ? <Check size={16} strokeWidth={3} /> : s}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="w-10 z-20"></div>
         </div>
 
         {/* Content */}

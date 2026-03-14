@@ -17,7 +17,7 @@ export default function LandingPage() {
 
       <div className="w-full min-h-screen bg-gradient-to-b from-[#673AB7] to-[#512DA8] relative flex flex-col overflow-hidden z-10">
 
-        <div className="flex-1 overflow-y-auto px-6 pt-20 pb-12 relative z-10 flex flex-col justify-between scrollbar-hide">
+        <div className="flex-1 w-full max-w-2xl mx-auto overflow-y-auto px-6 pt-20 pb-12 relative z-10 flex flex-col justify-between scrollbar-hide">
           
           <div>
             <div className="w-16 h-16 bg-white/10 backdrop-blur-xl rounded-[1.2rem] flex items-center justify-center mb-6 border border-white/20 shadow-xl">

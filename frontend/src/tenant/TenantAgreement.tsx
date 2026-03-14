@@ -17,56 +17,59 @@ export default function TenantAgreement() {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] sm:p-4 flex justify-center items-center relative overflow-hidden">
-      <div className="w-full min-h-screen bg-white relative flex flex-col shadow-2xl overflow-hidden z-10">
+      <div className="w-full min-h-screen bg-[#F8F9FA] relative flex flex-col overflow-hidden z-10">
 
-        <div className="flex-1 flex flex-col pt-16 px-6 pb-8 relative z-10">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-              <FileText className="text-purple-600" size={24} />
-            </div>
-            <h1 className="text-xl font-bold text-gray-900">Tenant Agreement</h1>
-          </div>
-
-          <div className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl p-4 overflow-y-auto w-full text-sm text-gray-700 leading-relaxed space-y-4 shadow-inner mb-6">
-            <h2 className="font-bold text-gray-900">1. Financing Terms</h2>
-            <p>
-              By proceeding, you acknowledge that Welile is financing your rent on a short-term basis. You agree to repay the advanced rent plus a marketplace access fee.
-            </p>
-            <h2 className="font-bold text-gray-900">2. Daily Repayment</h2>
-            <p>
-              Repayments are deducted daily starting the day after rent is disbursed. Failure to maintain sufficient wallet balance will trigger fallback deductions to your linked Agent.
-            </p>
-            <h2 className="font-bold text-gray-900">3. Privacy Policy</h2>
-            <p>
-              We collect identity information strictly for risk assessment and fraud prevention. We do not sell your data to third parties.
-            </p>
-            <p>
-              Please read our full Terms of Service at welile.com/terms for complete details.
-            </p>
-          </div>
-
-          <div className="mt-auto">
-            <label className="flex items-start gap-3 mb-6 cursor-pointer group">
-              <div className="relative flex items-center justify-center mt-0.5">
-                <input 
-                  type="radio" 
-                  checked={agreed} 
-                  onChange={() => setAgreed(!agreed)}
-                  className="w-5 h-5 text-purple-600 border-gray-300 focus:ring-purple-500 rounded-full cursor-pointer accent-[#512DA8]" 
-                />
+        <div className="flex-1 flex flex-col justify-center px-4 sm:px-8 py-10 relative z-10 overflow-y-auto w-full max-w-3xl mx-auto">
+          
+          <div className="bg-white p-8 sm:p-10 rounded-[2rem] shadow-xl shadow-purple-500/5 flex flex-col h-full max-h-[85vh]">
+            <div className="flex items-center gap-3 mb-6 shrink-0">
+              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                <FileText className="text-purple-600" size={24} />
               </div>
-              <span className="text-sm text-gray-600 group-hover:text-gray-900 transition">
-                I have read and agree to the Tenant Financing Terms and Privacy Policy.
-              </span>
-            </label>
+              <h1 className="text-xl font-bold text-gray-900">Tenant Agreement</h1>
+            </div>
 
-            <button 
-              onClick={handleContinue}
-              disabled={!agreed}
-              className={`w-full py-4 rounded-[1.2rem] font-bold text-[16px] shadow-lg flex items-center justify-center gap-2 transition ${agreed ? 'bg-[#512DA8] hover:bg-[#412387] text-white active:scale-[0.98]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
-            >
-              Continue to Application <ArrowRight size={20} strokeWidth={2} />
-            </button>
+            <div className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl p-6 overflow-y-auto w-full text-sm text-gray-700 leading-relaxed space-y-4 shadow-inner mb-6 custom-scrollbar">
+              <h2 className="font-bold text-gray-900">1. Financing Terms</h2>
+              <p>
+                By proceeding, you acknowledge that Welile is financing your rent on a short-term basis. You agree to repay the advanced rent plus a marketplace access fee.
+              </p>
+              <h2 className="font-bold text-gray-900 mt-6">2. Daily Repayment</h2>
+              <p>
+                Repayments are deducted daily starting the day after rent is disbursed. Failure to maintain sufficient wallet balance will trigger fallback deductions to your linked Agent.
+              </p>
+              <h2 className="font-bold text-gray-900 mt-6">3. Privacy Policy</h2>
+              <p>
+                We collect identity information strictly for risk assessment and fraud prevention. We do not sell your data to third parties.
+              </p>
+              <p className="mt-4 italic">
+                Please read our full Terms of Service at welile.com/terms for complete details.
+              </p>
+            </div>
+
+            <div className="mt-auto shrink-0 pt-2">
+              <label className="flex items-start gap-3 mb-6 cursor-pointer group">
+                <div className="relative flex items-center justify-center mt-0.5">
+                  <input 
+                    type="radio" 
+                    checked={agreed} 
+                    onChange={() => setAgreed(!agreed)}
+                    className="w-5 h-5 text-purple-600 border-gray-300 focus:ring-purple-500 rounded-full cursor-pointer accent-[#512DA8]" 
+                  />
+                </div>
+                <span className="text-sm text-gray-600 group-hover:text-gray-900 transition font-medium">
+                  I have read and agree to the Tenant Financing Terms and Privacy Policy.
+                </span>
+              </label>
+
+              <button 
+                onClick={handleContinue}
+                disabled={!agreed}
+                className={`w-full py-4 rounded-[1.2rem] font-bold text-[16px] shadow-lg flex items-center justify-center gap-2 transition ${agreed ? 'bg-[#512DA8] hover:bg-[#412387] text-white active:scale-[0.98]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+              >
+                Continue to Application <ArrowRight size={20} strokeWidth={2} />
+              </button>
+            </div>
           </div>
         </div>
       </div>
