@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { ArrowLeft, Check, Upload, Camera, Shield, Home, TrendingUp, Banknote, Repeat, ChevronRight } from 'lucide-react';
 import { useCurrency, formatCurrencyCompact } from '../utils/currency';
 
@@ -195,71 +195,153 @@ function ProjectionBar({ label, value, max, color }: { label: string; value: num
   );
 }
 
+// ─── CountUp ─────────────────────────────────────────────────────────────────
+function CountUp({ to, suffix = '', duration = 1400 }: { to: number; suffix?: string; duration?: number }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLParagraphElement>(null);
+  const inView = useInView(ref, { once: true, margin: '-40px' });
+
+  useEffect(() => {
+    if (!inView) return;
+    const start = performance.now();
+    let raf: number;
+    const step = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      // ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.round(eased * to));
+      if (progress < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [inView, to, duration]);
+
+  return (
+    <p ref={ref} className="text-base font-black text-gray-900 leading-none">
+      {count.toLocaleString()}{suffix}
+    </p>
+  );
+}
+
 // ─── Steps ───────────────────────────────────────────────────────────────────
 
 function Step1({ form, setForm }: { form: FormState; setForm: React.Dispatch<React.SetStateAction<FormState>> }) {
+  const cards = [
+    {
+      icon: Home,
+      title: 'You Fund the Rent',
+      body: 'Your capital enters the Rent Management Pool. Welile deploys it to pay landlords on behalf of verified tenants.',
+      highlight: false,
+    },
+    {
+      icon: Banknote,
+      title: '15% Monthly, Every 30 Days',
+      body: 'You earn 15% of your active contribution each month, credited to your wallet automatically on a strict 30-day cycle.',
+      highlight: true,
+    },
+    {
+      icon: Shield,
+      title: 'Fully Managed by Welile',
+      body: 'We verify tenants, manage collections, and handle all repayments. You see anonymised Virtual Houses, never personal details.',
+      highlight: false,
+    },
+  ];
+
   return (
-    <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6">
-      <motion.div variants={fadeUp} className="text-center">
-        <div className="w-14 h-14 rounded-2xl bg-[#9234EA] flex items-center justify-center mx-auto mb-5">
-          <Shield size={26} className="text-white" strokeWidth={1.5} />
+    <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-7">
+
+      {/* ── Hero ─────────────────────────────────────────────── */}
+      <motion.div variants={fadeUp} className="pt-2">
+        {/* Small decorative badge   NOT the focal point */}
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-8 h-8 rounded-xl bg-[#9234EA]/10 flex items-center justify-center">
+            <Shield size={16} className="text-[#9234EA]" strokeWidth={1.75} />
+          </div>
+          <span className="text-xs font-bold text-[#9234EA] tracking-wide uppercase">Welile Housing Partner</span>
         </div>
-        <h2 className="text-2xl font-black text-gray-900 tracking-tight leading-tight">
-          You Make Homes<br />Possible
+
+        {/* Headline   dominant focal point */}
+        <h2 className="text-[28px] font-black text-gray-900 tracking-tight leading-[1.15]">
+          Put Your Money<br />
+          <span className="text-[#9234EA]">to Work for Families.</span>
         </h2>
-        <p className="text-sm text-gray-400 mt-2 leading-relaxed max-w-xs mx-auto">
-          As a Welile Partner, your contribution powers rent for verified families across Uganda.
+
+        {/* Subtext */}
+        <p className="text-[13.5px] text-gray-500 mt-3 leading-relaxed">
+          You contribute capital. Welile pays rent for verified tenants, manages collections, and credits your wallet every 30 days. You don't manage anything.
         </p>
       </motion.div>
 
+      {/* ── Value Cards ──────────────────────────────────────── */}
       <motion.div variants={fadeUp} className="space-y-3">
-        {[
-          {
-            icon: Home,
-            title: 'Fund Housing',
-            body: 'Your contribution covers rent for real, verified tenants who need it most.',
-          },
-          {
-            icon: Banknote,
-            title: 'Earn Monthly Rewards',
-            body: 'Receive participation rewards every 30 days on your active contribution.',
-          },
-          {
-            icon: Shield,
-            title: 'We Handle Everything',
-            body: 'Welile manages all verification, collections, and repayments   no stress on your end.',
-          },
-        ].map(({ icon: Icon, title, body }) => (
-          <div key={title} className="flex items-start gap-4 bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
-            <div className="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center shrink-0 text-[#9234EA]">
+        {cards.map(({ icon: Icon, title, body, highlight }) => (
+          <div
+            key={title}
+            className={`relative flex items-start gap-4 rounded-2xl p-4 border transition-all ${
+              highlight
+                ? 'bg-[#F3F0FF] border-[#9234EA]/25 shadow-sm shadow-purple-100'
+                : 'bg-white border-gray-100 shadow-sm'
+            }`}
+          >
+            {/* Verified badge on highlighted card */}
+            {highlight && (
+              <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[#9234EA] flex items-center justify-center shadow-md shadow-purple-200">
+                <Check size={12} className="text-white" strokeWidth={3} />
+              </div>
+            )}
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+              highlight ? 'bg-[#9234EA] text-white' : 'bg-purple-50 text-[#9234EA]'
+            }`}>
               <Icon size={17} strokeWidth={1.75} />
             </div>
-            <div>
-              <p className="text-sm font-bold text-gray-800">{title}</p>
-              <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">{body}</p>
+            <div className="flex-1 min-w-0">
+              <p className={`text-sm font-bold ${highlight ? 'text-[#9234EA]' : 'text-gray-800'}`}>{title}</p>
+              <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{body}</p>
             </div>
           </div>
         ))}
       </motion.div>
 
+      {/* ── Trust stat counters ───────────────────────────────── */}
+      <motion.div variants={fadeUp} className="grid grid-cols-3 gap-3">
+        {[
+          { icon: Home,     to: 1200, suffix: '+', label: 'Homes Supported'    },
+          { icon: Banknote, to: 15,   suffix: '%', label: 'Average ROI'     },
+          { icon: Shield,   to: 30,   suffix:  'd', label: 'Payout Cycle'    },
+        ].map(({ icon: Icon, to, suffix, label }) => (
+          <div key={label} className="flex flex-col items-center gap-1.5 bg-white border border-gray-100 rounded-2xl py-3 px-2 shadow-sm">
+            <div className="w-7 h-7 rounded-xl bg-purple-50 flex items-center justify-center text-[#9234EA]">
+              <Icon size={14} strokeWidth={1.75} />
+            </div>
+            <CountUp to={to} suffix={suffix} />
+            <p className="text-[10px] text-gray-400 font-medium text-center leading-tight">{label}</p>
+          </div>
+        ))}
+      </motion.div>
+
+      {/* ── Consent checkbox ─────────────────────────────────── */}
       <motion.label
         variants={fadeUp}
-        className="flex items-start gap-3 bg-purple-50 border border-purple-100 rounded-xl p-4 cursor-pointer"
+        className="flex items-start gap-3 bg-gray-50 border border-gray-100 rounded-xl p-4 cursor-pointer"
       >
         <div
-          className={`w-5 h-5 rounded border-2 shrink-0 mt-0.5 flex items-center justify-center transition-colors ${form.understoodRole ? 'bg-[#9234EA] border-[#9234EA]' : 'border-gray-300'
-            }`}
+          className={`w-5 h-5 rounded border-2 shrink-0 mt-0.5 flex items-center justify-center transition-colors ${
+            form.understoodRole ? 'bg-[#9234EA] border-[#9234EA]' : 'border-gray-300'
+          }`}
           onClick={() => setForm(p => ({ ...p, understoodRole: !p.understoodRole }))}
         >
           {form.understoodRole && <Check size={11} className="text-white" strokeWidth={3} />}
         </div>
-        <p className="text-[13px] text-gray-600 font-medium leading-snug">
-          I understand I am a housing contributor   Welile manages all tenant relationships on my behalf.
+        <p className="text-[12.5px] text-gray-500 leading-snug">
+          I understand I am a capital facilitator, not a lender.
+Welile manages tenant relationships, collections, and monthly payouts.
         </p>
       </motion.label>
+
     </motion.div>
   );
 }
+
 
 // ─── Investment Projection Graph ─────────────────────────────────────────────
 const MONTHS = 12;

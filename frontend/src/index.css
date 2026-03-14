@@ -115,5 +115,6 @@
   }
   body {
     @apply bg-background text-foreground tracking-tight;
+    font-family: 'Inter', sans-serif;
   }
 }
