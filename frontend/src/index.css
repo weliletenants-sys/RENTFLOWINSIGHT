@@ -1,3 +1,4 @@
+@import "./styles/colors.css";
 @import "tailwindcss";
 @plugin 'tailwindcss-animate';
 
@@ -65,7 +66,7 @@
 @layer base {
   :root {
     --background: #f4f0ff;
-    --foreground: 0 0% 3.9%;
+    --foreground: 240 20% 14%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
