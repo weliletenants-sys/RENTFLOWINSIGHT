@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Check, Upload, Camera, Shield, Home, TrendingUp, Banknote, Repeat, ChevronRight } from 'lucide-react';
+import { useCurrency, formatCurrencyCompact } from '../utils/currency';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type InvestPath = 'tenant' | 'pool' | null;
@@ -275,15 +276,14 @@ function buildPoints(mode: 'tenant' | 'pool', principal: number): number[] {
   return pts;
 }
 
-function fmtUGX(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
-  return `${Math.round(n)}`;
-}
+
 
 function InvestmentGraph({ mode }: { mode: 'tenant' | 'pool' }) {
   const [hovered, setHovered] = useState<number | null>(null);
   const [rawInput, setRawInput] = useState('1,000,000');
+
+  // Detect currency via IP geolocation (updates async, starts with UGX)
+  const currency = useCurrency();
 
   // Parse the raw input to a usable number (strip commas)
   const principal = Math.max(10_000, Number(rawInput.replace(/,/g, '')) || PRINCIPAL);
@@ -336,7 +336,7 @@ function InvestmentGraph({ mode }: { mode: 'tenant' | 'pool' }) {
           </p>
           {/* Inline amount calculator */}
           <div className="flex items-center gap-1.5 mt-1.5 bg-purple-50 border border-purple-100 rounded-xl px-3 py-1.5">
-            <span className="text-[11px] font-bold text-[#9234EA] shrink-0">UGX</span>
+            <span className="text-[11px] font-bold text-[#9234EA] shrink-0">{currency.symbol}</span>
             <input
               type="text"
               inputMode="numeric"
@@ -424,7 +424,7 @@ function InvestmentGraph({ mode }: { mode: 'tenant' | 'pool' }) {
                 <g transform={`translate(${Math.min(xOf(i) + 6, W - 82)},${Math.max(yOf(v) - 28, PAD.top)})`}>
                   <rect width="78" height="22" rx="6" fill={color} />
                   <text x="39" y="14" textAnchor="middle" fontSize="9" fill="white" fontWeight="700">
-                    {fmtUGX(v)} UGX
+                    {formatCurrencyCompact(v, currency)}
                   </text>
                 </g>
               </g>
@@ -439,7 +439,7 @@ function InvestmentGraph({ mode }: { mode: 'tenant' | 'pool' }) {
           <p className="text-[10px] text-gray-400">After 12 months</p>
           <p className="text-[10px] text-gray-400 mt-0.5">
             {mode === 'tenant'
-              ? `+UGX ${fmtUGX(principal * 0.15)} / mo reward`
+              ? `+${formatCurrencyCompact(principal * 0.15, currency)} / mo reward`
               : `${((points[MONTHS] / principal - 1) * 100).toFixed(0)}% total growth`
             }
           </p>
@@ -450,7 +450,7 @@ function InvestmentGraph({ mode }: { mode: 'tenant' | 'pool' }) {
           animate={{ opacity: 1, scale: 1 }}
           className="text-base font-black text-[#9234EA]"
         >
-          UGX {fmtUGX(points[MONTHS])}
+          {formatCurrencyCompact(points[MONTHS], currency)}
         </motion.p>
       </div>
     </motion.div>
