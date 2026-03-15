@@ -799,68 +799,56 @@ export default function FunderOnboarding() {
         </AnimatePresence>
       </div>
 
-      {/* Footer CTA — slides up when step is valid */}
-      <AnimatePresence>
-        {valid && (
-          <motion.div
-            key={`footer-${step}`}
-            initial={{ y: 80, opacity: 0 }}
-            animate={{ y: 0, opacity: 1, transition: { type: 'spring', stiffness: 320, damping: 28 } }}
-            exit={{ y: 80, opacity: 0, transition: { duration: 0.18 } }}
-            className="px-5 pb-8 pt-4 bg-white border-t border-gray-100 shrink-0"
-          >
-            <motion.button
-              onClick={handleNext}
-              disabled={isSubmitting}
-              whileTap={!isSubmitting ? { scale: 0.98 } : {}}
-              className={`w-full py-4 rounded-2xl font-bold text-[15px] flex items-center justify-center gap-2 transition-all duration-200 ${
-                step === TOTAL
-                  ? isSubmitting
-                    ? 'bg-emerald-400 text-white cursor-not-allowed opacity-80'
-                    : 'bg-emerald-500 text-white shadow-sm hover:bg-emerald-600'
-                  : 'bg-[#9234EA] text-white shadow-sm hover:bg-[#7B2AC5]'
-              }`}
-            >
-              {step === TOTAL ? (
-                isSubmitting ? (
-                  <>
-                    <svg className="animate-spin h-[18px] w-[18px] text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-                      <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                    </svg>
-                    Creating Account…
-                  </>
-                ) : (
-                  <>Create Account <Check size={18} strokeWidth={2.5} /></>
-                )
-              ) : (
-                <>Continue <ChevronRight size={18} strokeWidth={2.5} /></>
-              )}
-            </motion.button>
-            <p className="text-center text-[11px] text-gray-400 mt-3">
-              Step {step} of {TOTAL} · {STEP_LABELS[step - 1]}
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
-      {/* Hint when button is hidden on Step 1 */}
-      <AnimatePresence>
-        {!valid && step === 1 && (
-          <motion.div
-            key="hint"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="pb-8 pt-4 flex flex-col items-center gap-1"
-          >
-            <div className="w-6 h-6 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center animate-pulse">
-              <ChevronRight size={12} className="text-gray-400" />
-            </div>
-            <p className="text-[11px] text-gray-400 font-medium">Read &amp; confirm above to continue</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Footer CTA — always visible; disabled until step requirements are met */}
+      <div className="px-5 pb-8 pt-4 bg-white border-t border-gray-100 shrink-0">
+
+        <motion.button
+          onClick={valid && !isSubmitting ? handleNext : undefined}
+          disabled={!valid || isSubmitting}
+          whileTap={valid && !isSubmitting ? { scale: 0.98 } : {}}
+          animate={{ opacity: valid ? 1 : 0.55 }}
+          transition={{ duration: 0.2 }}
+          className={`w-full py-4 rounded-2xl font-bold text-[15px] flex items-center justify-center gap-2 transition-all duration-200 ${
+            !valid
+              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              : step === TOTAL
+                ? isSubmitting
+                  ? 'bg-emerald-400 text-white cursor-not-allowed'
+                  : 'bg-emerald-500 text-white shadow-sm hover:bg-emerald-600'
+                : 'bg-[#9234EA] text-white shadow-sm hover:bg-[#7B2AC5]'
+          }`}
+        >
+          {!valid ? (
+            // Locked state — show what's missing
+            <>
+              <Lock size={16} strokeWidth={2} />
+              {step === 1 && 'Confirm above to continue'}
+              {step === 2 && 'Choose a contribution style'}
+              {step === 3 && 'Fill in all fields to continue'}
+            </>
+          ) : step === TOTAL ? (
+            isSubmitting ? (
+              <>
+                <svg className="animate-spin h-[18px] w-[18px] text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                  <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                </svg>
+                Creating Account…
+              </>
+            ) : (
+              <>Create Account <Check size={18} strokeWidth={2.5} /></>
+            )
+          ) : (
+            <>Continue <ChevronRight size={18} strokeWidth={2.5} /></>
+          )}
+        </motion.button>
+
+        <p className="text-center text-[11px] text-gray-400 mt-3">
+          Step {step} of {TOTAL} · {STEP_LABELS[step - 1]}
+        </p>
+      </div>
+
     </div>
   );
 }
