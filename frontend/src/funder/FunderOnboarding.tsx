@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import {
-  ArrowLeft, Check, Shield, Home, TrendingUp, Banknote,
+  ArrowLeft, Check, X, Shield, Home, TrendingUp, Banknote,
   ChevronRight, BadgeCheck, Eye, EyeOff, Mail, Phone, Lock,
 } from 'lucide-react';
 import { useCurrency, formatCurrencyCompact } from '../utils/currency';
@@ -468,7 +468,7 @@ function Step2({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
   );
 }
 
-// ─── Step 3 — Register ────────────────────────────────────────────────────────
+// ─── Step 3 — Register (Fintech UI) ──────────────────────────────────────────
 function Step3({ form, setForm }: { form: FormState; setForm: React.Dispatch<React.SetStateAction<FormState>> }) {
   const [showPw, setShowPw] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -477,116 +477,153 @@ function Step3({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
   const passwordsMatch = form.password === form.confirmPassword;
 
   return (
-    <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6">
+    <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-5">
 
-      {/* Hero */}
-      <motion.div variants={fadeUp}>
-        <h2 className="text-2xl font-black text-gray-900 tracking-tight leading-tight">
-          Create Your<br />Account
-        </h2>
-        <p className="text-sm text-gray-400 mt-2">You're seconds away from your first contribution.</p>
+      {/* ── Secure Header Card ── */}
+      <motion.div
+        variants={fadeUp}
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1C1433] via-[#261B4A] to-[#1C1433] px-5 py-4"
+      >
+        {/* subtle grid texture */}
+        <div
+          className="absolute inset-0 opacity-[0.06] pointer-events-none"
+          style={{
+            backgroundImage:
+              'linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)',
+            backgroundSize: '24px 24px',
+          }}
+        />
+        <div className="relative z-10 flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-black text-purple-400 uppercase tracking-[0.15em] mb-0.5">Secure Registration</p>
+            <h2 className="text-[22px] font-black text-white tracking-tight leading-snug">
+              Create Your<br />Funder Account
+            </h2>
+          </div>
+          {/* Lock badge */}
+          <div className="flex flex-col items-center gap-1">
+            <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center">
+              <Shield size={20} className="text-purple-300" strokeWidth={1.75} />
+            </div>
+            <span className="text-[9px] text-purple-400 font-bold">256-BIT</span>
+          </div>
+        </div>
+        {/* Trust badges row */}
+        <div className="relative z-10 flex items-center gap-2 mt-3">
+          {[
+            { icon: Lock, label: 'Encrypted' },
+            { icon: Shield, label: 'KYC Ready' },
+            { icon: BadgeCheck, label: 'Regulated' },
+          ].map(({ icon: Icon, label }) => (
+            <div key={label} className="flex items-center gap-1 bg-white/10 border border-white/15 rounded-lg px-2 py-1">
+              <Icon size={10} className="text-purple-300" strokeWidth={2} />
+              <span className="text-[9px] font-bold text-purple-200">{label}</span>
+            </div>
+          ))}
+        </div>
       </motion.div>
 
-      {/* Google SSO */}
+      {/* ── Google SSO ── */}
       <motion.div variants={fadeUp}>
         <button
           type="button"
           onClick={() => {/* Google OAuth — wire when backend ready */}}
-          className="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 rounded-2xl py-3.5 px-4 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 active:scale-[0.98]"
+          className="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 rounded-2xl py-3.5 px-4 hover:bg-gray-50 hover:border-gray-300 active:scale-[0.99] transition-all duration-150"
         >
-          {/* Google G SVG */}
-          <svg className="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <svg className="w-4.5 h-4.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05" />
             <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
           </svg>
-          <span className="text-sm font-bold text-gray-700">Continue with Google</span>
+          <span className="text-sm font-semibold text-gray-700">Continue with Google</span>
         </button>
       </motion.div>
 
-      {/* Divider */}
+      {/* ── Divider ── */}
       <motion.div variants={fadeUp} className="flex items-center gap-3">
         <div className="flex-1 h-px bg-gray-100" />
-        <span className="text-[11px] text-gray-400 font-medium">or create an account</span>
+        <span className="text-[11px] text-gray-400 font-medium tracking-wide uppercase">or email</span>
         <div className="flex-1 h-px bg-gray-100" />
       </motion.div>
 
-      {/* Form Fields */}
-      <motion.div variants={fadeUp} className="space-y-3">
-
+      {/* ── Form card ── */}
+      <motion.div
+        variants={fadeUp}
+        className="bg-white border border-gray-100 rounded-2xl p-4 space-y-3"
+      >
         {/* Email */}
-        <div className="relative">
-          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-            <Mail size={16} strokeWidth={1.75} />
+        <div className="space-y-1">
+          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Email</label>
+          <div className="relative">
+            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+              <Mail size={15} strokeWidth={1.75} />
+            </div>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              value={form.email}
+              onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-3 text-sm text-gray-900 placeholder:text-gray-300 outline-none focus:bg-white focus:border-[#9234EA] focus:ring-2 focus:ring-[#9234EA]/10 transition-all"
+            />
           </div>
-          <input
-            type="email"
-            placeholder="Email address"
-            value={form.email}
-            onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-            className="w-full bg-white border border-gray-200 rounded-2xl pl-10 pr-4 py-3.5 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#9234EA] focus:ring-2 focus:ring-[#9234EA]/10 transition-all"
-          />
         </div>
 
         {/* Phone */}
-        <div className="relative">
-          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-            <Phone size={16} strokeWidth={1.75} />
-          </div>
-          <input
-            type="tel"
-            placeholder="Phone number"
-            value={form.phone}
-            onChange={e => setForm(p => ({ ...p, phone: e.target.value }))}
-            className="w-full bg-white border border-gray-200 rounded-2xl pl-10 pr-4 py-3.5 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#9234EA] focus:ring-2 focus:ring-[#9234EA]/10 transition-all"
-          />
-        </div>
-
-        {/* Password */}
-        <div>
+        <div className="space-y-1">
+          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Phone</label>
           <div className="relative">
             <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-              <Lock size={16} strokeWidth={1.75} />
+              <Phone size={15} strokeWidth={1.75} />
+            </div>
+            <input
+              type="tel"
+              placeholder="+256 700 000 000"
+              value={form.phone}
+              onChange={e => setForm(p => ({ ...p, phone: e.target.value }))}
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-3 text-sm text-gray-900 placeholder:text-gray-300 outline-none focus:bg-white focus:border-[#9234EA] focus:ring-2 focus:ring-[#9234EA]/10 transition-all"
+            />
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="h-px bg-gray-100" />
+
+        {/* Password */}
+        <div className="space-y-1">
+          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Password</label>
+          <div className="relative">
+            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+              <Lock size={15} strokeWidth={1.75} />
             </div>
             <input
               type={showPw ? 'text' : 'password'}
-              placeholder="Password (min. 8 characters)"
+              placeholder="Min. 8 characters"
               value={form.password}
               onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
-              className="w-full bg-white border border-gray-200 rounded-2xl pl-10 pr-11 py-3.5 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-[#9234EA] focus:ring-2 focus:ring-[#9234EA]/10 transition-all"
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-11 py-3 text-sm text-gray-900 placeholder:text-gray-300 outline-none focus:bg-white focus:border-[#9234EA] focus:ring-2 focus:ring-[#9234EA]/10 transition-all"
             />
-            <button
-              type="button"
-              onClick={() => setShowPw(v => !v)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            <button type="button" onClick={() => setShowPw(v => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-0.5"
             >
-              {showPw ? <EyeOff size={16} strokeWidth={1.75} /> : <Eye size={16} strokeWidth={1.75} />}
+              {showPw ? <EyeOff size={15} strokeWidth={1.75} /> : <Eye size={15} strokeWidth={1.75} />}
             </button>
           </div>
-
           {/* Strength meter */}
           <AnimatePresence>
             {strength && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mt-2 overflow-hidden"
-              >
-                <div className="flex gap-1 mb-1">
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden px-1">
+                <div className="flex gap-1 mt-1.5 mb-1">
                   {[0, 1, 2, 3].map(i => (
-                    <motion.div
-                      key={i}
-                      className="flex-1 h-1 rounded-full"
+                    <motion.div key={i} className="flex-1 h-[3px] rounded-full"
                       animate={{ backgroundColor: i < strength.score ? strength.color : '#E5E7EB' }}
                       transition={{ duration: 0.3 }}
                     />
                   ))}
                 </div>
-                <p className="text-[11px] font-bold" style={{ color: strength.color }}>
+                <p className="text-[10px] font-bold" style={{ color: strength.color }}>
                   {strength.label}
-                  {strength.score < 4 && <span className="text-gray-400 font-normal"> — add uppercase, numbers, or symbols</span>}
+                  {strength.score < 4 && <span className="text-gray-400 font-normal"> — use uppercase, numbers &amp; symbols</span>}
                 </p>
               </motion.div>
             )}
@@ -594,47 +631,45 @@ function Step3({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
         </div>
 
         {/* Confirm Password */}
-        <div>
+        <div className="space-y-1">
+          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Confirm Password</label>
           <div className="relative">
             <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-              <Lock size={16} strokeWidth={1.75} />
+              <Lock size={15} strokeWidth={1.75} />
             </div>
             <input
               type={showConfirm ? 'text' : 'password'}
-              placeholder="Confirm password"
+              placeholder="Re-enter password"
               value={form.confirmPassword}
               onChange={e => setForm(p => ({ ...p, confirmPassword: e.target.value }))}
-              className={`w-full bg-white border rounded-2xl pl-10 pr-11 py-3.5 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-all focus:ring-2 ${
+              className={`w-full bg-gray-50 border rounded-xl pl-9 pr-11 py-3 text-sm text-gray-900 placeholder:text-gray-300 outline-none focus:bg-white transition-all focus:ring-2 ${
                 form.confirmPassword.length > 0
                   ? passwordsMatch
-                    ? 'border-green-400 focus:border-green-400 focus:ring-green-100'
+                    ? 'border-emerald-400 focus:border-emerald-400 focus:ring-emerald-100'
                     : 'border-red-400 focus:border-red-400 focus:ring-red-100'
                   : 'border-gray-200 focus:border-[#9234EA] focus:ring-[#9234EA]/10'
               }`}
             />
-            <button
-              type="button"
-              onClick={() => setShowConfirm(v => !v)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            <button type="button" onClick={() => setShowConfirm(v => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-0.5"
             >
-              {showConfirm ? <EyeOff size={16} strokeWidth={1.75} /> : <Eye size={16} strokeWidth={1.75} />}
+              {showConfirm ? <EyeOff size={15} strokeWidth={1.75} /> : <Eye size={15} strokeWidth={1.75} />}
             </button>
-            {/* Match indicator */}
             {form.confirmPassword.length > 0 && (
-              <div className={`absolute right-10 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full flex items-center justify-center ${
-                passwordsMatch ? 'bg-green-500' : 'bg-red-400'
+              <div className={`absolute right-9 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full flex items-center justify-center ${
+                passwordsMatch ? 'bg-emerald-500' : 'bg-red-400'
               }`}>
-                <Check size={9} className="text-white" strokeWidth={3} />
+                {passwordsMatch
+                  ? <Check size={9} className="text-white" strokeWidth={3} />
+                  : <X size={9} className="text-white" strokeWidth={3} />
+                }
               </div>
             )}
           </div>
           <AnimatePresence>
             {form.confirmPassword.length > 0 && !passwordsMatch && (
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="text-[11px] text-red-500 font-medium mt-1"
+              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="text-[10px] text-red-500 font-semibold mt-0.5 pl-1"
               >
                 Passwords don't match
               </motion.p>
@@ -643,23 +678,26 @@ function Step3({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
         </div>
       </motion.div>
 
-      {/* Terms */}
-      <motion.label variants={fadeUp} className="flex items-start gap-3 cursor-pointer">
-        <div
-          className={`w-5 h-5 rounded border-2 shrink-0 mt-0.5 flex items-center justify-center transition-colors ${
-            form.agreedToTerms ? 'bg-[#9234EA] border-[#9234EA]' : 'border-gray-300'
-          }`}
-          onClick={() => setForm(p => ({ ...p, agreedToTerms: !p.agreedToTerms }))}
-        >
-          {form.agreedToTerms && <Check size={11} className="text-white" strokeWidth={3} />}
-        </div>
-        <p className="text-[12.5px] text-gray-500 leading-snug">
-          I agree to the Welile{' '}
-          <span className="text-[#9234EA] font-semibold underline underline-offset-2 cursor-pointer">Terms of Service</span>
-          {' '}and{' '}
-          <span className="text-[#9234EA] font-semibold underline underline-offset-2 cursor-pointer">Privacy Policy</span>.
-        </p>
-      </motion.label>
+      {/* ── Terms ── */}
+      <motion.div variants={fadeUp}>
+        <label className="flex items-start gap-3 cursor-pointer bg-gray-50 border border-gray-100 rounded-xl p-3">
+          <div
+            className={`w-5 h-5 rounded-md border-2 shrink-0 mt-0.5 flex items-center justify-center transition-all ${
+              form.agreedToTerms ? 'bg-[#9234EA] border-[#9234EA] scale-100' : 'border-gray-300'
+            }`}
+            onClick={() => setForm(p => ({ ...p, agreedToTerms: !p.agreedToTerms }))}
+          >
+            {form.agreedToTerms && <Check size={11} className="text-white" strokeWidth={3} />}
+          </div>
+          <p className="text-[12px] text-gray-500 leading-snug">
+            I agree to Welile's{' '}
+            <span className="text-[#9234EA] font-semibold">Terms of Service</span>
+            {' '}and{' '}
+            <span className="text-[#9234EA] font-semibold">Privacy Policy</span>.
+            {' '}<span className="text-gray-400">Your data is encrypted and never Exchanged.</span>
+          </p>
+        </label>
+      </motion.div>
     </motion.div>
   );
 }
@@ -684,6 +722,7 @@ const STEP_LABELS = ['Welcome', 'Invest', 'Create Account'];
 export default function FunderOnboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const TOTAL = 3;
 
   const [form, setForm] = useState<FormState>({
@@ -699,8 +738,17 @@ export default function FunderOnboarding() {
   const valid = isValid(step, form);
 
   const handleNext = () => {
-    if (step < TOTAL) setStep(s => s + 1);
-    else navigate('/funder-dashboard');
+    if (step < TOTAL) {
+      setStep(s => s + 1);
+    } else {
+      // Final step — disable button and simulate account creation
+      setIsSubmitting(true);
+      // TODO: replace timeout with real API call; on success → navigate
+      setTimeout(() => {
+        setIsSubmitting(false);
+        navigate('/funder-dashboard');
+      }, 2000);
+    }
   };
 
   const handleBack = () => {
@@ -763,15 +811,28 @@ export default function FunderOnboarding() {
           >
             <motion.button
               onClick={handleNext}
-              whileTap={{ scale: 0.97 }}
+              disabled={isSubmitting}
+              whileTap={!isSubmitting ? { scale: 0.98 } : {}}
               className={`w-full py-4 rounded-2xl font-bold text-[15px] flex items-center justify-center gap-2 transition-all duration-200 ${
                 step === TOTAL
-                  ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200 hover:bg-emerald-600'
-                  : 'bg-[#9234EA] text-white shadow-lg shadow-purple-200 hover:bg-[#7B2AC5]'
+                  ? isSubmitting
+                    ? 'bg-emerald-400 text-white cursor-not-allowed opacity-80'
+                    : 'bg-emerald-500 text-white shadow-sm hover:bg-emerald-600'
+                  : 'bg-[#9234EA] text-white shadow-sm hover:bg-[#7B2AC5]'
               }`}
             >
               {step === TOTAL ? (
-                <>Create Account <Check size={18} strokeWidth={2.5} /></>
+                isSubmitting ? (
+                  <>
+                    <svg className="animate-spin h-[18px] w-[18px] text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                      <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                    </svg>
+                    Creating Account…
+                  </>
+                ) : (
+                  <>Create Account <Check size={18} strokeWidth={2.5} /></>
+                )
               ) : (
                 <>Continue <ChevronRight size={18} strokeWidth={2.5} /></>
               )}
