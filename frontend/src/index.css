@@ -1,6 +1,9 @@
+/* Self-hosted Inter variable font — no external network request needed */
+@import "@fontsource-variable/inter";
 @import "./styles/colors.css";
 @import "tailwindcss";
 @plugin 'tailwindcss-animate';
+
 
 @custom-variant dark (&:is(.dark *));
 

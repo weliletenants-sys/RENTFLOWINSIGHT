@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -13,6 +13,29 @@ import { tenantRoutes } from './routes/tenantRoutes';
 import { funderRoutes } from './routes/funderRoutes';
 
 const queryClient = new QueryClient();
+
+// Minimal full-screen spinner shown while a lazy chunk is downloading
+function PageLoader() {
+  return (
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: '#FAFAFA',
+    }}>
+      <div style={{
+        width: 36,
+        height: 36,
+        borderRadius: '50%',
+        border: '3px solid #E8DBFC',
+        borderTopColor: '#9234EA',
+        animation: 'spin 0.7s linear infinite',
+      }} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+}
 
 class GlobalErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: any}> {
   constructor(props: any) {
@@ -42,23 +65,25 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <BrowserRouter>
-            <Routes>
-              {/* Public / auth routes */}
-              {publicRoutes}
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                {/* Public / auth routes */}
+                {publicRoutes}
 
-              {/* Role-specific routes */}
-              {agentRoutes}
-              {tenantRoutes}
-              {funderRoutes}
+                {/* Role-specific routes */}
+                {agentRoutes}
+                {tenantRoutes}
+                {funderRoutes}
 
-              {/* Protected: authenticated users only */}
-              <Route element={<ProtectedRoute />}>
-                <Route path="/dashboard/*" element={<RootDashboard />} />
-              </Route>
+                {/* Protected: authenticated users only */}
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/dashboard/*" element={<RootDashboard />} />
+                </Route>
 
-              {/* Fallback */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+                {/* Fallback */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Suspense>
           </BrowserRouter>
         </AuthProvider>
       </QueryClientProvider>
