@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import FunderInvestModal from './FunderInvestModal';
-import FunderDashboardHeader from './components/FunderDashboardHeader';
 import FunderWalletCard from './components/FunderWalletCard';
 import FunderActionButtons from './components/FunderActionButtons';
 import FunderPortfolioList from './components/FunderPortfolioList';
@@ -52,56 +51,42 @@ export default function FunderDashboard() {
   if (isLoading) return <div className="p-8 text-center text-gray-500">Loading portfolio...</div>;
 
   return (
-    <div className="bg-white min-h-screen font-sans text-slate-900 relative overflow-x-hidden">
-      <div className="flex flex-col w-full relative z-10 min-h-screen">
-        
-        <FunderDashboardHeader 
-          user={{
-            fullName: user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : 'John Doe',
-            role: 'Investor',
-            avatarUrl: ''
-          }} 
-          onAvatarClick={() => navigate('/settings')}
-        />
+    <div className="w-full flex flex-col gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="flex flex-col gap-6">
+          <FunderWalletCard 
+            balance={stats.walletBalance}
+            principal={stats.principalInvested}
+            expectedAmount={stats.expectedAmount}
+          />
 
-        <main className="flex-1 p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="flex flex-col gap-6">
-            <FunderWalletCard 
-              balance={stats.walletBalance}
-              principal={stats.principalInvested}
-              expectedAmount={stats.expectedAmount}
-            />
+          <FunderActionButtons 
+            onDeposit={() => setIsModalOpen(true)}
+            onWithdraw={() => console.log('Withdraw requested')}
+          />
+        </div>
 
-            <FunderActionButtons 
-              onDeposit={() => setIsModalOpen(true)}
-              onWithdraw={() => console.log('Withdraw requested')}
-            />
-          </div>
-
-          <div className="lg:col-span-2">
-            <FunderPortfolioList 
-              portfolios={virtualHouses}
-              onCashOut={(id) => console.log('Cashout requested for', id)}
-              onAddAsset={() => setIsModalOpen(true)}
-            />
-          </div>
-        </main>
-
-
-        <FunderInvestModal 
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          walletBalance={20000000} // Mock balance
-          onSuccess={(amount) => {
-            setStats(prev => ({
-              ...prev,
-              principalInvested: prev.principalInvested + amount,
-              expectedAmount: prev.expectedAmount + (amount * 0.15)
-            }));
-          }}
-        />
-        
+        <div className="lg:col-span-2">
+          <FunderPortfolioList 
+            portfolios={virtualHouses}
+            onCashOut={(id) => console.log('Cashout requested for', id)}
+            onAddAsset={() => setIsModalOpen(true)}
+          />
+        </div>
       </div>
+
+      <FunderInvestModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        walletBalance={20000000} // Mock balance
+        onSuccess={(amount) => {
+          setStats(prev => ({
+            ...prev,
+            principalInvested: prev.principalInvested + amount,
+            expectedAmount: prev.expectedAmount + (amount * 0.15)
+          }));
+        }}
+      />
     </div>
   );
 }

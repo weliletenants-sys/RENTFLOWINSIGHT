@@ -21,6 +21,12 @@ import AgentKYC from './agent/AgentKYC';
 import AgentKYCReview from './agent/AgentKYCReview';
 import FunderOnboarding from './funder/FunderOnboarding';
 import FunderDashboard from './funder/FunderDashboard';
+import SubAgents from './agent/SubAgents';
+import AgentEarnings from './agent/AgentEarnings';
+import AgentClients from './agent/AgentClients';
+import AgentSettings from './agent/AgentSettings';
+import TenantPayments from './tenant/TenantPayments';
+import TenantProfile from './tenant/TenantProfile';
 
 const queryClient = new QueryClient();
 
@@ -74,6 +80,12 @@ function App() {
               
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard/*" element={<RootDashboard />} />
+                <Route path="/dashboard/agent/sub-agents" element={<SubAgents />} />
+                <Route path="/dashboard/agent/earnings" element={<AgentEarnings />} />
+                <Route path="/dashboard/agent/clients" element={<AgentClients />} />
+                <Route path="/dashboard/agent/settings" element={<AgentSettings />} />
+                <Route path="/dashboard/tenant/payments" element={<TenantPayments />} />
+                <Route path="/dashboard/tenant/profile" element={<TenantProfile />} />
               </Route>
   
               <Route path="*" element={<Navigate to="/" replace />} />

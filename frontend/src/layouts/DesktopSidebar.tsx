@@ -13,7 +13,11 @@ import {
   Briefcase 
 } from 'lucide-react';
 
-export default function DesktopSidebar() {
+interface DesktopSidebarProps {
+  onClose?: () => void;
+}
+
+export default function DesktopSidebar({ onClose }: DesktopSidebarProps) {
   const { role, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -53,7 +57,7 @@ export default function DesktopSidebar() {
   const activeMenuItems = role && menuItems[role] ? menuItems[role] : [];
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 h-screen bg-[#111827] text-white fixed left-0 top-0 border-r border-[#1f2937] z-50">
+    <aside className="flex flex-col w-full h-full lg:w-64 lg:h-screen bg-[#111827] text-white lg:fixed lg:left-0 lg:top-0 border-r border-[#1f2937] z-50">
       <div className="p-6">
         <h1 className="text-2xl font-black tracking-tight text-white mb-1">
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D8B4FE] to-[#FCA5A5]">Welile</span>
@@ -68,7 +72,10 @@ export default function DesktopSidebar() {
           return (
             <button
               key={item.label}
-              onClick={() => navigate(item.path)}
+              onClick={() => {
+                navigate(item.path);
+                if (onClose) onClose();
+              }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition ${
                 isActive 
                   ? 'bg-gradient-to-r from-[#915BFE] to-[#713BF0] text-white font-bold shadow-lg shadow-purple-500/20' 
