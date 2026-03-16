@@ -17,19 +17,22 @@ export const createRequest = async (req: Request, res: Response) => {
     const requestFee = amount > 200000 ? 20000 : 10000;
     const totalRepayment = amount + accessFee + requestFee;
 
-    const request = await prisma.rentRequest.create({
+    const request = await prisma.rentRequests.create({
       data: {
-        tenantId: userId,
-        propertyId,
-        rentAmount: amount,
-        durationDays,
-        accessFee,
-        requestFee,
+        tenant_id: userId,
+        landlord_id: propertyId,
+        rent_amount: amount,
+        duration_days: durationDays,
+        access_fee: accessFee,
+        request_fee: requestFee,
+        total_repayment: totalRepayment,
         status: 'PENDING',
-        dailyRepayment: Math.ceil(totalRepayment / durationDays),
-        amountRepaid: 0,
-        tenantNoSmartphone: false,
-        lc1Id: 'default-lc1', // Placeholder based on schema
+        daily_repayment: Math.ceil(totalRepayment / durationDays),
+        amount_repaid: 0,
+        tenant_no_smartphone: false,
+        lc1_id: 'default-lc1', // Placeholder based on schema
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       },
     });
 
@@ -45,9 +48,9 @@ export const getMyRequests = async (req: Request, res: Response) => {
     const userId = req.user?.sub;
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
-    const requests = await prisma.rentRequest.findMany({
-      where: { tenantId: userId },
-      orderBy: { createdAt: 'desc' },
+    const requests = await prisma.rentRequests.findMany({
+      where: { tenant_id: userId },
+      orderBy: { created_at: 'desc' },
     });
 
     return res.status(200).json(requests);
@@ -59,8 +62,8 @@ export const getMyRequests = async (req: Request, res: Response) => {
 
 export const getAllRequests = async (req: Request, res: Response) => {
   try {
-    const requests = await prisma.rentRequest.findMany({
-      orderBy: { createdAt: 'desc' },
+    const requests = await prisma.rentRequests.findMany({
+      orderBy: { created_at: 'desc' },
     });
     return res.status(200).json(requests);
   } catch (error) {
@@ -74,7 +77,7 @@ export const updateStatus = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    const request = await prisma.rentRequest.update({
+    const request = await prisma.rentRequests.update({
       where: { id },
       data: { status },
     });

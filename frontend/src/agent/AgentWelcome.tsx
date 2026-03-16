@@ -1,145 +1,246 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { ArrowRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-
-// Distinct notes to pull from the phone
-const MONEY_NOTES = [
-  { value: 10000, color: 'bg-green-600' },
-  { value: 20000, color: 'bg-blue-600' },
-  { value: 50000, color: 'bg-yellow-600' },
-];
-
-interface FloatingNote {
-  id: number;
-  value: number;
-  color: string;
-}
+import { ShieldCheck, ArrowRight, Wallet, Clock, Globe, Sparkles, Mail, MessageSquare } from 'lucide-react';
 
 export default function AgentWelcome() {
   const navigate = useNavigate();
-  // We keep intendedRole in context if needed, but not strictly used here
-  const { } = useAuth();
-  
-  const [earningsCount, setEarningsCount] = useState(35600000);
-  const [floatingNotes, setFloatingNotes] = useState<FloatingNote[]>([]);
-  const [idCounter, setIdCounter] = useState(0);
-
-  // Spawner for money notes
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setFloatingNotes(prev => {
-        if (prev.length > 8) return prev; // Limit notes on screen
-        
-        const randomNote = MONEY_NOTES[Math.floor(Math.random() * MONEY_NOTES.length)];
-        return [...prev, {
-          id: idCounter,
-          value: randomNote.value,
-          color: randomNote.color
-        }];
-      });
-      setIdCounter(prev => prev + 1);
-    }, 1500); // Pull money every 1.5s
-
-    return () => clearInterval(interval);
-  }, [idCounter]);
-
-  const handleNoteComplete = (id: number, value: number) => {
-    setFloatingNotes(prev => prev.filter(n => n.id !== id));
-    setEarningsCount(prev => prev + value);
-  };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] sm:p-8 flex justify-center items-center relative overflow-hidden font-sans">
-      <div className="w-full sm:max-w-xl min-h-screen sm:min-h-0 sm:h-[85vh] bg-[#351A82] relative flex flex-col shadow-2xl sm:rounded-[2rem] overflow-hidden z-10">
-
-        <div className="flex-1 flex flex-col px-6 pt-12 sm:pt-16 pb-10 relative z-20 h-full overflow-y-auto custom-scrollbar">
-          
-          <div className="text-center z-30 mb-8 sm:mb-12 mt-2 animate-fade-in relative text-white">
-            <h1 className="text-[34px] font-black mb-3 tracking-tight drop-shadow-md">Welile Agents</h1>
-            <p className="text-white/90 text-[15px] font-medium max-w-[280px] mx-auto leading-relaxed drop-shadow">
-              Earn by connecting businesses and people to Welile services.
-            </p>
+    <div className="bg-sky-50 dark:bg-[#0c4a6e] font-sans text-sky-950 dark:text-sky-100 relative flex min-h-screen w-full flex-col overflow-x-hidden">
+      {/* Header/Navigation */}
+      <header className="sticky top-0 z-50 w-full border-b border-primary/10 bg-[#6D28D9] dark:bg-[#6D28D9] px-6 md:px-20 py-4 shadow-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
+          <div 
+            className="flex items-center gap-3 cursor-pointer"
+            onClick={() => navigate('/')}
+          >
+            <img src="/welile-logo-white.png" alt="Welile Logo" className="h-10 w-auto object-contain" />
+            <h2 className="text-xl font-extrabold tracking-tight text-white">Welile <span className="text-white">Agents</span></h2>
           </div>
+          <nav className="hidden md:flex items-center gap-10">
+            <a className="text-sm font-semibold text-white/90 hover:text-white transition-colors" href="#">How it Works</a>
+            <a className="text-sm font-semibold text-white/90 hover:text-white transition-colors" href="#">Earnings</a>
+            <a className="text-sm font-semibold text-white/90 hover:text-white transition-colors" href="#">Success Stories</a>
+            <a className="text-sm font-semibold text-white/90 hover:text-white transition-colors" href="#">FAQ</a>
+          </nav>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => navigate('/login')}
+              className="hidden sm:block text-sm font-bold px-4 py-2 text-white/90 hover:text-white"
+            >
+              Login
+            </button>
+            <button 
+              onClick={() => navigate('/agent-signup')}
+              className="rounded-full bg-white px-6 py-2.5 text-sm font-bold text-[#6D28D9] shadow-lg hover:bg-slate-50 transition-all"
+            >
+              Become an Agent
+            </button>
+          </div>
+        </div>
+      </header>
 
-          <div className="flex-1 flex items-center justify-center relative w-full mb-8">
-            
-            {/* The Animated "Phone" Screen */}
-            <div className="relative w-[180px] h-[320px] bg-gradient-to-b from-[#8155E8] to-[#4A3AFF] rounded-[32px] border-[6px] border-[#9273F6]/40 shadow-[0_0_50px_rgba(74,58,255,0.5)] flex flex-col items-center justify-end overflow-hidden z-30">
-              
-              {/* Inner glow and notch for the internal phone */}
-              <div className="absolute top-2 w-12 h-1.5 bg-black/20 rounded-full"></div>
-              <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none"></div>
-
-              {/* Hand Icon Pulling Money */}
-              <motion.div 
-                className="absolute top-1/2 left-1/2 text-6xl drop-shadow-xl z-40"
-                style={{ marginLeft: '-30px', marginTop: '-10px' }}
-                animate={{ y: [0, -30, 0], scale: [1, 0.95, 1] }}
-                transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-              >
-                🖐🏽
-              </motion.div>
-
-              {/* Money Flying Out Animation */}
-              <AnimatePresence>
-                {floatingNotes.map((note) => (
-                  <motion.div
-                    key={note.id}
-                    initial={{ opacity: 0, y: 80, scale: 0.5, rotate: -10 }}
-                    animate={{ opacity: [0, 1, 1, 0], y: -200, scale: 1, rotate: [10, -5, 10] }}
-                    transition={{ duration: 1.5, ease: "easeOut" }}
-                    onAnimationComplete={() => handleNoteComplete(note.id, note.value)}
-                    className={`absolute bottom-[80px] w-24 h-12 ${note.color} rounded-md shadow-2xl flex items-center justify-center border-2 border-white/20 z-30`}
+      <main className="flex-grow">
+        {/* Hero Section */}
+        <section className="relative px-6 py-16 md:py-24 md:px-20 overflow-hidden">
+          <div className="mx-auto max-w-7xl">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
+              <div className="flex h-full flex-col items-center justify-center text-center gap-8 bg-[#6D28D9] p-8 md:p-12 rounded-[2rem] shadow-2xl">
+                <div className="inline-flex w-fit items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-white shadow-sm">
+                  <ShieldCheck size={16} />
+                  <span className="text-xs font-bold uppercase tracking-wider">Official Strategic Partner Program</span>
+                </div>
+                <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tighter text-white">
+                  Welile Agents <br className="hidden md:block"/> <span className="text-sky-200">Network</span>
+                </h1>
+                <p className="text-lg md:text-xl text-white/90 max-w-lg leading-relaxed">
+                  Earn by connecting businesses and people to Welile services. Start your journey as a strategic partner today and unlock limitless potential.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 mt-2">
+                  <button 
+                    onClick={() => navigate('/agent-signup')}
+                    className="flex items-center justify-center gap-3 rounded-full bg-white px-8 py-4 text-lg font-bold text-[#6D28D9] shadow-xl hover:bg-slate-50 transition-colors"
                   >
-                    <div className="w-[85%] h-[75%] border border-white/30 rounded flex items-center justify-center">
-                       <span className="text-white font-bold text-xs">{note.value / 1000}k</span>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-
-              {/* Bottom Earnings Display inside the "Phone" */}
-              <div className="relative z-40 w-full bg-black/30 backdrop-blur-md pb-5 pt-4 px-2 text-center border-t border-white/10">
-                <p className="text-white/80 font-bold uppercase tracking-[0.05em] text-[10px] mb-1">Total Agent Earnings</p>
-                <motion.div 
-                  key={earningsCount}
-                  initial={{ scale: 1.1, color: "#4ADE80" }}
-                  animate={{ scale: 1, color: "#ffffff" }}
-                  className="font-black text-white text-[22px] tracking-tight"
-                >
-                  <span className="text-[12px] font-semibold mr-1 align-top relative top-[3px]">UGX</span>
-                  {earningsCount.toLocaleString()}
-                </motion.div>
+                    <span>Get Started Now</span>
+                    <ArrowRight size={20} className="text-[#6D28D9]" />
+                  </button>
+                </div>
               </div>
-
+              <div className="flex flex-col gap-6 h-full">
+                <div className="relative overflow-hidden flex-grow min-h-[300px] rounded-[2rem] border border-primary/10 shadow-2xl">
+                  {/* UPDATE THIS PATH: Save the photo you uploaded into "frontend/public/agent-hero.jpeg" */}
+                  <img alt="Hero Image" className="absolute inset-0 h-full w-full object-cover" src="/agent-hero.jpeg"/>
+                </div>
+                
+                {/* Separated Floating stats widget */}
+                <div className="rounded-[2rem] bg-white dark:bg-[#0c4a6e] p-6 shadow-xl border border-sky-950 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="flex -space-x-3">
+                      <div className="h-10 w-10 rounded-full border-2 border-white bg-sky-200 bg-cover bg-center" style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuByWXd3XYRP_dIpC1wo9GDdebgSqusIJhYTTI8uMj0KprEFt5UNupPLIyvD3A0RsagVAFblrf05m-WAm0ty_V7ugOCMa1a4GSZoBrL_aTuNl0PX3FTf4CSKKWur5QvHLXKMuX2IojXqB6PPauOF3NyJMxi_FsZnmkuLmT8EofUhTuoeaO1HuLAbx-cg80-zw7wAv267ugZhLZBiXF8eDdty_niAm2qDwGuaK4JSKLgr8OkdM8WurZOtRJocqFE_53o7MaG7ZUlts8ll')"}}></div>
+                      <div className="h-10 w-10 rounded-full border-2 border-white bg-sky-200 bg-cover bg-center" style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAfQ6zEJrn9o_odbaPL5GLPElMWPS-M_6nAbeEw5vlzrP-RR-5Ew9iOH-zeKd2XcQixcKoH9eMurR7NFFa1CkhfiML6p2jHkuEQFpl4rPe6liZL5ANPmjA_rYWLUThO0_55QWXLyjGrfFEYxclJ-27ct0hnYXtUy2fIengYGO57N2qlQSCXYyjB7ZG5vDTfvDpMoDWYzF_zKwtCZjZ0er74NUW4QSFf4rdnB__NW8EZi2d87s7gDpFKS9jqbT-11oecpGk2ffgUBEUI')"}}></div>
+                      <div className="h-10 w-10 rounded-full border-2 border-white bg-sky-200 bg-cover bg-center" style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuD9tLcLAQwuTYoPr9j8HIHBdrhkJ_uz24N8zyrPcYmY8qZzbRPVUUW05CcPEQ_pveGIe3ADGU-joqn79u6CkkyjjYhVXK9RBWsL2FMYnlAK1K2oIKwJB1vdWpKkdTLyF-NkBf26cfTDKPbA7laqI42fydpK6FJbRcKRk-Uj_C4pv7_sqVG2jEAVmiCQ9Ms6k0QH-9dc-KsjFNLtjh7pSgMbr1TC8x1XL56oDJSa6gq7wFzWpdzigmBvaDcWp6heMbS0_aXMsGjwKd1Y')"}}></div>
+                    </div>
+                    <p className="text-base font-medium text-sky-700 dark:text-sky-300">
+                      Join <span className="font-bold text-primary">5,000+</span> agents<br/>earning today
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
+        </section>
 
-          <div className="z-30 mt-auto pt-4 space-y-4 shrink-0">
-            <button 
-              onClick={() => navigate('/agent-signup')} 
-              className="w-full bg-white text-[#512DA8] py-[18px] rounded-full font-black text-[17px] shadow-2xl flex items-center justify-center gap-2 transition active:scale-[0.98] hover:bg-slate-50 border border-white"
-            >
-              Become an Agent <ArrowRight size={22} strokeWidth={2.5} className="ml-1" />
-            </button>
-            <button
-              onClick={() => navigate('/login')}
-              className="w-full bg-[#351A82] text-white py-[16px] rounded-full font-bold text-[16px] border border-white/30 transition-all hover:bg-white/10"
-            >
-              Log In
-            </button>
+        {/* Earnings Pool Section */}
+        <section className="bg-[#6D28D9] px-6 py-12 md:px-20">
+          <div className="mx-auto max-w-7xl">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-8 rounded-3xl bg-white/10 p-8 md:p-12 backdrop-blur-lg border border-white/20">
+              <div className="flex flex-col gap-2 text-center md:text-left">
+                <h3 className="text-white/90 text-lg font-medium">Total Agent Earnings Today</h3>
+                <div className="flex items-baseline gap-2 justify-center md:justify-start">
+                  <span className="text-4xl md:text-6xl font-black text-white tracking-tighter">UGX 35,600,000</span>
+                  <span className="flex h-3 w-3 rounded-full bg-green-400 animate-pulse"></span>
+                </div>
+              </div>
+              <div className="h-px w-full md:h-16 md:w-px bg-white/20"></div>
+              <div className="flex flex-col gap-4 items-center md:items-end">
+                <p className="text-white/90 text-center md:text-right max-w-[280px]">Our high-performance network is distributing rewards every second.</p>
+                <button className="bg-white text-[#6D28D9] rounded-full px-8 py-3 font-bold hover:bg-slate-50 transition-colors shadow-xl">
+                  Claim Your Share
+                </button>
+              </div>
+            </div>
           </div>
+        </section>
 
-        </div>
+        {/* Features Grid */}
+        <section className="px-6 py-24 md:px-20">
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-16 text-center">
+              <h2 className="text-3xl md:text-5xl font-black text-sky-950 dark:text-white mb-4">Why Join the Network?</h2>
+              <p className="text-sky-700 dark:text-sky-300 max-w-2xl mx-auto text-lg">Our platform provides the tools and network you need to succeed as a Welile Agent from day one.</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* Feature 1 */}
+              <div className="group rounded-3xl border border-[#6D28D9]/20 hover:border-[#6D28D9] bg-white p-10 transition-all hover:shadow-xl">
+                <div className="flex items-center gap-3 mb-6">
+                  <Wallet size={24} className="text-primary" />
+                  <h3 className="text-xl font-bold text-sky-950">High Commissions</h3>
+                </div>
+                <p className="text-sky-700 text-sm leading-relaxed">Earn top-tier percentages on every successful connection made through your referral. No hidden fees.</p>
+              </div>
+              
+              {/* Feature 2 */}
+              <div className="group rounded-3xl border border-[#6D28D9]/20 hover:border-[#6D28D9] bg-white p-10 transition-all hover:shadow-xl">
+                <div className="flex items-center gap-3 mb-6">
+                  <Clock size={24} className="text-primary" />
+                  <h3 className="text-xl font-bold text-sky-950">Flexible Hours</h3>
+                </div>
+                <p className="text-sky-700 text-sm leading-relaxed">Work from anywhere at any time. You are in total control of your schedule, your goals, and your earnings.</p>
+              </div>
+              
+              {/* Feature 3 */}
+              <div className="group rounded-3xl border border-[#6D28D9]/20 hover:border-[#6D28D9] bg-white p-10 transition-all hover:shadow-xl">
+                <div className="flex items-center gap-3 mb-6">
+                  <Globe size={24} className="text-primary" />
+                  <h3 className="text-xl font-bold text-sky-950">Global Network</h3>
+                </div>
+                <p className="text-sky-700 text-sm leading-relaxed">Access a wide range of services and premium businesses looking for your local and global expertise.</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
-        {/* Background decorative elements */}
-        <div className="absolute inset-0 z-0 opacity-40 pointer-events-none">
-          <div className="absolute top-[-10%] left-[-20%] w-[400px] h-[400px] bg-[#8155E8] rounded-full blur-[100px]"></div>
-          <div className="absolute bottom-[-10%] right-[-20%] w-[400px] h-[400px] bg-[#673AB7] rounded-full blur-[100px]"></div>
+        {/* CTA Section */}
+        <section className="relative px-6 py-20 md:px-20 overflow-hidden">
+          <div className="absolute inset-0 -z-10 bg-primary/5"></div>
+          <div className="mx-auto max-w-4xl rounded-[40px] bg-[#6D28D9] p-12 md:p-20 text-center relative shadow-2xl">
+            <div className="absolute top-0 right-0 p-8 opacity-20">
+              <Sparkles size={96} className="text-white" />
+            </div>
+            <h2 className="text-4xl md:text-6xl font-black text-white mb-8 tracking-tighter">Ready to maximize your potential?</h2>
+            <p className="text-white/90 text-lg md:text-xl mb-12 max-w-2xl mx-auto">
+              Join the Welile Agents Network today and start transforming connections into commissions. It only takes 2 minutes to apply.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-6">
+              <button 
+                onClick={() => navigate('/agent-signup')}
+                className="rounded-full bg-white px-10 py-5 text-xl font-bold text-[#6D28D9] shadow-2xl hover:bg-slate-50 transition-colors"
+              >
+                Become an Agent
+              </button>
+              <button className="rounded-full bg-transparent px-10 py-5 text-xl font-bold text-white border-2 border-white/50 hover:bg-white/10 transition-colors">
+                Contact Support
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-white dark:bg-[#0c4a6e] border-t border-sky-100 dark:border-primary/10 px-6 py-12 md:px-20">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-10">
+            
+            {/* Logo Column */}
+            <div className="lg:col-span-2">
+              <div className="flex items-center gap-3 mb-4">
+                <img src="/welile-logo.png" alt="Welile Logo" className="h-8 w-auto object-contain" />
+                <h2 className="text-lg font-extrabold text-[#9234EA]">Welile Agents</h2>
+              </div>
+              
+              <p className="text-[#0081C9] text-xs leading-relaxed max-w-xs">
+                Connecting people and businesses across the globe through a strategic partner network designed for growth.
+              </p>
+            </div>
+            
+            {/* Platform Column */}
+            <div>
+              <h4 className="font-bold text-[#003B5C] dark:text-white text-sm mb-4">Platform</h4>
+              <ul className="flex flex-col gap-3 text-xs text-[#0081C9]">
+                <li><a className="hover:text-primary transition-colors" href="#">How it works</a></li>
+                <li><a className="hover:text-primary transition-colors" href="#">Earnings</a></li>
+                <li><a className="hover:text-primary transition-colors" href="#">Pricing &amp; Fees</a></li>
+                <li><a className="hover:text-primary transition-colors" href="#">Agent Tools</a></li>
+              </ul>
+            </div>
+            
+            {/* Company Column */}
+            <div>
+              <h4 className="font-bold text-[#003B5C] dark:text-white text-sm mb-4">Company</h4>
+              <ul className="flex flex-col gap-3 text-xs text-[#0081C9]">
+                <li><a className="hover:text-primary transition-colors" href="#">About Us</a></li>
+                <li><a className="hover:text-primary transition-colors" href="#">Success Stories</a></li>
+                <li><a className="hover:text-primary transition-colors" href="#">Careers</a></li>
+                <li><a className="hover:text-primary transition-colors" href="#">Legal</a></li>
+              </ul>
+            </div>
+            
+            {/* Support Column */}
+            <div>
+              <h4 className="font-bold text-[#003B5C] dark:text-white text-sm mb-4">Support</h4>
+              <ul className="flex flex-col gap-3 text-xs text-[#0081C9]">
+                <li><a className="hover:text-primary transition-colors" href="#">Help Center</a></li>
+                <li><a className="hover:text-primary transition-colors" href="#">FAQ</a></li>
+                <li><a className="hover:text-primary transition-colors" href="#">Knowledge Base</a></li>
+                <li><a className="hover:text-primary transition-colors" href="#">Community</a></li>
+                <li className="block sm:hidden"><a className="hover:text-primary transition-colors font-bold" href="/login">Agent Login</a></li>
+              </ul>
+            </div>
+            
+          </div>
+          
+          {/* Bottom Copyright Row */}
+          <div className="flex flex-col lg:flex-row items-center lg:justify-between pt-8 mt-12 w-full border-t border-sky-100 dark:border-primary/10 gap-6">
+            <p className="text-[10px] sm:text-xs text-[#0081C9] text-center lg:text-left">© 2024 Welile Agents Network. All rights reserved.</p>
+            <div className="flex gap-4 sm:gap-6">
+              <a className="text-[#00a6fb] hover:text-primary transition-colors" href="#"><Globe size={18} strokeWidth={2} /></a>
+              <a className="text-[#00a6fb] hover:text-primary transition-colors" href="#"><Mail size={18} strokeWidth={2} /></a>
+              <a className="text-[#00a6fb] hover:text-primary transition-colors" href="#"><MessageSquare size={18} strokeWidth={2} /></a>
+            </div>
+          </div>
+          
         </div>
-      </div>
+      </footer>
     </div>
   );
 }

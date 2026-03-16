@@ -6,6 +6,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import ProtectedRoute from './components/ProtectedRoute';
 import RootDashboard from './pages/dashboard/RootDashboard';
 
+// Dashboard sub-routes from HEAD
+import SubAgents from './agent/SubAgents';
+import AgentEarnings from './agent/AgentEarnings';
+import AgentClients from './agent/AgentClients';
+import AgentSettings from './agent/AgentSettings';
+import TenantPayments from './tenant/TenantPayments';
+import TenantProfile from './tenant/TenantProfile';
+
 // --- Role-based route groups ---
 import { publicRoutes } from './routes/publicRoutes';
 import { agentRoutes } from './routes/agentRoutes';
@@ -78,6 +86,12 @@ function App() {
                 {/* Protected: authenticated users only */}
                 <Route element={<ProtectedRoute />}>
                   <Route path="/dashboard/*" element={<RootDashboard />} />
+                  <Route path="/dashboard/agent/sub-agents" element={<SubAgents />} />
+                  <Route path="/dashboard/agent/earnings" element={<AgentEarnings />} />
+                  <Route path="/dashboard/agent/clients" element={<AgentClients />} />
+                  <Route path="/dashboard/agent/settings" element={<AgentSettings />} />
+                  <Route path="/dashboard/tenant/payments" element={<TenantPayments />} />
+                  <Route path="/dashboard/tenant/profile" element={<TenantProfile />} />
                 </Route>
 
                 {/* Fallback */}

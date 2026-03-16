@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 import prisma from '../prisma/prisma.client';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
@@ -19,12 +20,16 @@ export const register = async (req: Request, res: Response) => {
 
     const now = new Date().toISOString();
     
+    // Hash the password
+    const password_hash = await bcrypt.hash(password, 10);
+    
     // Create Profile
     const profile = await prisma.profiles.create({
       data: {
         email,
         full_name: `${firstName} ${lastName}`,
         phone: phone || '0000000000',
+        password_hash,
         is_frozen: false,
         verified: false,
         rent_discount_active: false,
@@ -86,8 +91,15 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Mocking password check since it's likely handled by Supabase Auth in production
-    // If we reach here, we assume password was valid or we bypass it for now
+    if (!profile.password_hash) {
+      return res.status(401).json({ message: 'Please reset your password' });
+    }
+
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, profile.password_hash);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
     
     const userRole = await prisma.userRoles.findFirst({ where: { user_id: profile.id } });
     const role = userRole ? userRole.role : 'TENANT';
@@ -108,6 +120,64 @@ export const login = async (req: Request, res: Response) => {
 
   } catch (error) {
     console.error('Login error:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const sendOTP = async (req: Request, res: Response) => {
+  try {
+    const { phone } = req.body;
+    if (!phone) return res.status(400).json({ message: 'Phone is required' });
+
+    const otp_code = '1234'; // Mocked OTP for demo purposes
+    const now = new Date();
+    const expires_at = new Date(now.getTime() + 10 * 60000).toISOString(); // 10 mins expiry
+
+    await prisma.otpVerifications.create({
+      data: {
+        phone,
+        otp_code,
+        attempts: 0,
+        verified: false,
+        created_at: now.toISOString(),
+        updated_at: now.toISOString(),
+        expires_at
+      }
+    });
+
+    return res.status(200).json({ message: 'OTP sent successfully' });
+  } catch (error) {
+    console.error('Send OTP error:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const verifyOTP = async (req: Request, res: Response) => {
+  try {
+    const { phone, otp_code } = req.body;
+    if (!phone || !otp_code) return res.status(400).json({ message: 'Phone and OTP are required' });
+
+    const verification = await prisma.otpVerifications.findFirst({
+      where: { phone, otp_code, verified: false },
+      orderBy: { created_at: 'desc' },
+    });
+
+    if (!verification) {
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    }
+
+    if (new Date(verification.expires_at) < new Date()) {
+      return res.status(400).json({ message: 'OTP has expired' });
+    }
+
+    await prisma.otpVerifications.update({
+      where: { id: verification.id },
+      data: { verified: true, verified_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+    });
+
+    return res.status(200).json({ message: 'OTP verified successfully' });
+  } catch (error) {
+    console.error('Verify OTP error:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };

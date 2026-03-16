@@ -113,8 +113,6 @@ export default function FunderDashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    // DEV: Fake load — re-enable auth check before production
-    // if (user && user.isVerified === false) { navigate('/funder-onboarding'); return; }
     try {
       setStats(MOCK_STATS);
       setPortfolios(MOCK_PORTFOLIOS);
@@ -140,9 +138,12 @@ export default function FunderDashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#F9F8FF] flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-primary-faint)' }}>
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-full border-4 border-[#6C11D4]/30 border-t-[#6C11D4] animate-spin" />
+          <div
+            className="w-12 h-12 rounded-full border-4 animate-spin"
+            style={{ borderColor: 'var(--color-primary-light)', borderTopColor: 'var(--color-primary)' }}
+          />
           <p className="text-slate-500 text-sm font-medium">Loading your portfolio...</p>
         </div>
       </div>
@@ -150,7 +151,7 @@ export default function FunderDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F9F8FF] font-sans">
+    <div className="min-h-screen font-sans" style={{ background: 'var(--color-primary-faint)' }}>
       <div className="flex h-screen overflow-hidden">
 
         {/* ──────────── DESKTOP SIDEBAR ──────────── */}
@@ -192,7 +193,7 @@ export default function FunderDashboard() {
                   payoutMode="Monthly Payout"
                 />
 
-                {/* Quick Actions — mobile only (desktop uses sidebar CTA + right panel) */}
+                {/* Quick Actions — mobile only */}
                 <div className="lg:hidden">
                   <FunderActionButtons
                     onDeposit={() => setIsModalOpen(true)}
@@ -212,7 +213,7 @@ export default function FunderDashboard() {
                 {/* Grow Your Wealth CTA */}
                 <FunderInvestCTA onStartInvesting={() => setIsModalOpen(true)} />
 
-                {/* Recent Activity — mobile only (desktop uses right panel) */}
+                {/* Recent Activity — mobile only */}
                 <div className="lg:hidden pb-32">
                   <FunderRecentActivity
                     activities={activities}
@@ -224,42 +225,38 @@ export default function FunderDashboard() {
               {/* ── RIGHT PANEL (desktop only) ── */}
               <aside className="hidden lg:flex lg:col-span-4 flex-col gap-8">
 
-                {/* Desktop Wallet Actions */}
+                {/* Wallet Actions */}
                 <div className="bg-white rounded-xl border shadow-sm p-6" style={{ borderColor: 'var(--color-primary-border)' }}>
                   <h3 className="text-lg font-bold text-slate-900 mb-4">Wallet Actions</h3>
                   <div className="flex flex-col gap-3">
                     <button
                       onClick={() => setIsModalOpen(true)}
-                      className="flex items-center gap-4 p-4 border border-slate-100 rounded-lg transition-all text-left group"
+                      className="flex items-center gap-4 p-4 border border-slate-100 rounded-lg transition-all text-left"
                       onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--color-primary)')}
                       onMouseLeave={(e) => (e.currentTarget.style.borderColor = '')}
                     >
                       <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center transition-colors text-lg font-bold"
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold"
                         style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}
                         onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-primary)'; e.currentTarget.style.color = '#fff'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--color-primary-light)'; e.currentTarget.style.color = 'var(--color-primary)'; }}
-                      >
-                        +
-                      </div>
+                      >+</div>
                       <div>
                         <p className="font-bold text-slate-800 text-sm">Add Funds</p>
                         <p className="text-xs text-slate-500">Deposit capital to your wallet</p>
                       </div>
                     </button>
                     <button
-                      className="flex items-center gap-4 p-4 border border-slate-100 rounded-lg transition-all text-left group"
+                      className="flex items-center gap-4 p-4 border border-slate-100 rounded-lg transition-all text-left"
                       onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--color-primary)')}
                       onMouseLeave={(e) => (e.currentTarget.style.borderColor = '')}
                     >
                       <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center transition-colors text-lg font-bold"
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold"
                         style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}
                         onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-primary)'; e.currentTarget.style.color = '#fff'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--color-primary-light)'; e.currentTarget.style.color = 'var(--color-primary)'; }}
-                      >
-                        ↑
-                      </div>
+                      >↑</div>
                       <div>
                         <p className="font-bold text-slate-800 text-sm">Withdraw</p>
                         <p className="text-xs text-slate-500">Transfer returns to your account</p>

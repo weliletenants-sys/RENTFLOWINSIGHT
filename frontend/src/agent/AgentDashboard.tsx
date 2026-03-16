@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import AgentHeader from './components/AgentHeader';
 import CommissionWalletCard from './components/CommissionWalletCard';
 import RecruitmentProgressCard from './components/RecruitmentProgressCard';
 import AgentToolsGrid from './components/AgentToolsGrid';
@@ -11,12 +10,10 @@ import AgentTopUpTenantDialog from './components/dialogs/AgentTopUpTenantDialog'
 import AgentRegisterUserDialog from './components/dialogs/AgentRegisterUserDialog';
 import { useOfflineAgentDashboard } from '../hooks/useOfflineAgentDashboard';
 import { ShieldAlert, Clock } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
 
 export default function AgentDashboard() {
   const navigate = useNavigate();
   const { isOnline } = useOfflineAgentDashboard();
-  const { user } = useAuth();
   
   // Dialog States
   const [isWizardOpen, setIsWizardOpen] = useState(false);
@@ -30,44 +27,35 @@ export default function AgentDashboard() {
   const [kycStatus] = useState<'NONE' | 'UNDER_REVIEW' | 'APPROVED'>('NONE');
   
   return (
-    <div className="bg-[#f7f6f8] min-h-screen flex flex-col font-sans text-gray-900 pb-24">
+    <div className="w-full flex flex-col gap-6">
       
-      {/* 1. Header */}
-      <AgentHeader 
-        user={{
-          fullName: user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : 'Agent Name',
-          role: 'AGENT',
-          avatarUrl: ''
-        }}
-        onAvatarClick={() => navigate('/settings')}
-        onNotificationClick={() => console.log('Notifications clicked')}
-      />
+      {/* Offline Alert */}
+      {!isOnline && (
+        <div className="bg-amber-50 text-amber-800 text-xs py-2 px-4 text-center font-medium rounded-xl border border-amber-200 shadow-sm animate-pulse">
+          You are currently offline. Field operations may be restricted.
+        </div>
+      )}
 
-      <main className="flex-1 p-4 lg:p-8">
-        {/* Offline Alert */}
-        {!isOnline && (
-          <div className="mb-4 bg-amber-50 text-amber-800 text-xs py-2 px-4 text-center font-medium rounded-xl border border-amber-200 shadow-sm animate-pulse">
-            You are currently offline. Field operations may be restricted.
-          </div>
-        )}
+      {/* KYC Banner Alerts */}
+      {kycStatus === 'NONE' && (
+        <div 
+          onClick={() => navigate('/agent-kyc')}
+          className="bg-blue-50 text-blue-800 text-sm py-3 px-4 rounded-xl text-center font-medium border border-blue-200 shadow-sm flex items-center justify-center gap-2 cursor-pointer hover:bg-blue-100 transition"
+        >
+          <ShieldAlert size={16} /> Tap to complete KYC verification to unlock withdraws.
+        </div>
+      )}
+      {kycStatus === 'UNDER_REVIEW' && (
+        <div className="bg-amber-50 text-amber-800 text-sm py-3 px-4 rounded-xl text-center font-medium border border-amber-200 shadow-sm flex items-center justify-center gap-2">
+          <Clock size={16} /> KYC under review. Expected time: 24h.
+        </div>
+      )}
 
-        {/* KYC Banner Alerts */}
-        {kycStatus === 'NONE' && (
-          <div 
-            onClick={() => navigate('/agent-kyc')}
-            className="mb-6 bg-blue-50 text-blue-800 text-sm py-3 px-4 rounded-xl text-center font-medium border border-blue-200 shadow-sm flex items-center justify-center gap-2 cursor-pointer hover:bg-blue-100 transition"
-          >
-            <ShieldAlert size={16} /> Tap to complete KYC verification to unlock withdraws.
-          </div>
-        )}
-        {kycStatus === 'UNDER_REVIEW' && (
-          <div className="mb-6 bg-amber-50 text-amber-800 text-sm py-3 px-4 rounded-xl text-center font-medium border border-amber-200 shadow-sm flex items-center justify-center gap-2">
-            <Clock size={16} /> KYC under review. Expected time: 24h.
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* 2. Wallet Banner */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        
+        {/* Left Column Data Components */}
+        <div className="xl:col-span-2 space-y-6 flex flex-col">
+          {/* Wallet Banner */}
           <CommissionWalletCard 
             balance={12000} 
             onDeposit={() => setIsDepositOpen(true)}
@@ -82,19 +70,23 @@ export default function AgentDashboard() {
             onTransfer={() => setIsTopUpOpen(true)}
           />
 
-          {/* 3. Recruitment Progress */}
+          {/* Recruitment Progress */}
           <RecruitmentProgressCard 
             totalClients={128}
             pendingPayments={36}
             conversionRate={64}
           />
         </div>
+        
+        {/* Right Column Action Tools */}
+        <div className="flex flex-col h-full bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+          <h2 className="text-xl font-bold mb-4">Agent Toolkit</h2>
+          <AgentToolsGrid 
+            onNewClientClick={() => setIsRegisterOpen(true)}
+          />
+        </div>
 
-        {/* 4. Agent Tools */}
-        <AgentToolsGrid 
-          onNewClientClick={() => setIsRegisterOpen(true)}
-        />
-      </main>
+      </div>
 
 
       {/* Feature Modals & Dialogs */}

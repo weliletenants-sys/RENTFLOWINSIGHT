@@ -693,6 +693,7 @@ model Profiles {
   monthly_rent          Float?
   national_id           String?
   phone                 String
+  password_hash         String?
   referrer_id           String?
   rent_discount_active  Boolean
   territory             String?

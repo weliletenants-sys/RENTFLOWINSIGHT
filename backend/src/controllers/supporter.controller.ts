@@ -9,12 +9,17 @@ export const getDashboardStats = async (req: Request, res: Response) => {
       where: { investor_id: userId },
     });
 
-    const totalContribution = portfolios.reduce((sum: number, p: any) => sum + p.investment_amount, 0);
-    const returnPerMonth = portfolios.reduce((sum: number, p: any) => sum + (p.investment_amount * (p.roi_percentage / 100)), 0);
+    const wallet = await prisma.wallets.findFirst({ where: { user_id: userId } });
+    const walletBalance = wallet ? wallet.balance : 0;
+
+    const principalInvested = portfolios.reduce((sum: number, p: any) => sum + p.investment_amount, 0);
+    // Multiply by duration for full expected amount approximation
+    const expectedAmount = portfolios.reduce((sum: number, p: any) => sum + (p.investment_amount * (p.roi_percentage / 100) * (p.duration_months || 12)), 0);
 
     return res.status(200).json({
-      totalContribution,
-      returnPerMonth,
+      walletBalance,
+      principalInvested,
+      expectedAmount,
       portfoliosCount: portfolios.length
     });
   } catch (error) {

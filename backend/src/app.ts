@@ -11,6 +11,8 @@ import rentRequestsRoutes from './routes/rent-requests.routes';
 import applicationsRoutes from './routes/applications.routes';
 import uploadRoutes from './routes/upload.routes';
 import supporterRoutes from './routes/supporter.routes';
+import tenantRoutes from './routes/tenant.routes';
+import agentRoutes from './routes/agent.routes';
 
 dotenv.config();
 
@@ -36,6 +38,8 @@ app.use('/rent-requests', rentRequestsRoutes);
 app.use('/applications', applicationsRoutes);
 app.use('/upload', uploadRoutes);
 app.use('/supporter', supporterRoutes);
+app.use('/tenant', tenantRoutes);
+app.use('/agent', agentRoutes);
 
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);

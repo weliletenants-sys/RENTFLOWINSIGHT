@@ -128,25 +128,7 @@ function ChoiceCard({
 }
 
 // ─── Projection Mini Chart ────────────────────────────────────────────────────
-function ProjectionBar({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
-  return (
-    <div className="flex items-center gap-3">
-      <p className="text-[10px] text-gray-500 w-20 shrink-0">{label}</p>
-      <div className="flex-1 bg-gray-100 rounded-full h-2">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${(value / max) * 100}%` }}
-          transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="h-2 rounded-full"
-          style={{ backgroundColor: color }}
-        />
-      </div>
-      <p className="text-[11px] font-bold text-gray-700 w-20 text-right shrink-0">
-        {(value / 1_000_000).toFixed(1)}M
-      </p>
-    </div>
-  );
-}
+// Removed ProjectionBar as it is unused
 
 // ─── CountUp ─────────────────────────────────────────────────────────────────
 function CountUp({ to, suffix = '', duration = 1400 }: { to: number; suffix?: string; duration?: number }) {
