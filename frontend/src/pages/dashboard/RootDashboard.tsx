@@ -1,10 +1,12 @@
+import { lazy } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import DashboardLayout from '../../layouts/DashboardLayout';
 
-import TenantDashboard from '../../tenant/TenantDashboard';
-import AgentDashboard from '../../agent/AgentDashboard';
-import LandlordDashboard from '../../owner/LandlordDashboard';
-import FunderDashboard from '../../funder/FunderDashboard';
+// Each dashboard is a separate chunk — only the current user's role is loaded
+const TenantDashboard   = lazy(() => import('../../tenant/TenantDashboard'));
+const AgentDashboard    = lazy(() => import('../../agent/AgentDashboard'));
+const LandlordDashboard = lazy(() => import('../../owner/LandlordDashboard'));
+const FunderDashboard   = lazy(() => import('../../funder/FunderDashboard'));
 
 export default function RootDashboard() {
   const { role } = useAuth();
