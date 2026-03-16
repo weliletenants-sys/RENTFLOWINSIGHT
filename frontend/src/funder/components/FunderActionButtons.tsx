@@ -1,29 +1,45 @@
-import { PlusCircle, Wallet } from 'lucide-react';
+import { PlusCircle, ArrowRightFromLine, PieChart } from 'lucide-react';
 
 interface FunderActionButtonsProps {
   onDeposit: () => void;
   onWithdraw: () => void;
+  onPortfolio?: () => void;
 }
 
-export default function FunderActionButtons({ onDeposit, onWithdraw }: FunderActionButtonsProps) {
+export default function FunderActionButtons({ onDeposit, onWithdraw, onPortfolio }: FunderActionButtonsProps) {
+  const actions = [
+    { label: 'Add Funds', icon: <PlusCircle className="w-6 h-6" />, onClick: onDeposit },
+    { label: 'Withdraw',  icon: <ArrowRightFromLine className="w-6 h-6" />, onClick: onWithdraw },
+    { label: 'Portfolio', icon: <PieChart className="w-6 h-6" />, onClick: onPortfolio },
+  ];
+
   return (
-    <div className="flex justify-center px-4 mb-6">
-      <div className="flex flex-1 gap-3 w-full">
-        <button 
-          onClick={onDeposit}
-          className="flex-1 cursor-pointer items-center justify-center rounded-lg h-12 bg-[#7f13ec] hover:bg-[#6c10c9] text-white text-sm font-bold tracking-wide flex gap-2 shadow-md transition-colors"
+    <div className="grid grid-cols-3 gap-4">
+      {actions.map((action) => (
+        <button
+          key={action.label}
+          onClick={action.onClick}
+          className="flex flex-col items-center gap-2 group"
         >
-          <PlusCircle className="w-5 h-5" />
-          Deposit
+          <div
+            className="w-16 h-16 rounded-2xl flex items-center justify-center transition-colors"
+            style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLDivElement).style.background = 'var(--color-primary)';
+              (e.currentTarget as HTMLDivElement).style.color = '#fff';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLDivElement).style.background = 'var(--color-primary-light)';
+              (e.currentTarget as HTMLDivElement).style.color = 'var(--color-primary)';
+            }}
+          >
+            {action.icon}
+          </div>
+          <span className="text-xs font-semibold text-gray-700 group-hover:text-[var(--color-primary)] transition-colors">
+            {action.label}
+          </span>
         </button>
-        <button 
-          onClick={onWithdraw}
-          className="flex-1 cursor-pointer items-center justify-center rounded-lg h-12 bg-white border border-slate-200 hover:bg-slate-50 text-slate-900 text-sm font-bold tracking-wide flex gap-2 shadow-sm transition-colors"
-        >
-          <Wallet className="w-5 h-5" />
-          Withdraw
-        </button>
-      </div>
+      ))}
     </div>
   );
 }

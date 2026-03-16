@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#6c11d4",
+                        "background-light": "#f7f6f8",
+                        "background-dark": "#181022",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined { font-size: 20px; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="flex min-h-screen bg-background-light dark:bg-background-dark"><aside class="w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col sticky top-0 h-screen z-40">
+<div class="p-6 flex items-center gap-3 text-primary">
+<span class="material-symbols-outlined text-3xl font-bold" style="">account_balance_wallet</span>
+<h2 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white" style="">Welile</h2>
+</div>
+<nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary text-white font-semibold transition-all shadow-lg shadow-primary/20" href="#" style="">
+<span class="material-symbols-outlined" style="">dashboard</span>
+<span class="text-sm" style="">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all" href="#" style="">
+<span class="material-symbols-outlined" style="">pie_chart</span>
+<span class="text-sm" style="">Portfolio</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all" href="#" style="">
+<span class="material-symbols-outlined" style="">account_balance</span>
+<span class="text-sm" style="">Investments</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all" href="#" style="">
+<span class="material-symbols-outlined" style="">rocket_launch</span>
+<span class="text-sm" style="">Opportunities</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all" href="#" style="">
+<span class="material-symbols-outlined" style="">swap_horiz</span>
+<span class="text-sm" style="">Transactions</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all" href="#" style="">
+<span class="material-symbols-outlined" style="">payments</span>
+<span class="text-sm" style="">Payouts</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all" href="#" style="">
+<span class="material-symbols-outlined" style="">wallet</span>
+<span class="text-sm" style="">Wallet</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all" href="#" style="">
+<span class="material-symbols-outlined" style="">description</span>
+<span class="text-sm" style="">Reports</span>
+</a>
+<div class="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all" href="#" style="">
+<span class="material-symbols-outlined" style="">settings</span>
+<span class="text-sm" style="">Account Settings</span>
+</a>
+</div>
+</nav>
+<div class="p-4 border-t border-slate-100 dark:border-slate-800">
+<button class="w-full flex items-center justify-center gap-2 bg-slate-900 dark:bg-primary px-4 py-3 rounded-xl text-white font-bold hover:opacity-90 transition-all" style="">
+<span class="material-symbols-outlined" style="">add</span>
+<span class="" style="">New Investment</span>
+</button>
+</div>
+</aside>
+<!-- Top Navigation -->
+<main class="flex-1 flex flex-col h-screen overflow-y-auto">
+<div class="sticky top-0 z-30 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-8 h-20 flex items-center justify-between">
+<div>
+<h1 class="text-2xl font-bold text-slate-900 dark:text-white" style="">Dashboard</h1>
+<p class="text-xs text-slate-500" style="">Welcome back, Investor</p>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" style="">search</span>
+<input class="pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border-none rounded-lg text-sm w-72 shadow-sm focus:ring-2 focus:ring-primary/20 text-slate-800 dark:text-slate-100" placeholder="Search portfolios..." type="text"/>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-2 text-slate-500 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors" style="">
+<span class="material-symbols-outlined" style="">notifications</span>
+</button>
+<div class="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-800">
+<div class="text-right hidden sm:block">
+<p class="text-sm font-bold leading-none" style="">John Doe</p>
+<p class="text-[10px] text-slate-500 uppercase tracking-wider" style="">Premium</p>
+</div>
+<div class="size-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="User profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDawHxQsIf-MeXCDcXteh2zq00hKOU0YGJG1v-7Sb0Lw0ScNxENHrtL_ZtzrWDZtUfGUbnkh1aLJvvAw1iBWFJEXTsB5N1aKldl4l1H3JTcc613YLKtDWCtADNSkL4MvtEP06VhRnW9sy794_zJb6hmBvFTEOOHLwp4f238MxeREbKPhT24fpxkyCTxr4pPCJSsOBBqe8dWe8gZYZNrLYubUII4T-YGdC3ywrJ-PdqkzT4U7ugXiAjlay7vTjN_sDZOUTLJEAGEWv79" style=""/>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="px-8 py-8 w-full">
+<div class="grid grid-cols-12 gap-8"><!-- Main Content Column -->
+<div class="col-span-12 lg:col-span-8 space-y-8">
+<!-- Premium Investor Wallet Card -->
+<section class="flex justify-center">
+<div class="w-full relative overflow-hidden bg-primary text-white rounded-xl p-8 shadow-xl shadow-primary/20">
+<div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+<div class="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full -ml-10 -mb-10 blur-2xl"></div>
+<div class="relative z-10">
+<div class="flex justify-between items-start mb-12">
+<div class="space-y-1">
+<p class="font-mono text-sm" style="">WL-99201</p>
+</div>
+<div class="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full backdrop-blur-md">
+<span class="material-symbols-outlined text-sm" style="">verified</span>
+<span class="text-xs font-bold uppercase tracking-tighter" style="">Welile Premium</span>
+</div>
+</div>
+<div class="space-y-2 mb-10">
+<p class="text-white/70 text-sm font-medium" style="">Total Wallet Balance</p>
+<div class="flex items-center gap-4">
+<h1 class="text-4xl font-bold tracking-tight" style="">ZAR 124,500.00</h1>
+<button class="opacity-70 hover:opacity-100 transition-opacity" style="">
+<span class="material-symbols-outlined" style="">visibility</span>
+</button>
+</div>
+</div>
+<div class="flex items-end justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-green-400/20 text-green-300 px-2 py-1 rounded flex items-center gap-1 text-sm font-bold" style="">
+<span class="material-symbols-outlined text-sm" style="">trending_up</span>
+                            +12.5% ROI
+                        </div>
+<div class="h-8 w-24">
+<svg class="w-full h-full stroke-white/40 fill-none" viewbox="0 0 100 30">
+<path d="M0,25 Q15,20 30,22 T60,10 T100,5" stroke-linecap="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<p class="text-white/40 text-[10px] uppercase tracking-widest" style="">Growth Trend 2024</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Active Investments Section -->
+<section class="space-y-4">
+<div class="flex items-center justify-between px-2">
+<h3 class="text-lg font-bold" style="">Active Investments</h3>
+<a class="text-primary text-sm font-semibold hover:underline" href="#" style="">View All</a>
+</div>
+<div class="grid gap-4">
+<div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-5 rounded-lg flex items-center justify-between hover:shadow-md transition-shadow">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-lg bg-primary/5 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="">location_city</span>
+</div>
+<div>
+<h4 class="font-bold text-slate-800 dark:text-slate-100" style="">Pretoria North Residencies</h4>
+<p class="text-xs text-slate-500 font-mono" style="">INV-0882</p>
+</div>
+</div>
+<div class="text-right hidden sm:block px-6">
+<p class="text-xs text-slate-500" style="">Invested</p>
+<p class="font-bold" style="">ZAR 45,000</p>
+</div>
+<div class="text-right px-6">
+<p class="text-xs text-slate-500" style="">Target ROI</p>
+<p class="font-bold text-green-600" style="">14.2%</p>
+</div>
+<div class="flex items-center gap-3">
+<span class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold uppercase rounded" style="">Active</span>
+<button class="p-1 text-slate-400 hover:text-primary" style=""><span class="material-symbols-outlined" style="">chevron_right</span></button>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-5 rounded-lg flex items-center justify-between hover:shadow-md transition-shadow">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-lg bg-primary/5 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="">apartment</span>
+</div>
+<div>
+<h4 class="font-bold text-slate-800 dark:text-slate-100" style="">Sandton Loft Series</h4>
+<p class="text-xs text-slate-500 font-mono" style="">INV-0912</p>
+</div>
+</div>
+<div class="text-right hidden sm:block px-6">
+<p class="text-xs text-slate-500" style="">Invested</p>
+<p class="font-bold" style="">ZAR 60,000</p>
+</div>
+<div class="text-right px-6">
+<p class="text-xs text-slate-500" style="">Target ROI</p>
+<p class="font-bold text-green-600" style="">11.8%</p>
+</div>
+<div class="flex items-center gap-3">
+<span class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold uppercase rounded" style="">Active</span>
+<button class="p-1 text-slate-400 hover:text-primary" style=""><span class="material-symbols-outlined" style="">chevron_right</span></button>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-5 rounded-lg flex items-center justify-between hover:shadow-md transition-shadow">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-lg bg-primary/5 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="">home_work</span>
+</div>
+<div>
+<h4 class="font-bold text-slate-800 dark:text-slate-100" style="">Cape Town Coastal Villas</h4>
+<p class="text-xs text-slate-500 font-mono" style="">INV-1022</p>
+</div>
+</div>
+<div class="text-right hidden sm:block px-6">
+<p class="text-xs text-slate-500" style="">Invested</p>
+<p class="font-bold" style="">ZAR 19,500</p>
+</div>
+<div class="text-right px-6">
+<p class="text-xs text-slate-500" style="">Target ROI</p>
+<p class="font-bold text-slate-400" style="">TBD</p>
+</div>
+<div class="flex items-center gap-3">
+<span class="px-2 py-1 bg-yellow-100 text-yellow-700 text-[10px] font-bold uppercase rounded" style="">Pending</span>
+<button class="p-1 text-slate-400 hover:text-primary" style=""><span class="material-symbols-outlined" style="">chevron_right</span></button>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="bg-slate-900 rounded-xl overflow-hidden relative group">
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex flex-col md:flex-row items-center">
+<div class="p-10 flex-1 space-y-4">
+<h3 class="text-2xl font-bold text-white" style="">Grow Your Wealth</h3>
+<p class="text-slate-400 max-w-sm" style="">Access institutional-grade real estate opportunities with as little as ZAR 5,000.</p>
+<button class="px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors" style="">Start Investing</button>
+</div>
+<div class="w-full md:w-1/3 h-48 md:h-64 relative bg-slate-800 flex items-center justify-center overflow-hidden">
+<div class="relative w-32 h-40 border-2 border-primary/40 rounded-t-lg bg-slate-900 shadow-2xl">
+<div class="absolute top-4 left-4 right-4 h-2 bg-primary/20 rounded"></div>
+<div class="absolute top-10 left-4 right-4 h-2 bg-primary/20 rounded"></div>
+<div class="absolute top-16 left-4 right-4 h-2 bg-primary/20 rounded"></div>
+<div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-12 bg-primary/40 rounded-t-sm"></div>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
+</div>
+</div>
+</section>
+</div>
+<!-- Sidebar Column (Activity) -->
+<div class="col-span-12 lg:col-span-4 space-y-8">
+<section class="space-y-4">
+<h3 class="text-lg font-bold px-2" style="">Wallet Actions</h3>
+<div class="grid grid-cols-1 gap-4">
+<button class="flex items-center gap-4 p-5 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-lg hover:border-primary/40 transition-all text-left group" style="">
+<div class="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined" style="">add_circle</span>
+</div>
+<div>
+<p class="font-bold text-slate-800 dark:text-slate-100" style="">Add Funds</p>
+<p class="text-xs text-slate-500" style="">Deposit capital to your wallet</p>
+</div>
+</button>
+<button class="flex items-center gap-4 p-5 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-lg hover:border-primary/40 transition-all text-left group" style="">
+<div class="size-10 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined" style="">payments</span>
+</div>
+<div>
+<p class="font-bold text-slate-800 dark:text-slate-100" style="">Withdraw</p>
+<p class="text-xs text-slate-500" style="">Transfer returns to your bank</p>
+</div>
+</button>
+</div>
+</section>
+<section class="space-y-4">
+<h3 class="text-lg font-bold px-2" style="">Recent Activity</h3>
+<div class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden">
+<div class="divide-y divide-slate-100 dark:divide-slate-800">
+<div class="p-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" style="">download</span>
+</div>
+<div>
+<p class="text-sm font-bold" style="">Dividend Payout</p>
+<p class="text-[10px] text-slate-400" style="">Oct 24, 2024</p>
+</div>
+</div>
+<p class="text-sm font-bold text-green-600" style="">+R 1,250.00</p>
+</div>
+<div class="p-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" style="">history</span>
+</div>
+<div>
+<p class="text-sm font-bold" style="">Reinvestment</p>
+<p class="text-[10px] text-slate-400" style="">Oct 18, 2024</p>
+</div>
+</div>
+<p class="text-sm font-bold text-slate-900 dark:text-white" style="">-R 5,000.00</p>
+</div>
+</div>
+<button class="w-full py-3 text-center text-xs font-bold text-slate-400 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors uppercase tracking-widest border-t border-slate-100 dark:border-slate-800" style="">
+                View History
+            </button>
+</div>
+</section>
+<div class="p-6 rounded-xl bg-primary/5 border border-primary/10 space-y-3">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined" style="">lightbulb</span>
+<span class="font-bold text-sm" style="">Investor Tip</span>
+</div>
+<p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed" style="">
+            Diversifying across 3+ residential projects can reduce risk by up to 18% based on historical portfolio data.
+        </p>
+</div>
+</div></div>
+</div>
+</main>
+</div>
+</body></html>

@@ -1,88 +1,172 @@
-import { Building2, Building, Factory, Plus } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
+import type { PortfolioItem, PortfolioStatus } from '../types';
 
-interface PortfolioItem {
-  id: string;
-  name: string;
-  type: 'residential' | 'commercial' | 'industrial';
-  apy: number;
-  invested: number;
-  expectedReturn: number;
-  maturityDate: string;
-}
+export type { PortfolioItem };
 
 interface FunderPortfolioListProps {
   portfolios: PortfolioItem[];
-  onCashOut: (id: string) => void;
-  onAddAsset: () => void;
+  onViewAll?: () => void;
+  onCashOut?: (id: string) => void;
+  onAddAsset?: () => void;
 }
 
-export default function FunderPortfolioList({ portfolios, onCashOut, onAddAsset }: FunderPortfolioListProps) {
-  
-  const getIconForType = (type: string) => {
-    switch(type) {
-      case 'commercial': return <Building className="w-6 h-6" />;
-      case 'industrial': return <Factory className="w-6 h-6" />;
-      default: return <Building2 className="w-6 h-6" />;
-    }
-  };
+const statusConfig: Record<PortfolioStatus, { label: string; classes: string }> = {
+  active:           { label: 'Active',           classes: 'bg-green-100 text-green-700' },
+  pending:          { label: 'Pending',           classes: 'bg-orange-100 text-orange-700' },
+  pending_approval: { label: 'Pending Approval',  classes: 'bg-yellow-100 text-yellow-700' },
+  cancelled:        { label: 'Cancelled',         classes: 'bg-red-100 text-red-600' },
+};
 
+export default function FunderPortfolioList({ portfolios, onViewAll, onCashOut, onAddAsset }: FunderPortfolioListProps) {
   return (
-    <div className="px-4 pb-2">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-slate-900 text-lg font-bold">Investment Portfolios</h3>
-        <button className="text-[#7f13ec] text-sm font-bold hover:underline">View All</button>
+    <section>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4 px-1">
+        <h3 className="font-bold text-gray-900 text-lg">Active Investments</h3>
+        {onViewAll && (
+          <button
+            onClick={onViewAll}
+            className="font-bold text-xs flex items-center gap-1 hover:underline"
+            style={{ color: 'var(--color-primary)' }}
+          >
+            View All <ChevronRight className="w-3 h-3" />
+          </button>
+        )}
       </div>
 
-      <div className="space-y-3 pb-24">
-        {portfolios.map((item) => (
-          <div key={item.id} className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 bg-white shadow-sm hover:border-[#7f13ec]/30 transition-colors">
-            <div className="w-12 h-12 shrink-0 rounded-lg bg-[#7f13ec]/10 flex items-center justify-center text-[#7f13ec]">
-              {getIconForType(item.type)}
-            </div>
-            
-            <div className="flex-1">
-              <div className="flex justify-between items-start mb-2">
-                <p className="text-slate-900 font-bold">{item.name}</p>
-                <span className="text-emerald-500 text-xs font-bold px-2 py-1 bg-emerald-50 rounded-full">
-                  {item.apy}% APY
+      {/* ── Mobile card list ── */}
+      <div className="lg:hidden space-y-4">
+        {portfolios.map((item) => {
+          const stsCfg = statusConfig[item.status];
+          return (
+            <div
+              key={item.id}
+              className="bg-white rounded-2xl p-5 border border-[var(--color-primary-border)]"
+              style={{ boxShadow: '0 8px 30px var(--color-primary-shadow)' }}
+            >
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Portfolio Code</p>
+                  <h4 className="font-bold text-gray-900 font-mono text-base">#{item.portfolioCode}</h4>
+                </div>
+                <span className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase ${stsCfg.classes}`}>
+                  {stsCfg.label}
                 </span>
               </div>
-              
-              <div className="grid grid-cols-2 gap-2 mb-2">
+
+              <div className="grid grid-cols-2 mb-4">
                 <div>
-                  <p className="text-slate-400 text-[10px] uppercase font-bold">Invested</p>
-                  <p className="text-slate-900 text-sm font-semibold">
-                    UGX {(item.invested / 1000000).toFixed(1)}M
-                  </p>
+                  <p className="text-[10px] text-gray-400 font-bold mb-1">Invested Amount</p>
+                  <p className="font-bold text-gray-900">UGX {item.investedAmount.toLocaleString()}</p>
                 </div>
-                <div>
-                  <p className="text-slate-400 text-[10px] uppercase font-bold">Expected Return</p>
-                  <p className="text-emerald-600 text-sm font-semibold">
-                    UGX {(item.expectedReturn / 1000000).toFixed(1)}M
+                <div className="text-right">
+                  <p className="text-[10px] text-gray-400 font-bold mb-1">Total Earned</p>
+                  <p className={`font-bold ${item.totalEarned > 0 ? 'text-[var(--color-success)]' : 'text-gray-400'}`}>
+                    {item.totalEarned > 0 ? '+' : ''}UGX {item.totalEarned.toLocaleString()}
                   </p>
                 </div>
               </div>
-              
-              <p className="text-slate-500 text-xs mb-3 italic">Matures on {item.maturityDate}</p>
-              
-              <button 
-                onClick={() => onCashOut(item.id)}
-                className="w-full py-2 border border-[#7f13ec] text-[#7f13ec] text-xs font-bold rounded-lg hover:bg-[#7f13ec] hover:text-white transition-colors"
-              >
-                Cash out
-              </button>
-            </div>
-          </div>
-        ))}
 
-        <button 
+              {item.nextPayoutDate && (
+                <div className="pt-4 border-t border-gray-100">
+                  <p className="text-[10px] text-gray-400 font-bold mb-1">Next Payout</p>
+                  <p className="font-bold text-gray-900">{item.nextPayoutDate}</p>
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        <button
           onClick={onAddAsset}
-          className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 bg-transparent text-slate-400 hover:text-[#7f13ec] hover:border-[#7f13ec]/50 transition-all"
+          className="w-full flex items-center justify-center gap-2 p-4 rounded-2xl border-2 border-dashed border-slate-200 bg-transparent text-slate-400 font-bold text-sm transition-all"
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = 'var(--color-primary)';
+            e.currentTarget.style.borderColor = 'var(--color-primary)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = '';
+            e.currentTarget.style.borderColor = '';
+          }}
         >
-          <Plus className="w-5 h-5" />
-          <span className="font-bold text-sm">Add New Asset Class</span>
+          + Add New Investment
         </button>
       </div>
-    </div>
+
+      {/* ── Desktop table ── */}
+      <div className="hidden lg:block bg-white rounded-xl border border-[var(--color-primary-border)] overflow-hidden shadow-sm">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-slate-100 bg-slate-50">
+              {['Portfolio', 'Invested', 'ROI', 'Earned', 'Next Payout', 'Status', ''].map((h) => (
+                <th
+                  key={h}
+                  className={`px-5 py-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 ${
+                    h === '' ? '' : h === 'Portfolio' ? 'text-left' : 'text-right'
+                  } ${h === 'Status' ? 'text-center' : ''}`}
+                >
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {portfolios.map((item) => {
+              const stsCfg = statusConfig[item.status];
+              return (
+                <tr key={item.id} className="hover:bg-[var(--color-primary-faint)] transition-colors">
+                  <td className="px-5 py-4">
+                    <p className="font-bold text-slate-800 font-mono text-sm">#{item.portfolioCode}</p>
+                  </td>
+                  <td className="px-5 py-4 text-right font-semibold text-sm text-slate-900">
+                    UGX {item.investedAmount.toLocaleString()}
+                  </td>
+                  <td className="px-5 py-4 text-right font-bold text-sm text-[var(--color-success)]">
+                    {item.roiPercent ?? 15}%
+                  </td>
+                  <td className="px-5 py-4 text-right font-bold text-sm text-[var(--color-success)]">
+                    {item.totalEarned > 0 ? '+' : ''}UGX {item.totalEarned.toLocaleString()}
+                  </td>
+                  <td className="px-5 py-4 text-right text-sm text-slate-600">
+                    {item.nextPayoutDate ?? '—'}
+                  </td>
+                  <td className="px-5 py-4 text-center">
+                    <span className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase ${stsCfg.classes}`}>
+                      {stsCfg.label}
+                    </span>
+                  </td>
+                  <td className="px-5 py-4">
+                    <button
+                      onClick={() => onCashOut?.(item.id)}
+                      className="p-1 text-slate-400 transition-colors"
+                      onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-primary)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = '')}
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <div className="p-4 border-t border-[var(--color-primary-border)]">
+          <button
+            onClick={onAddAsset}
+            className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-slate-200 text-slate-400 font-bold text-sm transition-all"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'var(--color-primary)';
+              e.currentTarget.style.borderColor = 'var(--color-primary)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '';
+              e.currentTarget.style.borderColor = '';
+            }}
+          >
+            + Add New Investment
+          </button>
+        </div>
+      </div>
+    </section>
   );
 }
