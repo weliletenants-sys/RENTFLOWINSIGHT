@@ -123,7 +123,7 @@ export default function AgentWelcome() {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Feature 1 */}
-              <div className="group rounded-3xl border border-sky-950 hover:border-sky-700 bg-white p-10 transition-all hover:shadow-xl">
+              <div className="group rounded-3xl border border-[#6D28D9]/20 hover:border-[#6D28D9] bg-white p-10 transition-all hover:shadow-xl">
                 <div className="flex items-center gap-3 mb-6">
                   <Wallet size={24} className="text-primary" />
                   <h3 className="text-xl font-bold text-sky-950">High Commissions</h3>
@@ -132,7 +132,7 @@ export default function AgentWelcome() {
               </div>
               
               {/* Feature 2 */}
-              <div className="group rounded-3xl border border-sky-100 hover:border-sky-300 bg-white p-10 transition-all hover:shadow-xl">
+              <div className="group rounded-3xl border border-[#6D28D9]/20 hover:border-[#6D28D9] bg-white p-10 transition-all hover:shadow-xl">
                 <div className="flex items-center gap-3 mb-6">
                   <Clock size={24} className="text-primary" />
                   <h3 className="text-xl font-bold text-sky-950">Flexible Hours</h3>
@@ -141,7 +141,7 @@ export default function AgentWelcome() {
               </div>
               
               {/* Feature 3 */}
-              <div className="group rounded-3xl border border-sky-100 hover:border-sky-300 bg-white p-10 transition-all hover:shadow-xl">
+              <div className="group rounded-3xl border border-[#6D28D9]/20 hover:border-[#6D28D9] bg-white p-10 transition-all hover:shadow-xl">
                 <div className="flex items-center gap-3 mb-6">
                   <Globe size={24} className="text-primary" />
                   <h3 className="text-xl font-bold text-sky-950">Global Network</h3>
@@ -180,41 +180,41 @@ export default function AgentWelcome() {
 
       {/* Footer */}
       <footer className="bg-white dark:bg-[#0c4a6e] border-t border-sky-100 dark:border-primary/10 px-6 py-12 md:px-20">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-            <div className="col-span-1 md:col-span-1">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
-                  <Network size={18} />
-                </div>
-                <h2 className="text-lg font-extrabold text-primary">Welile Agents</h2>
-              </div>
-              <p className="text-sky-600 text-sm leading-relaxed">
-                Connecting people and businesses across the globe through a strategic partner network designed for growth.
-              </p>
+        <div className="flex flex-col gap-10">
+          
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#9234EA] text-white">
+              <Network size={18} />
             </div>
-            
-            <div>
-              <h4 className="font-bold text-sky-950 dark:text-white mb-6">Platform</h4>
-              <ul className="flex flex-col gap-4 text-sm text-sky-600">
+            <h2 className="text-lg font-extrabold text-[#9234EA]">Welile Agents</h2>
+          </div>
+          
+          <p className="text-[#0081C9] text-xs leading-relaxed max-w-sm">
+            Connecting people and businesses across the globe through a<br/>strategic partner network designed for growth.
+          </p>
+          
+          <div className="flex flex-col gap-8 mt-2">
+            <div className="flex flex-col gap-4">
+              <h4 className="font-bold text-[#003B5C] dark:text-white text-sm">Platform</h4>
+              <ul className="flex flex-col gap-3 text-xs text-[#0081C9]">
                 <li><a className="hover:text-primary transition-colors" href="#">How it works</a></li>
                 <li><a className="hover:text-primary transition-colors" href="#">Pricing &amp; Fees</a></li>
                 <li><a className="hover:text-primary transition-colors" href="#">Agent Tools</a></li>
               </ul>
             </div>
             
-            <div>
-              <h4 className="font-bold text-sky-950 dark:text-white mb-6">Company</h4>
-              <ul className="flex flex-col gap-4 text-sm text-sky-600">
+            <div className="flex flex-col gap-4">
+              <h4 className="font-bold text-[#003B5C] dark:text-white text-sm">Company</h4>
+              <ul className="flex flex-col gap-3 text-xs text-[#0081C9]">
                 <li><a className="hover:text-primary transition-colors" href="#">About Us</a></li>
                 <li><a className="hover:text-primary transition-colors" href="#">Careers</a></li>
                 <li><a className="hover:text-primary transition-colors" href="#">Legal</a></li>
               </ul>
             </div>
             
-            <div>
-              <h4 className="font-bold text-sky-950 dark:text-white mb-6">Support</h4>
-              <ul className="flex flex-col gap-4 text-sm text-sky-600">
+            <div className="flex flex-col gap-4">
+              <h4 className="font-bold text-[#003B5C] dark:text-white text-sm">Support</h4>
+              <ul className="flex flex-col gap-3 text-xs text-[#0081C9]">
                 <li><a className="hover:text-primary transition-colors" href="#">Help Center</a></li>
                 <li><a className="hover:text-primary transition-colors" href="#">Knowledge Base</a></li>
                 <li><a className="hover:text-primary transition-colors" href="#">Community</a></li>
@@ -222,14 +222,16 @@ export default function AgentWelcome() {
             </div>
           </div>
           
-          <div className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-sky-100 dark:border-primary/10 gap-4">
-            <p className="text-xs text-sky-400">© 2024 Welile Agents Network. All rights reserved.</p>
-            <div className="flex gap-6">
-              <a className="text-sky-400 hover:text-primary transition-colors" href="#"><Globe size={20} /></a>
-              <a className="text-sky-400 hover:text-primary transition-colors" href="#"><Mail size={20} /></a>
-              <a className="text-sky-400 hover:text-primary transition-colors" href="#"><MessageSquare size={20} /></a>
+          {/* Bottom Copyright Row */}
+          <div className="flex items-center justify-between pt-16 mt-4 w-full border-t border-sky-50 dark:border-primary/10">
+            <p className="text-[10px] text-[#0081C9]">© 2024 Welile Agents Network. All rights reserved.</p>
+            <div className="flex gap-4">
+              <a className="text-[#00a6fb] hover:text-primary transition-colors" href="#"><Globe size={16} strokeWidth={2} /></a>
+              <a className="text-[#00a6fb] hover:text-primary transition-colors" href="#"><Mail size={16} strokeWidth={2} /></a>
+              <a className="text-[#00a6fb] hover:text-primary transition-colors" href="#"><MessageSquare size={16} strokeWidth={2} /></a>
             </div>
           </div>
+          
         </div>
       </footer>
     </div>
