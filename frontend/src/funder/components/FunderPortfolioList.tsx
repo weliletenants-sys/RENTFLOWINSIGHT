@@ -22,7 +22,7 @@ export default function FunderPortfolioList({ portfolios, onViewAll, onCashOut, 
     <section>
       {/* Header */}
       <div className="flex items-center justify-between mb-4 px-1">
-        <h3 className="font-bold text-gray-900 text-lg">Active Investments</h3>
+        <h3 className="font-bold text-gray-900 text-lg">Active supports</h3>
         {onViewAll && (
           <button
             onClick={onViewAll}
@@ -56,8 +56,8 @@ export default function FunderPortfolioList({ portfolios, onViewAll, onCashOut, 
 
               <div className="grid grid-cols-2 mb-4">
                 <div>
-                  <p className="text-[10px] text-gray-400 font-bold mb-1">Invested Amount</p>
-                  <p className="font-bold text-gray-900">UGX {item.investedAmount.toLocaleString()}</p>
+                  <p className="text-[10px] text-gray-400 font-bold mb-1">supported Amount</p>
+                  <p className="font-bold text-gray-900">UGX {item.supportedAmount.toLocaleString()}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] text-gray-400 font-bold mb-1">Total Earned</p>
@@ -89,7 +89,7 @@ export default function FunderPortfolioList({ portfolios, onViewAll, onCashOut, 
             e.currentTarget.style.borderColor = '';
           }}
         >
-          + Add New Investment
+          + Add New support
         </button>
       </div>
 
@@ -98,7 +98,7 @@ export default function FunderPortfolioList({ portfolios, onViewAll, onCashOut, 
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-100 bg-slate-50">
-              {['Portfolio', 'Invested', 'ROI', 'Earned', 'Next Payout', 'Status', ''].map((h) => (
+              {['Portfolio', 'supported', 'ROI', 'Earned', 'Next Payout', 'Status', ''].map((h) => (
                 <th
                   key={h}
                   className={`px-3 py-2 text-[9px] font-bold uppercase tracking-wider text-slate-400 ${
@@ -118,8 +118,8 @@ export default function FunderPortfolioList({ portfolios, onViewAll, onCashOut, 
                   <td className="px-3 py-2">
                     <p className="font-bold text-slate-800 font-mono text-sm">#{item.portfolioCode}</p>
                   </td>
-                  <td className="px-3 py-2 text-right font-semibold text-sm text-slate-900">
-                    UGX {item.investedAmount.toLocaleString()}
+                  <td className="px-5 py-4 text-right font-semibold text-sm text-slate-900">
+                    UGX {item.supportedAmount.toLocaleString()}
                   </td>
                   <td className="px-3 py-2 text-right font-bold text-sm text-[var(--color-success)]">
                     {item.roiPercent ?? 15}%
@@ -163,7 +163,7 @@ export default function FunderPortfolioList({ portfolios, onViewAll, onCashOut, 
               e.currentTarget.style.borderColor = '';
             }}
           >
-            + Add New Investment
+            + Add New support
           </button>
         </div>
       </div>

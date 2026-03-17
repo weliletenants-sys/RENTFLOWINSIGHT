@@ -157,7 +157,7 @@ function CountUp({ to, suffix = '', duration = 1400 }: { to: number; suffix?: st
   );
 }
 
-// ─── Investment Graph ─────────────────────────────────────────────────────────
+// ─── support Graph ─────────────────────────────────────────────────────────
 const MONTHS = 12;
 const PRINCIPAL = 1_000_000;
 
@@ -172,7 +172,7 @@ function buildPoints(mode: 'tenant' | 'pool', principal: number): number[] {
   return pts;
 }
 
-function InvestmentGraph({ mode }: { mode: 'tenant' | 'pool' }) {
+function SupportGraph({ mode }: { mode: 'tenant' | 'pool' }) {
   const [hovered, setHovered] = useState<number | null>(null);
   const [rawInput, setRawInput] = useState('1,000,000');
   const currency = useCurrency();
@@ -411,7 +411,7 @@ function Step1({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
   );
 }
 
-// ─── Step 2 — Invest ──────────────────────────────────────────────────────────
+// ─── Step 2 — Support ──────────────────────────────────────────────────────────
 function Step2({ form, setForm }: { form: FormState; setForm: React.Dispatch<React.SetStateAction<FormState>> }) {
   return (
     <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6">
@@ -443,7 +443,7 @@ function Step2({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
 
       <AnimatePresence mode="wait">
         {form.investPath && (
-          <InvestmentGraph key={form.investPath} mode={form.investPath} />
+          <SupportGraph key={form.investPath} mode={form.investPath} />
         )}
       </AnimatePresence>
     </motion.div>
@@ -676,7 +676,7 @@ function isValid(step: number, form: FormState): boolean {
   return false;
 }
 
-const STEP_LABELS = ['Welcome', 'Invest', 'Create Account'];
+const STEP_LABELS = ['Welcome', 'Support', 'Create Account'];
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function FunderOnboarding() {

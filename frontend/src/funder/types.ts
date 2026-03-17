@@ -2,7 +2,7 @@
 
 export type ActivityCategory =
   | 'reward'
-  | 'investment'
+  | 'support'
   | 'withdrawal'
   | 'deposit'
   | 'refund';
@@ -25,7 +25,7 @@ export type PortfolioStatus = 'active' | 'pending' | 'pending_approval' | 'cance
 export interface PortfolioItem {
   id: string;
   portfolioCode: string;
-  investedAmount: number;
+  supportedAmount: number;
   totalEarned: number;
   roiPercent?: number;
   nextPayoutDate?: string;

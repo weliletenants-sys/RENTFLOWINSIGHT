@@ -63,7 +63,7 @@ export default function FunderInvestModal({ isOpen, onClose, onSuccess, walletBa
           
           <h2 className="text-2xl font-black text-gray-900 tracking-tight mb-2">Fund Rent Pool</h2>
           <p className="text-sm text-gray-500 font-medium mb-6">
-            Invest directly into the rent pool to start earning 15% monthly compounding interest.
+            Support directly into the rent pool to start earning 15% monthly compounding interest.
           </p>
 
           <div className="mb-6 bg-gray-50 p-4 rounded-2xl border border-gray-100 flex justify-between items-center">
@@ -73,7 +73,7 @@ export default function FunderInvestModal({ isOpen, onClose, onSuccess, walletBa
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="relative">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1 mb-1 block">Investment Amount (UGX)</label>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1 mb-1 block">Support Amount (UGX)</label>
               <input
                 type="text"
                 value={amount}

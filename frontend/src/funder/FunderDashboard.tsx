@@ -20,7 +20,7 @@ import FunderInvestModal from './FunderInvestModal';
 
 interface DashboardStats {
   walletBalance: number;
-  principalInvested: number;
+  principalsupported: number;
   monthlyReturn: number;
   roiPercent: number;
 }
@@ -29,7 +29,7 @@ interface DashboardStats {
 
 const MOCK_STATS: DashboardStats = {
   walletBalance: 2_500_000,
-  principalInvested: 45_000_000,
+  principalsupported: 45_000_000,
   monthlyReturn: 6_750_000,
   roiPercent: 15,
 };
@@ -38,7 +38,7 @@ const MOCK_PORTFOLIOS: PortfolioItem[] = [
   {
     id: '1',
     portfolioCode: 'WEL-01',
-    investedAmount: 2_500_000,
+    supportedAmount: 2_500_000,
     totalEarned: 462_500,
     roiPercent: 15,
     nextPayoutDate: '24 Oct 2026',
@@ -48,7 +48,7 @@ const MOCK_PORTFOLIOS: PortfolioItem[] = [
   {
     id: '2',
     portfolioCode: 'WEL-05',
-    investedAmount: 5_000_000,
+    supportedAmount: 5_000_000,
     totalEarned: 0,
     roiPercent: 15,
     nextPayoutDate: undefined,
@@ -58,7 +58,7 @@ const MOCK_PORTFOLIOS: PortfolioItem[] = [
   {
     id: '3',
     portfolioCode: 'WEL-09',
-    investedAmount: 1_200_000,
+    supportedAmount: 1_200_000,
     totalEarned: 0,
     roiPercent: 20,
     nextPayoutDate: undefined,
@@ -80,8 +80,8 @@ const MOCK_ACTIVITIES: ActivityItem[] = [
   },
   {
     id: '2',
-    title: 'New Investment',
-    category: 'investment',
+    title: 'New support',
+    category: 'support',
     status: 'PENDING',
     provider: '#WEL-09',
     date: '10 Mar 2026',
@@ -126,7 +126,7 @@ export default function FunderDashboard() {
   const handleInvestSuccess = (amount: number) => {
     setStats((prev) => ({
       ...prev,
-      principalInvested: prev.principalInvested + amount,
+      principalsupported: prev.principalsupported + amount,
       monthlyReturn: prev.monthlyReturn + amount * 0.15,
     }));
   };
@@ -157,7 +157,7 @@ export default function FunderDashboard() {
         {/* ──────────── DESKTOP SIDEBAR ──────────── */}
         <FunderSidebar
           activePage="Dashboard"
-          onNewInvestment={() => setIsModalOpen(true)}
+          onNewsupport={() => setIsModalOpen(true)}
         />
 
         {/* ──────────── MAIN CONTENT AREA ──────────── */}
@@ -165,7 +165,7 @@ export default function FunderDashboard() {
 
           {/* Desktop top navbar */}
           <FunderDashboardHeader
-            user={{ fullName: displayName, role: 'Investor', avatarUrl: '' }}
+            user={{ fullName: displayName, role: 'supporter', avatarUrl: '' }}
             pageTitle="Dashboard"
             onAvatarClick={() => navigate('/settings')}
           />
@@ -186,7 +186,7 @@ export default function FunderDashboard() {
                 {/* Wallet Card */}
                 <FunderWalletCard
                   balance={stats.walletBalance}
-                  principal={stats.principalInvested}
+                  principal={stats.principalsupported}
                   expectedAmount={stats.monthlyReturn}
                   roiPercent={stats.roiPercent}
                   cardId="WL-99201"
@@ -211,7 +211,7 @@ export default function FunderDashboard() {
                 />
 
                 {/* Grow Your Wealth CTA */}
-                <FunderInvestCTA onStartInvesting={() => setIsModalOpen(true)} />
+                <FunderInvestCTA onStartsupporting={() => setIsModalOpen(true)} />
 
                 {/* Recent Activity — mobile only */}
                 <div className="lg:hidden pb-32">
@@ -269,14 +269,14 @@ export default function FunderDashboard() {
                   />
                 </div>
 
-                {/* Investor Tip */}
+                {/* supporter Tip */}
                 <div
                   className="p-6 rounded-xl border"
                   style={{ background: 'var(--color-primary-faint)', borderColor: 'var(--color-primary-border)' }}
                 >
                   <div className="flex items-center gap-2 mb-3" style={{ color: 'var(--color-primary)' }}>
                     <Lightbulb className="w-4 h-4" />
-                    <span className="font-bold text-sm">Investor Tip</span>
+                    <span className="font-bold text-sm">supporter Tip</span>
                   </div>
                   <p className="text-xs text-slate-600 leading-relaxed">
                     Diversifying across 3+ portfolios reduces exposure risk significantly.

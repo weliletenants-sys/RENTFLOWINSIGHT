@@ -1,8 +1,8 @@
 interface FunderInvestCTAProps {
-  onStartInvesting?: () => void;
+  onStartsupporting?: () => void;
 }
 
-export default function FunderInvestCTA({ onStartInvesting }: FunderInvestCTAProps) {
+export default function FunderInvestCTA({ onStartsupporting }: FunderInvestCTAProps) {
   return (
     <section
       className="bg-white rounded-2xl p-8 relative overflow-hidden flex flex-col lg:flex-row items-start border"
@@ -25,7 +25,7 @@ export default function FunderInvestCTA({ onStartInvesting }: FunderInvestCTAPro
           ))}
         </ul>
         <button
-          onClick={onStartInvesting}
+          onClick={onStartsupporting}
           className="text-white px-6 py-3 rounded-2xl font-bold text-sm transition-colors"
           style={{
             background: 'var(--color-primary)',
@@ -34,7 +34,7 @@ export default function FunderInvestCTA({ onStartInvesting }: FunderInvestCTAPro
           onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.background = 'var(--color-primary-dark)')}
           onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.background = 'var(--color-primary)')}
         >
-          Start Investing
+          Start Supporting
         </button>
       </div>
 

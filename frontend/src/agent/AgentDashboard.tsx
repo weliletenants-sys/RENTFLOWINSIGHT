@@ -96,12 +96,12 @@ export default function AgentDashboard() {
       <AgentRegisterUserDialog isOpen={isRegisterOpen} onClose={() => setIsRegisterOpen(false)} />
       <VisitPaymentWizard isOpen={isWizardOpen} onClose={() => setIsWizardOpen(false)} />
 
-      {/* Existing Proxy Invest Modal Placeholder */}
+      {/* Existing Proxy Support Modal Placeholder */}
       {isInvestModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 p-4">
            <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-sm">
-             <h3 className="font-bold text-lg mb-2">Invest for Partner</h3>
-             <p className="text-sm text-gray-500 mb-4">You are acting on behalf of a partner to invest into the Rent Pool.</p>
+             <h3 className="font-bold text-lg mb-2">Support for Partner</h3>
+             <p className="text-sm text-gray-500 mb-4">You are acting on behalf of a partner to support into the Rent Pool.</p>
              <button onClick={() => setIsInvestModalOpen(false)} className="bg-gray-200 w-full py-2 rounded-lg font-bold">Close</button>
            </div>
         </div>

@@ -13,13 +13,13 @@ import {
 
 interface FunderSidebarProps {
   activePage?: string;
-  onNewInvestment?: () => void;
+  onNewsupport?: () => void;
 }
 
 const navItems = [
   { label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
   { label: 'Portfolio', icon: <PieChart className="w-5 h-5" /> },
-  { label: 'Investments', icon: <Landmark className="w-5 h-5" /> },
+  { label: 'supports', icon: <Landmark className="w-5 h-5" /> },
   { label: 'Opportunities', icon: <Rocket className="w-5 h-5" /> },
   { label: 'Transactions', icon: <ArrowLeftRight className="w-5 h-5" /> },
   { label: 'Payouts', icon: <Banknote className="w-5 h-5" /> },
@@ -27,7 +27,7 @@ const navItems = [
   { label: 'Reports', icon: <FileText className="w-5 h-5" /> },
 ];
 
-export default function FunderSidebar({ activePage = 'Dashboard', onNewInvestment }: FunderSidebarProps) {
+export default function FunderSidebar({ activePage = 'Dashboard', onNewsupport }: FunderSidebarProps) {
   return (
     <aside className="hidden lg:flex w-72 bg-white border-r border-[var(--color-primary-border)] flex-col sticky top-0 h-screen z-40">
       {/* Logo */}
@@ -77,15 +77,15 @@ export default function FunderSidebar({ activePage = 'Dashboard', onNewInvestmen
         </div>
       </nav>
 
-      {/* New Investment CTA */}
+      {/* New support CTA */}
       <div className="p-4 border-t border-[var(--color-primary-border)]">
         <button
-          onClick={onNewInvestment}
+          onClick={onNewsupport}
           className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-white font-bold text-sm transition-colors duration-200"
           style={{ background: 'var(--color-primary)' }}
         >
           <Plus className="w-5 h-5" />
-          New Investment
+          New support
         </button>
       </div>
     </aside>

@@ -311,7 +311,7 @@ export default function LandingPage() {
              <div className="grid lg:grid-cols-2 gap-16 items-center">
                <div className="reveal">
                  <span className="text-violet-300 font-bold uppercase tracking-widest text-sm mb-4 block">For Supporters</span>
-                 <h2 className="text-4xl md:text-5xl font-heading font-bold mb-8">Invest in housing, <br/>receive monthly returns.</h2>
+                 <h2 className="text-4xl md:text-5xl font-heading font-bold mb-8">Support housing, <br/>receive monthly returns.</h2>
                  <ul className="space-y-6 mb-10">
                    <li className="flex items-start gap-4">
                      <span className="material-symbols-outlined text-violet-300 bg-violet-400/10 rounded-full p-1 text-sm">check</span>
@@ -327,7 +327,7 @@ export default function LandingPage() {
                    </li>
                  </ul>
                  <button onClick={() => navigate('/role-selection')} className="block mx-auto px-8 py-4 bg-[#8b5cf6] text-slate-900 font-bold rounded-xl hover:bg-violet-600 transition-all shadow-lg shadow-violet-500/20">
-                   Start Investing
+                   Start Supporting
                  </button>
                </div>
                <div className="reveal" style={{ transitionDelay: '0.2s' }}>

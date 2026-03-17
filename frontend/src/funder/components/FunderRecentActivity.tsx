@@ -10,7 +10,7 @@ interface FunderRecentActivityProps {
 
 const categoryConfig: Record<ActivityCategory, { icon: React.ReactNode; bg: string }> = {
   reward:     { icon: <Banknote className="w-5 h-5 text-[var(--color-success)]" />, bg: 'bg-green-50' },
-  investment: { icon: <TrendingUp className="w-5 h-5 text-[var(--color-primary)]" />, bg: 'bg-[var(--color-primary-light)]' },
+  support: { icon: <TrendingUp className="w-5 h-5 text-[var(--color-primary)]" />, bg: 'bg-[var(--color-primary-light)]' },
   withdrawal: { icon: <ArrowDownToLine className="w-5 h-5 text-blue-500" />, bg: 'bg-blue-50' },
   deposit:    { icon: <Banknote className="w-5 h-5 text-[var(--color-success)]" />, bg: 'bg-green-50' },
   refund:     { icon: <ArrowDownToLine className="w-5 h-5 text-orange-500" />, bg: 'bg-orange-50' },

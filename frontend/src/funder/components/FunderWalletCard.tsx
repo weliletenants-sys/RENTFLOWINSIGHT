@@ -59,14 +59,14 @@ export default function FunderWalletCard({
           </div>
         </div>
 
-        {/* Bottom row: payout mode + total invested */}
+        {/* Bottom row: payout mode + total supported */}
         <div className="flex items-center justify-between flex-wrap gap-2 pt-4 border-t border-white/20 mt-auto">
           <div className="bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-lg flex items-center gap-2">
             <Calendar className="w-3.5 h-3.5" />
             <span className="text-xs font-semibold">{payoutMode}</span>
           </div>
           <div className="text-right">
-            <p className="text-white/60 text-[10px]">Total Invested</p>
+            <p className="text-white/60 text-[10px]">Total supported</p>
             <p className="text-white font-semibold text-sm">
               UGX {(principal / 1_000_000).toFixed(1)}M
             </p>
