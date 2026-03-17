@@ -1,9 +1,7 @@
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useEffect } from 'react';
 
 export default function AgentDashboard() {
-  const navigate = useNavigate();
   const { user } = useAuth();
   
   // Load Material Symbols
