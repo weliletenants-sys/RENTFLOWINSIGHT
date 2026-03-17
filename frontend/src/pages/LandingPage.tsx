@@ -298,28 +298,16 @@ export default function LandingPage() {
                    Start Earning
                  </button>
                </div>
-               <div className="lg:order-1 reveal" style={{ transitionDelay: '0.2s' }}>
-                 <div className="card-glass p-8 rounded-3xl border-slate-200 shadow-2xl -rotate-2">
-                   <div className="mb-6">
-                     <div className="text-xs text-slate-500 uppercase font-bold mb-2">Earnings Balance</div>
-                     <div className="text-4xl font-heading font-bold text-slate-900">UGX 845,000</div>
-                   </div>
-                   <div className="space-y-3">
-                     <div className="flex items-center justify-between p-3 bg-white shadow-sm border-slate-200 rounded-lg">
-                       <span className="text-sm text-slate-600">Commission - Apt 4B</span>
-                       <span className="text-sm text-violet-300 font-bold">+50,000</span>
-                     </div>
-                     <div className="flex items-center justify-between p-3 bg-white shadow-sm border-slate-200 rounded-lg opacity-80">
-                       <span className="text-sm text-slate-600">Referral Bonus</span>
-                       <span className="text-sm text-violet-300 font-bold">+15,000</span>
-                     </div>
-                     <div className="flex items-center justify-between p-3 bg-white shadow-sm border-slate-200 rounded-lg opacity-60">
-                       <span className="text-sm text-slate-600">Commission - House 12</span>
-                       <span className="text-sm text-violet-300 font-bold">+120,000</span>
-                     </div>
-                   </div>
-                 </div>
-               </div>
+                <div className="lg:order-1 reveal relative flex justify-center lg:justify-start overflow-hidden h-[600px] lg:h-[700px] w-full" style={{ transitionDelay: '0.2s', WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)', maskImage: 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)' }}>
+                  {/* Container that is exactly 2x the height of its unique content for a seamless loop */}
+                  <div className="flex flex-col gap-12 animate-slide-vertical pt-10">
+                    <img src="/images/agent_app_mockup.png" alt="Agent App Mockup" className="max-w-[500px] lg:max-w-[600px] w-full h-auto drop-shadow-2xl rounded-3xl" />
+                    <img src="/images/agent_app_mockup.png" alt="Agent App Mockup" className="max-w-[500px] lg:max-w-[600px] w-full h-auto drop-shadow-2xl rounded-3xl" />
+                    {/* Duplicates for infinite scrolling */}
+                    <img src="/images/agent_app_mockup.png" alt="Agent App Mockup" className="max-w-[500px] lg:max-w-[600px] w-full h-auto drop-shadow-2xl rounded-3xl" />
+                    <img src="/images/agent_app_mockup.png" alt="Agent App Mockup" className="max-w-[500px] lg:max-w-[600px] w-full h-auto drop-shadow-2xl rounded-3xl" />
+                  </div>
+                </div>
              </div>
            </div>
          </section>
@@ -349,33 +337,16 @@ export default function LandingPage() {
                    Start Supporting
                  </button>
                </div>
-               <div className="reveal" style={{ transitionDelay: '0.2s' }}>
-                 <div className="card-glass p-8 rounded-3xl border-slate-200 shadow-2xl">
-                   <div className="flex items-end justify-between mb-8">
-                     <div>
-                       <div className="text-xs text-slate-500 uppercase font-bold mb-1">Growth Index</div>
-                       <div className="text-3xl font-heading font-bold text-slate-900">+12.4% APY</div>
-                     </div>
-                     <div className="text-violet-300 font-bold text-sm">Market Trend</div>
-                   </div>
-                   <div className="h-48 flex items-end gap-2">
-                     <div className="flex-1 bg-violet-400/20 h-1/4 rounded-t-md"></div>
-                     <div className="flex-1 bg-violet-400/30 h-1/2 rounded-t-md"></div>
-                     <div className="flex-1 bg-violet-400/40 h-2/3 rounded-t-md"></div>
-                     <div className="flex-1 bg-violet-400/60 h-3/4 rounded-t-md"></div>
-                     <div className="flex-1 bg-violet-400 h-full rounded-t-md"></div>
-                     <div className="flex-1 bg-fuchsia-400 h-[110%] rounded-t-md"></div>
-                   </div>
-                   <div className="mt-4 pt-4 border-t border-slate-200 flex justify-between text-xs text-slate-500 font-bold uppercase">
-                     <span>Jan</span>
-                     <span>Mar</span>
-                     <span>May</span>
-                     <span>Jul</span>
-                     <span>Sep</span>
-                     <span>Nov</span>
-                   </div>
-                 </div>
-               </div>
+                <div className="reveal relative flex justify-center lg:justify-end overflow-hidden h-[600px] lg:h-[700px] w-full" style={{ transitionDelay: '0.2s', WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)', maskImage: 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)' }}>
+                  {/* Container that is exactly 2x the height of its unique content for a seamless loop */}
+                  <div className="flex flex-col gap-12 animate-slide-vertical pt-10">
+                    <img src="/images/supporter_app_mockup.png" alt="Supporter App Mockup" className="max-w-[500px] lg:max-w-[600px] w-full h-auto drop-shadow-2xl rounded-3xl" />
+                    <img src="/images/supporter_app_mockup.png" alt="Supporter App Mockup" className="max-w-[500px] lg:max-w-[600px] w-full h-auto drop-shadow-2xl rounded-3xl" />
+                    {/* Duplicates for infinite scrolling */}
+                    <img src="/images/supporter_app_mockup.png" alt="Supporter App Mockup" className="max-w-[500px] lg:max-w-[600px] w-full h-auto drop-shadow-2xl rounded-3xl" />
+                    <img src="/images/supporter_app_mockup.png" alt="Supporter App Mockup" className="max-w-[500px] lg:max-w-[600px] w-full h-auto drop-shadow-2xl rounded-3xl" />
+                  </div>
+                </div>
              </div>
            </div>
          </section>
