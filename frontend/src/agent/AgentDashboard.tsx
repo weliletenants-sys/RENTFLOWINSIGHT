@@ -38,7 +38,7 @@ export default function AgentDashboard() {
         <header className="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#221610]/80 backdrop-blur-md px-4 lg:px-10 py-3">
           <div className="max-w-5xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src="/welile-logo.png" alt="Welile Logo" className="h-10 w-auto object-contain" />
+              <img src="/welile-logo.png" alt="Welile Logo" className="h-16 w-auto object-contain" />
             </div>
             <div className="flex items-center gap-4">
               <button className="flex items-center justify-center size-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
