@@ -202,7 +202,9 @@ export default function FunderDashboard() {
                 />
 
                 {/* Quick Actions — mobile only */}
-                <div className="lg:hidden">
+                <div className="lg:hidden bg-white rounded-2xl border border-slate-100 shadow-sm p-5 relative overflow-hidden">
+                  {/* Subtle top accent */}
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--color-primary)] opacity-40" />
                   <FunderActionButtons
                     balance={stats.walletBalance}
                     onDeposit={() => setIsModalOpen(true)}

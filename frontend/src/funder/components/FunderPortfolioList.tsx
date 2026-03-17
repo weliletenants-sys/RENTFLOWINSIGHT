@@ -69,7 +69,7 @@ export default function FunderPortfolioList({ portfolios, onViewAll, onCashOut, 
               </div>
 
               {/* Metrics Grid */}
-              <div className="grid grid-cols-2 gap-3 bg-slate-50 rounded-xl p-3 border border-slate-100">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 rounded-xl p-3 border border-slate-100">
                 <div className="bg-white p-2.5 rounded-lg border border-slate-100">
                   <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Invested</p>
                   <p className="font-bold text-slate-900 text-sm">UGX {(item.investedAmount || item.supportedAmount || 0).toLocaleString()}</p>
