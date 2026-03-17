@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserPlus, UserCheck, Rocket, Zap, CalendarDays, LineChart, ShieldCheck, Home, Users, CreditCard, TrendingUp } from 'lucide-react';
 
@@ -31,6 +31,33 @@ export default function LandingPage() {
       target.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  const [rentHandled, setRentHandled] = useState(5420000);
+
+  useEffect(() => {
+    // Animate the number counting up
+    let startTimestamp: number | null = null;
+    const duration = 2500; // 2.5 seconds
+    const startValue = 5420000;
+    const endValue = 200420000000; // 200 Billion+
+
+    const step = (timestamp: number) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      
+      // Easing function for smooth deceleration
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+      
+      setRentHandled(Math.floor(easeOutQuart * (endValue - startValue) + startValue));
+      
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+    
+    // Start animation
+    window.requestAnimationFrame(step);
+  }, []);
 
   return (
     <div className="antialiased font-sans bg-[#ffffff] text-slate-900">
@@ -137,7 +164,7 @@ export default function LandingPage() {
                      <div className="h-24 bg-white shadow-sm border-slate-200 rounded-xl border border-slate-200 flex items-center px-6 justify-between">
                        <div>
                          <div className="text-[10px] text-slate-500 uppercase font-bold mb-1">Total Rent Handled</div>
-                         <div className="text-2xl font-heading font-bold">UGX 5,420,000</div>
+                         <div className="text-2xl font-heading font-bold">UGX {rentHandled.toLocaleString()}</div>
                        </div>
                         <div className="h-10 w-10 bg-violet-400/20 rounded-lg flex items-center justify-center">
                           <TrendingUp className="text-violet-300 w-5 h-5" />
