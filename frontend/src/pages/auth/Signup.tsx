@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Wallet, Phone, Mail, Lock, Eye, EyeOff, ArrowRight, Shield, ShieldCheck, Fingerprint, User } from 'lucide-react';
+import { Phone, Mail, Lock, Eye, EyeOff, ArrowRight, User, ShieldCheck } from 'lucide-react';
 
 export default function Signup() {
   const [firstName, setFirstName] = useState('');
@@ -76,19 +76,7 @@ export default function Signup() {
       {/* Background Mesh */}
       <div className="absolute inset-0 bg-mesh pointer-events-none z-0"></div>
 
-      <nav className="relative z-10 w-full px-6 py-6 flex justify-between items-center max-w-7xl mx-auto">
-        <div className="flex items-center gap-2">
-          <div className="bg-[#6d28d9] p-2 rounded-lg text-white">
-            <Wallet size={20} strokeWidth={2} />
-          </div>
-          <span className="text-2xl font-bold tracking-tight text-slate-900">Welile</span>
-        </div>
-        <div className="hidden md:flex items-center gap-6">
-          <a className="text-sm font-medium text-slate-600 hover:text-[#6d28d9] transition-colors" href="#">Products</a>
-          <a className="text-sm font-medium text-slate-600 hover:text-[#6d28d9] transition-colors" href="#">Security</a>
-          <a className="text-sm font-medium text-slate-600 hover:text-[#6d28d9] transition-colors" href="#">Support</a>
-        </div>
-      </nav>
+
 
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 overflow-y-auto">
         <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl shadow-[#6d28d9]/5 border border-slate-100 overflow-hidden shrink-0 my-4">
@@ -280,17 +268,7 @@ export default function Signup() {
               </button>
             </form>
 
-            <div className="mt-8 flex justify-center gap-4 grayscale opacity-50">
-              <div className="bg-slate-50 p-2 rounded-lg text-slate-600">
-                <Shield size={24} strokeWidth={1.5} />
-              </div>
-              <div className="bg-slate-50 p-2 rounded-lg text-slate-600">
-                <ShieldCheck size={24} strokeWidth={1.5} />
-              </div>
-              <div className="bg-slate-50 p-2 rounded-lg text-slate-600">
-                <Fingerprint size={24} strokeWidth={1.5} />
-              </div>
-            </div>
+
 
           </div>
         </div>
