@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Phone, Mail, Lock, Eye, EyeOff, ArrowRight, User, ShieldCheck } from 'lucide-react';
+import PurpleBubbles from '../../components/PurpleBubbles';
 
 export default function Signup() {
   const [firstName, setFirstName] = useState('');
@@ -76,7 +77,10 @@ export default function Signup() {
       {/* Background Mesh */}
       <div className="absolute inset-0 bg-mesh pointer-events-none z-0"></div>
 
-
+      {/* Animated Purple Bubbles */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <PurpleBubbles />
+      </div>
 
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 overflow-y-auto">
         <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl shadow-[#6d28d9]/5 border border-slate-100 overflow-hidden shrink-0 my-4">

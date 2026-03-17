@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Phone, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import PurpleBubbles from '../../components/PurpleBubbles';
 
 export default function Login() {
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -50,7 +51,10 @@ export default function Login() {
       {/* Background Mesh (applied via absolute div to keep body clean) */}
       <div className="absolute inset-0 bg-mesh pointer-events-none z-0"></div>
 
-
+      {/* Animated Purple Bubbles */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <PurpleBubbles />
+      </div>
 
       <main className="relative z-10 flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
         <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl shadow-[#6d28d9]/5 border border-slate-100 overflow-hidden">
