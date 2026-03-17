@@ -40,17 +40,7 @@ export default function AgentDashboard() {
             <div className="flex items-center gap-3">
               <img src="/welile-logo.png" alt="Welile Logo" className="h-16 w-auto object-contain" />
             </div>
-            <div className="flex items-center gap-4">
-              <button className="flex items-center justify-center size-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                <span className="material-symbols-outlined">notifications</span>
-              </button>
-              <div className="size-10 rounded-full border-2 border-[#6d28d9]/20 p-0.5 cursor-pointer" onClick={() => navigate('/dashboard/profile')}>
-                <div 
-                  className="size-full rounded-full bg-cover bg-center" 
-                  style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAc8E_SMHB5tZ6jssPtcu82CLvg7Y2rTS7drlgdRLuEICDoIKsgjXsgos-15fuHB99E_6UDljLLQX-fUDqkhnx9iURKrHTc6a1yWbvUxdtrOgUXOFwashzmssOz6s3dcr1lqSlRfb4DCoBdurFUGfyI32iIJSp4JpIj4tz4VxDeE813mooNEzX306DA69v5A6d-n7H2f2T7pKiDYRljQVVi-vNK6WWeYdrIwEYPg8vL9PCX8CTE3kKSBMr3Lt-F_LL_ms4e7k_4SANP")' }}
-                ></div>
-              </div>
-            </div>
+
           </div>
         </header>
 
