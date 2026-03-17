@@ -13,7 +13,7 @@ export default function RoleSelection() {
       setIntendedRole(role);
     }
     if (role === 'AGENT') {
-      navigate('/agent-welcome');
+      navigate('/login');
     } else if (role === 'TENANT') {
       navigate('/signup');
     } else {
