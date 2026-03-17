@@ -15,7 +15,7 @@ export default function RoleSelection() {
     if (role === 'AGENT') {
       navigate('/agent-welcome');
     } else if (role === 'TENANT') {
-      navigate('/welcome');
+      navigate('/signup');
     } else {
       navigate('/signup');
     }
