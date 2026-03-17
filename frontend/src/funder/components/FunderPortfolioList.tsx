@@ -34,138 +34,84 @@ export default function FunderPortfolioList({ portfolios, onViewAll, onCashOut, 
         )}
       </div>
 
-      {/* ── Mobile card list ── */}
-      <div className="lg:hidden space-y-4">
-        {portfolios.map((item) => {
+      {/* ── Active Supports - Vertical Card Layout ── */}
+      <div className="grid grid-cols-1 gap-4">
+        {portfolios.slice(0, 2).map((item) => {
           const stsCfg = statusConfig[item.status];
           return (
             <div
               key={item.id}
-              className="bg-white rounded-2xl p-5 border border-[var(--color-primary-border)]"
-              style={{ boxShadow: '0 8px 30px var(--color-primary-shadow)' }}
+              onClick={() => onCashOut?.(item.id)}
+              className="bg-white rounded-2xl p-5 border border-[var(--color-primary-border)] shadow-sm hover:border-[var(--color-primary)] hover:shadow-lg transition-all cursor-pointer group flex flex-col gap-5"
             >
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Portfolio Code</p>
-                  <h4 className="font-bold text-gray-900 font-mono text-base">#{item.portfolioCode}</h4>
+              {/* Header: Identity & Status */}
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-[var(--color-primary-faint)] flex items-center justify-center flex-shrink-0 border border-[var(--color-primary-border)] text-[var(--color-primary)]">
+                    <span className="font-bold font-mono text-xs">#{item.portfolioCode.split('-')[1]}</span>
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="font-bold text-slate-900 text-base truncate group-hover:text-[var(--color-primary)] transition-colors">
+                      {item.assetName || 'Custom Portfolio'}
+                    </h4>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="font-mono text-xs text-slate-500 truncate">#{item.portfolioCode}</span>
+                      <span className="text-slate-300">•</span>
+                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest ${stsCfg.classes} shrink-0`}>
+                        {stsCfg.label}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <span className={`text-[9px] font-bold px-2 py-1 rounded-full uppercase ${stsCfg.classes}`}>
-                  {stsCfg.label}
-                </span>
+                <div className="text-slate-300 shrink-0 group-hover:text-[var(--color-primary)] transition-colors bg-slate-50 p-2 rounded-full group-hover:bg-[var(--color-primary-faint)] ml-2">
+                  <ChevronRight className="w-4 h-4" />
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 mb-4">
-                <div>
-                  <p className="text-[10px] text-gray-400 font-bold mb-1">supported Amount</p>
-                  <p className="font-bold text-gray-900">UGX {item.supportedAmount.toLocaleString()}</p>
+              {/* Metrics Grid */}
+              <div className="grid grid-cols-2 gap-3 bg-slate-50 rounded-xl p-3 border border-slate-100">
+                <div className="bg-white p-2.5 rounded-lg border border-slate-100">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Invested</p>
+                  <p className="font-bold text-slate-900 text-sm">UGX {(item.investedAmount || item.supportedAmount || 0).toLocaleString()}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-[10px] text-gray-400 font-bold mb-1">Total Earned</p>
-                  <p className={`font-bold ${item.totalEarned > 0 ? 'text-[var(--color-success)]' : 'text-gray-400'}`}>
-                    {item.totalEarned > 0 ? '+' : ''}UGX {item.totalEarned.toLocaleString()}
-                  </p>
+                <div className="bg-white p-2.5 rounded-lg border border-slate-100">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Earnings</p>
+                  <div className="flex items-center justify-between">
+                    <p className={`font-bold text-sm ${item.totalEarned > 0 ? 'text-[var(--color-success)]' : 'text-slate-400'}`}>
+                      {item.totalEarned > 0 ? '+' : ''}UGX {item.totalEarned.toLocaleString()}
+                    </p>
+                    <span className="font-bold text-[10px] bg-green-50 text-green-700 px-1.5 py-0.5 rounded ml-1 shrink-0">
+                      {item.roiPercent ?? 0}%
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              {item.nextPayoutDate && (
-                <div className="pt-4 border-t border-gray-100">
-                  <p className="text-[10px] text-gray-400 font-bold mb-1">Next Payout</p>
-                  <p className="font-bold text-gray-900">{item.nextPayoutDate}</p>
+              {/* Timeline & Next Payout */}
+              <div className="flex items-center justify-between border-t border-slate-100 pt-4 mt-auto">
+                <div>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Next Payout</p>
+                  <p className="font-semibold text-slate-900 text-sm">{item.nextPayoutDate ?? '—'}</p>
                 </div>
-              )}
+                <div className="text-right flex flex-col items-end">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Duration ({item.durationMonths || 12}M)</p>
+                  <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden mt-1">
+                    <div className="h-full bg-[var(--color-primary)] rounded-full" style={{ width: '40%' }} />
+                  </div>
+                </div>
+              </div>
             </div>
           );
         })}
-
-        <button
-          onClick={onAddAsset}
-          className="w-full flex items-center justify-center gap-2 p-4 rounded-2xl border-2 border-dashed border-slate-200 bg-transparent text-slate-400 font-bold text-sm transition-all"
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = 'var(--color-primary)';
-            e.currentTarget.style.borderColor = 'var(--color-primary)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = '';
-            e.currentTarget.style.borderColor = '';
-          }}
-        >
-          + Add New support
-        </button>
       </div>
 
-      {/* ── Desktop table ── */}
-      <div className="hidden lg:block bg-white rounded-xl border border-[var(--color-primary-border)] overflow-hidden shadow-sm">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-slate-100 bg-slate-50">
-              {['Portfolio', 'supported', 'ROI', 'Earned', 'Next Payout', 'Status', ''].map((h) => (
-                <th
-                  key={h}
-                  className={`px-3 py-2 text-[9px] font-bold uppercase tracking-wider text-slate-400 ${
-                    h === '' ? '' : h === 'Portfolio' ? 'text-left' : 'text-right'
-                  } ${h === 'Status' ? 'text-center' : ''}`}
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {portfolios.map((item) => {
-              const stsCfg = statusConfig[item.status];
-              return (
-                <tr key={item.id} className="hover:bg-[var(--color-primary-faint)] transition-colors">
-                  <td className="px-3 py-2">
-                    <p className="font-bold text-slate-800 font-mono text-sm">#{item.portfolioCode}</p>
-                  </td>
-                  <td className="px-5 py-4 text-right font-semibold text-sm text-slate-900">
-                    UGX {item.supportedAmount.toLocaleString()}
-                  </td>
-                  <td className="px-3 py-2 text-right font-bold text-sm text-[var(--color-success)]">
-                    {item.roiPercent ?? 15}%
-                  </td>
-                  <td className="px-3 py-2 text-right font-bold text-sm text-[var(--color-success)]">
-                    {item.totalEarned > 0 ? '+' : ''}UGX {item.totalEarned.toLocaleString()}
-                  </td>
-                  <td className="px-3 py-2 text-right text-sm text-slate-600">
-                    {item.nextPayoutDate ?? '—'}
-                  </td>
-                  <td className="px-3 py-2 text-center">
-                    <span className={`text-[9px] font-bold px-2 py-1 rounded-full uppercase ${stsCfg.classes}`}>
-                      {stsCfg.label}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2">
-                    <button
-                      onClick={() => onCashOut?.(item.id)}
-                      className="p-1 text-slate-400 transition-colors"
-                      onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--color-primary)')}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = '')}
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        <div className="p-4 border-t border-[var(--color-primary-border)]">
-          <button
-            onClick={onAddAsset}
-            className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-slate-200 text-slate-400 font-bold text-sm transition-all"
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = 'var(--color-primary)';
-              e.currentTarget.style.borderColor = 'var(--color-primary)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = '';
-              e.currentTarget.style.borderColor = '';
-            }}
-          >
-            + Add New support
-          </button>
-        </div>
+      <div className="mt-4 border-t border-[var(--color-primary-border)] pt-4">
+        <button
+          onClick={onAddAsset}
+          className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 text-[var(--color-primary)] bg-[var(--color-primary-faint)] font-bold text-sm transition-all hover:bg-[var(--color-primary)] hover:text-white"
+        >
+          + Launch New Investment
+        </button>
       </div>
     </section>
   );

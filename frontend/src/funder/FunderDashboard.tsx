@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Lightbulb, Plus, ArrowUp } from 'lucide-react';
-
-// Components
+import { Lightbulb } from 'lucide-react';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
 import FunderMobileHeader from './components/FunderMobileHeader';
 import FunderSidebar from './components/FunderSidebar';
@@ -20,7 +18,7 @@ import FunderInvestModal from './FunderInvestModal';
 
 interface DashboardStats {
   walletBalance: number;
-  principalsupported: number;
+  principalInvested: number;
   monthlyReturn: number;
   roiPercent: number;
 }
@@ -29,7 +27,7 @@ interface DashboardStats {
 
 const MOCK_STATS: DashboardStats = {
   walletBalance: 2_500_000,
-  principalsupported: 45_000_000,
+  principalInvested: 45_000_000,
   monthlyReturn: 6_750_000,
   roiPercent: 15,
 };
@@ -38,9 +36,12 @@ const MOCK_PORTFOLIOS: PortfolioItem[] = [
   {
     id: '1',
     portfolioCode: 'WEL-01',
-    supportedAmount: 2_500_000,
+    assetName: 'Kampala Heights',
+    investedAmount: 2_500_000,
     totalEarned: 462_500,
     roiPercent: 15,
+    durationMonths: 12,
+    payoutType: 'Monthly',
     nextPayoutDate: '24 Oct 2026',
     maturityDate: 'Oct 12, 2027',
     status: 'active',
@@ -48,9 +49,12 @@ const MOCK_PORTFOLIOS: PortfolioItem[] = [
   {
     id: '2',
     portfolioCode: 'WEL-05',
-    supportedAmount: 5_000_000,
+    assetName: 'Entebbe Views',
+    investedAmount: 5_000_000,
     totalEarned: 0,
-    roiPercent: 15,
+    roiPercent: 18,
+    durationMonths: 24,
+    payoutType: 'Compounding',
     nextPayoutDate: undefined,
     maturityDate: 'Jan 15, 2027',
     status: 'pending',
@@ -58,9 +62,12 @@ const MOCK_PORTFOLIOS: PortfolioItem[] = [
   {
     id: '3',
     portfolioCode: 'WEL-09',
-    supportedAmount: 1_200_000,
+    assetName: 'Jinja Retail Park',
+    investedAmount: 1_200_000,
     totalEarned: 0,
     roiPercent: 20,
+    durationMonths: 12,
+    payoutType: 'Monthly',
     nextPayoutDate: undefined,
     maturityDate: 'May 20, 2027',
     status: 'pending_approval',
@@ -70,21 +77,23 @@ const MOCK_PORTFOLIOS: PortfolioItem[] = [
 const MOCK_ACTIVITIES: ActivityItem[] = [
   {
     id: '1',
-    title: 'Monthly Reward',
+    title: 'Monthly Earnings',
     category: 'reward',
-    status: 'ACTIVE',
-    provider: 'MTN MOMO',
+    status: 'COMPLETED',
+    provider: 'Kampala Heights',
     date: '12 Mar 2026',
+    timestamp: '2 hours ago',
     amount: 375_000,
     isCredit: true,
   },
   {
     id: '2',
-    title: 'New support',
-    category: 'support',
+    title: 'New Investment',
+    category: 'investment',
     status: 'PENDING',
     provider: '#WEL-09',
     date: '10 Mar 2026',
+    timestamp: '2 days ago',
     amount: 1_200_000,
     isCredit: false,
   },
@@ -95,8 +104,9 @@ const MOCK_ACTIVITIES: ActivityItem[] = [
     status: 'COMPLETED',
     provider: 'BANK TRANSFER',
     date: '08 Mar 2026',
+    timestamp: '4 days ago',
     amount: 250_000,
-    isCredit: true,
+    isCredit: false,
   },
 ];
 
@@ -126,7 +136,7 @@ export default function FunderDashboard() {
   const handleInvestSuccess = (amount: number) => {
     setStats((prev) => ({
       ...prev,
-      principalsupported: prev.principalsupported + amount,
+      principalInvested: prev.principalInvested + amount,
       monthlyReturn: prev.monthlyReturn + amount * 0.15,
     }));
   };
@@ -183,14 +193,13 @@ export default function FunderDashboard() {
               {/* ── LEFT / MAIN COLUMN ── */}
               <div className="lg:col-span-8 flex flex-col gap-8">
 
-                {/* Wallet Card */}
+                {/* Wealth Performance Card */}
                 <FunderWalletCard
                   balance={stats.walletBalance}
-                  principal={stats.principalsupported}
-                  expectedAmount={stats.monthlyReturn}
-                  roiPercent={stats.roiPercent}
+                  portfolioValue={stats.principalInvested}
+                  monthlyEarnings={stats.monthlyReturn}
+                  earningsGrowthPercent={12}
                   cardId="WL-99201"
-                  payoutMode="Monthly Payout"
                 />
 
                 {/* Quick Actions — mobile only */}
@@ -224,40 +233,19 @@ export default function FunderDashboard() {
 
               {/* ── RIGHT PANEL (desktop only) ── */}
               <aside className="hidden lg:flex lg:col-span-4 flex-col gap-8">
-
-                {/* Wallet Actions */}
-                <div className="bg-white rounded-xl border shadow-sm p-6" style={{ borderColor: 'var(--color-primary-border)' }}>
-                  <h3 className="text-lg font-bold text-slate-900 mb-4">Wallet Actions</h3>
-                  <div className="flex flex-col gap-3">
-                    <button
-                      onClick={() => setIsModalOpen(true)}
-                      className="group flex items-center gap-3 p-3 border border-slate-100 rounded-lg transition-all text-left hover:border-[var(--color-primary)]"
-                    >
-                      <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center transition-colors group-hover:bg-[var(--color-primary)] group-hover:text-white"
-                        style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}
-                      >
-                        <Plus className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="font-bold text-slate-800 text-sm">Add Funds</p>
-                        <p className="text-xs text-slate-500">Deposit capital to your wallet</p>
-                      </div>
-                    </button>
-                    <button
-                      className="group flex items-center gap-3 p-3 border border-slate-100 rounded-lg transition-all text-left hover:border-[var(--color-primary)]"
-                    >
-                      <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center transition-colors group-hover:bg-[var(--color-primary)] group-hover:text-white"
-                        style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}
-                      >
-                        <ArrowUp className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="font-bold text-slate-800 text-sm">Withdraw</p>
-                        <p className="text-xs text-slate-500">Transfer returns to your account</p>
-                      </div>
-                    </button>
+                {/* Investor Insights */}
+                <div
+                  className="bg-white rounded-xl border p-6 flex items-start gap-4 shadow-sm"
+                  style={{ borderColor: 'var(--color-primary-border)', borderLeft: '4px solid var(--color-primary)' }}
+                >
+                  <div className="p-2 rounded-full" style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}>
+                    <Lightbulb className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-sm mb-1">Smart Insight</h3>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      You have <strong>UGX 2,500,000</strong> idle in your wallet. Consider putting it into one of the recommended opportunities below to start compounding your earnings.
+                    </p>
                   </div>
                 </div>
 
@@ -267,22 +255,6 @@ export default function FunderDashboard() {
                     activities={activities}
                     onViewAll={() => console.log('View all activity')}
                   />
-                </div>
-
-                {/* supporter Tip */}
-                <div
-                  className="p-6 rounded-xl border"
-                  style={{ background: 'var(--color-primary-faint)', borderColor: 'var(--color-primary-border)' }}
-                >
-                  <div className="flex items-center gap-2 mb-3" style={{ color: 'var(--color-primary)' }}>
-                    <Lightbulb className="w-4 h-4" />
-                    <span className="font-bold text-sm">supporter Tip</span>
-                  </div>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    Diversifying across 3+ portfolios reduces exposure risk significantly.
-                    Compounding your monthly rewards can grow your portfolio by up to{' '}
-                    <strong>400% over 12 months</strong> at the standard 15% ROI.
-                  </p>
                 </div>
               </aside>
             </div>

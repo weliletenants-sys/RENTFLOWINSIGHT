@@ -12,7 +12,7 @@ export default function FunderDashboardHeader({
 }: FunderDashboardHeaderProps) {
   return (
     <div
-      className="hidden lg:flex sticky top-0 z-30 px-8 h-20 items-center justify-between border-b"
+      className="hidden lg:flex sticky top-0 z-30 px-8 pb-2 h-20 items-center justify-between border-b"
       style={{
         background: 'rgba(244,240,255,0.85)',
         backdropFilter: 'blur(12px)',
