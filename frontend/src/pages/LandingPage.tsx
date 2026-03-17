@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserPlus, UserCheck, Rocket, Zap, CalendarDays, LineChart, ShieldCheck, Home, Users, CreditCard } from 'lucide-react';
+import { UserPlus, UserCheck, Rocket, Zap, CalendarDays, LineChart, ShieldCheck, Home, Users, CreditCard, TrendingUp } from 'lucide-react';
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -139,9 +139,9 @@ export default function LandingPage() {
                          <div className="text-[10px] text-slate-500 uppercase font-bold mb-1">Total Rent Handled</div>
                          <div className="text-2xl font-heading font-bold">UGX 5,420,000</div>
                        </div>
-                       <div className="h-10 w-10 bg-violet-400/20 rounded-lg flex items-center justify-center">
-                         <span className="material-symbols-outlined text-violet-300 text-sm">trending_up</span>
-                       </div>
+                        <div className="h-10 w-10 bg-violet-400/20 rounded-lg flex items-center justify-center">
+                          <TrendingUp className="text-violet-300 w-5 h-5" />
+                        </div>
                      </div>
                      <div className="grid grid-cols-2 gap-4">
                        <div className="h-20 bg-white shadow-sm border-slate-200 rounded-xl border border-slate-200 p-4">
