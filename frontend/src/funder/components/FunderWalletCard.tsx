@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Eye, EyeOff, TrendingUp } from 'lucide-react';
 
 interface FunderWalletCardProps {
-  balance: number;
   portfolioValue: number;
   monthlyEarnings: number; // Keeping for compatibility, though we show total returns if available
   earningsGrowthPercent: number;
@@ -10,7 +9,6 @@ interface FunderWalletCardProps {
 }
 
 export default function FunderWalletCard({
-  balance,
   portfolioValue,
   monthlyEarnings,
   earningsGrowthPercent,
@@ -67,15 +65,6 @@ export default function FunderWalletCard({
             </div>
           </div>
 
-          {/* Low Emphasis: Wallet Balance */}
-          <div className="pt-4 border-t border-white/10">
-            <div className="flex items-center gap-2 text-white/70">
-              <p className="text-[10px] font-semibold uppercase tracking-wider">Wallet Balance:</p>
-              <p className="font-semibold text-sm">
-                {balanceVisible ? `UGX ${balance.toLocaleString()}` : '********'}
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </div>

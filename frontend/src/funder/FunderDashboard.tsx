@@ -195,7 +195,6 @@ export default function FunderDashboard() {
 
                 {/* Wealth Performance Card */}
                 <FunderWalletCard
-                  balance={stats.walletBalance}
                   portfolioValue={stats.principalInvested}
                   monthlyEarnings={stats.monthlyReturn}
                   earningsGrowthPercent={12}
@@ -205,6 +204,7 @@ export default function FunderDashboard() {
                 {/* Quick Actions — mobile only */}
                 <div className="lg:hidden">
                   <FunderActionButtons
+                    balance={stats.walletBalance}
                     onDeposit={() => setIsModalOpen(true)}
                     onWithdraw={() => console.log('Withdraw')}
                     onPortfolio={() => console.log('Portfolio')}
@@ -233,6 +233,27 @@ export default function FunderDashboard() {
 
               {/* ── RIGHT PANEL (desktop only) ── */}
               <aside className="hidden lg:flex lg:col-span-4 flex-col gap-8">
+                {/* Wallet Quick Actions */}
+                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 relative overflow-hidden">
+                  {/* Subtle top bg line */}
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--color-primary)] opacity-40" />
+                  
+                  <FunderActionButtons
+                    balance={stats.walletBalance}
+                    onDeposit={() => setIsModalOpen(true)}
+                    onWithdraw={() => console.log('Withdraw')}
+                    onPortfolio={() => console.log('Portfolio')}
+                  />
+                </div>
+
+                {/* Recent Activity */}
+                <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
+                  <FunderRecentActivity
+                    activities={activities}
+                    onViewAll={() => console.log('View all activity')}
+                  />
+                </div>
+
                 {/* Investor Insights */}
                 <div
                   className="bg-white rounded-xl border p-6 flex items-start gap-4 shadow-sm"
@@ -247,14 +268,6 @@ export default function FunderDashboard() {
                       You have <strong>UGX 2,500,000</strong> idle in your wallet. Consider putting it into one of the recommended opportunities below to start compounding your earnings.
                     </p>
                   </div>
-                </div>
-
-                {/* Recent Activity */}
-                <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
-                  <FunderRecentActivity
-                    activities={activities}
-                    onViewAll={() => console.log('View all activity')}
-                  />
                 </div>
               </aside>
             </div>
