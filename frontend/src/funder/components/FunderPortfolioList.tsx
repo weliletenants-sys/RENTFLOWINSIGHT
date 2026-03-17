@@ -108,7 +108,7 @@ export default function FunderPortfolioList({ portfolios, onViewAll, onCashOut, 
       <div className="mt-4 border-t border-[var(--color-primary-border)] pt-4">
         <button
           onClick={onAddAsset}
-          className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 text-[var(--color-primary)] bg-[var(--color-primary-faint)] font-bold text-sm transition-all hover:bg-[var(--color-primary)] hover:text-white"
+          className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 text-[var(--color-primary)] bg-[var(--color-primary-faint)] font-bold text-sm transition-all hover:border-[var(--color-primary)]"
         >
           + Launch New Investment
         </button>
