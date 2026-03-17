@@ -1,5 +1,7 @@
 import { useAuth } from '../contexts/AuthContext';
 import { useEffect } from 'react';
+import { MapPin, Home, UserCheck, Receipt, UserPlus, LayoutGrid, Wallet, PlusCircle, ArrowRightLeft, BadgeCheck, LineChart, CreditCard, ClipboardCheck, Download, Upload, Users, Settings } from 'lucide-react';
+
 
 export default function AgentDashboard() {
   const { user } = useAuth();
@@ -11,14 +13,8 @@ export default function AgentDashboard() {
     link1.href = 'https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap';
     document.head.appendChild(link1);
 
-    const link2 = document.createElement('link');
-    link2.rel = 'stylesheet';
-    link2.href = 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&display=swap';
-    document.head.appendChild(link2);
-
     return () => {
       document.head.removeChild(link1);
-      document.head.removeChild(link2);
     };
   }, []);
 
@@ -26,12 +22,6 @@ export default function AgentDashboard() {
 
   return (
     <div className="bg-[#f8f6f6] dark:bg-[#221610] text-slate-900 dark:text-slate-100 antialiased min-h-screen font-['Public_Sans']">
-      <style>{`
-        .material-symbols-outlined {
-          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-      `}</style>
-      
       <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
         <header className="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#221610]/80 backdrop-blur-md px-4 lg:px-10 py-3">
           <div className="max-w-5xl mx-auto flex items-center justify-between">
@@ -49,7 +39,7 @@ export default function AgentDashboard() {
                   <div className="flex items-center gap-2">
                     <h1 className="text-xl font-bold text-slate-900 dark:text-white">{userName}</h1>
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-bold uppercase tracking-wider">
-                      <span className="material-symbols-outlined text-[10px]">verified</span>
+                      <BadgeCheck size={14} />
                       Verified
                     </span>
                   </div>
@@ -79,15 +69,15 @@ export default function AgentDashboard() {
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <button className="flex flex-col items-center justify-center gap-2 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/10">
-                  <span className="material-symbols-outlined">account_balance_wallet</span>
+                  <Wallet size={24} />
                   <span className="text-xs font-bold uppercase">Withdraw</span>
                 </button>
                 <button className="flex flex-col items-center justify-center gap-2 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/10">
-                  <span className="material-symbols-outlined">add_circle</span>
+                  <PlusCircle size={24} />
                   <span className="text-xs font-bold uppercase">Deposit</span>
                 </button>
                 <button className="flex flex-col items-center justify-center gap-2 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/10">
-                  <span className="material-symbols-outlined">sync_alt</span>
+                  <ArrowRightLeft size={24} />
                   <span className="text-xs font-bold uppercase">Transfer</span>
                 </button>
               </div>
@@ -99,37 +89,37 @@ export default function AgentDashboard() {
             <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
               <div className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
                 <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
-                  <span className="material-symbols-outlined">distance</span>
+                  <MapPin size={24} />
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Visit</span>
               </div>
               <div className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
                 <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
-                  <span className="material-symbols-outlined">home</span>
+                  <Home size={24} />
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400">List House</span>
               </div>
               <div className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
                 <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
-                  <span className="material-symbols-outlined">how_to_reg</span>
+                  <UserCheck size={24} />
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Register</span>
               </div>
               <div className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
                 <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
-                  <span className="material-symbols-outlined">receipt_long</span>
+                  <Receipt size={24} />
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Receipt</span>
               </div>
               <div className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
                 <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
-                  <span className="material-symbols-outlined">person_add</span>
+                  <UserPlus size={24} />
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Refer</span>
               </div>
               <div className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
                 <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
-                  <span className="material-symbols-outlined">grid_view</span>
+                  <LayoutGrid size={24} />
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400">More</span>
               </div>
@@ -140,7 +130,7 @@ export default function AgentDashboard() {
             <div className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between h-full">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Daily Operations</h4>
-                <span className="material-symbols-outlined text-[#6d28d9]">analytics</span>
+                <LineChart className="text-[#6d28d9]" size={24} />
               </div>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -159,7 +149,7 @@ export default function AgentDashboard() {
             <div className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between h-full">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Credit Access</h4>
-                <span className="material-symbols-outlined text-[#6d28d9]">credit_card</span>
+                <CreditCard className="text-[#6d28d9]" size={24} />
               </div>
               <div className="space-y-4">
                 <div>
@@ -174,7 +164,7 @@ export default function AgentDashboard() {
             <div className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between h-full">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Rent Requests</h4>
-                <span className="material-symbols-outlined text-[#6d28d9]">assignment_turned_in</span>
+                <ClipboardCheck className="text-[#6d28d9]" size={24} />
               </div>
               <div className="flex items-center gap-4">
                 <div className="size-14 rounded-full border-4 border-[#6d28d9]/20 flex items-center justify-center text-[#6d28d9] font-bold text-xl">
@@ -203,7 +193,7 @@ export default function AgentDashboard() {
               <div className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="size-10 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 flex items-center justify-center">
-                    <span className="material-symbols-outlined">download</span>
+                    <Download size={20} />
                   </div>
                   <div>
                     <p className="text-sm font-bold text-slate-900 dark:text-white">Collection - House #104</p>
@@ -215,7 +205,7 @@ export default function AgentDashboard() {
               <div className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="size-10 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 flex items-center justify-center">
-                    <span className="material-symbols-outlined">upload</span>
+                    <Upload size={20} />
                   </div>
                   <div>
                     <p className="text-sm font-bold text-slate-900 dark:text-white">Withdrawal to Bank</p>
@@ -230,19 +220,19 @@ export default function AgentDashboard() {
 
         <nav className="md:hidden sticky bottom-0 w-full bg-white dark:bg-[#221610] border-t border-slate-200 dark:border-slate-800 px-6 py-3 flex items-center justify-between z-50">
           <button className="flex flex-col items-center gap-1 text-[#6d28d9]">
-            <span className="material-symbols-outlined">grid_view</span>
+            <LayoutGrid size={24} />
             <span className="text-[10px] font-bold">Home</span>
           </button>
           <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9]">
-            <span className="material-symbols-outlined">wallet</span>
+            <Wallet size={24} />
             <span className="text-[10px] font-bold">Wallet</span>
           </button>
           <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9]">
-            <span className="material-symbols-outlined">group</span>
+            <Users size={24} />
             <span className="text-[10px] font-bold">Clients</span>
           </button>
           <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9]">
-            <span className="material-symbols-outlined">settings</span>
+            <Settings size={24} />
             <span className="text-[10px] font-bold">Settings</span>
           </button>
         </nav>
