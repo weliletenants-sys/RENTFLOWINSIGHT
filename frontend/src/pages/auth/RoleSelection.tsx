@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import type { Role } from '../../contexts/AuthContext';
+import PurpleBubbles from '../../components/PurpleBubbles';
 
 export default function RoleSelection() {
   const { setIntendedRole } = useAuth();
@@ -37,27 +38,10 @@ export default function RoleSelection() {
           animation: fadeInUp 0.6s ease-out forwards;
         }
 
-        @keyframes blob {
-          0% { transform: translate(0px, 0px) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-          100% { transform: translate(0px, 0px) scale(1); }
-        }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
       `}</style>
 
-      {/* Animated Purple Blobs Overlay */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
-      <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-fuchsia-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
-      <div className="absolute bottom-[-20%] left-[20%] w-[40%] h-[40%] bg-violet-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
+      {/* Purple Bubbles Animated Background */}
+      <PurpleBubbles />
 
       {/* BEGIN: Main Role Selection Container */}
       <main className="relative z-10 w-full max-w-6xl bg-white/60 backdrop-blur-xl border border-purple-200 rounded-3xl shadow-2xl overflow-hidden p-8 md:p-16 opacity-0 animate-fade-in-up">
