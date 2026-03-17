@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserPlus, UserCheck, Rocket, Zap, CalendarDays, LineChart, ShieldCheck, Home, Users, CreditCard } from 'lucide-react';
+import { UserPlus, UserCheck, Rocket, Zap, CalendarDays, LineChart, ShieldCheck, Home, Users, CreditCard, TrendingUp } from 'lucide-react';
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -31,6 +31,33 @@ export default function LandingPage() {
       target.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  const [rentHandled, setRentHandled] = useState(5420000);
+
+  useEffect(() => {
+    // Animate the number counting up
+    let startTimestamp: number | null = null;
+    const duration = 2500; // 2.5 seconds
+    const startValue = 5420000;
+    const endValue = 200420000000; // 200 Billion+
+
+    const step = (timestamp: number) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      
+      // Easing function for smooth deceleration
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+      
+      setRentHandled(Math.floor(easeOutQuart * (endValue - startValue) + startValue));
+      
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+    
+    // Start animation
+    window.requestAnimationFrame(step);
+  }, []);
 
   return (
     <div className="antialiased font-sans bg-[#ffffff] text-slate-900">
@@ -95,7 +122,6 @@ export default function LandingPage() {
               <a onClick={(e) => handleNavClick(e, 'how-it-works')} className="text-sm font-medium text-slate-200 hover:text-white transition-colors cursor-pointer" href="#how-it-works">How it Works</a>
             </div>
             <div className="hidden md:flex items-center space-x-4">
-              <button onClick={() => navigate('/login')} className="text-sm font-medium text-white px-4 py-2 hover:bg-white shadow-sm border-slate-200 rounded-lg transition-all">Login</button>
               <button onClick={() => navigate('/role-selection')} className="text-sm font-medium bg-white text-[#6d28d9] px-6 py-2.5 rounded-lg hover:bg-slate-200 transition-all font-semibold">Sign Up</button>
             </div>
           </div>
@@ -138,11 +164,11 @@ export default function LandingPage() {
                      <div className="h-24 bg-white shadow-sm border-slate-200 rounded-xl border border-slate-200 flex items-center px-6 justify-between">
                        <div>
                          <div className="text-[10px] text-slate-500 uppercase font-bold mb-1">Total Rent Handled</div>
-                         <div className="text-2xl font-heading font-bold">UGX 5,420,000</div>
+                         <div className="text-2xl font-heading font-bold">UGX {rentHandled.toLocaleString()}</div>
                        </div>
-                       <div className="h-10 w-10 bg-violet-400/20 rounded-lg flex items-center justify-center">
-                         <span className="material-symbols-outlined text-violet-300 text-sm">trending_up</span>
-                       </div>
+                        <div className="h-10 w-10 bg-violet-400/20 rounded-lg flex items-center justify-center">
+                          <TrendingUp className="text-violet-300 w-5 h-5" />
+                        </div>
                      </div>
                      <div className="grid grid-cols-2 gap-4">
                        <div className="h-20 bg-white shadow-sm border-slate-200 rounded-xl border border-slate-200 p-4">
@@ -411,45 +437,33 @@ export default function LandingPage() {
          {/* 7. TRUST & SECURITY */}
          <section className="py-24 bg-slate-50">
            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-             <div className="grid lg:grid-cols-3 gap-12 items-center">
-               <div className="lg:col-span-2 reveal">
-                 <h2 className="text-3xl md:text-4xl font-heading font-bold mb-6">Built on Transparency</h2>
-                 <div className="space-y-8">
-                   <div>
-                     <h4 className="text-slate-900 font-bold mb-2">How your money is used</h4>
-                     <p className="text-slate-500 text-sm">Supporter funds are pooled and strictly allocated to pre-verified tenant rent payments. No speculative trading, just real-world utility.</p>
-                   </div>
-                   <div>
-                     <h4 className="text-slate-900 font-bold mb-2">How returns are generated</h4>
-                     <p className="text-slate-500 text-sm">Returns come from the small facilitation fees paid by tenants for the flexibility of installment payments. It's a sustainable, circular economy.</p>
-                   </div>
-                 </div>
-                 <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
-                   <div className="bg-white shadow-sm border-slate-200 p-6 rounded-2xl border border-slate-200 italic text-slate-500 text-sm relative">
-                     "Welile helped me secure a house when I was UGX 500k short on the deposit. The weekly payments are so easy to manage."
-                     <div className="mt-4 not-italic font-bold text-slate-900 text-xs">— Sarah K., Tenant</div>
-                   </div>
-                   <div className="bg-white shadow-sm border-slate-200 p-6 rounded-2xl border border-slate-200 italic text-slate-500 text-sm relative">
-                     "As an agent, I finally have a platform that rewards my hard work instantly. My earnings are clear and paid daily."
-                     <div className="mt-4 not-italic font-bold text-slate-900 text-xs">— John D., Agent</div>
-                   </div>
-                 </div>
-               </div>
-               <div className="reveal" style={{ transitionDelay: '0.2s' }}>
-                 <div className="bg-gradient-to-br from-violet-400/20 to-fuchsia-400/20 p-8 rounded-3xl border border-slate-200 text-center">
-                   <ShieldCheck className="w-16 h-16 text-slate-900/50 mb-6 mx-auto" />
-                   <h3 className="text-2xl font-heading font-bold mb-4">Regulated &amp; Audited</h3>
-                   <p className="text-slate-500 text-sm mb-6">Welile is a registered financial services provider, undergoing quarterly security audits.</p>
-                   <div className="h-px bg-slate-50 border-slate-200 w-full mb-6"></div>
-                   <div className="flex justify-center gap-4 opacity-50">
-                     <div className="h-8 w-16 bg-slate-50 border-slate-200 rounded"></div>
-                     <div className="h-8 w-16 bg-slate-50 border-slate-200 rounded"></div>
-                   </div>
-                 </div>
-               </div>
-             </div>
-           </div>
-         </section>
+              <div className="max-w-4xl mx-auto">
+                <div className="reveal">
+                  <h2 className="text-3xl md:text-4xl font-heading font-bold mb-6">Built on Transparency</h2>
+                  <div className="space-y-8">
+                    <div>
+                      <h4 className="text-slate-900 font-bold mb-2">How your money is used</h4>
+                      <p className="text-slate-500 text-sm">Supporter funds are pooled and strictly allocated to pre-verified tenant rent payments. No speculative trading, just real-world utility.</p>
+                    </div>
+                    <div>
+                      <h4 className="text-slate-900 font-bold mb-2">How returns are generated</h4>
+                      <p className="text-slate-500 text-sm">Returns come from the small facilitation fees paid by tenants for the flexibility of installment payments. It's a sustainable, circular economy.</p>
+                    </div>
+                  </div>
+                  <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-white shadow-sm border-slate-200 p-6 rounded-2xl border border-slate-200 italic text-slate-500 text-sm relative">
+                      "Welile helped me secure a house when I was UGX 500k short on the deposit. The weekly payments are so easy to manage."
+                      <div className="mt-4 not-italic font-bold text-slate-900 text-xs">— Sarah K., Tenant</div>
+                    </div>
+                    <div className="bg-white shadow-sm border-slate-200 p-6 rounded-2xl border border-slate-200 italic text-slate-500 text-sm relative">
+                      "As an agent, I finally have a platform that rewards my hard work instantly. My earnings are clear and paid daily."
+                      <div className="mt-4 not-italic font-bold text-slate-900 text-xs">— John D., Agent</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
  
          {/* 8. FINAL CTA */}
          <section className="py-32 relative overflow-hidden">
