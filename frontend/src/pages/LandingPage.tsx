@@ -247,8 +247,27 @@ export default function LandingPage() {
                    Get Rent Support
                  </button>
                </div>
-                <div className="reveal flex justify-center lg:justify-end" style={{ transitionDelay: '0.2s' }}>
-                  <img src="/images/tenant_app_mockup.png" alt="Tenant App Mockup" className="max-w-[720px] w-full h-auto drop-shadow-2xl rounded-3xl rotate-2 hover:rotate-0 transition-transform duration-500" />
+                <div className="reveal relative flex justify-center lg:justify-end overflow-hidden h-[600px] lg:h-[700px] w-full" style={{ transitionDelay: '0.2s', WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)', maskImage: 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)' }}>
+                  <style>{`
+                    @keyframes slide-vertical {
+                      0% { transform: translateY(0); }
+                      100% { transform: translateY(-50%); }
+                    }
+                    .animate-slide-vertical {
+                      animation: slide-vertical 25s linear infinite;
+                    }
+                    .animate-slide-vertical:hover {
+                      animation-play-state: paused;
+                    }
+                  `}</style>
+                  {/* Container that is exactly 2x the height of its unique content for a seamless loop */}
+                  <div className="flex flex-col gap-12 animate-slide-vertical pt-10">
+                    <img src="/images/tenant_app_mockup.png" alt="Tenant App Mockup" className="max-w-[500px] lg:max-w-[600px] w-full h-auto drop-shadow-2xl rounded-3xl" />
+                    <img src="/images/tenant_app_mockup.png" alt="Tenant App Mockup" className="max-w-[500px] lg:max-w-[600px] w-full h-auto drop-shadow-2xl rounded-3xl" />
+                    {/* Duplicates for infinite scrolling */}
+                    <img src="/images/tenant_app_mockup.png" alt="Tenant App Mockup" className="max-w-[500px] lg:max-w-[600px] w-full h-auto drop-shadow-2xl rounded-3xl" />
+                    <img src="/images/tenant_app_mockup.png" alt="Tenant App Mockup" className="max-w-[500px] lg:max-w-[600px] w-full h-auto drop-shadow-2xl rounded-3xl" />
+                  </div>
                 </div>
              </div>
            </div>
