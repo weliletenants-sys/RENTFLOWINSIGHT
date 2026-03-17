@@ -49,7 +49,7 @@ export default function FunderPortfolioList({ portfolios, onViewAll, onCashOut, 
                   <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Portfolio Code</p>
                   <h4 className="font-bold text-gray-900 font-mono text-base">#{item.portfolioCode}</h4>
                 </div>
-                <span className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase ${stsCfg.classes}`}>
+                <span className={`text-[9px] font-bold px-2 py-1 rounded-full uppercase ${stsCfg.classes}`}>
                   {stsCfg.label}
                 </span>
               </div>
@@ -101,7 +101,7 @@ export default function FunderPortfolioList({ portfolios, onViewAll, onCashOut, 
               {['Portfolio', 'Invested', 'ROI', 'Earned', 'Next Payout', 'Status', ''].map((h) => (
                 <th
                   key={h}
-                  className={`px-5 py-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 ${
+                  className={`px-3 py-2 text-[9px] font-bold uppercase tracking-wider text-slate-400 ${
                     h === '' ? '' : h === 'Portfolio' ? 'text-left' : 'text-right'
                   } ${h === 'Status' ? 'text-center' : ''}`}
                 >
@@ -115,27 +115,27 @@ export default function FunderPortfolioList({ portfolios, onViewAll, onCashOut, 
               const stsCfg = statusConfig[item.status];
               return (
                 <tr key={item.id} className="hover:bg-[var(--color-primary-faint)] transition-colors">
-                  <td className="px-5 py-4">
+                  <td className="px-3 py-2">
                     <p className="font-bold text-slate-800 font-mono text-sm">#{item.portfolioCode}</p>
                   </td>
-                  <td className="px-5 py-4 text-right font-semibold text-sm text-slate-900">
+                  <td className="px-3 py-2 text-right font-semibold text-sm text-slate-900">
                     UGX {item.investedAmount.toLocaleString()}
                   </td>
-                  <td className="px-5 py-4 text-right font-bold text-sm text-[var(--color-success)]">
+                  <td className="px-3 py-2 text-right font-bold text-sm text-[var(--color-success)]">
                     {item.roiPercent ?? 15}%
                   </td>
-                  <td className="px-5 py-4 text-right font-bold text-sm text-[var(--color-success)]">
+                  <td className="px-3 py-2 text-right font-bold text-sm text-[var(--color-success)]">
                     {item.totalEarned > 0 ? '+' : ''}UGX {item.totalEarned.toLocaleString()}
                   </td>
-                  <td className="px-5 py-4 text-right text-sm text-slate-600">
+                  <td className="px-3 py-2 text-right text-sm text-slate-600">
                     {item.nextPayoutDate ?? '—'}
                   </td>
-                  <td className="px-5 py-4 text-center">
-                    <span className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase ${stsCfg.classes}`}>
+                  <td className="px-3 py-2 text-center">
+                    <span className={`text-[9px] font-bold px-2 py-1 rounded-full uppercase ${stsCfg.classes}`}>
                       {stsCfg.label}
                     </span>
                   </td>
-                  <td className="px-5 py-4">
+                  <td className="px-3 py-2">
                     <button
                       onClick={() => onCashOut?.(item.id)}
                       className="p-1 text-slate-400 transition-colors"

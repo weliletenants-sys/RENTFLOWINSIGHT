@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Lightbulb } from 'lucide-react';
+import { Lightbulb, Plus, ArrowUp } from 'lucide-react';
 
 // Components
 import FunderDashboardHeader from './components/FunderDashboardHeader';
@@ -231,32 +231,28 @@ export default function FunderDashboard() {
                   <div className="flex flex-col gap-3">
                     <button
                       onClick={() => setIsModalOpen(true)}
-                      className="flex items-center gap-4 p-4 border border-slate-100 rounded-lg transition-all text-left"
-                      onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--color-primary)')}
-                      onMouseLeave={(e) => (e.currentTarget.style.borderColor = '')}
+                      className="group flex items-center gap-3 p-3 border border-slate-100 rounded-lg transition-all text-left hover:border-[var(--color-primary)]"
                     >
                       <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold"
+                        className="w-8 h-8 rounded-full flex items-center justify-center transition-colors group-hover:bg-[var(--color-primary)] group-hover:text-white"
                         style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-primary)'; e.currentTarget.style.color = '#fff'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--color-primary-light)'; e.currentTarget.style.color = 'var(--color-primary)'; }}
-                      >+</div>
+                      >
+                        <Plus className="w-4 h-4" />
+                      </div>
                       <div>
                         <p className="font-bold text-slate-800 text-sm">Add Funds</p>
                         <p className="text-xs text-slate-500">Deposit capital to your wallet</p>
                       </div>
                     </button>
                     <button
-                      className="flex items-center gap-4 p-4 border border-slate-100 rounded-lg transition-all text-left"
-                      onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--color-primary)')}
-                      onMouseLeave={(e) => (e.currentTarget.style.borderColor = '')}
+                      className="group flex items-center gap-3 p-3 border border-slate-100 rounded-lg transition-all text-left hover:border-[var(--color-primary)]"
                     >
                       <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold"
+                        className="w-8 h-8 rounded-full flex items-center justify-center transition-colors group-hover:bg-[var(--color-primary)] group-hover:text-white"
                         style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-primary)'; e.currentTarget.style.color = '#fff'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--color-primary-light)'; e.currentTarget.style.color = 'var(--color-primary)'; }}
-                      >↑</div>
+                      >
+                        <ArrowUp className="w-4 h-4" />
+                      </div>
                       <div>
                         <p className="font-bold text-slate-800 text-sm">Withdraw</p>
                         <p className="text-xs text-slate-500">Transfer returns to your account</p>

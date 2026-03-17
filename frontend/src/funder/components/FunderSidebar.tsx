@@ -42,7 +42,7 @@ export default function FunderSidebar({ activePage = 'Dashboard', onNewInvestmen
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto sidebar-scroll">
         {navItems.map((item) => {
           const isActive = item.label === activePage;
           return (

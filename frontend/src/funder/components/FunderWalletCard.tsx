@@ -20,32 +20,27 @@ export default function FunderWalletCard({
 
   return (
     <div
-      className="relative overflow-hidden text-white w-full"
+      className="relative overflow-hidden text-white w-full min-h-[220px] flex flex-col justify-between"
       style={{
         background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-darker) 100%)',
         borderRadius: '8px',
         boxShadow: '0 12px 40px var(--color-primary-shadow)',
       }}
     >
-      {/* Diagonal stripe pattern */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage:
-            'repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 10px)',
-        }}
-      />
       {/* Glow blobs */}
       <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/10 rounded-full -ml-8 -mb-8 blur-2xl pointer-events-none" />
 
-      <div className="relative z-10 p-5">
+      {/* Edge decoration bubble */}
+      <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/10 rounded-full pointer-events-none" />
+
+      <div className="relative z-10 p-5 flex flex-col flex-1">
         {/* Top row: card ID + brand */}
-        <div className="flex justify-between items-center mb-5">
-          <span className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest">
+        <div className="flex justify-between items-start mb-5">
+          <span className="bg-white/20 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest mt-2">
             {cardId}
           </span>
-          <span className="font-bold italic">Welile</span>
+          <img src="/welile-logo-white.png" alt="Welile Logo" className="h-12 object-contain" />
         </div>
 
         {/* Balance */}
@@ -65,7 +60,7 @@ export default function FunderWalletCard({
         </div>
 
         {/* Bottom row: payout mode + total invested */}
-        <div className="flex items-center justify-between flex-wrap gap-2 pt-4 border-t border-white/20">
+        <div className="flex items-center justify-between flex-wrap gap-2 pt-4 border-t border-white/20 mt-auto">
           <div className="bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-lg flex items-center gap-2">
             <Calendar className="w-3.5 h-3.5" />
             <span className="text-xs font-semibold">{payoutMode}</span>
