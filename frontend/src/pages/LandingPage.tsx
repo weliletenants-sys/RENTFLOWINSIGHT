@@ -95,7 +95,6 @@ export default function LandingPage() {
               <a onClick={(e) => handleNavClick(e, 'how-it-works')} className="text-sm font-medium text-slate-200 hover:text-white transition-colors cursor-pointer" href="#how-it-works">How it Works</a>
             </div>
             <div className="hidden md:flex items-center space-x-4">
-              <button onClick={() => navigate('/login')} className="text-sm font-medium text-white px-4 py-2 hover:bg-white shadow-sm border-slate-200 rounded-lg transition-all">Login</button>
               <button onClick={() => navigate('/role-selection')} className="text-sm font-medium bg-white text-[#6d28d9] px-6 py-2.5 rounded-lg hover:bg-slate-200 transition-all font-semibold">Sign Up</button>
             </div>
           </div>
