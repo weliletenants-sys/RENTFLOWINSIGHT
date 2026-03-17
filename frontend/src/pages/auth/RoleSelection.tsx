@@ -60,7 +60,7 @@ export default function RoleSelection() {
       <div className="absolute bottom-[-20%] left-[20%] w-[40%] h-[40%] bg-violet-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
 
       {/* BEGIN: Main Role Selection Container */}
-      <main className="relative z-10 w-full max-w-6xl bg-white/60 backdrop-blur-xl border border-white/40 rounded-3xl shadow-2xl overflow-hidden p-8 md:p-16 opacity-0 animate-fade-in-up">
+      <main className="relative z-10 w-full max-w-6xl bg-white/60 backdrop-blur-xl border border-purple-200 rounded-3xl shadow-2xl overflow-hidden p-8 md:p-16 opacity-0 animate-fade-in-up">
         {/* BEGIN: Header Section */}
         <header className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 tracking-tight">
@@ -77,7 +77,7 @@ export default function RoleSelection() {
           {/* Role Card: Tenant */}
           <button 
             onClick={() => handleSelectRole('TENANT')}
-            className="group text-left bg-white p-8 rounded-2xl border border-transparent shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-purple-200 opacity-0 animate-fade-in-up stagger-1"
+            className="group text-left bg-white p-8 rounded-2xl border border-purple-100 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-purple-200 opacity-0 animate-fade-in-up stagger-1"
           >
             <div className="flex items-start space-x-6">
               <div className="p-4 bg-purple-100 rounded-xl text-[#6d28d9]">
@@ -95,7 +95,7 @@ export default function RoleSelection() {
           {/* Role Card: Agent */}
           <button 
             onClick={() => handleSelectRole('AGENT')}
-            className="group text-left bg-white p-8 rounded-2xl border border-transparent shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-purple-200 opacity-0 animate-fade-in-up stagger-2"
+            className="group text-left bg-white p-8 rounded-2xl border border-purple-100 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-purple-200 opacity-0 animate-fade-in-up stagger-2"
           >
             <div className="flex items-start space-x-6">
               <div className="p-4 bg-blue-100 rounded-xl text-blue-600">
@@ -113,7 +113,7 @@ export default function RoleSelection() {
           {/* Role Card: Landlord */}
           <button 
             onClick={() => handleSelectRole('LANDLORD')}
-            className="group text-left bg-white p-8 rounded-2xl border border-transparent shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-purple-200 opacity-0 animate-fade-in-up stagger-3"
+            className="group text-left bg-white p-8 rounded-2xl border border-purple-100 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-purple-200 opacity-0 animate-fade-in-up stagger-3"
           >
             <div className="flex items-start space-x-6">
               <div className="p-4 bg-orange-100 rounded-xl text-orange-600">
@@ -131,7 +131,7 @@ export default function RoleSelection() {
           {/* Role Card: Supporter */}
           <button 
             onClick={() => handleSelectRole('FUNDER')}
-            className="group text-left bg-white p-8 rounded-2xl border border-transparent shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-purple-200 opacity-0 animate-fade-in-up stagger-4"
+            className="group text-left bg-white p-8 rounded-2xl border border-purple-100 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-purple-200 opacity-0 animate-fade-in-up stagger-4"
           >
             <div className="flex items-start space-x-6">
               <div className="p-4 bg-green-100 rounded-xl text-green-600">
