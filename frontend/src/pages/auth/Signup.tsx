@@ -274,6 +274,15 @@ export default function Signup() {
         </div>
       </main>
 
+      <footer className="relative z-10 w-full max-w-7xl mx-auto px-6 py-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <p className="text-xs text-slate-400 font-medium">© 2024 Welile Technologies Limited. All rights reserved.</p>
+        <div className="flex gap-6">
+          <a className="text-xs text-slate-400 hover:text-[#6d28d9] transition-colors" href="#">Privacy Policy</a>
+          <a className="text-xs text-slate-400 hover:text-[#6d28d9] transition-colors" href="#">Terms of Service</a>
+          <a className="text-xs text-slate-400 hover:text-[#6d28d9] transition-colors" href="#">Cookies</a>
+        </div>
+      </footer>
+
       {/* Floating Colored Blurs */}
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-[-1] overflow-hidden">
         <div className="absolute top-[10%] left-[-10%] w-[40%] h-[40%] bg-[#6d28d9]/5 rounded-full blur-[120px]"></div>
