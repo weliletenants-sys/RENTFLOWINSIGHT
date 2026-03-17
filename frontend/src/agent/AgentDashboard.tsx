@@ -69,9 +69,7 @@ export default function AgentDashboard() {
           </section>
 
           <section className="relative overflow-hidden rounded-2xl bg-[#6d28d9] p-6 text-white shadow-xl shadow-[#6d28d9]/20">
-            <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-              <span className="material-symbols-outlined text-[120px]">payments</span>
-            </div>
+
             <div className="relative z-10 space-y-6">
               <div>
                 <p className="text-white/80 text-sm font-medium opacity-80 uppercase tracking-widest">Wallet Balance</p>
