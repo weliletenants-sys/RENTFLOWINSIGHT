@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { Home, PieChart, ClipboardList, User } from 'lucide-react';
 
 interface FunderBottomNavProps {
@@ -5,23 +6,30 @@ interface FunderBottomNavProps {
 }
 
 const navItems = [
-  { label: 'Home', icon: <Home className="w-6 h-6" /> },
-  { label: 'Portfolio', icon: <PieChart className="w-6 h-6" /> },
-  { label: 'Transactions', icon: <ClipboardList className="w-6 h-6" /> },
-  { label: 'Account', icon: <User className="w-6 h-6" /> },
+  { label: 'Home', icon: <Home className="w-6 h-6" />, path: '/funder-dashboard' },
+  { label: 'Portfolio', icon: <PieChart className="w-6 h-6" />, path: '#' },
+  { label: 'Transactions', icon: <ClipboardList className="w-6 h-6" />, path: '#' },
+  { label: 'Account', icon: <User className="w-6 h-6" />, path: '/funder/account' },
 ];
 
 export default function FunderBottomNav({ activePage = 'Home' }: FunderBottomNavProps) {
+  const navigate = useNavigate();
+
   return (
     <nav
       className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] bg-white rounded-[28px] py-4 px-6 flex justify-between items-center z-50 border border-[var(--color-primary-border)]"
       style={{ boxShadow: '0 25px 60px var(--color-primary-shadow)' }}
     >
       {navItems.map((item) => {
-        const isActive = item.label === activePage;
+        const isActive = item.label === activePage || (item.label === 'Account' && activePage === 'Settings');
         return (
           <button
             key={item.label}
+            onClick={() => {
+              if (item.path !== '#') {
+                navigate(item.path);
+              }
+            }}
             className={`flex flex-col items-center gap-1 transition-opacity ${
               isActive ? 'opacity-100' : 'opacity-40 hover:opacity-70'
             }`}
