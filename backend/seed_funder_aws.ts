@@ -4,7 +4,7 @@ import * as path from 'path';
 import { parse } from 'csv-parse/sync';
 
 const prisma = new PrismaClient();
-const FUNDERS_DIR = path.join(__dirname, 'FUNDERS');
+const FUNDERS_DIR = path.join(__dirname, '../FUNDERS');
 
 async function main() {
   console.log('Starting Funder Data Migration to AWS...');
@@ -121,6 +121,7 @@ async function main() {
   const invitesRecords = parse(invitesCsv, { columns: true, skip_empty_lines: true, delimiter: ';' });
   
   console.log(`Read ${invitesRecords.length} supporter invites. Syncing...`);
+  let inviteCount = 0;
   for (const record of invitesRecords) {
     if (!record.id) continue;
     await prisma.supporterInvites.upsert({
@@ -162,6 +163,8 @@ async function main() {
         next_of_kin_relationship: record.next_of_kin_relationship || null,
       }
     });
+    inviteCount++;
+    if (inviteCount % 100 === 0) console.log(`  -> Synced ${inviteCount} / ${invitesRecords.length} invites...`);
   }
 
   // 5. supporter_roi_payments

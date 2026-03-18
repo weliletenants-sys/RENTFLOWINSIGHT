@@ -16,10 +16,10 @@ model AgentAdvanceLedger {
   created_at       String
   date             String
   deduction_status String
-  id               String @id @default(uuid())
+  id               String  @id @default(uuid())
   interest_accrued Float
   opening_balance  Float
-  advance_id String?
+  advance_id       String?
 
   @@map("agent_advance_ledger")
 }
@@ -38,7 +38,7 @@ model AgentAdvances {
   cycle_days          Float
   daily_rate          Float
   expires_at          String
-  id                  String @id @default(uuid())
+  id                  String  @id @default(uuid())
   issued_at           String
   issued_by           String
   outstanding_balance Float
@@ -46,31 +46,31 @@ model AgentAdvances {
   registration_fee    Float?
   status              String
   updated_at          String
-  agent_id String?
+  agent_id            String?
 
   @@map("agent_advances")
 }
 
 model AgentCollections {
-  amount         Float
-  created_at     String
-  float_after    Float
-  float_before   Float
-  id             String @id @default(uuid())
-  payment_method String
-  notes String?
-  sms_sent_tenant Boolean?
-  sms_sent_agent Boolean?
-  location_name String?
-  tracking_id String?
+  amount              Float
+  created_at          String
+  float_after         Float
+  float_before        Float
+  id                  String   @id @default(uuid())
+  payment_method      String
+  notes               String?
+  sms_sent_tenant     Boolean?
+  sms_sent_agent      Boolean?
+  location_name       String?
+  tracking_id         String?
   momo_transaction_id String?
-  momo_payer_name String?
-  momo_phone String?
-  momo_provider String?
-  visit_id String?
-  token_id String?
-  tenant_id String?
-  agent_id String?
+  momo_payer_name     String?
+  momo_phone          String?
+  momo_provider       String?
+  visit_id            String?
+  token_id            String?
+  tenant_id           String?
+  agent_id            String?
 
   @@map("agent_collections")
 }
@@ -88,7 +88,7 @@ model AgentCommissionPayouts {
   status                String
   transaction_id        String?
   updated_at            String
-  agent_id String?
+  agent_id              String?
 
   @@map("agent_commission_payouts")
 }
@@ -101,7 +101,7 @@ model AgentEarnings {
   id              String  @id @default(uuid())
   rent_request_id String?
   source_user_id  String?
-  agent_id String?
+  agent_id        String?
 
   @@map("agent_earnings")
 }
@@ -126,7 +126,7 @@ model AgentGoals {
   target_activations   Float?
   target_registrations Float
   updated_at           String
-  agent_id String?
+  agent_id             String?
 
   @@map("agent_goals")
 }
@@ -141,16 +141,16 @@ model AgentReceipts {
   payment_method    String
   receipt_image_url String?
   transaction_id    String?
-  agent_id String?
+  agent_id          String?
 
   @@map("agent_receipts")
 }
 
 model AgentSubagents {
-  created_at String
-  id         String @id @default(uuid())
-  source     String
-  sub_agent_id String?
+  created_at      String
+  id              String  @id @default(uuid())
+  source          String
+  sub_agent_id    String?
   parent_agent_id String?
 
   @@map("agent_subagents")
@@ -160,12 +160,12 @@ model AgentVisits {
   accuracy      Float?
   checked_in_at String
   created_at    String
-  id            String @id @default(uuid())
+  id            String  @id @default(uuid())
   latitude      Float
   longitude     Float
   location_name String?
-  tenant_id String?
-  agent_id String?
+  tenant_id     String?
+  agent_id      String?
 
   @@map("agent_visits")
 }
@@ -173,9 +173,9 @@ model AgentVisits {
 model AiChatMessages {
   content    String
   created_at String
-  id         String @id @default(uuid())
+  id         String  @id @default(uuid())
   role       String
-  user_id String?
+  user_id    String?
 
   @@map("ai_chat_messages")
 }
@@ -190,10 +190,10 @@ model CartItems {
 }
 
 model ConversationParticipants {
-  id           String  @id @default(uuid())
-  joined_at    String
-  last_read_at String?
-  user_id String?
+  id              String  @id @default(uuid())
+  joined_at       String
+  last_read_at    String?
+  user_id         String?
   conversation_id String?
 
   @@map("conversation_participants")
@@ -214,10 +214,10 @@ model CreditAccessLimits {
   bonus_from_receipts      Float
   bonus_from_rent_history  Float
   created_at               String
-  id                       String @id @default(uuid())
+  id                       String  @id @default(uuid())
   total_limit              Float?
   updated_at               String
-  user_id String?
+  user_id                  String?
 
   @@map("credit_access_limits")
 }
@@ -247,7 +247,7 @@ model CreditRequestDetails {
   total_with_fees          Float
   updated_at               String
   water_meter_number       String?
-  borrower_id String?
+  borrower_id              String?
 
   @@map("credit_request_details")
 }
@@ -267,7 +267,7 @@ model DepositRequests {
   transaction_date String?
   transaction_id   String?
   updated_at       String
-  user_id String?
+  user_id          String?
 
   @@map("deposit_requests")
 }
@@ -330,6 +330,7 @@ model InvestmentWithdrawalRequests {
   rewards_paused        Boolean
   status                String
   updated_at            String
+  user_id               String?
 
   @@map("investment_withdrawal_requests")
 }
@@ -356,8 +357,8 @@ model InvestorPortfolios {
   roi_percentage      Float
   status              String
   total_roi_earned    Float
-  payout_day Float?
-  agent_id String?
+  payout_day          Float?
+  agent_id            String?
 
   @@map("investor_portfolios")
 }
@@ -481,28 +482,28 @@ model LoanApplications {
 }
 
 model LocationRequests {
-  accuracy     Float?
-  captured_at  String?
-  created_at   String
-  id           String  @id @default(uuid())
-  latitude     Float?
-  longitude    Float?
-  requested_by String
-  status       String
-  target_role  String
-  token        String
-  target_user_id String?
+  accuracy        Float?
+  captured_at     String?
+  created_at      String
+  id              String  @id @default(uuid())
+  latitude        Float?
+  longitude       Float?
+  requested_by    String
+  status          String
+  target_role     String
+  token           String
+  target_user_id  String?
   rent_request_id String?
 
   @@map("location_requests")
 }
 
 model Messages {
-  content    String
-  created_at String
-  id         String  @id @default(uuid())
-  read_at    String?
-  sender_id String?
+  content         String
+  created_at      String
+  id              String  @id @default(uuid())
+  read_at         String?
+  sender_id       String?
   conversation_id String?
 
   @@map("messages")
@@ -530,7 +531,7 @@ model Notifications {
   title      String
   type       String
   updated_at String?
-  user_id String?
+  user_id    String?
 
   @@map("notifications")
 }
@@ -575,14 +576,14 @@ model OtpVerifications {
 }
 
 model PartnerEscalations {
-  created_at String
-  details String?
+  created_at      String
+  details         String?
   escalation_type String
-  id String @id @default(uuid())
-  portfolio_id String?
-  resolved_at String?
-  resolved_by String?
-  status String
+  id              String  @id @default(uuid())
+  portfolio_id    String?
+  resolved_at     String?
+  resolved_by     String?
+  status          String
 
   @@map("partner_escalations")
 }
@@ -596,8 +597,8 @@ model PaymentTokens {
   used       Boolean
   used_at    String?
   visit_id   String?
-  tenant_id String?
-  agent_id String?
+  tenant_id  String?
+  agent_id   String?
 
   @@map("payment_tokens")
 }
@@ -621,7 +622,7 @@ model PendingWalletOperations {
   status               String
   transaction_group_id String?
   updated_at           String
-  user_id String?
+  user_id              String?
 
   @@map("pending_wallet_operations")
 }
@@ -722,10 +723,10 @@ model PushSubscriptions {
   auth       String
   created_at String
   endpoint   String
-  id         String @id @default(uuid())
+  id         String  @id @default(uuid())
   p256dh     String
   updated_at String
-  user_id String?
+  user_id    String?
 
   @@map("push_subscriptions")
 }
@@ -738,7 +739,7 @@ model ReceiptNumbers {
   status           String
   vendor_amount    Float?
   vendor_marked_at String?
-  vendor_id String?
+  vendor_id        String?
 
   @@map("receipt_numbers")
 }
@@ -752,7 +753,7 @@ model ReferralRewards {
   referral_count Float
   reward_amount  Float
   reward_month   String
-  user_id String?
+  user_id        String?
 
   @@map("referral_rewards")
 }
@@ -766,8 +767,8 @@ model Referrals {
   first_transaction_bonus_credited    Boolean?
   first_transaction_bonus_credited_at String?
   id                                  String   @id @default(uuid())
-  referred_id String?
-  referrer_id String?
+  referred_id                         String?
+  referrer_id                         String?
 
   @@map("referrals")
 }
@@ -816,18 +817,18 @@ model RentRequests {
   total_repayment          Float
   total_roi_paid           Float?
   updated_at               String
-  landlord_id String?
-  tenant_id String?
+  landlord_id              String?
+  tenant_id                String?
 
   @@map("rent_requests")
 }
 
 model Repayments {
-  amount     Float
-  created_at String
-  id         String @id @default(uuid())
+  amount          Float
+  created_at      String
+  id              String  @id @default(uuid())
   rent_request_id String?
-  tenant_id String?
+  tenant_id       String?
 
   @@map("repayments")
 }
@@ -864,12 +865,12 @@ model SubscriptionChargeLogs {
   charge_date           String
   created_at            String
   debt_added            Float
-  id                    String @id @default(uuid())
+  id                    String  @id @default(uuid())
   status                String
   wallet_balance_after  Float?
   wallet_balance_before Float?
-  tenant_id String?
-  subscription_id String?
+  tenant_id             String?
+  subscription_id       String?
 
   @@map("subscription_charge_logs")
 }
@@ -896,7 +897,7 @@ model SubscriptionCharges {
   total_charged        Float
   total_charges_due    Float
   updated_at           String
-  tenant_id String?
+  tenant_id            String?
 
   @@map("subscription_charges")
 }
@@ -909,7 +910,7 @@ model SupporterAgreementAcceptance {
   id                String  @id @default(uuid())
   ip_address        String?
   status            String
-  supporter_id String?
+  supporter_id      String?
 
   @@map("supporter_agreement_acceptance")
 }
@@ -955,22 +956,22 @@ model SupporterReferrals {
   created_at          String
   first_investment_at String?
   id                  String   @id @default(uuid())
-  referred_id String?
-  referrer_id String?
+  referred_id         String?
+  referrer_id         String?
 
   @@map("supporter_referrals")
 }
 
 model SupporterRoiPayments {
-  created_at     String
-  due_date       String
-  id             String  @id @default(uuid())
-  paid_at        String?
-  payment_number Float
-  rent_amount    Float
-  roi_amount     Float
-  status         String
-  supporter_id String?
+  created_at      String
+  due_date        String
+  id              String  @id @default(uuid())
+  paid_at         String?
+  payment_number  Float
+  rent_amount     Float
+  roi_amount      Float
+  status          String
+  supporter_id    String?
   rent_request_id String?
 
   @@map("supporter_roi_payments")
@@ -998,34 +999,34 @@ model TenantAgreementAcceptance {
   id                String  @id @default(uuid())
   ip_address        String?
   status            String
-  tenant_id String?
+  tenant_id         String?
 
   @@map("tenant_agreement_acceptance")
 }
 
 model TenantMerchantPayments {
-  amount        Float
-  created_at    String
-  id            String  @id @default(uuid())
-  merchant_name String
-  notes         String?
-  payment_date  String
-  tenant_id     String?
-  tenant_phone  String?
-  updated_at    String
+  amount         Float
+  created_at     String
+  id             String  @id @default(uuid())
+  merchant_name  String
+  notes          String?
+  payment_date   String
+  tenant_id      String?
+  tenant_phone   String?
+  updated_at     String
   transaction_id String?
-  agent_id String?
+  agent_id       String?
 
   @@map("tenant_merchant_payments")
 }
 
 model TenantRatings {
-  created_at String
-  id         String @id @default(uuid())
-  rating     Float
-  updated_at String
+  created_at  String
+  id          String  @id @default(uuid())
+  rating      Float
+  updated_at  String
   landlord_id String?
-  tenant_id String?
+  tenant_id   String?
 
   @@map("tenant_ratings")
 }
@@ -1047,7 +1048,7 @@ model UserActivityLog {
   id            String  @id @default(uuid())
   metadata      Json?
   performed_by  String?
-  user_id String?
+  user_id       String?
 
   @@map("user_activity_log")
 }
@@ -1077,8 +1078,8 @@ model UserLoans {
   repayment_frequency      String?
   status                   String
   total_repayment          Float
-  lender_id String?
-  borrower_id String?
+  lender_id                String?
+  borrower_id              String?
 
   @@map("user_loans")
 }
@@ -1097,7 +1098,7 @@ model UserLocations {
   verified           Boolean?
   verified_at        String?
   verified_by        String?
-  user_id String?
+  user_id            String?
 
   @@map("user_locations")
 }
@@ -1116,14 +1117,14 @@ model UserReceipts {
 }
 
 model UserReviews {
-  created_at    String
-  id            String  @id @default(uuid())
-  rating        Float
-  review_text   String?
-  reviewer_role String?
-  updated_at    String
+  created_at       String
+  id               String  @id @default(uuid())
+  rating           Float
+  review_text      String?
+  reviewer_role    String?
+  updated_at       String
   reviewed_user_id String?
-  reviewer_id String?
+  reviewer_id      String?
 
   @@map("user_reviews")
 }
@@ -1141,7 +1142,7 @@ model UserRiskScores {
   total_missed_payments        Float?
   total_on_time_payments       Float?
   updated_at                   String?
-  user_id String?
+  user_id                      String?
 
   @@map("user_risk_scores")
 }
@@ -1151,7 +1152,7 @@ model UserRoles {
   enabled    Boolean
   id         String  @id @default(uuid())
   role       String
-  user_id String?
+  user_id    String?
 
   @@map("user_roles")
 }
@@ -1197,20 +1198,20 @@ model WalletDeposits {
   amount       Float
   created_at   String
   deposit_type String
-  id           String @id @default(uuid())
-  agent_id String?
-  user_id String?
+  id           String  @id @default(uuid())
+  agent_id     String?
+  user_id      String?
 
   @@map("wallet_deposits")
 }
 
 model WalletTransactions {
-  amount      Float
-  created_at  String
-  description String?
-  id          String  @id @default(uuid())
+  amount       Float
+  created_at   String
+  description  String?
+  id           String  @id @default(uuid())
   recipient_id String?
-  sender_id String?
+  sender_id    String?
 
   @@map("wallet_transactions")
 }
@@ -1218,9 +1219,9 @@ model WalletTransactions {
 model Wallets {
   balance    Float
   created_at String
-  id         String @id @default(uuid())
+  id         String  @id @default(uuid())
   updated_at String
-  user_id String?
+  user_id    String?
 
   @@map("wallets")
 }
@@ -1239,7 +1240,7 @@ model WelileHomesSubscriptions {
   subscription_status      String
   total_savings            Float
   updated_at               String
-  tenant_id String?
+  tenant_id                String?
 
   @@map("welile_homes_subscriptions")
 }
@@ -1270,12 +1271,10 @@ model WithdrawalRequests {
   status                String
   transaction_id        String?
   updated_at            String
-  user_id String?
+  user_id               String?
 
   @@map("withdrawal_requests")
 }
-
-
 
 model AuditLogs {
   id          String  @id @default(uuid())
@@ -1285,11 +1284,12 @@ model AuditLogs {
   record_id   String?
   metadata    Json?
   created_at  String?
+
   @@map("audit_logs")
 }
 
 model StaffProfiles {
-  id                   String  @id @default(uuid())
+  id                   String   @id @default(uuid())
   user_id              String?
   employee_id          String?
   department           String?
@@ -1298,37 +1298,38 @@ model StaffProfiles {
   created_by           String?
   created_at           String?
   updated_at           String?
+
   @@map("staff_profiles")
 }
 
 model TenantProfiles {
-  id              String @id @default(uuid())
-  profile_id      String
-  occupation      String?
-  work_address    String?
-  home_address    String?
-  village_cell    String?
-  parish_ward     String?
-  sub_county      String?
-  district        String?
-  created_at      String
-  updated_at      String
+  id           String  @id @default(uuid())
+  profile_id   String
+  occupation   String?
+  work_address String?
+  home_address String?
+  village_cell String?
+  parish_ward  String?
+  sub_county   String?
+  district     String?
+  created_at   String
+  updated_at   String
 
   @@map("tenant_profiles")
 }
 
 model LandlordDetails {
-  id                        String @id @default(uuid())
-  tenant_id                 String
-  landlord_name             String
-  landlord_phone            String
-  landlord_address          String?
-  house_unit_number         String?
-  next_of_kin_name          String?
-  next_of_kin_phone         String?
-  next_of_kin_relationship  String?
-  created_at                String
-  updated_at                String
+  id                       String  @id @default(uuid())
+  tenant_id                String
+  landlord_name            String
+  landlord_phone           String
+  landlord_address         String?
+  house_unit_number        String?
+  next_of_kin_name         String?
+  next_of_kin_phone        String?
+  next_of_kin_relationship String?
+  created_at               String
+  updated_at               String
 
   @@map("landlord_details")
 }
@@ -1347,74 +1348,74 @@ model RepaymentSchedules {
 }
 
 model IdentityDocuments {
-  id              String @id @default(uuid())
-  application_id  String
-  document_type   String
-  file_url        String
-  uploaded_at     String
+  id             String @id @default(uuid())
+  application_id String
+  document_type  String
+  file_url       String
+  uploaded_at    String
 
   @@map("identity_documents")
 }
 
 model Lc1Documents {
-  id              String @id @default(uuid())
-  application_id  String
-  file_url        String
-  consented       Boolean @default(false)
-  uploaded_at     String
+  id             String  @id @default(uuid())
+  application_id String
+  file_url       String
+  consented      Boolean @default(false)
+  uploaded_at    String
 
   @@map("lc1_documents")
 }
 
 model Applications {
-  id                     String @id @default(uuid())
-  tenant_id              String
-  rent_amount            Float
-  rent_period_months     Float?
-  rent_per_month         Float?
-  status                 String @default("PENDING")
-  access_fee             Float?
-  total_repayment        Float?
-  daily_repayment        Float?
-  payback_period_days    Float?
-  submitted_at           String
-  updated_at             String
+  id                  String @id @default(uuid())
+  tenant_id           String
+  rent_amount         Float
+  rent_period_months  Float?
+  rent_per_month      Float?
+  status              String @default("PENDING")
+  access_fee          Float?
+  total_repayment     Float?
+  daily_repayment     Float?
+  payback_period_days Float?
+  submitted_at        String
+  updated_at          String
 
   @@map("applications")
 }
 
 model AgentProfiles {
-  id              String @id @default(uuid())
-  agent_id        String @unique
-  occupation      String?
-  residence       String?
-  district        String?
-  city            String?
-  created_at      String
-  updated_at      String
+  id         String  @id @default(uuid())
+  agent_id   String  @unique
+  occupation String?
+  residence  String?
+  district   String?
+  city       String?
+  created_at String
+  updated_at String
 
   @@map("agent_profiles")
 }
 
 model AgentNextOfKin {
-  id              String @id @default(uuid())
-  agent_id        String
-  full_name       String
-  contact_number  String
-  residence       String
-  relationship    String
-  created_at      String
-  updated_at      String
+  id             String @id @default(uuid())
+  agent_id       String
+  full_name      String
+  contact_number String
+  residence      String
+  relationship   String
+  created_at     String
+  updated_at     String
 
   @@map("agent_next_of_kin")
 }
 
 model AgentApplications {
-  id              String @id @default(uuid())
-  agent_id        String @unique
-  status          String @default("PENDING")
-  submitted_at    String
-  updated_at      String
+  id           String @id @default(uuid())
+  agent_id     String @unique
+  status       String @default("PENDING")
+  submitted_at String
+  updated_at   String
 
   @@map("agent_applications")
 }

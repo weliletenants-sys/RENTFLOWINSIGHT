@@ -145,3 +145,34 @@ export const transfer = async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+export const requestDeposit = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.sub;
+    const { amount, provider, transactionId, notes } = req.body;
+
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    if (!amount || amount <= 0 || !transactionId) {
+      return res.status(400).json({ message: 'Invalid payload. Requires amount and transactionId' });
+    }
+
+    const depositRequest = await prisma.depositRequests.create({
+      data: {
+        user_id: userId,
+        amount,
+        provider: provider || 'MOBILE_MONEY',
+        transaction_id: transactionId,
+        status: 'pending',
+        notes: notes || null,
+        transaction_date: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    });
+
+    return res.status(201).json({ message: 'Deposit request submitted for manager approval', depositRequest });
+  } catch (error) {
+    console.error('Deposit Request Error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
