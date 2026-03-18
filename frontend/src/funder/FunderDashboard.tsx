@@ -13,6 +13,8 @@ import type { PortfolioItem, ActivityItem } from './types';
 import FunderInvestCTA from './components/FunderInvestCTA';
 import FunderInvestModal from './FunderInvestModal';
 import FunderActionButtons from './components/FunderActionButtons';
+import FunderPortfolioPage from './FunderPortfolioPage';
+import FunderOpportunitiesPage from './FunderOpportunitiesPage';
 
 // ─────────────────────────── types ───────────────────────────
 
@@ -121,6 +123,7 @@ export default function FunderDashboard() {
   const [activities] = useState<ActivityItem[]>(MOCK_ACTIVITIES);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activePage, setActivePage] = useState<string>('Dashboard');
 
   useEffect(() => {
     try {
@@ -166,7 +169,8 @@ export default function FunderDashboard() {
 
         {/* ──────────── DESKTOP SIDEBAR ──────────── */}
         <FunderSidebar
-          activePage="Dashboard"
+          activePage={activePage}
+          onNavigate={(page) => setActivePage(page)}
           onNewsupport={() => setIsModalOpen(true)}
         />
 
@@ -187,6 +191,11 @@ export default function FunderDashboard() {
           />
 
           {/* ──────────── PAGE BODY ──────────── */}
+          {activePage === 'Portfolio' ? (
+            <FunderPortfolioPage onAddPortfolio={() => setIsModalOpen(true)} walletBalance={stats.walletBalance} />
+          ) : activePage === 'Opportunities' ? (
+            <FunderOpportunitiesPage />
+          ) : (
           <div className="flex-1 p-6 lg:p-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
@@ -266,6 +275,7 @@ export default function FunderDashboard() {
               </aside>
             </div>
           </div>
+          )}
         </div>
       </div>
 

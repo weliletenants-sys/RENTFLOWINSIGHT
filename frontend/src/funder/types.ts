@@ -31,6 +31,7 @@ export interface PortfolioItem {
   investedAmount: number;
   supportedAmount?: number;
   totalEarned: number;
+  expectedAmount?: number;
   roiPercent?: number;
   durationMonths?: number;
   payoutType?: 'Monthly' | 'Compounding';

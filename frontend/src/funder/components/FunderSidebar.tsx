@@ -11,6 +11,7 @@ import {
 
 interface FunderSidebarProps {
   activePage?: string;
+  onNavigate?: (page: string) => void;
   onNewsupport?: () => void; // Ghost prop kept temporarily so FunderDashboard doesn't throw a type error
 }
 
@@ -24,7 +25,7 @@ const navItems = [
   { label: 'Reports', icon: <FileText className="w-5 h-5" /> },
 ];
 
-export default function FunderSidebar({ activePage = 'Dashboard' }: FunderSidebarProps) {
+export default function FunderSidebar({ activePage = 'Dashboard', onNavigate }: FunderSidebarProps) {
   return (
     <aside className="hidden lg:flex w-72 bg-white border-r border-[var(--color-primary-border)] flex-col sticky top-0 h-screen z-40">
       {/* Logo */}
@@ -46,6 +47,7 @@ export default function FunderSidebar({ activePage = 'Dashboard' }: FunderSideba
             <a
               key={item.label}
               href="#"
+              onClick={(e) => { e.preventDefault(); onNavigate?.(item.label); }}
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all"
               style={
                 isActive
