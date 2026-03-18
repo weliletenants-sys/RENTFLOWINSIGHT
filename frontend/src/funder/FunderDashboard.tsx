@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { Lightbulb } from 'lucide-react';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
@@ -118,19 +119,41 @@ export default function FunderDashboard() {
 
   const [stats, setStats] = useState<DashboardStats>(MOCK_STATS);
   const [portfolios, setPortfolios] = useState<PortfolioItem[]>(MOCK_PORTFOLIOS);
-  const [activities] = useState<ActivityItem[]>(MOCK_ACTIVITIES);
+  const [activities, setActivities] = useState<ActivityItem[]>(MOCK_ACTIVITIES);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    try {
-      setStats(MOCK_STATS);
-      setPortfolios(MOCK_PORTFOLIOS);
-    } catch (err) {
-      console.error('Failed to load funder data', err);
-    } finally {
-      setIsLoading(false);
-    }
+    let isMounted = true;
+    const loadData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        
+        const [statsRes, portfoliosRes, activitiesRes] = await Promise.all([
+          axios.get('http://localhost:3000/api/supporter/dashboard', config),
+          axios.get('http://localhost:3000/api/supporter/portfolios', config),
+          axios.get('http://localhost:3000/api/supporter/activities', config)
+        ]);
+
+        if (isMounted) {
+          setStats(statsRes.data);
+          setPortfolios(portfoliosRes.data);
+          setActivities(activitiesRes.data);
+        }
+      } catch (err) {
+        console.error('Failed to load funder data', err);
+        // Fallback to mocks if no local API is tethered
+        if (isMounted) {
+          setStats(MOCK_STATS);
+          setPortfolios(MOCK_PORTFOLIOS);
+        }
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    loadData();
+    return () => { isMounted = false; };
   }, [user, navigate]);
 
   const handleInvestSuccess = (amount: number) => {

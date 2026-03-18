@@ -17,14 +17,13 @@ export const getDashboardStats = async (req: Request, res: Response) => {
     const walletBalance = wallet ? wallet.balance : 0;
 
     const principalInvested = portfolios.reduce((sum: number, p: any) => sum + p.investment_amount, 0);
-    // Multiply by duration for full expected amount approximation
-    const expectedAmount = portfolios.reduce((sum: number, p: any) => sum + (p.investment_amount * (p.roi_percentage / 100) * (p.duration_months || 12)), 0);
+    const monthlyReturn = portfolios.reduce((sum: number, p: any) => sum + (p.investment_amount * (p.roi_percentage / 100)), 0);
 
     return res.status(200).json({
       walletBalance,
       principalInvested,
-      expectedAmount,
-      portfoliosCount: portfolios.length
+      monthlyReturn,
+      roiPercent: portfolios.length > 0 ? portfolios[0].roi_percentage : 15
     });
   } catch (error) {
     console.error('Dashboard Stats Error:', error);
@@ -250,8 +249,9 @@ export const funderSignup = async (req: Request, res: Response) => {
         full_name: `${firstName} ${lastName}`,
         phone,
         password_hash,
+        role: 'FUNDER',
         is_frozen: false,
-        verified: false,
+        verified: true,
         rent_discount_active: false,
         created_at: now,
         updated_at: now,
@@ -484,6 +484,72 @@ export const processRoi = async (req: Request, res: Response) => {
     return res.status(200).json({ message: `ROI processed successfully for ${processedCount} portfolios.` });
   } catch (error) {
     console.error('Process ROI Error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+export const getPortfolios = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.sub;
+    
+    const portfolios = await prisma.investorPortfolios.findMany({
+      where: { investor_id: userId },
+      orderBy: { created_at: 'desc' }
+    });
+
+    const formattedPortfolios = portfolios.map((p) => {
+      const createdDate = new Date(p.created_at);
+      const maturityDate = new Date(createdDate.getTime() + (p.duration_months || 12) * 30 * 24 * 60 * 60 * 1000);
+      
+      return {
+        id: p.id,
+        portfolioCode: p.portfolio_code || `WEL-${Math.floor(Math.random() * 99).toString().padStart(2, '0')}`,
+        assetName: 'Welile Housing Pool',
+        investedAmount: p.investment_amount,
+        totalEarned: p.total_roi_earned || 0,
+        roiPercent: p.roi_percentage,
+        durationMonths: p.duration_months || 12,
+        payoutType: p.roi_mode === 'monthly_compounding' ? 'Compounding' : 'Monthly',
+        nextPayoutDate: p.next_roi_date ? new Date(p.next_roi_date).toLocaleDateString('en-GB') : undefined,
+        maturityDate: maturityDate.toLocaleDateString('en-GB', { month: 'short', day: 'numeric', year: 'numeric' }),
+        status: p.status
+      };
+    });
+
+    return res.status(200).json(formattedPortfolios);
+  } catch (error) {
+    console.error('Get Portfolios Error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+export const getActivities = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.sub;
+
+    const pendingOps = await prisma.pendingWalletOperations.findMany({
+      where: { user_id: userId },
+      orderBy: { created_at: 'desc' },
+      take: 10
+    });
+
+    const formattedActivities = pendingOps.map((op: any) => {
+      return {
+        id: op.id,
+        title: op.category === 'supporter_platform_rewards' ? 'Monthly Earnings' : 'New Investment',
+        category: op.direction === 'cash_in' ? 'reward' : 'investment',
+        status: op.status.toUpperCase(),
+        provider: 'Welile Pool',
+        date: new Date(op.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        timestamp: 'Recently',
+        amount: op.amount,
+        isCredit: op.direction === 'cash_in'
+      };
+    });
+
+    return res.status(200).json(formattedActivities);
+  } catch (error) {
+    console.error('Get Activities Error:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };

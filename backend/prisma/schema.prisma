@@ -715,6 +715,7 @@ model Profiles {
   verified              Boolean
   whatsapp_verified     Boolean?
   whatsapp_verified_at  String?
+  role                  String?
 
   @@map("profiles")
 }
