@@ -9,6 +9,8 @@ import {
   Info,
   Zap,
 } from 'lucide-react';
+import PurpleBubbles from '../components/PurpleBubbles';
+import { motion } from 'framer-motion';
 
 export default function AgentRegisterTenant() {
   const navigate = useNavigate();
@@ -60,7 +62,10 @@ export default function AgentRegisterTenant() {
   };
 
   return (
-    <div className="bg-white dark:bg-[#221610] font-['Public_Sans'] text-slate-900 dark:text-slate-100 antialiased min-h-screen transition-colors duration-300 flex flex-col">
+    <div className="relative bg-white dark:bg-[#221610] font-['Public_Sans'] text-slate-900 dark:text-slate-100 antialiased min-h-screen transition-colors duration-300 flex flex-col">
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <PurpleBubbles />
+      </div>
       
       {/* Sticky Header Component */}
       <header className="sticky top-0 z-50 w-full bg-white/80 dark:bg-[#221610]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 md:px-10 py-4">
@@ -88,7 +93,7 @@ export default function AgentRegisterTenant() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
+      <main className="relative z-10 flex-1 max-w-5xl mx-auto w-full px-4 py-8">
         
         {/* Progress Indicator */}
         <div className="mb-12">
@@ -135,7 +140,12 @@ export default function AgentRegisterTenant() {
         </div>
 
         {/* Form Content */}
-        <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6 md:p-10 relative overflow-hidden">
+        <motion.div 
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
+          className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 p-6 md:p-10 relative overflow-hidden"
+        >
           <form onSubmit={handleNext} className="space-y-10">
             
             {/* STEP 1 */}
@@ -316,7 +326,7 @@ export default function AgentRegisterTenant() {
               </button>
             </div>
           </form>
-        </div>
+        </motion.div>
 
         {/* Help Section */}
         <div className="mt-8 flex items-center justify-center gap-2 text-slate-400 dark:text-slate-500">
@@ -331,7 +341,7 @@ export default function AgentRegisterTenant() {
       </main>
 
       {/* Footer Space */}
-      <footer className="py-12 bg-slate-50 dark:bg-[#1a110c] mt-auto border-t border-slate-100 dark:border-slate-800">
+      <footer className="relative z-10 py-12 bg-slate-50 dark:bg-[#1a110c] mt-auto border-t border-slate-100 dark:border-slate-800">
         <div className="max-w-5xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
             <div className="size-6 bg-[#6d28d9] rounded-md flex items-center justify-center">

@@ -57,7 +57,7 @@ export default function AgentSettings() {
 
         {/* Settings List */}
         <div className="flex-1 px-4 py-4 space-y-1">
-          <button className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-primary/5 transition-colors group">
+          <button onClick={() => navigate('/agent-edit-profile')} className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-primary/5 transition-colors group">
             <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
               <UserIcon size={20} />
             </div>
@@ -65,7 +65,7 @@ export default function AgentSettings() {
             <ArrowLeft size={20} className="text-slate-400 rotate-180" />
           </button>
           
-          <button className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-primary/5 transition-colors group">
+          <button onClick={() => navigate('/agent-notification-settings')} className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-primary/5 transition-colors group">
             <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
               <Bell size={20} />
             </div>
@@ -73,7 +73,7 @@ export default function AgentSettings() {
             <ArrowLeft size={20} className="text-slate-400 rotate-180" />
           </button>
           
-          <button className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-primary/5 transition-colors group">
+          <button onClick={() => navigate('/agent-security')} className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-primary/5 transition-colors group">
             <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
               <Shield size={20} />
             </div>
@@ -81,7 +81,7 @@ export default function AgentSettings() {
             <ArrowLeft size={20} className="text-slate-400 rotate-180" />
           </button>
           
-          <button className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-primary/5 transition-colors group">
+          <button onClick={() => navigate('/agent-privacy-policy')} className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-primary/5 transition-colors group">
             <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
               <FileText size={20} />
             </div>

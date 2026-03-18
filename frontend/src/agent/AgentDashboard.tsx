@@ -1,12 +1,15 @@
 import { useAuth } from '../contexts/AuthContext';
 import { useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, Home, UserCheck, Receipt, UserPlus, LayoutGrid, Wallet, PlusCircle, ArrowRightLeft, BadgeCheck, LineChart, CreditCard, ClipboardCheck, Download, Upload, Users, Settings } from 'lucide-react';
+import AgentRegisterDialog from './components/dialogs/AgentRegisterDialog';
 
 
 export default function AgentDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [isRegisterDialogOpen, setIsRegisterDialogOpen] = useState(false);
   
   // Load Material Symbols
   useEffect(() => {
@@ -78,7 +81,7 @@ export default function AgentDashboard() {
                   <PlusCircle size={24} />
                   <span className="text-xs font-bold uppercase">Deposit</span>
                 </button>
-                <button className="flex flex-col items-center justify-center gap-2 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/10">
+                <button onClick={() => navigate('/agent-transfer')} className="flex flex-col items-center justify-center gap-2 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/10">
                   <ArrowRightLeft size={24} />
                   <span className="text-xs font-bold uppercase">Transfer</span>
                 </button>
@@ -101,7 +104,7 @@ export default function AgentDashboard() {
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400">List House</span>
               </div>
-              <div onClick={() => navigate('/agent-register-tenant')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
+              <div onClick={() => setIsRegisterDialogOpen(true)} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
                 <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
                   <UserCheck size={24} />
                 </div>
@@ -221,23 +224,29 @@ export default function AgentDashboard() {
         </main>
 
         <nav className="md:hidden sticky bottom-0 w-full bg-white dark:bg-[#221610] border-t border-slate-200 dark:border-slate-800 px-6 py-3 flex items-center justify-between z-50">
-          <button className="flex flex-col items-center gap-1 text-[#6d28d9]">
-            <LayoutGrid size={24} />
+          <button onClick={() => navigate('/dashboard')} className="flex flex-col items-center gap-1 text-[#6d28d9]">
+            <Home size={24} />
             <span className="text-[10px] font-bold">Home</span>
           </button>
-          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9]">
+          <button onClick={() => navigate('/agent-wallet')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9] transition-colors">
             <Wallet size={24} />
             <span className="text-[10px] font-bold">Wallet</span>
           </button>
-          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9]">
+          <button onClick={() => navigate('/dashboard/agent/clients')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9] transition-colors">
             <Users size={24} />
             <span className="text-[10px] font-bold">Clients</span>
           </button>
-          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9]">
+          <button onClick={() => navigate('/dashboard/agent/settings')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9] transition-colors">
             <Settings size={24} />
             <span className="text-[10px] font-bold">Settings</span>
           </button>
         </nav>
+
+        {/* Dialogs */}
+        <AgentRegisterDialog 
+          isOpen={isRegisterDialogOpen} 
+          onClose={() => setIsRegisterDialogOpen(false)} 
+        />
       </div>
     </div>
   );
