@@ -1,10 +1,12 @@
 import { useAuth } from '../contexts/AuthContext';
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MapPin, Home, UserCheck, Receipt, UserPlus, LayoutGrid, Wallet, PlusCircle, ArrowRightLeft, BadgeCheck, LineChart, CreditCard, ClipboardCheck, Download, Upload, Users, Settings } from 'lucide-react';
 
 
 export default function AgentDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   
   // Load Material Symbols
   useEffect(() => {
@@ -68,11 +70,11 @@ export default function AgentDashboard() {
                 <h2 className="text-4xl font-extrabold tracking-tight mt-1">UGX 1,450,000</h2>
               </div>
               <div className="grid grid-cols-3 gap-3">
-                <button className="flex flex-col items-center justify-center gap-2 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/10">
+                <button onClick={() => navigate('/agent-withdraw')} className="flex flex-col items-center justify-center gap-2 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/10">
                   <Wallet size={24} />
                   <span className="text-xs font-bold uppercase">Withdraw</span>
                 </button>
-                <button className="flex flex-col items-center justify-center gap-2 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/10">
+                <button onClick={() => navigate('/agent-deposit')} className="flex flex-col items-center justify-center gap-2 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/10">
                   <PlusCircle size={24} />
                   <span className="text-xs font-bold uppercase">Deposit</span>
                 </button>
@@ -99,7 +101,7 @@ export default function AgentDashboard() {
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400">List House</span>
               </div>
-              <div className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
+              <div onClick={() => navigate('/agent-register-tenant')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
                 <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
                   <UserCheck size={24} />
                 </div>
