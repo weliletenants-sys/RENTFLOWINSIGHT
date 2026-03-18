@@ -66,3 +66,74 @@ export const getRecruitmentStats = async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+export const requestAdvance = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.sub;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const { amount, advance_type, reason, expected_date } = req.body;
+    
+    // Safety check against hard limits or db limits
+    const limitRecord = await prisma.creditAccessLimits.findFirst({
+       where: { user_id: userId }
+    });
+    
+    const maxLimit = limitRecord?.total_limit || 1000000;
+    
+    if (amount > maxLimit) {
+      return res.status(400).json({ message: `Amount exceeds maximum accessible limit of UGX ${maxLimit}` });
+    }
+
+    const now = new Date().toISOString();
+    const expires = new Date();
+    expires.setDate(expires.getDate() + 30); // Dynamic 30 day repayment cycle
+
+    const advance = await prisma.agentAdvances.create({
+      data: {
+        agent_id: userId,
+        principal: Number(amount),
+        outstanding_balance: Number(amount),
+        advance_type: advance_type || 'Float / Operational',
+        reason: reason || '',
+        expected_date: expected_date || now,
+        status: 'PENDING',
+        cycle_days: 30,
+        daily_rate: 0,
+        issued_by: 'SYSTEM',
+        issued_at: now,
+        expires_at: expires.toISOString(),
+        created_at: now,
+        updated_at: now
+      }
+    });
+
+    return res.status(201).json({ message: 'Advance request successfully submitted', advance });
+
+  } catch (error) {
+    console.error('requestAdvance error:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const getAdvances = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.sub;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const advances = await prisma.agentAdvances.findMany({
+      where: { agent_id: userId },
+      orderBy: { created_at: 'desc' }
+    });
+    
+    const limitRecord = await prisma.creditAccessLimits.findFirst({
+       where: { user_id: userId }
+    });
+    const maxLimit = limitRecord?.total_limit || 1000000;
+
+    return res.status(200).json({ advances, maxLimit });
+  } catch (error) {
+    console.error('getAdvances error:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};

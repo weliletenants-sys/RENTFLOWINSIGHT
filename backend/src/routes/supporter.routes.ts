@@ -1,10 +1,12 @@
 import { Router } from 'express';
-import { getDashboardStats, getVirtualHouses, fundPool, proxyInvest, funderSignup, funderOnboard, getInvestmentOptions, cooProxyInvest, requestWithdrawal, processRoi, getPortfolios, getActivities } from '../controllers/supporter.controller';
+import { getDashboardStats, getVirtualHouses, fundPool, proxyInvest, funderSignup, funderOnboard, getInvestmentOptions, cooProxyInvest, requestWithdrawal, processRoi, getPortfolios, getActivities, dispatchActivations, activateAccount } from '../controllers/supporter.controller';
 import { authGuard, rolesGuard } from '../middlewares/auth.middleware';
 
 const router = Router();
 
 router.post('/signup', funderSignup);
+router.post('/dispatch-activations', authGuard, rolesGuard(['ADMIN', 'COO']), dispatchActivations);
+router.post('/activate-account', activateAccount);
 router.post('/onboard', authGuard, rolesGuard(['FUNDER', 'SUPPORTER']), funderOnboard);
 
 router.get('/investment-options', getInvestmentOptions);

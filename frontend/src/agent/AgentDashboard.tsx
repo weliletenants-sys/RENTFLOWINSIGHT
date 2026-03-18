@@ -145,7 +145,10 @@ export default function AgentDashboard() {
                   <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Available Limit</p>
                   <p className="text-xl font-bold text-slate-900 dark:text-white mt-0.5">UGX 500,000</p>
                 </div>
-                <button className="w-full py-2.5 rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] text-sm font-bold hover:bg-[#6d28d9]/20 transition-colors">
+                <button 
+                  onClick={() => navigate('/agent-advance-request')}
+                  className="w-full py-2.5 rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] text-sm font-bold hover:bg-[#6d28d9]/20 transition-colors"
+                >
                   Request for Advance
                 </button>
               </div>

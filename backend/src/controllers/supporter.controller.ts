@@ -553,3 +553,82 @@ export const getActivities = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
+export const dispatchActivations = async (req: Request, res: Response) => {
+  try {
+    const funders = await prisma.profiles.findMany({
+      where: { role: 'FUNDER' },
+      select: { id: true, email: true, full_name: true, password_hash: true }
+    });
+
+    console.log(`\n--- 🚀 DISPATCHING ${funders.length} FUNDER MAGIC LINKS ---`);
+
+    for (const funder of funders) {
+      if (!funder.password_hash) continue;
+      
+      const secret = JWT_SECRET + funder.password_hash;
+      const payload = { id: funder.id, email: funder.email };
+      const token = jwt.sign(payload, secret, { expiresIn: '24h' });
+      
+      const magicLink = `http://localhost:5173/funder/activate?token=${token}`;
+      
+      console.log(`[EMAIL DISPATCH] To: ${funder.email} | Name: ${funder.full_name}`);
+      console.log(`[LINK] ${magicLink}\n`);
+    }
+    
+    return res.status(200).json({ message: `Successfully generated ${funders.length} 24-hour Activation Links.` });
+  } catch (error) {
+    console.error('Dispatch Error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+export const activateAccount = async (req: Request, res: Response) => {
+  try {
+    const { token, password } = req.body;
+    
+    if (!token || !password) {
+      return res.status(400).json({ message: 'Token and new password are required' });
+    }
+
+    const decoded = jwt.decode(token) as any;
+    if (!decoded || !decoded.id) {
+      return res.status(400).json({ message: 'Invalid token structure' });
+    }
+
+    const user = await prisma.profiles.findUnique({ where: { id: decoded.id } });
+    if (!user || !user.password_hash) {
+      return res.status(404).json({ message: 'User not found or inaccessible' });
+    }
+
+    // Verify token using the user's current password hash + secret!
+    try {
+      jwt.verify(token, JWT_SECRET + user.password_hash);
+    } catch (e) {
+      return res.status(403).json({ message: 'Token is invalid, expired, or has already been used.' });
+    }
+
+    // Digest the new password securely
+    const salt = await bcrypt.genSalt(10);
+    const newHash = await bcrypt.hash(password, salt);
+
+    // Commit native profile override
+    await prisma.profiles.update({
+      where: { id: user.id },
+      data: { password_hash: newHash, updated_at: new Date().toISOString() }
+    });
+
+    // Generate immediate Login authorization
+    const loginToken = jwt.sign({ sub: user.id, role: user.role, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+    
+    return res.status(200).json({ 
+      message: 'Account legally bound and activated', 
+      token: loginToken,
+      user: { id: user.id, email: user.email, name: user.full_name, role: user.role }
+    });
+
+  } catch (error) {
+    console.error('Activation Error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};

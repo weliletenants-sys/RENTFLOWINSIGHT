@@ -47,6 +47,9 @@ model AgentAdvances {
   status              String
   updated_at          String
   agent_id            String?
+  advance_type        String?
+  reason              String?
+  expected_date       String?
 
   @@map("agent_advances")
 }
