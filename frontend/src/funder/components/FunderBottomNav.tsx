@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Home, User, Building2, FileText } from 'lucide-react';
+import { Home, User, FileText, Wallet } from 'lucide-react';
 
 interface FunderBottomNavProps {
   activePage?: string;
@@ -7,7 +7,7 @@ interface FunderBottomNavProps {
 
 const navItems = [
   { label: 'Home', icon: <Home className="w-6 h-6" />, path: '/funder' },
-  { label: 'Properties', icon: <Building2 className="w-6 h-6" />, path: '/funder/properties' },
+  { label: 'Wallet', icon: <Wallet className="w-6 h-6" />, path: '/funder/wallet' },
   { label: 'Reports', icon: <FileText className="w-6 h-6" />, path: '/funder/reports' },
   { label: 'Account', icon: <User className="w-6 h-6" />, path: '/funder/account' },
 ];
