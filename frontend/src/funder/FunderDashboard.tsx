@@ -196,9 +196,12 @@ export default function FunderDashboard() {
                 {/* Wealth Performance Card */}
                 <FunderWalletCard
                   portfolioValue={stats.principalInvested}
-                  monthlyEarnings={stats.monthlyReturn}
-                  earningsGrowthPercent={12}
+                  walletBalance={stats.walletBalance}
+                  earningsGrowthPercent={stats.roiPercent}
                   cardId="WL-99201"
+                  onAddFunds={() => setIsModalOpen(true)}
+                  onWithdraw={() => console.log('Withdraw via card')}
+                  onPortfolio={() => console.log('Portfolio view via card')}
                 />
 
                 {/* Quick Actions — mobile only */}
