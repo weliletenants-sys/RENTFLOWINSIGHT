@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import {
   ArrowLeft, Check, X, Shield, Home, TrendingUp, Banknote,
@@ -16,6 +17,8 @@ interface FormState {
   // Step 2
   investPath: InvestPath;
   // Step 3
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -512,6 +515,30 @@ function Step3({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
         variants={fadeUp}
         className="bg-white border border-gray-100 rounded-2xl p-4 space-y-3"
       >
+        {/* Name Fields */}
+        <div className="flex gap-3">
+          <div className="space-y-1 flex-1 min-w-0">
+            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">First Name</label>
+            <input
+              type="text"
+              placeholder="First Name"
+              value={form.firstName}
+              onChange={e => setForm(p => ({ ...p, firstName: e.target.value }))}
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder:text-gray-300 outline-none focus:bg-white focus:border-[#9234EA] transition-all"
+            />
+          </div>
+          <div className="space-y-1 flex-1 min-w-0">
+            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Last Name</label>
+            <input
+              type="text"
+              placeholder="Last Name"
+              value={form.lastName}
+              onChange={e => setForm(p => ({ ...p, lastName: e.target.value }))}
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder:text-gray-300 outline-none focus:bg-white focus:border-[#9234EA] transition-all"
+            />
+          </div>
+        </div>
+
         {/* Email */}
         <div className="space-y-1">
           <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Email</label>
@@ -668,10 +695,11 @@ function isValid(step: number, form: FormState): boolean {
   if (step === 2) return form.investPath !== null;
   if (step === 3) {
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
+    const nameOk = form.firstName.length >= 2 && form.lastName.length >= 2;
     const pwOk = form.password.length >= 8;
     const matchOk = form.password === form.confirmPassword;
     const phoneOk = form.phone.trim().length >= 7;
-    return emailOk && pwOk && matchOk && phoneOk && form.agreedToTerms;
+    return emailOk && nameOk && pwOk && matchOk && phoneOk && form.agreedToTerms;
   }
   return false;
 }
@@ -688,6 +716,8 @@ export default function FunderOnboarding() {
   const [form, setForm] = useState<FormState>({
     understoodRole: false,
     investPath: null,
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -697,17 +727,31 @@ export default function FunderOnboarding() {
 
   const valid = isValid(step, form);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step < TOTAL) {
       setStep(s => s + 1);
     } else {
-      // Final step — disable button and simulate account creation
       setIsSubmitting(true);
-      // TODO: replace timeout with real API call; on success → navigate
-      setTimeout(() => {
+      try {
+        const payload = {
+          email: form.email,
+          password: form.password,
+          firstName: form.firstName,
+          lastName: form.lastName,
+          phone: form.phone,
+          investPath: form.investPath
+        };
+        const response = await axios.post('http://localhost:3000/api/supporter/signup', payload);
+        
+        // Simulating the automatic JWT attachment for now since we just need the flow visually completed
+        if (response.status === 201) {
+          navigate('/funder-dashboard');
+        }
+      } catch (err: any) {
+        console.error('Signup failed:', err);
+        alert(err.response?.data?.message || 'Failed to create account. Please try again.');
         setIsSubmitting(false);
-        navigate('/funder-dashboard');
-      }, 2000);
+      }
     }
   };
 

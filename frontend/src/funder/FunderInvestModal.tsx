@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import axios from 'axios';
 import { X, ArrowRight, ShieldCheck } from 'lucide-react';
 
 interface FunderInvestModalProps {
@@ -29,12 +30,21 @@ export default function FunderInvestModal({ isOpen, onClose, onSuccess, walletBa
 
     setIsSubmitting(true);
     
-    // Simulate API call to POST /supporter/fund-pool
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post('http://localhost:3000/api/supporter/fund-pool', 
+        { amount: numAmount },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
       onSuccess(numAmount);
       onClose();
-    }, 1500);
+    } catch (error: any) {
+      console.error('Investment failed:', error);
+      alert(error.response?.data?.message || 'Transaction failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
