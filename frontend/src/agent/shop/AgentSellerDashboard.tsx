@@ -1,8 +1,7 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, Store, LineChart, PackageSearch, 
-  Wallet, PlusCircle, ArrowRight, ShieldCheck, Tag
+  Wallet, PlusCircle, ArrowRight, ShieldCheck
 } from 'lucide-react';
 
 export default function AgentSellerDashboard() {

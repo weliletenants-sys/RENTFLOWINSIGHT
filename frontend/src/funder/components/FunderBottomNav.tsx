@@ -7,7 +7,7 @@ interface FunderBottomNavProps {
 const navItems = [
   { label: 'Home', icon: <Home className="w-6 h-6" /> },
   { label: 'Portfolio', icon: <PieChart className="w-6 h-6" /> },
-  { label: 'Activity', icon: <ClipboardList className="w-6 h-6" /> },
+  { label: 'Transactions', icon: <ClipboardList className="w-6 h-6" /> },
   { label: 'Account', icon: <User className="w-6 h-6" /> },
 ];
 

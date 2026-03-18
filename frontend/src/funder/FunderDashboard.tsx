@@ -7,12 +7,12 @@ import FunderMobileHeader from './components/FunderMobileHeader';
 import FunderSidebar from './components/FunderSidebar';
 import FunderBottomNav from './components/FunderBottomNav';
 import FunderWalletCard from './components/FunderWalletCard';
-import FunderActionButtons from './components/FunderActionButtons';
 import FunderPortfolioList from './components/FunderPortfolioList';
 import FunderRecentActivity from './components/FunderRecentActivity';
 import type { PortfolioItem, ActivityItem } from './types';
 import FunderInvestCTA from './components/FunderInvestCTA';
 import FunderInvestModal from './FunderInvestModal';
+import FunderActionButtons from './components/FunderActionButtons';
 
 // ─────────────────────────── types ───────────────────────────
 
@@ -195,28 +195,22 @@ export default function FunderDashboard() {
 
                 {/* Wealth Performance Card */}
                 <FunderWalletCard
-                  portfolioValue={stats.principalInvested}
                   walletBalance={stats.walletBalance}
-                  earningsGrowthPercent={stats.roiPercent}
                   cardId="WL-99201"
                   onAddFunds={() => setIsModalOpen(true)}
                   onWithdraw={() => console.log('Withdraw via card')}
                   onPortfolio={() => console.log('Portfolio view via card')}
                 />
 
+                                
                 {/* Quick Actions — mobile only */}
-                <div className="lg:hidden bg-white rounded-2xl border border-slate-100 shadow-sm p-5 relative overflow-hidden">
-                  {/* Subtle top accent */}
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--color-primary)] opacity-40" />
+                <div className="lg:hidden relative">
                   <FunderActionButtons
-                    balance={stats.walletBalance}
-                    onDeposit={() => setIsModalOpen(true)}
-                    onWithdraw={() => console.log('Withdraw')}
-                    onPortfolio={() => console.log('Portfolio')}
+                    portfolioValue={stats.principalInvested}
+                    roiPercent={stats.roiPercent}
                   />
                 </div>
-
-                {/* Portfolio list */}
+{/* Portfolio list */}
                 <FunderPortfolioList
                   portfolios={portfolios}
                   onViewAll={() => console.log('View all portfolios')}
@@ -238,19 +232,14 @@ export default function FunderDashboard() {
 
               {/* ── RIGHT PANEL (desktop only) ── */}
               <aside className="hidden lg:flex lg:col-span-4 flex-col gap-8">
-                {/* Wallet Quick Actions */}
-                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 relative overflow-hidden">
-                  {/* Subtle top bg line */}
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--color-primary)] opacity-40" />
-                  
+                                {/* Wallet Quick Actions */}
+                <div className="relative">
                   <FunderActionButtons
-                    balance={stats.walletBalance}
-                    onDeposit={() => setIsModalOpen(true)}
-                    onWithdraw={() => console.log('Withdraw')}
-                    onPortfolio={() => console.log('Portfolio')}
+                    portfolioValue={stats.principalInvested}
+                    roiPercent={stats.roiPercent}
                   />
                 </div>
-
+                
                 {/* Recent Activity */}
                 <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
                   <FunderRecentActivity

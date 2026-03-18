@@ -2,9 +2,7 @@ import { useState } from 'react';
 import { Eye, EyeOff, Plus, ArrowUpRight, Briefcase } from 'lucide-react';
 
 interface FunderWalletCardProps {
-  portfolioValue: number;
   walletBalance: number;
-  earningsGrowthPercent: number;
   cardId?: string;
   onAddFunds?: () => void;
   onWithdraw?: () => void;
@@ -12,9 +10,7 @@ interface FunderWalletCardProps {
 }
 
 export default function FunderWalletCard({
-  portfolioValue,
   walletBalance,
-  earningsGrowthPercent,
   cardId = 'WL-99201',
   onAddFunds,
   onWithdraw,
@@ -49,23 +45,6 @@ export default function FunderWalletCard({
 
         {/* Middle Section: Values */}
         <div className="flex flex-col gap-4 mb-2">
-          {/* Top Focus: Portfolio Value + ROI Badge */}
-          <div className="flex flex-wrap items-center gap-3">
-            <div>
-              <p className="text-white/60 text-[10px] uppercase font-bold tracking-wider mb-0.5">Total Portfolio Value</p>
-              <h3 className="text-xl font-bold">
-                {balanceVisible ? `UGX ${(portfolioValue / 1_000_000).toFixed(2)}M` : 'UGX ********'}
-              </h3>
-            </div>
-            
-            {/* ROI Badge */}
-            <div className="mt-4 flex items-center gap-1.5 text-[var(--color-success)] bg-white/20 px-2.5 py-1 rounded-md border border-white/10 backdrop-blur-sm shadow-sm">
-              <span className="text-xs font-black drop-shadow-sm text-white">
-                +{earningsGrowthPercent}% ROI
-              </span>
-            </div>
-          </div>
-
           {/* Main Focus: Wallet Balance */}
           <div>
             <p className="text-white/70 text-xs font-semibold mb-1 uppercase tracking-widest flex items-center gap-2">
@@ -84,28 +63,28 @@ export default function FunderWalletCard({
         </div>
 
         {/* Bottom Section: Quick Actions */}
-        <div className="flex items-center gap-2 sm:gap-3 pt-4 border-t border-white/20 mt-auto overflow-x-auto pb-1 hide-scrollbar">
+        <div className="flex items-center gap-1.5 sm:gap-3 pt-3 sm:pt-4 mt-auto overflow-x-auto pb-1 hide-scrollbar -mx-1 px-1">
           <button
             onClick={onAddFunds}
-            className="flex items-center gap-1.5 bg-white text-[var(--color-primary)] hover:bg-white/90 px-3 sm:px-4 py-2 rounded-full font-bold text-xs transition-colors shadow-sm whitespace-nowrap"
+            className="flex items-center gap-1 sm:gap-1.5 bg-white text-[var(--color-primary)] hover:bg-white/90 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full font-extrabold text-[10px] sm:text-xs transition-colors shadow-sm whitespace-nowrap"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             Add Funds
           </button>
           
           <button
             onClick={onWithdraw}
-            className="flex items-center gap-1.5 bg-white/20 border border-white/30 hover:bg-white/30 text-white px-3 sm:px-4 py-2 rounded-full font-bold text-xs transition-colors backdrop-blur-md whitespace-nowrap"
+            className="flex items-center gap-1 sm:gap-1.5 bg-white/20 border border-white/30 hover:bg-white/30 text-white px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full font-extrabold text-[10px] sm:text-xs transition-colors backdrop-blur-md whitespace-nowrap"
           >
-            <ArrowUpRight className="w-3.5 h-3.5" />
+            <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             Withdraw
           </button>
 
           <button
             onClick={onPortfolio}
-            className="flex items-center gap-1.5 bg-white/20 border border-white/30 hover:bg-white/30 text-white px-3 sm:px-4 py-2 rounded-full font-bold text-xs transition-colors backdrop-blur-md whitespace-nowrap"
+            className="flex items-center gap-1 sm:gap-1.5 bg-white/20 border border-white/30 hover:bg-white/30 text-white px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full font-extrabold text-[10px] sm:text-xs transition-colors backdrop-blur-md whitespace-nowrap"
           >
-            <Briefcase className="w-3.5 h-3.5" />
+            <Briefcase className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             Portfolio
           </button>
         </div>

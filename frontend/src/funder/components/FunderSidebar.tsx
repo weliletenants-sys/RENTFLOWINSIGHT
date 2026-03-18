@@ -1,25 +1,22 @@
 import {
   LayoutDashboard,
   PieChart,
-  Landmark,
   Rocket,
   ArrowLeftRight,
   Banknote,
   Wallet,
   FileText,
   Settings,
-  Plus,
 } from 'lucide-react';
 
 interface FunderSidebarProps {
   activePage?: string;
-  onNewsupport?: () => void;
+  onNewsupport?: () => void; // Ghost prop kept temporarily so FunderDashboard doesn't throw a type error
 }
 
 const navItems = [
   { label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
   { label: 'Portfolio', icon: <PieChart className="w-5 h-5" /> },
-  { label: 'supports', icon: <Landmark className="w-5 h-5" /> },
   { label: 'Opportunities', icon: <Rocket className="w-5 h-5" /> },
   { label: 'Transactions', icon: <ArrowLeftRight className="w-5 h-5" /> },
   { label: 'Payouts', icon: <Banknote className="w-5 h-5" /> },
@@ -27,7 +24,7 @@ const navItems = [
   { label: 'Reports', icon: <FileText className="w-5 h-5" /> },
 ];
 
-export default function FunderSidebar({ activePage = 'Dashboard', onNewsupport }: FunderSidebarProps) {
+export default function FunderSidebar({ activePage = 'Dashboard' }: FunderSidebarProps) {
   return (
     <aside className="hidden lg:flex w-72 bg-white border-r border-[var(--color-primary-border)] flex-col sticky top-0 h-screen z-40">
       {/* Logo */}
@@ -76,18 +73,12 @@ export default function FunderSidebar({ activePage = 'Dashboard', onNewsupport }
           </a>
         </div>
       </nav>
-
-      {/* New support CTA */}
-      <div className="p-4 border-t border-[var(--color-primary-border)]">
-        <button
-          onClick={onNewsupport}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-white font-bold text-sm transition-colors duration-200"
-          style={{ background: 'var(--color-primary)' }}
-        >
-          <Plus className="w-5 h-5" />
-          New support
-        </button>
-      </div>
+      
+      {/* 
+        New support CTA was temporarily removed per user request:
+        "for now remove supports in the sidebar"
+      */}
+      
     </aside>
   );
 }

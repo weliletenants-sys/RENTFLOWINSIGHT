@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
-  ChevronLeft, ShoppingBag, MapPin, Truck, CheckCircle2, 
+  ChevronLeft, Truck, CheckCircle2, 
   Wallet, AlertCircle, ShoppingCart 
 } from 'lucide-react';
 import { MOCK_PRODUCTS } from './AgentShop';
