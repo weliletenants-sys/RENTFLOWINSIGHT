@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/weliletenants-sys/RENTFLOWINSIGHT#readme",
   "dependencies": {
+    "csv-parse": "^6.2.0",
     "pg": "^8.20.0"
   }
 }
