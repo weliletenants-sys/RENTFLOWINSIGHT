@@ -36,7 +36,9 @@ export default function FunderWalletCard({
           <div className="bg-white/10 border border-white/20 px-3 py-1 rounded text-[10px] font-mono tracking-wider">
             {cardId}
           </div>
-          <img src="/welile-logo-white.png" alt="Welile Logo" className="h-12 object-contain -my-3" />
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-black text-white tracking-tight opacity-90">Welile</span>
+          </div>
         </div>
 
         {/* Main Vertical Layout */}

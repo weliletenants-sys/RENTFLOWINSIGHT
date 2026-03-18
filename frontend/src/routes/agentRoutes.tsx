@@ -19,6 +19,19 @@ const AgentTransfer       = lazy(() => import('../agent/AgentTransfer'));
 const AgentRegisterSubAgent = lazy(() => import('../agent/AgentRegisterSubAgent'));
 const AgentRegisterLandlord = lazy(() => import('../agent/AgentRegisterLandlord'));
 const AgentRegisterInvestor = lazy(() => import('../agent/AgentRegisterInvestor'));
+const AgentVisit          = lazy(() => import('../agent/AgentVisit'));
+const AgentVisitDetail    = lazy(() => import('../agent/AgentVisitDetail'));
+const AgentListHouse      = lazy(() => import('../agent/AgentListHouse'));
+const AgentReceipt        = lazy(() => import('../agent/AgentReceipt'));
+const AgentReferral       = lazy(() => import('../agent/AgentReferral'));
+const AgentDailyOps       = lazy(() => import('../agent/AgentDailyOps'));
+
+// Marketplace Suite
+const AgentShop             = lazy(() => import('../agent/shop/AgentShop'));
+const AgentProductDetail    = lazy(() => import('../agent/shop/AgentProductDetail'));
+const AgentCheckout         = lazy(() => import('../agent/shop/AgentCheckout'));
+const AgentOrders           = lazy(() => import('../agent/shop/AgentOrders'));
+const AgentSellerDashboard  = lazy(() => import('../agent/shop/AgentSellerDashboard'));
 
 /**
  * Agent role routes — all pages are lazy-loaded.
@@ -42,4 +55,17 @@ export const agentRoutes = [
   <Route key="agent-register-subagent" path="/agent-register-subagent" element={<AgentRegisterSubAgent />} />,
   <Route key="agent-register-landlord" path="/agent-register-landlord" element={<AgentRegisterLandlord />} />,
   <Route key="agent-register-investor" path="/agent-register-investor" element={<AgentRegisterInvestor />} />,
+  <Route key="agent-visit"             path="/agent-visit"             element={<AgentVisit />} />,
+  <Route key="agent-visit-detail"      path="/agent-visit/:tenantId"   element={<AgentVisitDetail />} />,
+  <Route key="agent-list-house"        path="/agent-list-house"        element={<AgentListHouse />} />,
+  <Route key="agent-receipt"           path="/agent-receipt"           element={<AgentReceipt />} />,
+  <Route key="agent-referral"          path="/agent-referral"          element={<AgentReferral />} />,
+  <Route key="agent-daily-ops"         path="/agent-daily-ops"         element={<AgentDailyOps />} />,
+  
+  // Marketplace Suite Routes
+  <Route key="agent-shop"              path="/agent-shop"                        element={<AgentShop />} />,
+  <Route key="agent-shop-product"      path="/agent-shop/product/:id"            element={<AgentProductDetail />} />,
+  <Route key="agent-shop-checkout"     path="/agent-shop/checkout/:id"           element={<AgentCheckout />} />,
+  <Route key="agent-shop-orders"       path="/agent-shop/orders"                 element={<AgentOrders />} />,
+  <Route key="agent-shop-seller"       path="/agent-shop/seller"                 element={<AgentSellerDashboard />} />,
 ];

@@ -2,7 +2,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Home, UserCheck, Receipt, UserPlus, LayoutGrid, Wallet, PlusCircle, ArrowRightLeft, BadgeCheck, LineChart, CreditCard, ClipboardCheck, Download, Upload, Users, Settings } from 'lucide-react';
+import { MapPin, Home, UserCheck, FileText, UserPlus, Store, Wallet, PlusCircle, ArrowRightLeft, BadgeCheck, LineChart, CreditCard, ClipboardCheck, Download, Upload, Users, Settings } from 'lucide-react';
 import AgentRegisterDialog from './components/dialogs/AgentRegisterDialog';
 
 
@@ -29,11 +29,7 @@ export default function AgentDashboard() {
     <div className="bg-[#f8f6f6] dark:bg-[#221610] text-slate-900 dark:text-slate-100 antialiased min-h-screen font-['Public_Sans']">
       <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
         <header className="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#221610]/80 backdrop-blur-md px-4 lg:px-10 py-3">
-          <div className="max-w-5xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img src="/welile-logo.png" alt="Welile Logo" className="h-16 w-auto object-contain" />
-            </div>
-
+          <div className="max-w-5xl mx-auto flex items-center justify-end">
             <div className="flex gap-4">
               <div className="flex items-center gap-4">
                 <div 
@@ -92,13 +88,13 @@ export default function AgentDashboard() {
           <section className="space-y-4">
             <h3 className="text-lg font-bold text-slate-800 dark:text-white">Quick Actions</h3>
             <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-              <div className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
+              <div onClick={() => navigate('/agent-visit')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
                 <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
                   <MapPin size={24} />
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Visit</span>
               </div>
-              <div className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
+              <div onClick={() => navigate('/agent-list-house')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
                 <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
                   <Home size={24} />
                 </div>
@@ -110,31 +106,31 @@ export default function AgentDashboard() {
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Register</span>
               </div>
-              <div className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
+              <div onClick={() => navigate('/agent-receipt')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
                 <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
-                  <Receipt size={24} />
+                  <FileText size={24} />
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Receipt</span>
               </div>
-              <div className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
+              <div onClick={() => navigate('/agent-referral')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
                 <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
                   <UserPlus size={24} />
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Refer</span>
               </div>
-              <div className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
+              <div onClick={() => navigate('/agent-shop')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
                 <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
-                  <LayoutGrid size={24} />
+                  <Store size={24} />
                 </div>
-                <span className="text-xs font-bold text-slate-600 dark:text-slate-400">More</span>
+                <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Shop</span>
               </div>
             </div>
           </section>
 
           <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between h-full">
+            <div onClick={() => navigate('/agent-daily-ops')} className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between h-full cursor-pointer hover:border-[#6d28d9]/50 transition-all group">
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Daily Operations</h4>
+                <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider group-hover:text-[#6d28d9] transition-colors">Daily Operations</h4>
                 <LineChart className="text-[#6d28d9]" size={24} />
               </div>
               <div className="space-y-3">
