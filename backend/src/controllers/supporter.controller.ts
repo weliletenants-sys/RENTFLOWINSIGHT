@@ -17,14 +17,13 @@ export const getDashboardStats = async (req: Request, res: Response) => {
     const walletBalance = wallet ? wallet.balance : 0;
 
     const principalInvested = portfolios.reduce((sum: number, p: any) => sum + p.investment_amount, 0);
-    // Multiply by duration for full expected amount approximation
-    const expectedAmount = portfolios.reduce((sum: number, p: any) => sum + (p.investment_amount * (p.roi_percentage / 100) * (p.duration_months || 12)), 0);
+    const monthlyReturn = portfolios.reduce((sum: number, p: any) => sum + (p.investment_amount * (p.roi_percentage / 100)), 0);
 
     return res.status(200).json({
       walletBalance,
       principalInvested,
-      expectedAmount,
-      portfoliosCount: portfolios.length
+      monthlyReturn,
+      roiPercent: portfolios.length > 0 ? portfolios[0].roi_percentage : 15
     });
   } catch (error) {
     console.error('Dashboard Stats Error:', error);
