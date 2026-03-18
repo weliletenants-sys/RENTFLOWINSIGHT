@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { LayoutDashboard, Rocket, ArrowLeftRight, Banknote, FileText, Settings, LogOut, Building2, Wallet } from 'lucide-react';
+import { LayoutDashboard, Rocket, Banknote, FileText, Settings, LogOut, Building2, Wallet } from 'lucide-react';
 
 interface FunderSidebarProps {
   activePage?: string;
@@ -10,7 +10,6 @@ const navItems = [
   { label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" />, path: '/funder' },
   { label: 'Properties', icon: <Building2 className="w-5 h-5" />, path: '/funder/properties' },
   { label: 'Opportunities', icon: <Rocket className="w-5 h-5" />, path: '#' },
-  { label: 'Transactions', icon: <ArrowLeftRight className="w-5 h-5" />, path: '#' },
   { label: 'Payouts', icon: <Banknote className="w-5 h-5" />, path: '#' },
   { label: 'Wallet', icon: <Wallet className="w-5 h-5" />, path: '#' },
   { label: 'Reports', icon: <FileText className="w-5 h-5" />, path: '#' },

@@ -114,7 +114,7 @@ export default function FunderAccountSettings() {
             
             {/* ──────────────── HEADER ──────────────── */}
             <div 
-              className="w-full h-[240px] sm:h-[280px] relative px-6 sm:px-12 pt-8"
+              className="w-full h-[240px] sm:h-[280px] relative px-6 sm:px-12 pt-8 overflow-hidden"
               style={{
                 background: 'linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%)',
                 boxShadow: '0 4px 24px var(--color-primary-shadow)'
