@@ -1,14 +1,13 @@
 import { useNavigate } from 'react-router-dom';
-import { Home, PieChart, ClipboardList, User } from 'lucide-react';
+import { Home, User, Building2 } from 'lucide-react';
 
 interface FunderBottomNavProps {
   activePage?: string;
 }
 
 const navItems = [
-  { label: 'Home', icon: <Home className="w-6 h-6" />, path: '/funder-dashboard' },
-  { label: 'Portfolio', icon: <PieChart className="w-6 h-6" />, path: '#' },
-  { label: 'Transactions', icon: <ClipboardList className="w-6 h-6" />, path: '#' },
+  { label: 'Home', icon: <Home className="w-6 h-6" />, path: '/funder' },
+  { label: 'Properties', icon: <Building2 className="w-6 h-6" />, path: '/funder/properties' },
   { label: 'Account', icon: <User className="w-6 h-6" />, path: '/funder/account' },
 ];
 
