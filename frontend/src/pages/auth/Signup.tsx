@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Phone, Mail, Lock, Eye, EyeOff, ArrowRight, User, ShieldCheck } from 'lucide-react';
 import PurpleBubbles from '../../components/PurpleBubbles';
@@ -21,6 +21,8 @@ export default function Signup() {
   
   const { login, intendedRole } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const refCode = searchParams.get('ref');
 
   const handleSendOtp = () => {
     if (!phone) return alert('Enter phone number first');
@@ -102,6 +104,12 @@ export default function Signup() {
               <h1 className="text-2xl font-bold text-slate-900 mb-2">Create Account</h1>
               <p className="text-slate-500 text-sm">Join Welile and transform your rent</p>
             </div>
+            
+            {refCode && (
+              <div className="mb-6 p-3 bg-purple-50 border border-purple-100 rounded-xl text-center">
+                <p className="text-sm font-medium text-purple-700">You were invited by Agent <span className="font-bold">{refCode}</span></p>
+              </div>
+            )}
 
             <form onSubmit={handleSignup} className="space-y-4">
               

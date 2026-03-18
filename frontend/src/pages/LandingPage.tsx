@@ -112,8 +112,9 @@ export default function LandingPage() {
       <nav className="fixed top-0 w-full z-50 glass-effect">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
-            <div className="flex-shrink-0 flex items-center">
-              <img src="/welile-logo-white.png" alt="Welile Logo" className="h-20 w-auto" />
+            <div className="flex-shrink-0 flex items-center gap-2">
+              <ShieldCheck className="text-white w-8 h-8" />
+              <span className="text-2xl font-black text-white tracking-tight">Welile</span>
             </div>
             <div className="hidden md:flex items-center space-x-8">
               <a onClick={(e) => handleNavClick(e, 'tenants')} className="text-sm font-medium text-slate-200 hover:text-white transition-colors cursor-pointer" href="#tenants">Tenants</a>

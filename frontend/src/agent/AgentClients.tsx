@@ -1,6 +1,8 @@
-import { Search, Phone } from 'lucide-react';
+import { Search, Phone, Home, Wallet, Users, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function AgentClients() {
+  const navigate = useNavigate();
   
   const clients = [
     {
@@ -91,6 +93,25 @@ export default function AgentClients() {
         </main>
 
       </div>
+
+      <nav className="md:hidden sticky bottom-0 w-full bg-white dark:bg-[#221610] border-t border-slate-200 dark:border-slate-800 px-6 py-3 flex items-center justify-between z-50">
+        <button onClick={() => navigate('/dashboard')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9] transition-colors">
+          <Home size={24} />
+          <span className="text-[10px] font-bold">Home</span>
+        </button>
+        <button onClick={() => navigate('/agent-wallet')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9] transition-colors">
+          <Wallet size={24} />
+          <span className="text-[10px] font-bold">Wallet</span>
+        </button>
+        <button className="flex flex-col items-center gap-1 text-[#6d28d9]">
+          <Users size={24} />
+          <span className="text-[10px] font-bold">Clients</span>
+        </button>
+        <button onClick={() => navigate('/dashboard/agent/settings')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9] transition-colors">
+          <Settings size={24} />
+          <span className="text-[10px] font-bold">Settings</span>
+        </button>
+      </nav>
     </div>
   );
 }

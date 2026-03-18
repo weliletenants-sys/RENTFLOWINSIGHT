@@ -130,6 +130,16 @@ export default function Login() {
                 <span>Continue</span>
                 <ArrowRight size={18} strokeWidth={2} className="group-hover:translate-x-1 transition-transform" />
               </button>
+              
+              <div className="text-center mt-6">
+                <button 
+                  type="button" 
+                  onClick={() => navigate('/')} 
+                  className="text-sm font-semibold text-slate-500 hover:text-[#6d28d9] hover:underline transition-colors"
+                >
+                  Return to Home
+                </button>
+              </div>
             </form>
 
 

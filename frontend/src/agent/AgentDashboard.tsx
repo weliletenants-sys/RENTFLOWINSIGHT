@@ -1,10 +1,15 @@
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useEffect } from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { MapPin, Home, UserCheck, FileText, UserPlus, Store, Wallet, PlusCircle, ArrowRightLeft, BadgeCheck, LineChart, CreditCard, ClipboardCheck, Download, Upload, Users, Settings } from 'lucide-react';
+import AgentRegisterDialog from './components/dialogs/AgentRegisterDialog';
+
 
 export default function AgentDashboard() {
-  const navigate = useNavigate();
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const [isRegisterDialogOpen, setIsRegisterDialogOpen] = useState(false);
   
   // Load Material Symbols
   useEffect(() => {
@@ -13,14 +18,8 @@ export default function AgentDashboard() {
     link1.href = 'https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap';
     document.head.appendChild(link1);
 
-    const link2 = document.createElement('link');
-    link2.rel = 'stylesheet';
-    link2.href = 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&display=swap';
-    document.head.appendChild(link2);
-
     return () => {
       document.head.removeChild(link1);
-      document.head.removeChild(link2);
     };
   }, []);
 
@@ -28,81 +27,58 @@ export default function AgentDashboard() {
 
   return (
     <div className="bg-[#f8f6f6] dark:bg-[#221610] text-slate-900 dark:text-slate-100 antialiased min-h-screen font-['Public_Sans']">
-      <style>{`
-        .material-symbols-outlined {
-          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-      `}</style>
-      
       <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
         <header className="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#221610]/80 backdrop-blur-md px-4 lg:px-10 py-3">
-          <div className="max-w-5xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center size-10 rounded-xl bg-[#6d28d9] text-white">
-                <span className="material-symbols-outlined text-2xl">account_balance_wallet</span>
-              </div>
-              <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Welile</h2>
-            </div>
-            <div className="flex items-center gap-4">
-              <button className="flex items-center justify-center size-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                <span className="material-symbols-outlined">notifications</span>
-              </button>
-              <div className="size-10 rounded-full border-2 border-[#6d28d9]/20 p-0.5 cursor-pointer" onClick={() => navigate('/dashboard/profile')}>
+          <div className="max-w-5xl mx-auto flex items-center justify-end">
+            <div className="flex gap-4">
+              <div className="flex items-center gap-4">
                 <div 
-                  className="size-full rounded-full bg-cover bg-center" 
-                  style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAc8E_SMHB5tZ6jssPtcu82CLvg7Y2rTS7drlgdRLuEICDoIKsgjXsgos-15fuHB99E_6UDljLLQX-fUDqkhnx9iURKrHTc6a1yWbvUxdtrOgUXOFwashzmssOz6s3dcr1lqSlRfb4DCoBdurFUGfyI32iIJSp4JpIj4tz4VxDeE813mooNEzX306DA69v5A6d-n7H2f2T7pKiDYRljQVVi-vNK6WWeYdrIwEYPg8vL9PCX8CTE3kKSBMr3Lt-F_LL_ms4e7k_4SANP")' }}
+                  className="size-12 rounded-2xl bg-cover bg-center border-2 border-white dark:border-slate-800 shadow-sm" 
+                  style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBQTaHq2htnni0azJBOc28l79u6IOxJfpmoafjut_SSogJqisHgVAvHMF2lXYmd31AZLDrS2v4ITMNTAMujrRfGT_u-VjsAvofRZeQ_c8aI4bXr8uU0lLpOZbw_o_xR1ak6lH1S13PweioqgsRs-Ds4AfOnULfSoPpAtXcjFirtj_F30ETs0v-29_UMOC_yEm2c_bkhAJQ_oBlyBej6r5FOa_fD-CMkCR1DgeLIMZ-YbfFQw1UVEa8In31RilbPnMSCBMzpqrr-OX2X")' }}
                 ></div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-xl font-bold text-slate-900 dark:text-white">{userName}</h1>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-bold uppercase tracking-wider">
+                      <BadgeCheck size={14} />
+                      Verified
+                    </span>
+                  </div>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Senior Agent • Nairobi Central</p>
+                </div>
+              </div>
+              <div className="hidden md:flex gap-2 border-l border-slate-200 dark:border-slate-700 pl-4 ml-2 my-1">
+                <div className="flex flex-col items-end justify-center">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Since</span>
+                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">Jan 2022</span>
+                </div>
               </div>
             </div>
+
           </div>
         </header>
 
         <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-6 space-y-6">
-          <section className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div 
-                className="size-20 rounded-2xl bg-cover bg-center border-4 border-white dark:border-slate-800 shadow-sm" 
-                style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBQTaHq2htnni0azJBOc28l79u6IOxJfpmoafjut_SSogJqisHgVAvHMF2lXYmd31AZLDrS2v4ITMNTAMujrRfGT_u-VjsAvofRZeQ_c8aI4bXr8uU0lLpOZbw_o_xR1ak6lH1S13PweioqgsRs-Ds4AfOnULfSoPpAtXcjFirtj_F30ETs0v-29_UMOC_yEm2c_bkhAJQ_oBlyBej6r5FOa_fD-CMkCR1DgeLIMZ-YbfFQw1UVEa8In31RilbPnMSCBMzpqrr-OX2X")' }}
-              ></div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{userName}</h1>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-wider">
-                    <span className="material-symbols-outlined text-xs">verified</span>
-                    Verified
-                  </span>
-                </div>
-                <p className="text-slate-500 dark:text-slate-400 font-medium">Senior Agent • Nairobi Central</p>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <div className="flex flex-col items-end">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Active Since</span>
-                <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">Jan 2022</span>
-              </div>
-            </div>
-          </section>
+
 
           <section className="relative overflow-hidden rounded-2xl bg-[#6d28d9] p-6 text-white shadow-xl shadow-[#6d28d9]/20">
-            <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-              <span className="material-symbols-outlined text-[120px]">payments</span>
-            </div>
+
             <div className="relative z-10 space-y-6">
               <div>
                 <p className="text-white/80 text-sm font-medium opacity-80 uppercase tracking-widest">Wallet Balance</p>
                 <h2 className="text-4xl font-extrabold tracking-tight mt-1">UGX 1,450,000</h2>
               </div>
               <div className="grid grid-cols-3 gap-3">
-                <button className="flex flex-col items-center justify-center gap-2 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/10">
-                  <span className="material-symbols-outlined">account_balance_wallet</span>
+                <button onClick={() => navigate('/agent-withdraw')} className="flex flex-col items-center justify-center gap-2 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/10">
+                  <Wallet size={24} />
                   <span className="text-xs font-bold uppercase">Withdraw</span>
                 </button>
-                <button className="flex flex-col items-center justify-center gap-2 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/10">
-                  <span className="material-symbols-outlined">add_circle</span>
+                <button onClick={() => navigate('/agent-deposit')} className="flex flex-col items-center justify-center gap-2 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/10">
+                  <PlusCircle size={24} />
                   <span className="text-xs font-bold uppercase">Deposit</span>
                 </button>
-                <button className="flex flex-col items-center justify-center gap-2 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/10">
-                  <span className="material-symbols-outlined">sync_alt</span>
+                <button onClick={() => navigate('/agent-transfer')} className="flex flex-col items-center justify-center gap-2 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/10">
+                  <ArrowRightLeft size={24} />
                   <span className="text-xs font-bold uppercase">Transfer</span>
                 </button>
               </div>
@@ -112,50 +88,50 @@ export default function AgentDashboard() {
           <section className="space-y-4">
             <h3 className="text-lg font-bold text-slate-800 dark:text-white">Quick Actions</h3>
             <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-              <div className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
+              <div onClick={() => navigate('/agent-visit')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
                 <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
-                  <span className="material-symbols-outlined">distance</span>
+                  <MapPin size={24} />
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Visit</span>
               </div>
-              <div className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
+              <div onClick={() => navigate('/agent-list-house')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
                 <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
-                  <span className="material-symbols-outlined">home</span>
+                  <Home size={24} />
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400">List House</span>
               </div>
-              <div className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
+              <div onClick={() => setIsRegisterDialogOpen(true)} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
                 <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
-                  <span className="material-symbols-outlined">how_to_reg</span>
+                  <UserCheck size={24} />
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Register</span>
               </div>
-              <div className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
+              <div onClick={() => navigate('/agent-receipt')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
                 <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
-                  <span className="material-symbols-outlined">receipt_long</span>
+                  <FileText size={24} />
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Receipt</span>
               </div>
-              <div className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
+              <div onClick={() => navigate('/agent-referral')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
                 <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
-                  <span className="material-symbols-outlined">person_add</span>
+                  <UserPlus size={24} />
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Refer</span>
               </div>
-              <div className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
+              <div onClick={() => navigate('/agent-shop')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
                 <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
-                  <span className="material-symbols-outlined">grid_view</span>
+                  <Store size={24} />
                 </div>
-                <span className="text-xs font-bold text-slate-600 dark:text-slate-400">More</span>
+                <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Shop</span>
               </div>
             </div>
           </section>
 
           <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between h-full">
+            <div onClick={() => navigate('/agent-daily-ops')} className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between h-full cursor-pointer hover:border-[#6d28d9]/50 transition-all group">
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Daily Operations</h4>
-                <span className="material-symbols-outlined text-[#6d28d9]">analytics</span>
+                <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider group-hover:text-[#6d28d9] transition-colors">Daily Operations</h4>
+                <LineChart className="text-[#6d28d9]" size={24} />
               </div>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -174,7 +150,7 @@ export default function AgentDashboard() {
             <div className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between h-full">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Credit Access</h4>
-                <span className="material-symbols-outlined text-[#6d28d9]">credit_card</span>
+                <CreditCard className="text-[#6d28d9]" size={24} />
               </div>
               <div className="space-y-4">
                 <div>
@@ -189,7 +165,7 @@ export default function AgentDashboard() {
             <div className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between h-full">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Rent Requests</h4>
-                <span className="material-symbols-outlined text-[#6d28d9]">assignment_turned_in</span>
+                <ClipboardCheck className="text-[#6d28d9]" size={24} />
               </div>
               <div className="flex items-center gap-4">
                 <div className="size-14 rounded-full border-4 border-[#6d28d9]/20 flex items-center justify-center text-[#6d28d9] font-bold text-xl">
@@ -218,7 +194,7 @@ export default function AgentDashboard() {
               <div className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="size-10 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 flex items-center justify-center">
-                    <span className="material-symbols-outlined">download</span>
+                    <Download size={20} />
                   </div>
                   <div>
                     <p className="text-sm font-bold text-slate-900 dark:text-white">Collection - House #104</p>
@@ -230,7 +206,7 @@ export default function AgentDashboard() {
               <div className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="size-10 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 flex items-center justify-center">
-                    <span className="material-symbols-outlined">upload</span>
+                    <Upload size={20} />
                   </div>
                   <div>
                     <p className="text-sm font-bold text-slate-900 dark:text-white">Withdrawal to Bank</p>
@@ -244,23 +220,29 @@ export default function AgentDashboard() {
         </main>
 
         <nav className="md:hidden sticky bottom-0 w-full bg-white dark:bg-[#221610] border-t border-slate-200 dark:border-slate-800 px-6 py-3 flex items-center justify-between z-50">
-          <button className="flex flex-col items-center gap-1 text-[#6d28d9]">
-            <span className="material-symbols-outlined">grid_view</span>
+          <button onClick={() => navigate('/dashboard')} className="flex flex-col items-center gap-1 text-[#6d28d9]">
+            <Home size={24} />
             <span className="text-[10px] font-bold">Home</span>
           </button>
-          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9]">
-            <span className="material-symbols-outlined">wallet</span>
+          <button onClick={() => navigate('/agent-wallet')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9] transition-colors">
+            <Wallet size={24} />
             <span className="text-[10px] font-bold">Wallet</span>
           </button>
-          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9]">
-            <span className="material-symbols-outlined">group</span>
+          <button onClick={() => navigate('/dashboard/agent/clients')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9] transition-colors">
+            <Users size={24} />
             <span className="text-[10px] font-bold">Clients</span>
           </button>
-          <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9]">
-            <span className="material-symbols-outlined">settings</span>
+          <button onClick={() => navigate('/dashboard/agent/settings')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9] transition-colors">
+            <Settings size={24} />
             <span className="text-[10px] font-bold">Settings</span>
           </button>
         </nav>
+
+        {/* Dialogs */}
+        <AgentRegisterDialog 
+          isOpen={isRegisterDialogOpen} 
+          onClose={() => setIsRegisterDialogOpen(false)} 
+        />
       </div>
     </div>
   );

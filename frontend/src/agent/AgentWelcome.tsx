@@ -13,8 +13,8 @@ export default function AgentWelcome() {
             className="flex items-center gap-3 cursor-pointer"
             onClick={() => navigate('/')}
           >
-            <img src="/welile-logo-white.png" alt="Welile Logo" className="h-10 w-auto object-contain" />
-            <h2 className="text-xl font-extrabold tracking-tight text-white">Welile <span className="text-white">Agents</span></h2>
+            <ShieldCheck size={32} className="text-white" />
+            <h2 className="text-xl font-extrabold tracking-tight text-white">Welile <span className="text-white/80">Agents</span></h2>
           </div>
           <nav className="hidden md:flex items-center gap-10">
             <a className="text-sm font-semibold text-white/90 hover:text-white transition-colors" href="#">How it Works</a>
@@ -184,7 +184,7 @@ export default function AgentWelcome() {
             {/* Logo Column */}
             <div className="lg:col-span-2">
               <div className="flex items-center gap-3 mb-4">
-                <img src="/welile-logo.png" alt="Welile Logo" className="h-8 w-auto object-contain" />
+                <ShieldCheck size={28} className="text-[#9234EA]" />
                 <h2 className="text-lg font-extrabold text-[#9234EA]">Welile Agents</h2>
               </div>
               

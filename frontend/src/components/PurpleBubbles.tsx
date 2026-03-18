@@ -1,66 +1,71 @@
-
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
 // Pre-generate random values outside the component so they remain stable across re-renders
-const bubbles = Array.from({ length: 20 }).map((_, i) => ({
+const bubbles = Array.from({ length: 25 }).map((_, i) => ({
   id: i,
-  // Size: 40px to 100px
-  size: Math.floor(Math.random() * 61) + 40,
+  // Size: 40px to 120px
+  size: Math.floor(Math.random() * 81) + 40,
   // Horizontal start position: 0% to 100%
-  left: Math.floor(Math.random() * 101),
+  left: Math.random() * 100,
   // Animation delay: negative so some bubbles are already visible on load
-  delay: Math.floor(Math.random() * 20),
-  // Duration: 10s to 25s
-  duration: Math.floor(Math.random() * 16) + 10,
-  // Opacity: 0.1 to 0.3
-  opacity: (Math.random() * 0.2 + 0.1).toFixed(2),
-  // Horizontal drift amount during the rise: -50px to 50px
-  drift: Math.floor(Math.random() * 101) - 50,
+  delay: Math.random() * 20,
+  // Duration: 12s to 30s
+  duration: Math.random() * 18 + 12,
+  // Opacity: 0.1 to 0.4
+  opacity: Math.random() * 0.3 + 0.1,
+  // Horizontal drift amount during the rise: -80px to 80px
+  drift: Math.floor(Math.random() * 161) - 80,
 }));
 
 export default function PurpleBubbles() {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) return null;
+
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      <style>{`
-        @keyframes float-up {
-          0% {
-            transform: translateY(100px) translateX(0);
-          }
-          100% {
-            /* Move well above the viewport */
-            transform: translateY(-120vh) translateX(var(--drift));
-          }
-        }
-        
-        .bubble-base {
-          position: absolute;
-          bottom: -100px;
-          border-radius: 50%;
-          background-color: #6d28d9;
-          filter: blur(6px);
-          animation: float-up var(--duration) infinite linear;
-          animation-delay: calc(var(--delay) * -1s);
-          left: var(--left);
-          width: var(--size);
-          height: var(--size);
-          opacity: var(--opacity);
-        }
-
-        /* Generate deterministic utility classes for the random values to avoid inline styles */
-        ${bubbles.map(b => `
-          .bubble-${b.id} {
-            --left: ${b.left}%;
-            --size: ${b.size}px;
-            --delay: ${b.delay};
-            --duration: ${b.duration}s;
-            --opacity: ${b.opacity};
-            --drift: ${b.drift}px;
-          }
-        `).join('')}
-      `}</style>
-
-      {/* Render the bubbles */}
-      {bubbles.map(b => (
-        <div key={b.id} className={`bubble-base bubble-${b.id}`} />
+      {bubbles.map((b) => (
+        <motion.div
+          key={b.id}
+          className="absolute rounded-full bg-purple-600 mix-blend-multiply filter blur-[8px]"
+          style={{
+            left: `${b.left}%`,
+            width: b.size,
+            height: b.size,
+            bottom: "-150px", // Start lower
+            opacity: b.opacity,
+          }}
+          animate={{
+            y: [0, "-130vh"],
+            x: [0, b.drift, -b.drift, b.drift], // Organic wavy motion
+            scale: [1, 1.25, 0.8, 1.15, 1], // Breathing scale effect
+          }}
+          transition={{
+            y: {
+              duration: b.duration,
+              repeat: Infinity,
+              ease: "linear",
+              delay: -b.delay,
+            },
+            x: {
+              duration: b.duration * 0.75, // Decoupled frequency for organic look
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: -b.delay,
+            },
+            scale: {
+              duration: b.duration * 0.6,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: -b.delay,
+            },
+          }}
+        />
       ))}
     </div>
   );
