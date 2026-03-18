@@ -9,6 +9,23 @@ import FunderDashboardHeader from './components/FunderDashboardHeader';
 import FunderBottomNav from './components/FunderBottomNav';
 
 // Mock Data for Charts
+
+const CustomPieTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="relative bg-slate-900 text-white text-xs font-bold py-2 px-3 rounded-lg shadow-xl shadow-slate-900/20 z-50">
+        <div className="flex items-center gap-2">
+          <span>{payload[0].name}:</span>
+          <span className="text-[var(--color-primary-light)]">{payload[0].value}%</span>
+        </div>
+        {/* Tooltip Arrow pointing down */}
+        <div className="absolute -bottom-[5px] left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-slate-900"></div>
+      </div>
+    );
+  }
+  return null;
+};
+
 const yieldData = [
   { month: 'Jan', yield: 45000 },
   { month: 'Feb', yield: 52000 },
@@ -134,8 +151,8 @@ export default function FunderReports() {
                           ))}
                         </Pie>
                         <RechartsTooltip 
-                          formatter={(value: any) => [`${value}%`, 'Allocation']}
-                          contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
+                          content={<CustomPieTooltip />}
+                          cursor={{ fill: 'transparent' }}
                         />
                       </PieChart>
                     </ResponsiveContainer>
@@ -237,7 +254,7 @@ export default function FunderReports() {
                 <div className="flex-1 space-y-3">
                   {[
                     { title: 'Annual Tax Summary 2024', date: 'Jan 15, 2025', size: '1.2 MB PDF' },
-                    { title: 'Certificate of Funding - Entebbe', date: 'Dec 02, 2024', size: '840 KB PDF' },
+                    { title: 'Certificate of Funding (WPF-7291)', date: 'Dec 02, 2024', size: '840 KB PDF' },
                     { title: 'Investment Agreement (Signed)', date: 'Nov 18, 2024', size: '2.4 MB PDF' }
                   ].map((doc, i) => (
                     <div key={i} className="group flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white hover:border-[var(--color-primary-light)] transition-all cursor-pointer shadow-sm hover:shadow">
