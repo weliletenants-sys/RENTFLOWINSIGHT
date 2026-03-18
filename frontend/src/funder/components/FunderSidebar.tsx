@@ -8,6 +8,7 @@ import {
   Wallet,
   FileText,
   Settings,
+  LogOut
 } from 'lucide-react';
 
 interface FunderSidebarProps {
@@ -64,10 +65,10 @@ export default function FunderSidebar({ activePage = 'Dashboard' }: FunderSideba
           );
         })}
 
-        <div className="pt-4 mt-4 border-t border-[var(--color-primary-border)]">
+        <div className="space-y-1">
           <Link
             to="/funder/account"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-all"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer"
             style={
               activePage === 'Settings' || activePage === 'Account'
                 ? {
@@ -81,8 +82,23 @@ export default function FunderSidebar({ activePage = 'Dashboard' }: FunderSideba
             <Settings className={activePage === 'Settings' || activePage === 'Account' ? 'text-white w-5 h-5' : 'w-5 h-5'} />
             <span className={activePage === 'Settings' || activePage === 'Account' ? 'text-white' : ''}>Account Settings</span>
           </Link>
+
         </div>
       </nav>
+
+      {/* Extreme Bottom Logout Section */}
+      <div className="w-full mt-auto">
+        <div className="border-t border-[var(--color-primary-border)]" />
+        <div className="p-4">
+          <Link
+            to="/"
+            className="flex items-center gap-3 px-3 py-2 text-sm font-bold text-red-500 hover:text-red-600 transition-colors cursor-pointer"
+          >
+            <LogOut className="w-5 h-5" />
+            <span>Log Out</span>
+          </Link>
+        </div>
+      </div>
       
     </aside>
   );

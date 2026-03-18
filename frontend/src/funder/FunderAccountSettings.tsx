@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 import { 
   ShieldCheck, 
   Smartphone, 
@@ -14,7 +15,14 @@ import {
   ShieldAlert,
   UserCheck,
   CheckCircle2,
-  Circle
+  Circle,
+  Edit3,
+  Trash2,
+  Building2,
+  Plus,
+  X,
+  Camera,
+  User
 } from 'lucide-react';
 
 import FunderSidebar from './components/FunderSidebar';
@@ -22,8 +30,60 @@ import FunderBottomNav from './components/FunderBottomNav';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
 
 export default function FunderAccountSettings() {
-  const [activeTab, setActiveTab] = useState<'security' | 'financial' | 'proxy' | 'reporting'>('security');
+  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'financial' | 'proxy' | 'reporting'>('profile');
   const [newPassword, setNewPassword] = useState('');
+  const [avatarPreview, setAvatarPreview] = useState<string>("https://api.dicebear.com/7.x/avataaars/svg?seed=Grace&backgroundColor=059669");
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  const handleAvatarSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setIsUploadingAvatar(true);
+      const reader = new FileReader();
+      reader.onload = (e) => { 
+        setTimeout(() => {
+          setAvatarPreview(e.target?.result as string); 
+          setIsUploadingAvatar(false);
+          toast.success('Profile photo updated successfully!'); 
+        }, 1500);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  type PayoutAccount = { id: string; type: 'momo' | 'bank'; network?: 'MTN' | 'Airtel' | 'Unknown'; name: string; number: string; isPrimary: boolean; };
+  const [accounts, setAccounts] = useState<PayoutAccount[]>([
+    { id: '1', type: 'momo', network: 'MTN', name: 'Grace N.', number: '0772000881', isPrimary: true },
+    { id: '2', type: 'momo', network: 'Airtel', name: 'Grace N.', number: '0700000936', isPrimary: false }
+  ]);
+  const [isAddingAccount, setIsAddingAccount] = useState(false);
+  const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
+  const [accountToDelete, setAccountToDelete] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ type: 'momo', name: '', number: '' });
+
+  const getNetworkFromNumber = (num: string) => {
+    if (/^0(77|78|76|39)/.test(num)) return 'MTN';
+    if (/^0(70|75|74|20)/.test(num)) return 'Airtel';
+    return 'Unknown';
+  };
+
+  const handleSaveAccount = () => {
+    if (editForm.type === 'momo' && !/^0\d{9}$/.test(editForm.number)) {
+      toast.error('Mobile money number must be exactly 10 digits starting with 0. Do not use +256.');
+      return;
+    }
+    if (editingAccountId) {
+      setAccounts(accounts.map(a => a.id === editingAccountId ? { 
+        ...a, name: editForm.name, number: editForm.number, type: editForm.type as any, network: editForm.type === 'momo' ? getNetworkFromNumber(editForm.number) : undefined 
+      } : a));
+      setEditingAccountId(null); toast.success('Account details updated!');
+    } else {
+      setAccounts([...accounts, { 
+        id: Date.now().toString(), name: editForm.name, number: editForm.number, type: editForm.type as any, network: editForm.type === 'momo' ? getNetworkFromNumber(editForm.number) : undefined, isPrimary: accounts.length === 0 
+      }]);
+      setIsAddingAccount(false); toast.success('New withdrawal account added!');
+    }
+  };
 
   const passwordCriteria = [
     { label: 'At least 8 characters', met: newPassword.length >= 8 },
@@ -63,8 +123,32 @@ export default function FunderAccountSettings() {
 
               <div className="relative z-10 max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 h-full">
                 <div className="flex items-center gap-6">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white border-4 border-white/20 shadow-2xl flex items-center justify-center overflow-hidden flex-shrink-0">
-                     <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Grace&backgroundColor=059669" alt="Avatar" className="w-full h-full object-cover" />
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-slate-100 border-4 border-white/20 shadow-2xl flex items-center justify-center overflow-hidden flex-shrink-0 relative group">
+                     <img src={avatarPreview} alt="Avatar" className={`w-full h-full object-cover transition-all duration-300 ${isUploadingAvatar ? 'opacity-30 blur-[2px]' : 'group-hover:opacity-50'}`} />
+                     
+                     {isUploadingAvatar ? (
+                       <div className="absolute inset-0 overflow-hidden flex flex-col items-center justify-center z-10 transition-all">
+                         <div className="absolute inset-0 bg-slate-900/30" />
+                         <div 
+                           className="absolute left-1/2 w-[250%] aspect-square bg-white/20 backdrop-blur-md border border-white/30 -translate-x-1/2 animate-[spin_3s_linear_infinite]"
+                           style={{ animation: 'spin 3s linear infinite, liquidFill 1.5s cubic-bezier(0.4, 0.0, 0.2, 1) forwards' }}
+                         />
+                         <span className="relative z-20 text-[9px] font-black tracking-widest text-white animate-pulse mt-1 drop-shadow-md">UPLOADING</span>
+                         <style>{`
+                           @keyframes liquidFill {
+                             0% { top: 100%; border-radius: 40%; }
+                             100% { top: -20%; border-radius: 46%; }
+                           }
+                         `}</style>
+                       </div>
+                     ) : (
+                       <label htmlFor="avatar-upload" className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                         <Camera className="w-6 h-6 mb-1" />
+                         <span className="text-[10px] font-bold tracking-widest uppercase">Upload</span>
+                       </label>
+                     )}
+                     
+                     <input type="file" id="avatar-upload" className="hidden" accept="image/*" onChange={handleAvatarSelect} disabled={isUploadingAvatar} />
                   </div>
                   <div className="text-center md:text-left">
                     <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight drop-shadow-sm mb-1">
@@ -102,8 +186,11 @@ export default function FunderAccountSettings() {
             <div className="max-w-5xl mx-auto px-4 sm:px-6 -mt-8 relative z-20">
               
               {/* Navigation Tabs */}
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-2 flex overflow-x-auto hide-scrollbar mb-8 gap-2">
+              <div 
+                className="bg-white rounded-2xl shadow-sm border border-slate-100 p-2 flex overflow-x-auto mb-8 gap-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+              >
                 {[
+                  { id: 'profile', label: 'Personal Info', icon: <User className="w-4 h-4" /> },
                   { id: 'security', label: 'Security & Auth', icon: <Lock className="w-4 h-4" /> },
                   { id: 'financial', label: 'Capital & Escrow', icon: <Landmark className="w-4 h-4" /> },
                   { id: 'proxy', label: 'Proxy Relations', icon: <Users className="w-4 h-4" /> },
@@ -112,7 +199,7 @@ export default function FunderAccountSettings() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm whitespace-nowrap transition-all flex-1 justify-center ${
+                    className={`cursor-pointer flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm whitespace-nowrap transition-all flex-1 justify-center ${
                       activeTab === tab.id 
                         ? 'bg-slate-900 text-white shadow-md' 
                         : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
@@ -124,14 +211,79 @@ export default function FunderAccountSettings() {
                 ))}
               </div>
 
-              <div className="space-y-6">
+              <div className="cursor-pointer space-y-6">
+
+                {/* TAB 0: PERSONAL INFO */}
+                {activeTab === 'profile' && (
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="lg:col-span-2 space-y-6">
+                      <div className="bg-white rounded-[24px] p-6 sm:p-8 shadow-sm border border-slate-100 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-full -mr-8 -mt-8 pointer-events-none" />
+                        <h3 className="text-xl font-black text-slate-800 tracking-tight mb-2 flex items-center gap-2">
+                          Personal Information
+                        </h3>
+                        <p className="text-slate-500 text-sm font-medium mb-8 pr-12">
+                          Update your contact details and basic real-world compliance information. Your email serves as your primary login identifier.
+                        </p>
+                        
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">First Name</label>
+                              <input defaultValue="Grace" type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all placeholder:text-slate-400" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Last Name</label>
+                              <input defaultValue="Nsubuga" type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all placeholder:text-slate-400" />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Email Address</label>
+                            <input defaultValue="grace.nsubuga@example.com" type="email" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all placeholder:text-slate-400" />
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Phone Number</label>
+                              <input defaultValue="+256 700 000 000" type="tel" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all placeholder:text-slate-400" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Date of Birth</label>
+                              <input defaultValue="1985-04-12" type="date" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all placeholder:text-slate-400" />
+                            </div>
+                          </div>
+                          <button onClick={() => toast.success("Personal profile saved successfully!")} className="w-full mt-4 cursor-pointer bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-slate-800 transition-colors shadow-md text-sm">
+                            Save Profile Changes
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div className="bg-emerald-50 rounded-[24px] p-8 shadow-sm border border-emerald-100 relative overflow-hidden text-center cursor-pointer hover:bg-emerald-100/50 transition-colors">
+                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm text-emerald-600">
+                          <UserCheck className="w-8 h-8" />
+                        </div>
+                        <h3 className="text-xl font-black text-slate-800 tracking-tight mb-2">KYC Status</h3>
+                        <p className="text-emerald-700 text-sm font-bold mb-4">
+                          Grade-A Verified
+                        </p>
+                        <p className="text-slate-500 text-xs font-medium leading-relaxed mb-6">
+                          Your identity documents and proof of address have been fully verified by our compliance team. You have no pending requests.
+                        </p>
+                        <button className="w-full bg-white text-emerald-700 border border-emerald-200 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-100 transition-colors shadow-sm">
+                          View Documents
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* TAB 1: SECURITY & AUTH */}
                 {activeTab === 'security' && (
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <div className="lg:col-span-2 space-y-6">
                       <div className="bg-white rounded-[24px] p-6 sm:p-8 shadow-sm border border-slate-100 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-bl-full -mr-8 -mt-8 pointer-events-none" />
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-full -mr-8 -mt-8 pointer-events-none" />
                         <h3 className="text-xl font-black text-slate-800 tracking-tight mb-2 flex items-center gap-2">
                           Two-Factor Authentication (2FA)
                         </h3>
@@ -139,9 +291,9 @@ export default function FunderAccountSettings() {
                           Protect your capital pool from unauthorized withdrawals. Required for transactions exceeding UGX 1,000,000.
                         </p>
                         <div className="space-y-4">
-                          <div className="flex items-center justify-between p-5 border-2 border-slate-100 rounded-2xl bg-white hover:border-indigo-100 transition-colors cursor-pointer group">
+                          <div className="flex items-center justify-between p-5 border-2 border-slate-100 rounded-2xl bg-white hover:border-emerald-100 transition-colors cursor-pointer group">
                             <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                              <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
                                 <Smartphone className="w-6 h-6" />
                               </div>
                               <div>
@@ -149,7 +301,7 @@ export default function FunderAccountSettings() {
                                 <p className="text-xs text-slate-500 font-medium">Text messages sent to +256 700 *** 936</p>
                               </div>
                             </div>
-                            <div className="w-12 h-6 bg-indigo-600 rounded-full flex items-center p-1 cursor-pointer transition-colors shadow-inner">
+                            <div className="w-12 h-6 bg-emerald-600 rounded-full flex items-center p-1 cursor-pointer transition-colors shadow-inner">
                               <div className="w-4 h-4 bg-white rounded-full translate-x-6 transition-transform shadow-sm" />
                             </div>
                           </div>
@@ -184,7 +336,7 @@ export default function FunderAccountSettings() {
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Current Password</label>
                             <input 
                               type="password" 
-                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all placeholder:text-slate-400" 
+                              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all placeholder:text-slate-400" 
                               placeholder="••••••••"
                             />
                           </div>
@@ -216,7 +368,19 @@ export default function FunderAccountSettings() {
                               </div>
                             ))}
                           </div>
-                          <button className="w-full mt-2 bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition-colors shadow-md">
+                          <button 
+                            onClick={(e) => {
+                              e.preventDefault();
+                              const allMet = passwordCriteria.every(c => c.met);
+                              if (!allMet) {
+                                toast.error('Password does not meet all security criteria');
+                                return;
+                              }
+                              toast.success('Password updated securely!');
+                              setNewPassword('');
+                            }}
+                            className="cursor-pointer w-full mt-2 bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition-colors shadow-md"
+                          >
                             Update Password
                           </button>
                         </div>
@@ -240,12 +404,12 @@ export default function FunderAccountSettings() {
                               <p className="font-bold text-slate-800">iPhone 14 Pro — Safari App</p>
                               <p className="text-xs text-slate-500 mt-1 font-medium">Entebbe, Uganda • Yesterday at 14:32</p>
                             </div>
-                            <button className="text-slate-400 hover:text-red-500 transition-colors p-2">
+                            <button className="cursor-pointer text-slate-400 hover:text-red-500 transition-colors p-2">
                               <LogOut className="w-5 h-5" />
                             </button>
                           </div>
                         </div>
-                        <button className="w-full mt-4 py-3 border-2 border-slate-100 rounded-xl text-slate-600 font-bold text-sm hover:bg-slate-50 hover:border-slate-300 transition-all">
+                        <button className="cursor-pointer w-full mt-4 py-3 border-2 border-slate-100 rounded-xl text-slate-600 font-bold text-sm hover:bg-slate-50 hover:border-slate-300 transition-all">
                           Log out of all other devices
                         </button>
                       </div>
@@ -261,7 +425,7 @@ export default function FunderAccountSettings() {
                         <p className="text-red-100 text-sm font-medium mb-8 leading-relaxed">
                           Suspect unauthorized access? Instantly freeze your wallet. This halts all pending withdrawals and blocks any agent from investing via your proxy mandate.
                         </p>
-                        <button className="w-full bg-white text-red-600 py-4 rounded-xl font-black uppercase tracking-widest text-sm shadow-xl hover:bg-red-50 transition-colors pb-[14px]">
+                        <button className="cursor-pointer w-full bg-white text-red-600 py-4 rounded-xl font-black uppercase tracking-widest text-sm shadow-xl hover:bg-red-50 transition-colors pb-[14px]">
                           FREEZE WALLET NOW
                         </button>
                       </div>
@@ -277,40 +441,89 @@ export default function FunderAccountSettings() {
                       <p className="text-slate-500 text-sm font-medium mb-6">
                         Newly added withdrawal numbers undergo a mandatory 48-hour cooling period to protect your capital.
                       </p>
+                      
                       <div className="space-y-3 mb-6">
-                        <div className="p-4 rounded-2xl border-2 border-emerald-500 bg-emerald-50/30 flex items-center justify-between relative overflow-hidden">
-                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500" />
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center shadow-inner">
-                              <span className="font-black text-slate-900 text-xs">MTN</span>
+                        {accounts.map(acc => (
+                          <div key={acc.id} className={`cursor-pointer p-4 rounded-2xl border-2 flex items-center justify-between group transition-colors relative overflow-hidden ${acc.isPrimary ? 'border-emerald-500 bg-emerald-50/30' : 'border-slate-100 bg-white hover:border-slate-300'}`}>
+                            {acc.isPrimary && <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500" />}
+                            
+                            <div className="flex items-center gap-4">
+                              {/* Logo Render Logic */}
+                              <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-inner overflow-hidden flex-shrink-0 bg-slate-100 border border-slate-200">
+                                {acc.type === 'momo' ? (
+                                  acc.network === 'MTN' ? <img src="/mtn.png" alt="MTN" className="w-full h-full object-cover" /> :
+                                  acc.network === 'Airtel' ? <img src="/airtel.png" alt="Airtel" className="w-full h-full object-cover" /> :
+                                  <Smartphone className="w-5 h-5 text-slate-400" />
+                                ) : (
+                                  <Building2 className="w-5 h-5 text-slate-600" />
+                                )}
+                              </div>
+                              
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-bold text-slate-800 text-sm">{acc.name}</p>
+                                  {acc.isPrimary && <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest hidden sm:inline-block">Primary</span>}
+                                </div>
+                                <p className="font-mono text-slate-500 text-xs mt-0.5 tracking-tight">{acc.number}</p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="font-bold text-slate-800 text-sm">Grace N.</p>
-                              <p className="font-mono text-slate-500 text-xs mt-0.5">+256 772 *** 881</p>
+                            
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button onClick={() => { setEditingAccountId(acc.id); setEditForm({ type: acc.type, name: acc.name, number: acc.number }); }} className="cursor-pointer p-2 text-slate-400 hover:text-emerald-600 transition-colors bg-white rounded-lg hover:shadow-sm">
+                                <Edit3 className="w-4 h-4" />
+                              </button>
+                              {!acc.isPrimary && (
+                                <button onClick={() => setAccountToDelete(acc.id)} className="cursor-pointer p-2 text-slate-400 hover:text-red-500 transition-colors bg-white rounded-lg hover:shadow-sm">
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              )}
                             </div>
                           </div>
-                          <span className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest hidden sm:inline-block">
-                            Primary
-                          </span>
-                        </div>
-                        <div className="p-4 rounded-2xl border-2 border-slate-100 bg-white flex items-center justify-between group hover:border-slate-300 transition-colors">
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center shadow-inner">
-                              <span className="font-black text-white text-xs">AIR</span>
-                            </div>
-                            <div>
-                              <p className="font-bold text-slate-600 text-sm">Grace N.</p>
-                              <p className="font-mono text-slate-400 text-xs mt-0.5">+256 700 *** 936</p>
-                            </div>
-                          </div>
-                          <button className="text-slate-400 hover:text-red-500 px-2 transition-colors">
-                            Block
-                          </button>
-                        </div>
+                        ))}
                       </div>
-                      <button className="w-full flex justify-center items-center py-4 rounded-xl font-bold text-sm bg-slate-900 text-white shadow-md hover:bg-slate-800 transition-colors">
-                        + Add New Withdrawal Account
-                      </button>
+
+                      {/* Inline Edit / Add Form */}
+                      {(isAddingAccount || editingAccountId) && (
+                        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-6 animate-in fade-in slide-in-from-top-2">
+                          <div className="flex justify-between items-center mb-4">
+                            <h4 className="font-bold text-slate-800 text-sm">{editingAccountId ? 'Edit Account' : 'Add New Account'}</h4>
+                            <button onClick={() => { setIsAddingAccount(false); toast.success('New withdrawal account added!'); setEditingAccountId(null); toast.success('Account details updated!'); }} className="cursor-pointer text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>
+                          </div>
+                          
+                          <div className="flex gap-2 mb-4">
+                            <button onClick={() => setEditForm({...editForm, type: 'momo'})} className={`cursor-pointer flex-1 py-2 text-xs font-bold rounded-lg transition-all border ${editForm.type === 'momo' ? 'bg-white border-emerald-500 text-emerald-700 shadow-sm' : 'border-transparent text-slate-500 hover:bg-slate-100'}`}>Mobile Money</button>
+                            <button onClick={() => setEditForm({...editForm, type: 'bank'})} className={`cursor-pointer flex-1 py-2 text-xs font-bold rounded-lg transition-all border ${editForm.type === 'bank' ? 'bg-white border-emerald-500 text-emerald-700 shadow-sm' : 'border-transparent text-slate-500 hover:bg-slate-100'}`}>Bank Account</button>
+                          </div>
+
+                          <div className="cursor-pointer space-y-3">
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 ml-1">Account Name</label>
+                              <input value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} type="text" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-emerald-500" placeholder="e.g. Grace N." />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 ml-1">{editForm.type === 'momo' ? 'Mobile Number' : 'Account Number'}</label>
+                              <div className="relative">
+                                <input value={editForm.number} onChange={e => setEditForm({...editForm, number: e.target.value})} type="text" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-emerald-500 font-mono" placeholder={editForm.type === 'momo' ? "077... (10 digits)" : "Bank Account No"} />
+                                {editForm.type === 'momo' && editForm.number.length >= 3 && (
+                                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                                    {getNetworkFromNumber(editForm.number) === 'MTN' && <span className="bg-yellow-400 text-slate-900 text-[9px] font-black uppercase px-2 py-0.5 rounded-md">MTN</span>}
+                                    {getNetworkFromNumber(editForm.number) === 'Airtel' && <span className="bg-red-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-md">AIRTEL</span>}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <button onClick={handleSaveAccount} className="cursor-pointer w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition-colors shadow-sm text-sm">
+                              Save Details
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {!isAddingAccount && !editingAccountId && (
+                        <button onClick={() => { setIsAddingAccount(true); setEditForm({ type: 'momo', name: '', number: '' }); }} className="cursor-pointer w-full flex justify-center items-center py-4 rounded-xl font-bold text-sm bg-slate-900 text-white shadow-md hover:bg-slate-800 transition-colors">
+                          <Plus className="w-4 h-4 mr-2" /> Add New Withdrawal Account
+                        </button>
+                      )}
                     </div>
 
                     <div className="bg-white rounded-[24px] p-6 sm:p-8 shadow-sm border border-slate-100 relative overflow-hidden">
@@ -353,7 +566,7 @@ export default function FunderAccountSettings() {
                             Manage which operations agents are legally allowed to initiate proxy investments from your wallet.
                           </p>
                         </div>
-                        <button className="whitespace-nowrap bg-indigo-50 text-indigo-700 px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-indigo-100 transition-colors">
+                        <button className="cursor-pointer whitespace-nowrap bg-emerald-50 text-emerald-700 px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-emerald-100 transition-colors">
                           Add Agent ID
                         </button>
                       </div>
@@ -377,10 +590,10 @@ export default function FunderAccountSettings() {
                             </p>
                           </div>
                           <div className="flex items-center gap-3 w-full sm:w-auto mt-4 sm:mt-0">
-                            <button className="flex-1 sm:flex-none border border-slate-200 bg-white text-slate-600 px-4 py-2 rounded-xl text-xs font-bold hover:border-slate-300 hover:bg-slate-50 transition-colors shadow-sm">
+                            <button className="cursor-pointer flex-1 sm:flex-none border border-slate-200 bg-white text-slate-600 px-4 py-2 rounded-xl text-xs font-bold hover:border-slate-300 hover:bg-slate-50 transition-colors shadow-sm">
                               Edit Limit
                             </button>
-                            <button className="flex-1 sm:flex-none bg-red-50 border border-red-100 text-red-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-100 transition-colors shadow-sm">
+                            <button className="cursor-pointer flex-1 sm:flex-none bg-red-50 border border-red-100 text-red-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-100 transition-colors shadow-sm">
                               Revoke Access
                             </button>
                           </div>
@@ -404,7 +617,7 @@ export default function FunderAccountSettings() {
                             </p>
                           </div>
                           <div className="w-full sm:w-auto mt-4 sm:mt-0">
-                            <button className="w-full sm:w-auto border border-slate-200 bg-white text-slate-500 px-4 py-2 rounded-xl text-xs font-bold hover:border-slate-300 transition-colors shadow-sm">
+                            <button className="cursor-pointer w-full sm:w-auto border border-slate-200 bg-white text-slate-500 px-4 py-2 rounded-xl text-xs font-bold hover:border-slate-300 transition-colors shadow-sm">
                               Restore Access
                             </button>
                           </div>
@@ -430,15 +643,15 @@ export default function FunderAccountSettings() {
                       </div>
                     </div>
 
-                    <div className="bg-white rounded-[24px] p-6 sm:p-8 shadow-sm border border-slate-100 group hover:border-indigo-200 transition-colors cursor-pointer">
-                      <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <div className="bg-white rounded-[24px] p-6 sm:p-8 shadow-sm border border-slate-100 group hover:border-emerald-200 transition-colors cursor-pointer">
+                      <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                         <ShieldCheck className="w-8 h-8" />
                       </div>
                       <h3 className="text-xl font-black text-slate-800 tracking-tight mb-2">Investment Certificate</h3>
                       <p className="text-slate-500 text-sm font-medium mb-8">
                         Generate a formalized, stamped PDF certificate proving your active capital pool balance and status as a secured Welile Supporter.
                       </p>
-                      <div className="flex items-center gap-2 text-indigo-600 font-bold text-sm bg-indigo-50 px-4 py-3 rounded-xl w-max">
+                      <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm bg-emerald-50 px-4 py-3 rounded-xl w-max">
                         <Download className="w-4 h-4" /> Download Certificate.pdf
                       </div>
                     </div>
@@ -457,7 +670,7 @@ export default function FunderAccountSettings() {
                         <p className="text-[10px] uppercase font-black tracking-widest text-slate-500 mb-1">Registered Beneficiary</p>
                         <p className="text-white font-bold mb-1">Emmanuel N.</p>
                         <p className="text-emerald-400 font-mono text-xs font-bold">+256 701 *** 223</p>
-                        <button className="w-full mt-4 bg-slate-700 text-white text-xs font-bold py-2 rounded-lg hover:bg-slate-600 transition-colors">
+                        <button className="cursor-pointer w-full mt-4 bg-slate-700 text-white text-xs font-bold py-2 rounded-lg hover:bg-slate-600 transition-colors">
                           Update Mandate
                         </button>
                       </div>
@@ -468,11 +681,42 @@ export default function FunderAccountSettings() {
             </div>
           </main>
 
-          {/* BOTTOM NA V */}
           <FunderBottomNav activePage="Account" />
 
         </div>
       </div>
+
+      {/* DELETE CONFIRMATION MODAL */}
+      {accountToDelete && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-[2px] animate-in fade-in duration-150">
+          <div className="bg-white rounded-[24px] p-6 sm:p-8 max-w-sm w-full shadow-xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Trash2 className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-black text-slate-800 text-center mb-2">Remove Account?</h3>
+            <p className="text-slate-500 text-sm font-medium text-center mb-8 leading-relaxed">
+              Are you sure you want to delete this verified withdrawal method? You will need to wait 48 hours to withdraw if you add it again.
+            </p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setAccountToDelete(null)} 
+                className="cursor-pointer flex-1 py-3 text-slate-500 font-bold bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors text-sm"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  setAccounts(accounts.filter(a => a.id !== accountToDelete));
+                  setAccountToDelete(null); toast.success('Withdrawal method removed securely!');
+                }} 
+                className="cursor-pointer flex-1 py-3 text-white font-bold bg-red-600 hover:bg-red-700 shadow flex justify-center items-center rounded-xl transition-colors text-sm"
+              >
+                Yes, Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
