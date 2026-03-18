@@ -177,13 +177,12 @@ export default function FunderDashboard() {
           <FunderDashboardHeader
             user={{ fullName: displayName, role: 'supporter', avatarUrl: '' }}
             pageTitle="Dashboard"
-            onAvatarClick={() => navigate('/settings')}
           />
 
           {/* Mobile top header */}
           <FunderMobileHeader
             user={{ fullName: displayName }}
-            notificationCount={3}
+            onAvatarClick={() => navigate('/funder/account')}
           />
 
           {/* ──────────── PAGE BODY ──────────── */}
