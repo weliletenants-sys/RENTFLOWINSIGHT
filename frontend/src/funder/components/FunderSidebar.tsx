@@ -12,7 +12,7 @@ const navItems = [
   { label: 'Opportunities', icon: <Rocket className="w-5 h-5" />, path: '#' },
   { label: 'Payouts', icon: <Banknote className="w-5 h-5" />, path: '#' },
   { label: 'Wallet', icon: <Wallet className="w-5 h-5" />, path: '#' },
-  { label: 'Reports', icon: <FileText className="w-5 h-5" />, path: '#' },
+  { label: 'Reports', icon: <FileText className="w-5 h-5" />, path: '/funder/reports' },
 ];
 
 export default function FunderSidebar({ activePage = 'Dashboard' }: FunderSidebarProps) {

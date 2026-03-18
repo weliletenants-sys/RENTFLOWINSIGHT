@@ -4,6 +4,7 @@ import { Route } from 'react-router-dom';
 const FunderOnboarding = lazy(() => import('../funder/FunderOnboarding'));
 const FunderDashboard  = lazy(() => import('../funder/FunderDashboard'));
 const FunderSettings   = lazy(() => import('../funder/FunderAccountSettings'));
+const FunderReports    = lazy(() => import('../funder/FunderReports'));
 
 /**
  * Funder role routes — all pages are lazy-loaded.
@@ -14,4 +15,5 @@ export const funderRoutes = [
   // Dashboard routing
   <Route key="funder-dashboard"  path="/funder"  element={<FunderDashboard />} />,
   <Route key="funder-account"    path="/funder/account"    element={<FunderSettings />} />,
+  <Route key="funder-reports"    path="/funder/reports"    element={<FunderReports />} />,
 ];
