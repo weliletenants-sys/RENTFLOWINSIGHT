@@ -706,7 +706,7 @@ export default function FunderOnboarding() {
       // TODO: replace timeout with real API call; on success → navigate
       setTimeout(() => {
         setIsSubmitting(false);
-        navigate('/funder-dashboard');
+        navigate('/funder');
       }, 2000);
     }
   };

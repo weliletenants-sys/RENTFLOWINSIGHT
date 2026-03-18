@@ -22,7 +22,8 @@ import {
   Plus,
   X,
   Camera,
-  User
+  User,
+  Info
 } from 'lucide-react';
 
 import FunderSidebar from './components/FunderSidebar';
@@ -34,6 +35,7 @@ export default function FunderAccountSettings() {
   const [newPassword, setNewPassword] = useState('');
   const [avatarPreview, setAvatarPreview] = useState<string>("https://api.dicebear.com/7.x/avataaars/svg?seed=Grace&backgroundColor=059669");
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [rewardMode, setRewardMode] = useState<'compound' | 'payout'>('compound');
 
   const handleAvatarSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -435,121 +437,201 @@ export default function FunderAccountSettings() {
 
                 {/* TAB 2: CAPITAL & ESCROW */}
                 {activeTab === 'financial' && (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="bg-white rounded-[24px] p-6 sm:p-8 shadow-sm border border-slate-100">
-                      <h3 className="text-xl font-black text-slate-800 tracking-tight mb-2">Verified Payout Methods</h3>
-                      <p className="text-slate-500 text-sm font-medium mb-6">
-                        Newly added withdrawal numbers undergo a mandatory 48-hour cooling period to protect your capital.
-                      </p>
+                  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       
-                      <div className="space-y-3 mb-6">
-                        {accounts.map(acc => (
-                          <div key={acc.id} className={`cursor-pointer p-4 rounded-2xl border-2 flex items-center justify-between group transition-colors relative overflow-hidden ${acc.isPrimary ? 'border-emerald-500 bg-emerald-50/30' : 'border-slate-100 bg-white hover:border-slate-300'}`}>
-                            {acc.isPrimary && <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500" />}
-                            
-                            <div className="flex items-center gap-4">
-                              {/* Logo Render Logic */}
-                              <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-inner overflow-hidden flex-shrink-0 bg-slate-100 border border-slate-200">
-                                {acc.type === 'momo' ? (
-                                  acc.network === 'MTN' ? <img src="/mtn.png" alt="MTN" className="w-full h-full object-cover" /> :
-                                  acc.network === 'Airtel' ? <img src="/airtel.png" alt="Airtel" className="w-full h-full object-cover" /> :
-                                  <Smartphone className="w-5 h-5 text-slate-400" />
-                                ) : (
-                                  <Building2 className="w-5 h-5 text-slate-600" />
-                                )}
-                              </div>
-                              
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <p className="font-bold text-slate-800 text-sm">{acc.name}</p>
-                                  {acc.isPrimary && <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest hidden sm:inline-block">Primary</span>}
+                      {/* LEFT COLUMN: PAYOUTS & TOGGLES */}
+                      <div className="space-y-6">
+                        <div className="bg-white rounded-[24px] p-6 sm:p-8 shadow-sm border border-slate-100">
+                          <h3 className="text-xl font-black text-slate-800 tracking-tight mb-2">Verified Payout Methods</h3>
+                          <p className="text-slate-500 text-sm font-medium mb-6">
+                            Newly added withdrawal numbers undergo a mandatory 48-hour cooling period.
+                          </p>
+                          
+                          <div className="space-y-3 mb-6">
+                            {accounts.map(acc => (
+                              <div key={acc.id} className={`cursor-pointer p-4 rounded-2xl border-2 flex items-center justify-between group transition-colors relative overflow-hidden ${acc.isPrimary ? 'border-emerald-500 bg-emerald-50/30' : 'border-slate-100 bg-white hover:border-slate-300'}`}>
+                                {acc.isPrimary && <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500" />}
+                                
+                                <div className="flex items-center gap-4">
+                                  <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-inner overflow-hidden flex-shrink-0 bg-slate-100 border border-slate-200">
+                                    {acc.type === 'momo' ? (
+                                      acc.network === 'MTN' ? <img src="/mtn.png" alt="MTN" className="w-full h-full object-cover" /> :
+                                      acc.network === 'Airtel' ? <img src="/airtel.png" alt="Airtel" className="w-full h-full object-cover" /> :
+                                      <Smartphone className="w-5 h-5 text-slate-400" />
+                                    ) : (
+                                      <Building2 className="w-5 h-5 text-slate-600" />
+                                    )}
+                                  </div>
+                                  
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <p className="font-bold text-slate-800 text-sm">{acc.name}</p>
+                                      {acc.isPrimary && <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest hidden sm:inline-block">Primary</span>}
+                                    </div>
+                                    <p className="font-mono text-slate-500 text-xs mt-0.5 tracking-tight">{acc.number}</p>
+                                  </div>
                                 </div>
-                                <p className="font-mono text-slate-500 text-xs mt-0.5 tracking-tight">{acc.number}</p>
+                                
+                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button onClick={() => { setEditingAccountId(acc.id); setEditForm({ type: acc.type, name: acc.name, number: acc.number }); }} className="cursor-pointer p-2 text-slate-400 hover:text-emerald-600 transition-colors bg-white rounded-lg hover:shadow-sm">
+                                    <Edit3 className="w-4 h-4" />
+                                  </button>
+                                  {!acc.isPrimary && (
+                                    <button onClick={() => { setAccountToDelete(acc.id); toast.success('Withdrawal method removed securely'); }} className="cursor-pointer p-2 text-slate-400 hover:text-red-500 transition-colors bg-white rounded-lg hover:shadow-sm">
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {(isAddingAccount || editingAccountId) && (
+                            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-6 animate-in fade-in slide-in-from-top-2">
+                              <div className="flex justify-between items-center mb-4">
+                                <h4 className="font-bold text-slate-800 text-sm">{editingAccountId ? 'Edit Account' : 'Add New Account'}</h4>
+                                <button onClick={() => { setIsAddingAccount(false); setEditingAccountId(null); }} className="cursor-pointer text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>
+                              </div>
+                              <div className="flex gap-2 mb-4">
+                                <button onClick={() => setEditForm({...editForm, type: 'momo'})} className={`cursor-pointer flex-1 py-2 text-xs font-bold rounded-lg transition-all border ${editForm.type === 'momo' ? 'bg-white border-emerald-500 text-emerald-700 shadow-sm' : 'border-transparent text-slate-500 hover:bg-slate-100'}`}>Mobile Money</button>
+                                <button onClick={() => setEditForm({...editForm, type: 'bank'})} className={`cursor-pointer flex-1 py-2 text-xs font-bold rounded-lg transition-all border ${editForm.type === 'bank' ? 'bg-white border-emerald-500 text-emerald-700 shadow-sm' : 'border-transparent text-slate-500 hover:bg-slate-100'}`}>Bank Account</button>
+                              </div>
+                              <div className="cursor-pointer space-y-3">
+                                <div>
+                                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 ml-1">Account Name</label>
+                                  <input value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} type="text" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-emerald-500" placeholder="e.g. Grace N." />
+                                </div>
+                                <div>
+                                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 ml-1">{editForm.type === 'momo' ? 'Mobile Number' : 'Account Number'}</label>
+                                  <div className="relative">
+                                    <input value={editForm.number} onChange={e => setEditForm({...editForm, number: e.target.value})} type="text" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-emerald-500 font-mono" placeholder={editForm.type === 'momo' ? "077... (10 digits)" : "Bank Account No"} />
+                                    {editForm.type === 'momo' && editForm.number.length >= 3 && (
+                                      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+                                        {getNetworkFromNumber(editForm.number) === 'MTN' && <span className="bg-yellow-400 text-slate-900 text-[9px] font-black uppercase px-2 py-0.5 rounded-md">MTN</span>}
+                                        {getNetworkFromNumber(editForm.number) === 'Airtel' && <span className="bg-red-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-md">AIRTEL</span>}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                <button onClick={handleSaveAccount} className="cursor-pointer w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition-colors shadow-sm text-sm">
+                                  Save Details
+                                </button>
                               </div>
                             </div>
-                            
-                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button onClick={() => { setEditingAccountId(acc.id); setEditForm({ type: acc.type, name: acc.name, number: acc.number }); }} className="cursor-pointer p-2 text-slate-400 hover:text-emerald-600 transition-colors bg-white rounded-lg hover:shadow-sm">
-                                <Edit3 className="w-4 h-4" />
-                              </button>
-                              {!acc.isPrimary && (
-                                <button onClick={() => setAccountToDelete(acc.id)} className="cursor-pointer p-2 text-slate-400 hover:text-red-500 transition-colors bg-white rounded-lg hover:shadow-sm">
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                          )}
 
-                      {/* Inline Edit / Add Form */}
-                      {(isAddingAccount || editingAccountId) && (
-                        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-6 animate-in fade-in slide-in-from-top-2">
-                          <div className="flex justify-between items-center mb-4">
-                            <h4 className="font-bold text-slate-800 text-sm">{editingAccountId ? 'Edit Account' : 'Add New Account'}</h4>
-                            <button onClick={() => { setIsAddingAccount(false); toast.success('New withdrawal account added!'); setEditingAccountId(null); toast.success('Account details updated!'); }} className="cursor-pointer text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>
+                          {!isAddingAccount && !editingAccountId && (
+                            <button onClick={() => { setIsAddingAccount(true); setEditForm({ type: 'momo', name: '', number: '' }); }} className="cursor-pointer w-full flex justify-center items-center py-4 rounded-xl font-bold text-sm bg-slate-900 text-white shadow-md hover:bg-slate-800 transition-colors">
+                              <Plus className="w-4 h-4 mr-2" /> Add New Withdrawal Account
+                            </button>
+                          )}
+                        </div>
+
+                        {/* REWARD HANDLING TOGGLE */}
+                        <div className="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100">
+                          <h3 className="text-xl font-black text-slate-800 tracking-tight mb-4 flex items-center gap-2">Reward Handling</h3>
+                          <div className="flex flex-col sm:flex-row gap-2 p-1.5 bg-slate-100 rounded-xl border border-slate-200/60 mb-5">
+                            <button onClick={() => { setRewardMode('compound'); toast.success('Rewards set to Auto-Compound'); }} className={`cursor-pointer flex-1 py-3 px-2 text-xs sm:text-sm font-bold rounded-lg transition-all ${rewardMode === 'compound' ? 'bg-white text-emerald-700 shadow-sm border border-emerald-100' : 'text-slate-500 hover:text-slate-800'}`}>
+                              Auto-Compound (Reinvest)
+                            </button>
+                            <button onClick={() => { setRewardMode('payout'); toast.success('Rewards set to Auto-Payout'); }} className={`cursor-pointer flex-1 py-3 px-2 text-xs sm:text-sm font-bold rounded-lg transition-colors ${rewardMode === 'payout' ? 'bg-white text-emerald-700 shadow-sm border border-emerald-100' : 'text-slate-500 hover:text-slate-800'}`}>
+                              Auto-Payout (To Wallet)
+                            </button>
                           </div>
                           
-                          <div className="flex gap-2 mb-4">
-                            <button onClick={() => setEditForm({...editForm, type: 'momo'})} className={`cursor-pointer flex-1 py-2 text-xs font-bold rounded-lg transition-all border ${editForm.type === 'momo' ? 'bg-white border-emerald-500 text-emerald-700 shadow-sm' : 'border-transparent text-slate-500 hover:bg-slate-100'}`}>Mobile Money</button>
-                            <button onClick={() => setEditForm({...editForm, type: 'bank'})} className={`cursor-pointer flex-1 py-2 text-xs font-bold rounded-lg transition-all border ${editForm.type === 'bank' ? 'bg-white border-emerald-500 text-emerald-700 shadow-sm' : 'border-transparent text-slate-500 hover:bg-slate-100'}`}>Bank Account</button>
+                          <div className="flex items-start gap-3 bg-blue-50/50 p-4 rounded-xl border border-blue-100/50">
+                            <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                            <p className="text-sm text-slate-600 font-medium leading-relaxed">
+                              {rewardMode === 'compound' 
+                                ? "Yields are automatically reinvested back into your capital pool to accelerate compounding growth (90-day escrow withdrawal rules apply)."
+                                : "Yields are credited directly to your liquid Wallet balance instantly every 30 days, available for immediate withdrawal to Money Money."
+                              }
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* RIGHT COLUMN: 90-DAY ESCROW & LIQUIDITY */}
+                      <div className="space-y-6">
+                        <div className="bg-white rounded-[24px] p-6 sm:p-8 shadow-sm border border-slate-100 relative overflow-hidden h-auto flex flex-col">
+                          <div className="absolute top-0 right-0 w-48 h-48 bg-orange-50 rounded-bl-full -mr-12 -mt-12 pointer-events-none" />
+                          <div className="flex items-center gap-3 mb-6 relative z-10">
+                            <div className="w-12 h-12 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center shadow-inner">
+                              <Clock className="w-6 h-6" />
+                            </div>
+                            <div>
+                              <h3 className="text-xl font-black text-slate-800 tracking-tight">Active 90-Day Escrow</h3>
+                              <p className="text-sm text-slate-500 font-medium">Pending withdrawal timeline</p>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 relative mb-8">
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Locked Capital in Exit Queue</p>
+                            <p className="text-3xl font-black text-slate-800 mb-6 font-mono tracking-tight">UGX <span className="text-orange-500">1,500,000</span></p>
+                            <div className="mb-2 flex justify-between text-xs font-bold">
+                              <span className="text-slate-500">Initiated: Mar 15</span>
+                              <span className="text-orange-600">Release: Jun 13</span>
+                            </div>
+                            <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden shadow-inner">
+                              <div className="h-full bg-gradient-to-r from-orange-400 to-orange-500 w-[15%] rounded-full shadow-[0_0_10px_rgba(249,115,22,0.5)]"></div>
+                            </div>
+                            <p className="text-center text-[10px] sm:text-xs text-slate-500 font-semibold mt-4">
+                              14 days down • 76 days remaining
+                            </p>
                           </div>
 
-                          <div className="cursor-pointer space-y-3">
-                            <div>
-                              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 ml-1">Account Name</label>
-                              <input value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} type="text" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-emerald-500" placeholder="e.g. Grace N." />
-                            </div>
-                            <div>
-                              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 ml-1">{editForm.type === 'momo' ? 'Mobile Number' : 'Account Number'}</label>
-                              <div className="relative">
-                                <input value={editForm.number} onChange={e => setEditForm({...editForm, number: e.target.value})} type="text" className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-emerald-500 font-mono" placeholder={editForm.type === 'momo' ? "077... (10 digits)" : "Bank Account No"} />
-                                {editForm.type === 'momo' && editForm.number.length >= 3 && (
-                                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
-                                    {getNetworkFromNumber(editForm.number) === 'MTN' && <span className="bg-yellow-400 text-slate-900 text-[9px] font-black uppercase px-2 py-0.5 rounded-md">MTN</span>}
-                                    {getNetworkFromNumber(editForm.number) === 'Airtel' && <span className="bg-red-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-md">AIRTEL</span>}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <button onClick={handleSaveAccount} className="cursor-pointer w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition-colors shadow-sm text-sm">
-                              Save Details
+                          <div className="mt-auto">
+                            <p className="text-xs text-slate-500 font-medium mb-3 text-center px-4">
+                              Initiating a withdrawal instantly pauses monthly rewards on the requested amount.
+                            </p>
+                            <button onClick={() => toast.error('Withdrawal gateway is currently locked')} className="cursor-pointer w-full border-2 border-red-100 text-red-600 hover:bg-red-50 hover:border-red-200 py-3.5 sm:py-4 font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-sm">
+                              Request Capital Withdrawal
                             </button>
                           </div>
                         </div>
-                      )}
-
-                      {!isAddingAccount && !editingAccountId && (
-                        <button onClick={() => { setIsAddingAccount(true); setEditForm({ type: 'momo', name: '', number: '' }); }} className="cursor-pointer w-full flex justify-center items-center py-4 rounded-xl font-bold text-sm bg-slate-900 text-white shadow-md hover:bg-slate-800 transition-colors">
-                          <Plus className="w-4 h-4 mr-2" /> Add New Withdrawal Account
-                        </button>
-                      )}
+                      </div>
                     </div>
 
-                    <div className="bg-white rounded-[24px] p-6 sm:p-8 shadow-sm border border-slate-100 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-50 rounded-bl-full -mr-12 -mt-12 pointer-events-none" />
-                      <div className="flex items-center gap-3 mb-6">
-                        <div className="w-12 h-12 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center shadow-inner">
-                          <Clock className="w-6 h-6" />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-black text-slate-800 tracking-tight">Active 90-Day Escrow</h3>
-                          <p className="text-sm text-slate-500 font-medium">Pending withdrawal timeline tracker</p>
-                        </div>
-                      </div>
-                      <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 relative">
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Locked Capital in Exit Queue</p>
-                        <p className="text-3xl font-black text-slate-800 mb-6 font-mono tracking-tight">UGX <span className="text-orange-500">1,500,000</span></p>
-                        <div className="mb-2 flex justify-between text-xs font-bold">
-                          <span className="text-slate-500">Initiated: Mar 15</span>
-                          <span className="text-orange-600">Release: Jun 13</span>
-                        </div>
-                        <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden shadow-inner">
-                          <div className="h-full bg-gradient-to-r from-orange-400 to-orange-500 w-[15%] rounded-full shadow-[0_0_10px_rgba(249,115,22,0.5)]"></div>
-                        </div>
-                        <p className="text-center text-xs text-slate-500 font-semibold mt-4">
-                          14 days down • 76 days remaining
-                        </p>
+                    {/* FULL WIDTH: PORTFOLIO TRANCHES */}
+                    <div className="bg-white rounded-[24px] p-6 sm:p-8 shadow-sm border border-slate-100 overflow-hidden">
+                      <h3 className="text-xl font-black text-slate-800 tracking-tight mb-6">Active Portfolio Tranches</h3>
+                      <div className="overflow-x-auto -mx-6 sm:mx-0 px-6 sm:px-0">
+                        <table className="w-full text-left border-collapse min-w-[600px]">
+                          <thead>
+                            <tr className="border-b-2 border-slate-100 text-slate-400 text-[10px] uppercase tracking-widest">
+                              <th className="pb-4 px-4 font-black">Portfolio ID</th>
+                              <th className="pb-4 px-4 font-black">Date Funded</th>
+                              <th className="pb-4 px-4 font-black text-right">Active Capital</th>
+                              <th className="pb-4 px-4 font-black text-center">ROI Rate</th>
+                              <th className="pb-4 px-4 font-black text-right">Earned Rewards</th>
+                            </tr>
+                          </thead>
+                          <tbody className="text-sm font-medium text-slate-700 divide-y divide-slate-50">
+                            <tr className="hover:bg-slate-50 transition-colors group cursor-pointer">
+                              <td className="py-4 px-4 font-bold text-slate-900 flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> WPF-7291
+                              </td>
+                              <td className="py-4 px-4 text-slate-500">Mar 12, 2026</td>
+                              <td className="py-4 px-4 font-mono text-right font-black text-slate-800">UGX <span className="text-emerald-600">5,000,000</span></td>
+                              <td className="py-4 px-4 text-center">
+                                <span className="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider">15% Standard</span>
+                              </td>
+                              <td className="py-4 px-4 font-mono text-right text-slate-600 font-bold">UGX 1,500,000</td>
+                            </tr>
+                            <tr className="hover:bg-slate-50 transition-colors group cursor-pointer">
+                              <td className="py-4 px-4 font-bold text-slate-900 flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500"></span> WPF-4827
+                              </td>
+                              <td className="py-4 px-4 text-slate-500">Feb 01, 2026</td>
+                              <td className="py-4 px-4 font-mono text-right font-black text-slate-800">UGX <span className="text-emerald-600">2,500,000</span></td>
+                              <td className="py-4 px-4 text-center">
+                                <span className="bg-blue-100 text-blue-700 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider">20% Premium</span>
+                              </td>
+                              <td className="py-4 px-4 font-mono text-right text-slate-600 font-bold">UGX 750,000</td>
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   </div>
