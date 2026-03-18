@@ -587,6 +587,19 @@ model OtpVerifications {
   @@map("otp_verifications")
 }
 
+model PartnerEscalations {
+  created_at String
+  details String?
+  escalation_type String
+  id String @id @default(uuid())
+  portfolio_id String?
+  resolved_at String?
+  resolved_by String?
+  status String
+
+  @@map("partner_escalations")
+}
+
 model PaymentTokens {
   amount Float
   created_at String

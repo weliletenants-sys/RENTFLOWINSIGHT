@@ -1,0 +1,113 @@
+account_name;auto_reinvest;created_at;display_currency;email;full_name;investment_amount;phone;portfolio_code;roi_mode;roi_percentage;status;total_roi_earned
+;false;2026-03-26 00:00:00+00;UGX;rosebabirye79@gmail.com;ROSE MUYINDA;100000000;0788535678;WIP2603269296;monthly_payout;20;pending_approval;0
+;false;2026-03-21 00:00:00+00;UGX;nabbosagift99@gmail.com;GIFT NABBOSA;1000000;0709815921;WIP2603218028;monthly_payout;20;pending_approval;0
+;false;2026-03-19 00:00:00+00;UGX;kweenkoko3@gmail.com;EUNICE KOMAKECH;35000000;0778779101;WIP2603194736;monthly_payout;20;pending_approval;0
+;false;2026-03-19 00:00:00+00;UGX;ssemakadejoel@gmail.com;JOEL SSEMAKADE;4550880;1647633865;WIP2603192260;monthly_payout;20;pending_approval;0
+;false;2026-03-19 00:00:00+00;UGX;joshuabihaabwa@gmail.com;HENRY BIHAABWA;31000000;0759746742;WIP2603195580;monthly_payout;20;pending_approval;0
+;false;2026-03-19 00:00:00+00;UGX;kweenkoko3@gmail.com;EUNICE KOMAKECH;23500000;0778779101;WIP2603196819;monthly_payout;20;pending_approval;0
+;false;2026-03-18 00:00:00+00;UGX;emmamenya84@gmail.com;EMMANUEL MENYA;6000000;0701904553;WIP2603189671;monthly_compounding;20;pending_approval;0
+;false;2026-03-17 17:52:22.807077+00;UGX;gracy.paul88@gmail.com;Grace;2000;0780714176;WPF-5072;monthly_payout;15;active;0
+;false;2026-03-16 00:00:00+00;UGX;aber501997@gmail.com;ABER RACHEL;1000000;0771369612;WIP2603164477;monthly_payout;20;pending_approval;0
+;false;2026-03-16 00:00:00+00;UGX;gracebihabwe@gmail.com;GRACE AKAMPEREZA;2500000;0788879335;WIP2603164878;monthly_payout;20;pending_approval;0
+;false;2026-03-16 00:00:00+00;UGX;kisakyebadru02@gmail.com;KISAKYE BADRU JEJE;10000000;0703483787;WIP2603163335;monthly_payout;15;pending_approval;0
+;false;2026-03-16 00:00:00+00;UGX;kimoteseed17@gmail.com;SHAKILAH NINSIIMA;2000000;0785217148;WIP2603166369;monthly_payout;20;pending_approval;0
+;false;2026-03-16 00:00:00+00;UGX;lindanabuuma2@gmail.com;NABUUMA LINDA;3000000;0709804723;WIP2603161838;monthly_payout;20;pending_approval;0
+;false;2026-03-15 00:00:00+00;UGX;heuvelexplorer02@gmail.com;HEUVEL EXPLORER;25000000;0705746903;WIP2603159711;monthly_payout;20;pending_approval;0
+;false;2026-03-15 00:00:00+00;UGX;solokyalo0@gmail.com;KYALO SOLOMON ISAAC;4002679;0703868732;WIP2603166678;monthly_payout;20;active;0
+;false;2026-03-14 00:00:00+00;UGX;peacemukisa21@gmail.com;MUKISA PEACE;1100000;0782203562;WIP2603141568;monthly_payout;15;pending_approval;0
+;false;2026-03-14 00:00:00+00;UGX;solokyalo0@gmail.com;KYALO SOLOMON ISAAC;5013393;0703868732;WIP2603149023;monthly_payout;20;active;0
+;false;2026-03-13 10:43:42.064+00;UGX;printshopentebbe@gmail.com;BANKO DAVID;2000000;0700423376;WIP2603138685;monthly_payout;20;active;0
+;false;2026-03-13 00:00:00+00;UGX;ainelydia01@gmail.com;LYDIA KUZAALA;7000000;0702094076;WIP2603134508;monthly_payout;20;pending_approval;0
+;false;2026-03-13 00:00:00+00;UGX;bonniehavansmuhwezi@gmail.com;MUHWEEZI BONNY;2000000;0762144618;WIP2603133379;monthly_payout;15;pending_approval;0
+;false;2026-03-12 07:35:05.752258+00;UGX;gejazycy@mailinator.com;Leigh Rodriguez;100000;17818771327;WPF-5868;monthly_payout;15;active;0
+;false;2026-03-12 07:31:11.166576+00;UGX;gejazycy@mailinator.com;Leigh Rodriguez;50000;17818771327;WPF-4065;monthly_payout;15;active;0
+;false;2026-03-12 07:16:33.977863+00;UGX;gejazycy@mailinator.com;Leigh Rodriguez;50000;17818771327;WPF-8623;monthly_compounding;15;active;0
+;false;2026-03-12 00:00:00+00;UGX;immy9yanja@gmail.com;NAMAYANJA IMMECULATE;1200000;0770920813;WIP2603129173;monthly_payout;20;pending_approval;0
+;false;2026-03-12 00:00:00+00;UGX;mcalebprince@gmail.com;KIPLANGATI CALEB;10000000;0778112567;WIP2603122110;monthly_payout;20;active;0
+;false;2026-03-11 14:04:49.10742+00;UGX;siqiby@mailinator.com;Derek Turner;50000;0701315245;WPF-2395;monthly_payout;15;active;0
+;false;2026-03-11 13:49:29.596229+00;UGX;256700100200@welile.user;Test Man;50000;256700100200;WPF-0006;monthly_payout;15;active;0
+;false;2026-03-11 13:39:15.557624+00;UGX;0721455892@welile.user;twat men;50000;0721455892;WPF-0817;monthly_payout;15;active;0
+;false;2026-03-11 11:23:36.86791+00;UGX;0771456789@welile.user;Lolem Patrick;50000;0771456789;WPF-5455;monthly_payout;15;active;0
+;false;2026-03-11 11:04:13.726528+00;UGX;katongolejames22@gmail.com;Katongole James;50000;	+256 779 007902;WPF-2073;monthly_payout;15;cancelled;0
+;false;2026-03-11 10:14:08.055837+00;UGX;;;50000;;WPF-4656;monthly_payout;15;cancelled;0
+;false;2026-03-11 07:32:42.717754+00;UGX;070000000111@welile.user;pamela ssaka;100000;070000000111;WPF-7242;monthly_payout;15;active;0
+;false;2026-03-11 07:13:50.223538+00;UGX;256701355245@welile.user;SSENKAALI PIUS;50000;256701355245;WPF-2972;monthly_payout;15;active;0
+;false;2026-03-11 06:18:35.260524+00;UGX;070000000111@welile.user;pamela ssaka;50000;070000000111;WPF-5872;monthly_payout;15;active;0
+;false;2026-03-11 06:18:20.892135+00;UGX;070000000111@welile.user;pamela ssaka;50000;070000000111;WPF-7441;monthly_payout;15;active;0
+;false;2026-03-11 06:17:57.53948+00;UGX;070000000111@welile.user;pamela ssaka;50000;070000000111;WPF-2356;monthly_payout;15;active;0
+;false;2026-03-11 06:17:39.939066+00;UGX;070000000111@welile.user;pamela ssaka;50000;070000000111;WPF-3896;monthly_payout;15;active;0
+;false;2026-03-11 06:13:49.280993+00;UGX;070000000111@welile.user;pamela ssaka;1000000;070000000111;WPF-3488;monthly_payout;15;active;0
+;false;2026-03-11 00:00:00+00;UGX;victorkimenyi1@gmail.com;VICTOR KIMENYI;1500000;0785227030;WIP2603119760;monthly_payout;20;pending_approval;0
+;false;2026-03-10 12:49:35.798288+00;UGX;0742000365@welile.user;muhwezi ian martin;7300000;0742000365;WPF-1600;monthly_payout;20;active;0
+;false;2026-03-10 10:47:23.035333+00;UGX;katongolejames22@gmail.com;Katongole James;10000000;	+256 779 007902;WPF-6442;monthly_compounding;20;active;0
+;false;2026-03-10 10:41:33.527888+00;UGX;muwanguzigideon61@gmail.com;Muwanguzi Gideon;1000000;0703406836;WPF-4176;monthly_payout;20;active;0
+;false;2026-03-10 09:43:48.902105+00;UGX;0787373498@welile.user;Grace Paul Ochieng;2142473;0787373498;WPF-2E46;monthly_payout;20;active;0
+;false;2026-03-10 09:42:03.512869+00;UGX;sharimahnankambo@gmail.com;Nankambo;6086400;0766796539;WPF-2FB2;monthly_payout;20;active;0
+;false;2026-03-10 08:09:04.199795+00;UGX;256701355245@welile.user;SSENKAALI PIUS;100000;256701355245;WPF-9325;monthly_payout;15;active;0
+;false;2026-03-10 00:00:00+00;UGX;josephinenabatte@gmail.com;NABATTE JOSEPHINE;4619441;0774644204;WIP2603101940;monthly_payout;15;pending_approval;0
+;false;2026-03-10 00:00:00+00;UGX;jerushahappy2@gmail.com;SANYU JERUSHA;5082000;0706090757;WIP2603104252;monthly_payout;20;pending_approval;0
+;false;2026-03-10 00:00:00+00;UGX;rolexfaith@gmail.com;AINE FRANCIS;12800000;0700405936;WIP2603103164;monthly_payout;20;active;0
+;false;2026-03-10 00:00:00+00;UGX;javanabraham4@gmail.com;KAFUKO JAVAN;5940000;0789367897;WIP2603109241;monthly_payout;20;pending_approval;0
+;false;2026-03-10 00:00:00+00;UGX;lindanabuuma2@gmail.com;NABUUMA LINDA;2500000;0709804723;WIP2603103160;monthly_payout;20;pending_approval;0
+;false;2026-03-09 17:21:05.483278+00;UGX;joshwanda17@gmail.com;JOSHUA WANDA;100000;0704825473;WPF-0853;monthly_payout;20;active;0
+;false;2026-03-09 14:14:56.420244+00;UGX;mercybayo123@gmail.com;Mercy Bayo;3000000;0706052465;WPF-2495;monthly_payout;20;active;0
+Bayo Mercy;false;2026-03-09 14:03:32.054424+00;UGX;mercybayo123@gmail.com;Mercy Bayo;3000000;0706052465;WPF-5551;monthly_payout;20;active;0
+;false;2026-03-09 14:00:50.977439+00;UGX;0783673998@welile.user;Benjamin Muhanguzi;4504800;0783673998;WPF-1999;monthly_compounding;20;active;0
+;false;2026-03-09 13:41:13.918865+00;UGX;atuhairecarol78@gmail.com;ATUHAIRE CAROLYNE;820000;0761135206;WPF-9559;monthly_compounding;20;active;0
+;false;2026-03-09 13:30:25.565207+00;UGX;0706662454@welile.user;Kabahuma Lillian;5000000;0706662454;WPF-6422;monthly_payout;20;active;0
+;false;2026-03-09 13:02:28.155501+00;UGX;tcollines004@gmail.com;COLLINES TUMWIINE;2149908;0743586850;WPF-2124;monthly_payout;20;active;0
+;false;2026-03-09 11:33:08.083948+00;UGX;lydiamuk04@gmail.com;Mukhaye Lydia;200000;0791645944;WPF-3696;monthly_compounding;20;active;0
+;false;2026-03-09 11:15:18.914824+00;UGX;rogerkwenseri@gmail.com;kwenseri Rodgers;960000;0742579891;WPF-4560;monthly_payout;20;active;0
+;false;2026-03-09 10:48:05.191328+00;UGX;aseakeith@gmail.com;Keith Asea;100000;0783524747;WPF-5841;monthly_compounding;20;active;0
+;false;2026-03-09 10:27:24.490887+00;UGX;ianbesiga@gmail.com;ian besiga;300000;07071926648;WPF-5718;monthly_payout;20;active;0
+;false;2026-03-09 05:38:17.071919+00;UGX;256701355245@welile.user;SSENKAALI PIUS;50000;256701355245;WPF-7889;monthly_payout;15;active;0
+;false;2026-03-09 05:21:29.739611+00;UGX;256751424629@welile.user;LUKODDA JOSEPH;4504800;256751424629;WPF-0278;monthly_compounding;20;active;0
+;false;2026-03-09 05:09:02.327468+00;UGX;0783817429@welile.user;Lukodda Joseph;1200000;0783817429;WPF-6817;monthly_payout;20;active;0
+;false;2026-03-09 00:00:00+00;UGX;bbibantum@gmail.com;TUMUGABIRWE BIBIAN;2000000;0701239744;WIP2603092070;monthly_payout;15;pending_approval;0
+;false;2026-03-09 00:00:00+00;UGX;nasasirafaithdavid@gmail.com;NASASIRA FAITH DAVID;14420040;0761742493;WIP2603097542;monthly_payout;20;pending_approval;0
+;false;2026-03-09 00:00:00+00;UGX;jeracy27@gmail.com;MUYINDA JESSE MWESIGWA;1900000;0701610888;WIP2603094246;monthly_payout;20;pending_approval;0
+;false;2026-03-09 00:00:00+00;UGX;prossyrinah898@gmail.com;PROSSY NAZZIMULI;12683800;0703797173;WIP2603099499;monthly_payout;20;pending_approval;0
+;false;2026-03-07 00:00:00+00;UGX;kweenkoko3@gmail.com;EUNICE KOMAKECH;9360000;0778779101;WIP2603078058;monthly_payout;20;pending_approval;0
+;false;2026-03-07 00:00:00+00;UGX;nabukenyahellen556@gmail.com;HELLEN NABUKENYA;1072088;0740834746;WIP2603075278;monthly_compounding;20;active;0
+;false;2026-03-06 14:41:52.080745+00;UGX;xpert46@gmail.com;Brenda Greer;50000;13286498887;WPF-9338;monthly_payout;15;active;0
+;false;2026-03-06 00:00:00+00;UGX;patience.ateenyi@gmail.com;PATIENCE LILIAN ATUHAIRE;2000000;0787238712;WIP2603068150;monthly_payout;20;pending_approval;0
+;false;2026-03-06 00:00:00+00;UGX;anngracekulume@gmail.com;KULUME ANN GRACE;1791590;0759874241;WIP2603067474;monthly_payout;20;pending_approval;0
+;false;2026-03-05 14:50:56.046964+00;UGX;256701355245@welile.user;SSENKAALI PIUS;50000;256701355245;WPF-3206;monthly_payout;15;active;0
+;false;2026-03-05 14:26:12.847464+00;UGX;joshwanda17@gmail.com;JOSHUA WANDA;50000;0704825473;WPF-0869;monthly_payout;15;active;0
+;false;2026-03-05 14:01:39.422984+00;UGX;joshwanda17@gmail.com;JOSHUA WANDA;50000;0704825473;WPF-0533;monthly_payout;15;active;0
+;false;2026-03-05 13:02:27.172263+00;UGX;256701355245@welile.user;SSENKAALI PIUS;50000;256701355245;WPF-5967;monthly_payout;15;active;0
+;false;2026-03-05 12:59:14.45875+00;UGX;256701355245@welile.user;SSENKAALI PIUS;50000;256701355245;WPF-3542;monthly_payout;15;active;0
+;false;2026-03-05 00:00:00+00;UGX;nassangawinnie@gmail.com;NASSANGA WINNIE;14570383;0758480483;WIP2603053503;monthly_payout;15;pending_approval;0
+;false;2026-03-04 00:00:00+00;UGX;phionananyonjo5@gmail.com;PHIONA NANYONJO;1000000;0782847917;WIP2603049746;monthly_payout;20;pending_approval;0
+;false;2026-03-04 00:00:00+00;UGX;lusolsam@yahoo.com;LUYIMA SOLOMON SAMUEL;152088;0742412977;WIP2603047430;monthly_payout;15;pending_approval;0
+;false;2026-03-03 00:00:00+00;UGX;atukundaclaire47@gmail.com;ATUKUNDA CLAIRE;1333400;0756785770;WIP2603031467;monthly_payout;15;pending_approval;0
+;false;2026-03-03 00:00:00+00;UGX;joshuanatukunda@gmail.com;NATUKUNDA JOSHUA;7000000;0785269323;WIP2603035814;monthly_payout;20;active;0
+;false;2026-03-02 00:00:00+00;UGX;bonniehavansmuhwezi@gmail.com;MUHWEEZI BONNY;3000000;0762144618;WIP2603024141;monthly_payout;15;pending_approval;0
+;false;2026-03-02 00:00:00+00;UGX;prossyrinah898@gmail.com;PROSSY NAZZIMULI;12000000;0703797173;WIP2603023142;monthly_payout;20;pending_approval;0
+;false;2026-03-02 00:00:00+00;UGX;nakasiitaanisha@gmail.com;ANISHA NAKASIITA;5000000;0701848645;WIP2603026132;monthly_payout;20;pending_approval;0
+;false;2026-03-01 00:00:00+00;UGX;aber501997@gmail.com;ABER RACHEL;3583181;0771369612;WIP2603011698;monthly_compounding;20;pending_approval;0
+;false;2026-03-01 00:00:00+00;UGX;kennethokwako2@gmail.com;KENNETH OKWAKO;150000;0704743149;WIP2603018496;monthly_payout;20;pending_approval;0
+;false;2026-02-28 00:00:00+00;UGX;oworirichard81@gmail.com;WINNIE & RICHARD;5320000;0701288869;WIP2602286220;monthly_payout;20;pending_approval;0
+;false;2026-02-28 00:00:00+00;UGX;aleetelilian798@gmail.com;ALEETE LILIAN;32547000;0700285795;WIP2602283615;monthly_compounding;20;pending_approval;0
+;false;2026-02-28 00:00:00+00;UGX;peacemukisa21@gmail.com;MUKISA PEACE;3500000;0782203562;WIP2602287389;monthly_payout;15;pending_approval;0
+;false;2026-02-22 00:00:00+00;UGX;ssemakadejoel@gmail.com;JOEL SSEMAKADE;4728000;1647633865;WIP2603188993;monthly_payout;20;active;0
+;false;2025-03-28 00:00:00+00;UGX;joshuanatukunda@gmail.com;NATUKUNDA JOSHUA;28000000;0785269323;WIP2603122701;monthly_payout;20;active;0
+;false;2025-03-27 00:00:00+00;UGX;nelsonmuhoozi@gmail.com;NELSON MUGUME;4500000;0789536391;WIP2503275681;monthly_payout;20;active;0
+;false;2025-03-27 00:00:00+00;UGX;cobyjerry760@gmail.com;KYOBE JEREMIAH;1700000;0703608829;WIP2503276813;monthly_payout;20;pending_approval;0
+;false;2025-03-27 00:00:00+00;UGX;printshopentebbe@gmail.com;BANKO DAVID;2000000;0700423376;WIP2503279377;monthly_payout;20;pending_approval;0
+;false;2025-03-24 00:00:00+00;UGX;gimugustephen@gmail.com;GIMUGU STEPHEN;10000000;0787926359;WIP2503248054;monthly_payout;20;pending_approval;0
+;false;2025-03-23 00:00:00+00;UGX;joshuanatukunda@gmail.com;NATUKUNDA JOSHUA;12000000;0785269323;WIP2503234440;monthly_payout;20;active;0
+;false;2025-03-23 00:00:00+00;UGX;printshopentebbe@gmail.com;BANKO DAVID;1000000;0700423376;WIP2503231851;monthly_payout;20;pending_approval;0
+;false;2025-03-22 00:00:00+00;UGX;mcalebprince@gmail.com;KIPLANGATI CALEB;12000000;0778112567;WIP2503227260;monthly_payout;20;active;0
+;false;2025-03-21 00:00:00+00;UGX;mcalebprince@gmail.com;KIPLANGATI CALEB;3000000;0778112567;WIP2503215752;monthly_payout;20;active;0
+;false;2025-03-19 00:00:00+00;UGX;mjcollines@gmail.com;JOHN COLLINS MUGODA;5000000;0706582159;WIP2503196531;monthly_payout;20;pending_approval;0
+;false;2025-03-14 00:00:00+00;UGX;nelsonmuhoozi@gmail.com;NELSON MUGUME;3000000;0789536391;WIP2503145178;monthly_payout;20;matured;0
+;false;2025-03-14 00:00:00+00;UGX;emmamenya84@gmail.com;EMMANUEL MENYA;15000000;0701904553;WIP2503147897;monthly_payout;20;pending_approval;0
+;false;2025-03-12 00:00:00+00;UGX;nabukenyahellen556@gmail.com;HELLEN NABUKENYA;3200000;0740834746;WIP2503122056;monthly_payout;20;matured;0
+;false;2025-03-09 00:00:00+00;UGX;enochlwegaba01@gmail.com;LWEGABA EUGENE;7000000;0757966036;WIP2503098339;monthly_payout;20;pending_approval;0
+;false;2025-03-09 00:00:00+00;UGX;joshuanatukunda@gmail.com;NATUKUNDA JOSHUA;5000000;0785269323;WIP2503091894;monthly_payout;20;matured;0
+;false;2025-03-08 00:00:00+00;UGX;rolexfaith@gmail.com;AINE FRANCIS;5000000;0700405936;WIP2503086265;monthly_payout;20;matured;0
+;false;2025-03-06 00:00:00+00;UGX;printshopentebbe@gmail.com;BANKO DAVID;9000000;0700423376;WIP2503063318;monthly_payout;20;pending_approval;0
+;false;2025-03-06 00:00:00+00;UGX;mareprecious243@gmail.com;JANE NAMUGANYI;4250000;0780284643;WIP2503063114;monthly_payout;20;pending_approval;0
+;false;2025-03-06 00:00:00+00;UGX;cobyjerry760@gmail.com;KYOBE JEREMIAH;2950000;0703608829;WIP2503068696;monthly_payout;20;pending_approval;0
+;false;2025-02-28 00:00:00+00;UGX;igaisaaceb@gmail.com;IGA ISAAC;2600000;0752937182;WIP2502288512;monthly_payout;20;pending_approval;0

@@ -28,37 +28,25 @@ export default function AgentDashboard() {
   return (
     <div className="bg-[#f8f6f6] dark:bg-[#221610] text-slate-900 dark:text-slate-100 antialiased min-h-screen font-['Public_Sans']">
       <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
-        <header className="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#221610]/80 backdrop-blur-md px-4 lg:px-10 py-3">
-          <div className="max-w-5xl mx-auto flex items-center justify-end">
-            <div className="flex gap-4">
+        <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#221610]/80 backdrop-blur-md px-4 lg:px-10 py-3">
+          <div className="max-w-5xl mx-auto flex items-center justify-center">
               <div className="flex items-center gap-4">
                 <div 
                   className="size-12 rounded-2xl bg-cover bg-center border-2 border-white dark:border-slate-800 shadow-sm" 
                   style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBQTaHq2htnni0azJBOc28l79u6IOxJfpmoafjut_SSogJqisHgVAvHMF2lXYmd31AZLDrS2v4ITMNTAMujrRfGT_u-VjsAvofRZeQ_c8aI4bXr8uU0lLpOZbw_o_xR1ak6lH1S13PweioqgsRs-Ds4AfOnULfSoPpAtXcjFirtj_F30ETs0v-29_UMOC_yEm2c_bkhAJQ_oBlyBej6r5FOa_fD-CMkCR1DgeLIMZ-YbfFQw1UVEa8In31RilbPnMSCBMzpqrr-OX2X")' }}
                 ></div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h1 className="text-xl font-bold text-slate-900 dark:text-white">{userName}</h1>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-bold uppercase tracking-wider">
-                      <BadgeCheck size={14} />
-                      Verified
-                    </span>
-                  </div>
+                    <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                      {userName}
+                      <BadgeCheck size={20} className="text-[#1d9bf0]" fill="#1d9bf0" stroke="white" strokeWidth={1.5} />
+                    </h1>
                   <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Senior Agent • Nairobi Central</p>
                 </div>
               </div>
-              <div className="hidden md:flex gap-2 border-l border-slate-200 dark:border-slate-700 pl-4 ml-2 my-1">
-                <div className="flex flex-col items-end justify-center">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Since</span>
-                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">Jan 2022</span>
-                </div>
-              </div>
-            </div>
-
           </div>
         </header>
 
-        <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-6 space-y-6">
+        <main className="flex-1 w-full max-w-5xl mx-auto px-4 pt-24 pb-24 space-y-6">
 
 
           <section className="relative overflow-hidden rounded-2xl bg-[#6d28d9] p-6 text-white shadow-xl shadow-[#6d28d9]/20">
@@ -158,7 +146,7 @@ export default function AgentDashboard() {
                   <p className="text-xl font-bold text-slate-900 dark:text-white mt-0.5">UGX 500,000</p>
                 </div>
                 <button className="w-full py-2.5 rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] text-sm font-bold hover:bg-[#6d28d9]/20 transition-colors">
-                  Request Increase
+                  Request for Advance
                 </button>
               </div>
             </div>
@@ -219,7 +207,7 @@ export default function AgentDashboard() {
           </section>
         </main>
 
-        <nav className="md:hidden sticky bottom-0 w-full bg-white dark:bg-[#221610] border-t border-slate-200 dark:border-slate-800 px-6 py-3 flex items-center justify-between z-50">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-white dark:bg-[#221610] border-t border-slate-200 dark:border-slate-800 px-6 py-3 flex items-center justify-between z-50">
           <button onClick={() => navigate('/dashboard')} className="flex flex-col items-center gap-1 text-[#6d28d9]">
             <Home size={24} />
             <span className="text-[10px] font-bold">Home</span>
