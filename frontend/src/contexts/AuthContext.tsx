@@ -28,8 +28,15 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  // Start with no user to force the auth flow
-  const [user, setUser] = useState<User | null>(null);
+  // Start with a mock verified user to bypass auth walls during frontend dev
+  const [user, setUser] = useState<User | null>({
+    id: 'usr_front_123',
+    email: 'frontend@welile.com',
+    firstName: 'Frontend',
+    lastName: 'Developer',
+    role: 'FUNDER',
+    isVerified: true,
+  });
   const [intendedRole, setIntendedRole] = useState<Role>('TENANT');
   const [rentAmount, setRentAmount] = useState<string>('');
 

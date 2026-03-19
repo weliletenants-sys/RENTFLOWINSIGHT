@@ -250,7 +250,7 @@ export default function FunderKYCOnboarding() {
         {/* Header */}
         <div className="text-center mb-10">
           <img src="/welile-colored.png" alt="Welile Logo" className="h-[52px] w-auto mx-auto mb-6 object-contain" />
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Activate Your Account</h1>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Complete KYC Onboarding</h1>
           <p className="text-slate-500 mt-2 text-sm max-w-sm mx-auto">
             To comply with financial regulations and secure the Rent Management Pool, we need to verify your identity.
           </p>
