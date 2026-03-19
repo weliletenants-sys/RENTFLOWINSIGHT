@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Lightbulb } from 'lucide-react';
+import { Lightbulb, ShieldAlert, ArrowRight } from 'lucide-react';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
 import FunderMobileHeader from './components/FunderMobileHeader';
 import FunderSidebar from './components/FunderSidebar';
@@ -141,6 +141,15 @@ export default function FunderDashboard() {
     }));
   };
 
+  const handleVerificationCheck = (actionFn: () => void) => {
+    if (!user?.isVerified) {
+      alert("Verification Required. Please complete your KYC profile to use this feature.");
+      navigate('/funder/onboarding');
+      return;
+    }
+    actionFn();
+  };
+
   const displayName =
     user?.firstName && user?.lastName
       ? `${user.firstName} ${user.lastName}`
@@ -186,9 +195,30 @@ export default function FunderDashboard() {
             onAvatarClick={() => navigate('/funder/account')}
           />
 
+          {/* ──────────── VERIFICATION INTERCEPTOR ──────────── */}
+          {!user?.isVerified && activePage !== 'Portfolio' && activePage !== 'Opportunities' && (
+            <div className="bg-amber-50 border-b border-amber-200 p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shrink-0">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
+                  <ShieldAlert className="w-6 h-6 text-amber-600" />
+                </div>
+                <div>
+                  <h3 className="text-amber-900 font-bold text-base">Profile Verification Required</h3>
+                  <p className="text-amber-700 text-sm mt-0.5">You must complete KYC onboarding before you can fund portfolios or withdraw earnings.</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => navigate('/funder/onboarding')}
+                className="w-full sm:w-auto px-6 py-2.5 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-700 transition-colors flex items-center justify-center gap-2 shrink-0"
+              >
+                Complete Profile <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
           {/* ──────────── PAGE BODY ──────────── */}
           {activePage === 'Portfolio' ? (
-            <FunderPortfolioPage onAddPortfolio={() => setIsModalOpen(true)} walletBalance={stats.walletBalance} />
+            <FunderPortfolioPage onAddPortfolio={() => handleVerificationCheck(() => setIsModalOpen(true))} walletBalance={stats.walletBalance} />
           ) : activePage === 'Opportunities' ? (
             <FunderOpportunitiesPage />
           ) : (
@@ -202,8 +232,8 @@ export default function FunderDashboard() {
                 <FunderWalletCard
                   walletBalance={stats.walletBalance}
                   cardId="WL-99201"
-                  onAddFunds={() => setIsModalOpen(true)}
-                  onWithdraw={() => console.log('Withdraw via card')}
+                  onAddFunds={() => handleVerificationCheck(() => setIsModalOpen(true))}
+                  onWithdraw={() => handleVerificationCheck(() => console.log('Withdraw via card'))}
                   onPortfolio={() => navigate('/funder/portfolio')}
                 />
 
@@ -219,12 +249,12 @@ export default function FunderDashboard() {
                 <FunderPortfolioList
                   portfolios={portfolios}
                   onViewAll={() => navigate('/funder/portfolio')}
-                  onCashOut={(id) => console.log('Cash out', id)}
-                  onAddAsset={() => setIsModalOpen(true)}
+                  onCashOut={(id) => handleVerificationCheck(() => console.log('Cash out', id))}
+                  onAddAsset={() => handleVerificationCheck(() => setIsModalOpen(true))}
                 />
 
                 {/* Grow Your Wealth CTA */}
-                <FunderInvestCTA onStartsupporting={() => setIsModalOpen(true)} />
+                <FunderInvestCTA onStartsupporting={() => handleVerificationCheck(() => setIsModalOpen(true))} />
 
                 {/* Recent Activity — mobile only */}
                 <div className="lg:hidden pb-32">

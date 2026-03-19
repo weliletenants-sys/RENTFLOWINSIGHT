@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { LayoutDashboard, Rocket, Banknote, FileText, Settings, LogOut, Building2, Wallet } from 'lucide-react';
+import { LayoutDashboard, Rocket, FileText, Settings, LogOut, Building2, Wallet } from 'lucide-react';
 
 interface FunderSidebarProps {
   activePage?: string;
