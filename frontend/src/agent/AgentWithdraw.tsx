@@ -12,6 +12,8 @@ import {
   CheckCircle,
   X,
 } from 'lucide-react';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const BALANCE = 1_250_000;
 const QUICK_AMOUNTS = [10_000, 50_000, 100_000];
@@ -26,12 +28,22 @@ export default function AgentWithdraw() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [txRef] = useState(() => 'WF-' + Math.random().toString(36).slice(2, 10).toUpperCase());
 
-  const handleWithdraw = () => {
+  const handleWithdraw = async () => {
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await axios.post('/api/agent/financials/withdrawal', {
+        amount: numericAmount,
+        method: method,
+        recipient_number: phoneNumber,
+        provider: mobileProvider,
+        reference: txRef
+      });
       setShowSuccess(true);
-    }, 2000);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to process withdrawal.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const numericAmount = parseFloat(amount.replace(/,/g, '')) || 0;

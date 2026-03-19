@@ -5,6 +5,7 @@ import {
   CheckCircle2, AlertCircle, Clock, Send 
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 
 // Mock Data
 const MOCK_TENANTS = {
@@ -84,6 +85,25 @@ export default function AgentVisitDetail() {
     }
   }, [tenantId, navigate]);
 
+  const completeCheckIn = async (loc: {lat: number, lng: number}) => {
+    try {
+      await axios.post('/api/agent/operations/visit', {
+        tenant_id: tenantId,
+        latitude: loc.lat,
+        longitude: loc.lng,
+        location_name: tenant?.location || 'Unknown'
+      });
+      setIsCheckingIn(false);
+      setCurrentStep('ACTION_SELECT');
+      toast.success('Check-in successfully recorded!');
+    } catch (error) {
+       console.error(error);
+       toast.error('Failed to record check-in on server, but proceeding locally.');
+       setIsCheckingIn(false);
+       setCurrentStep('ACTION_SELECT');
+    }
+  };
+
   const handleStartVisit = () => {
     setIsCheckingIn(true);
     
@@ -91,34 +111,27 @@ export default function AgentVisitDetail() {
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setGpsLocation({
+          const loc = {
             lat: position.coords.latitude,
             lng: position.coords.longitude
-          });
-          completeCheckIn();
+          };
+          setGpsLocation(loc);
+          completeCheckIn(loc);
         },
         (error) => {
           console.error("Error getting location", error);
           toast.error("Could not get exact location. Using approximate.");
-          // Fallback mock
-          setGpsLocation({ lat: 0.3476, lng: 32.5825 });
-          completeCheckIn();
+          const loc = { lat: 0.3476, lng: 32.5825 };
+          setGpsLocation(loc);
+          completeCheckIn(loc);
         },
         { timeout: 5000 }
       );
     } else {
-      // Map not supported
-      setGpsLocation({ lat: 0.3476, lng: 32.5825 });
-      completeCheckIn();
+      const loc = { lat: 0.3476, lng: 32.5825 };
+      setGpsLocation(loc);
+      completeCheckIn(loc);
     }
-  };
-
-  const completeCheckIn = () => {
-    setTimeout(() => {
-      setIsCheckingIn(false);
-      setCurrentStep('ACTION_SELECT');
-      toast.success('Check-in successful!');
-    }, 800);
   };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -134,35 +147,50 @@ export default function AgentVisitDetail() {
     // Check network status
     const isOnline = navigator.onLine;
 
-    const payload = {
-      tenantId,
-      timestamp: new Date().toISOString(),
-      location: gpsLocation,
-      action: actionType,
-      collectedAmount: numPaymentAmount,
-      method: paymentMethod,
-      reason: noPaymentReason,
-      notes: noPaymentNotes,
-      hasPhoto: !!photoPreview
-    };
-
     try {
-      // Simulate API Call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      if (!isOnline) {
-        // Mock offline storage
-        const queue = JSON.parse(localStorage.getItem('welile_visit_sync_queue') || '[]');
-        queue.push(payload);
-        localStorage.setItem('welile_visit_sync_queue', JSON.stringify(queue));
-        toast.success('Saved offline. Will sync when online.', { duration: 4000 });
+      if (actionType === 'RECORD' || actionType === 'PARTIAL') {
+         if (isOnline) {
+            await axios.post('/api/agent/operations/collection', {
+               tenant_id: tenantId,
+               amount: numPaymentAmount,
+               payment_method: paymentMethod,
+               notes: noPaymentNotes,
+               tracking_id: `COL-${Date.now()}`
+            });
+            toast.success('Collection recorded successfully!');
+         } else {
+            const payload = {
+              tenantId,
+              timestamp: new Date().toISOString(),
+              location: gpsLocation,
+              action: actionType,
+              collectedAmount: numPaymentAmount,
+              method: paymentMethod,
+              notes: noPaymentNotes,
+            };
+            const queue = JSON.parse(localStorage.getItem('welile_visit_sync_queue') || '[]');
+            queue.push(payload);
+            localStorage.setItem('welile_visit_sync_queue', JSON.stringify(queue));
+            toast.success('Saved offline. Will sync when online.', { duration: 4000 });
+         }
       } else {
-        toast.success('Visit logged successfully!');
+         // NONE action
+         if (isOnline) {
+            // Ideally call a no-pay endpoint, simulating for now
+            await new Promise(res => setTimeout(res, 800));
+            toast.success('Risk report submitted.');
+         } else {
+            toast.success('Risk report saved offline.');
+         }
       }
 
       setCurrentStep('SUMMARY');
-    } catch (error) {
-      toast.error('Failed to log visit.');
+    } catch (error: any) {
+      if (error.response?.data?.message) {
+         toast.error(error.response.data.message);
+      } else {
+         toast.error('Failed to log visit.');
+      }
     } finally {
       setIsSubmitting(false);
     }

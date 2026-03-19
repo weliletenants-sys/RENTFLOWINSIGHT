@@ -6,11 +6,29 @@ import {
   Edit, CheckCircle2, Clock
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 
 export default function AgentDailyOps() {
   const navigate = useNavigate();
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [timeframe, setTimeframe] = useState<'Today' | 'Yesterday' | 'Custom'>('Today');
+  const [summary, setSummary] = useState<any>({
+    visits_today: 0,
+    collections_count: 0,
+    collections_amount: 0,
+  });
+
+  useEffect(() => {
+    const fetchSummary = async () => {
+      try {
+         const { data } = await axios.get('/api/agent/dashboard/summary');
+         setSummary(data);
+      } catch (err) {
+         console.error('Failed to fetch summary:', err);
+      }
+    };
+    fetchSummary();
+  }, []);
 
   // Listen for online/offline status
   useEffect(() => {
@@ -104,7 +122,7 @@ export default function AgentDailyOps() {
                  <span className="hidden sm:inline text-xs font-bold text-slate-400 uppercase tracking-widest">Status</span>
                </div>
                <p className="text-slate-500 text-xs sm:text-sm font-semibold uppercase tracking-wider mb-1">Visits</p>
-               <p className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white group-hover:text-[#6d28d9] transition-colors">12</p>
+               <p className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white group-hover:text-[#6d28d9] transition-colors">{summary.visits_today}</p>
             </div>
 
             <div onClick={() => scrollToSection('collections')} className="cursor-pointer bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-emerald-500/40 hover:shadow-md transition-all group">
@@ -116,7 +134,7 @@ export default function AgentDailyOps() {
                </div>
                <p className="text-emerald-600 text-xs sm:text-sm font-semibold uppercase tracking-wider mb-1">Collections</p>
                <p className="text-xl sm:text-3xl font-black text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors tracking-tight">
-                 450K <span className="text-xs sm:text-sm font-bold text-slate-400">UGX</span>
+                 {(summary.collections_amount || 0).toLocaleString()} <span className="text-xs sm:text-sm font-bold text-slate-400">UGX</span>
                </p>
             </div>
 
@@ -128,7 +146,7 @@ export default function AgentDailyOps() {
                  <span className="hidden sm:inline text-xs font-bold text-slate-400 uppercase tracking-widest">Logs</span>
                </div>
                <p className="text-blue-600 text-xs sm:text-sm font-semibold uppercase tracking-wider mb-1">Receipts</p>
-               <p className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white group-hover:text-blue-500 transition-colors">8</p>
+               <p className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white group-hover:text-blue-500 transition-colors">{summary.collections_count}</p>
             </div>
 
             <div className="cursor-pointer bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-purple-500/40 hover:shadow-md transition-all group">

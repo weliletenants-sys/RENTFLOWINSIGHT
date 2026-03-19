@@ -3,10 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Phone, MapPin, CheckCircle2 } from 'lucide-react';
 import PurpleBubbles from '../components/PurpleBubbles';
 import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
 export default function AgentRegisterSubAgent() {
   const navigate = useNavigate();
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     phoneNumber: '',
@@ -17,10 +20,21 @@ export default function AgentRegisterSubAgent() {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate API call to register sub-agent
-    setIsSuccess(true);
+    setIsSubmitting(true);
+    try {
+      await axios.post('/api/agent/users/subagent', {
+        sub_agent_name: formData.fullName,
+        phone: formData.phoneNumber
+      });
+      setIsSuccess(true);
+      toast.success('Sub-agent registered successfully!');
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to register sub-agent.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -114,9 +128,14 @@ export default function AgentRegisterSubAgent() {
                   <div className="mt-auto pt-8">
                     <button 
                       type="submit" 
-                      className="w-full bg-[#6d28d9] hover:bg-[#5b21b6] text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-[#6d28d9]/25 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2"
+                      disabled={isSubmitting}
+                      className="w-full bg-[#6d28d9] hover:bg-[#5b21b6] text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-[#6d28d9]/25 transition-all transform active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                     >
-                      Register Sub-Agent
+                      {isSubmitting ? (
+                        <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"/>
+                      ) : (
+                        'Register Sub-Agent'
+                      )}
                     </button>
                   </div>
                 

@@ -14,6 +14,8 @@ import {
   CheckCircle,
   X,
 } from 'lucide-react';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const CURRENT_BALANCE = 250_000;
 const QUICK_AMOUNTS = [10_000, 50_000, 100_000];
@@ -30,12 +32,20 @@ export default function AgentDeposit() {
 
   const fmt = (n: number) => n.toLocaleString('en-UG', { minimumFractionDigits: 0 });
 
-  const handleDeposit = () => {
+  const handleDeposit = async () => {
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await axios.post('/api/agent/financials/deposit', {
+        amount: numericAmount,
+        method: method,
+        reference: txRef
+      });
       setShowSuccess(true);
-    }, 2000);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to process deposit.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

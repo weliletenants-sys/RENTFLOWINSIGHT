@@ -2,6 +2,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { MapPin, Home, UserCheck, FileText, UserPlus, Store, Wallet, PlusCircle, ArrowRightLeft, BadgeCheck, LineChart, CreditCard, ClipboardCheck, Download, Upload, Users, Settings } from 'lucide-react';
 import AgentRegisterDialog from './components/dialogs/AgentRegisterDialog';
 
@@ -10,7 +11,27 @@ export default function AgentDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isRegisterDialogOpen, setIsRegisterDialogOpen] = useState(false);
-  
+  const [summary, setSummary] = useState<any>({
+    visits_today: 0,
+    collections_count: 0,
+    collections_amount: 0,
+    float_limit: 0,
+    collected_today: 0,
+    wallet_balance: 0
+  });
+
+  useEffect(() => {
+    const fetchSummary = async () => {
+      try {
+         const { data } = await axios.get('/api/agent/dashboard/summary');
+         setSummary(data);
+      } catch (err) {
+         console.error('Failed to fetch summary:', err);
+      }
+    };
+    fetchSummary();
+  }, []);
+
   // Load Material Symbols
   useEffect(() => {
     const link1 = document.createElement('link');
@@ -54,7 +75,7 @@ export default function AgentDashboard() {
             <div className="relative z-10 space-y-6">
               <div>
                 <p className="text-white/80 text-sm font-medium opacity-80 uppercase tracking-widest">Wallet Balance</p>
-                <h2 className="text-4xl font-extrabold tracking-tight mt-1">UGX 1,450,000</h2>
+                <h2 className="text-4xl font-extrabold tracking-tight mt-1">UGX {(summary.wallet_balance || 0).toLocaleString()}</h2>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <button onClick={() => navigate('/agent-withdraw')} className="flex flex-col items-center justify-center gap-2 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/10">
@@ -124,14 +145,14 @@ export default function AgentDashboard() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-slate-700 dark:text-slate-300 font-medium">Visits Today</span>
-                  <span className="text-xl font-bold text-slate-900 dark:text-white">12</span>
+                  <span className="text-xl font-bold text-slate-900 dark:text-white">{summary.visits_today || 0}</span>
                 </div>
                 <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-1.5">
-                  <div className="bg-[#6d28d9] h-1.5 rounded-full" style={{ width: '75%' }}></div>
+                  <div className="bg-[#6d28d9] h-1.5 rounded-full" style={{ width: `${Math.min(((summary.visits_today || 0) / 20) * 100, 100)}%` }}></div>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-700 dark:text-slate-300 font-medium">Collections</span>
-                  <span className="text-xl font-bold text-slate-900 dark:text-white">8</span>
+                  <span className="text-xl font-bold text-slate-900 dark:text-white">{summary.collections_count || 0}</span>
                 </div>
               </div>
             </div>
@@ -143,7 +164,7 @@ export default function AgentDashboard() {
               <div className="space-y-4">
                 <div>
                   <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Available Limit</p>
-                  <p className="text-xl font-bold text-slate-900 dark:text-white mt-0.5">UGX 500,000</p>
+                  <p className="text-xl font-bold text-slate-900 dark:text-white mt-0.5">UGX {Math.max(0, (summary.float_limit || 0) - (summary.collected_today || 0)).toLocaleString()}</p>
                 </div>
                 <button 
                   onClick={() => navigate('/agent-advance-request')}

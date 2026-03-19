@@ -4,6 +4,7 @@ import {
   ChevronLeft, Search, CheckCircle2, MapPin, Clock, User, Download, Share2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 
 // Mock Data
 const MOCK_TENANTS = [
@@ -41,18 +42,28 @@ export default function AgentReceipt() {
     
     setIsSubmitting(true);
     try {
-      // Simulate API call and offline logic
-       await new Promise(resolve => setTimeout(resolve, 1500));
-       
        if (!navigator.onLine) {
          toast.success('Saved locally. Will sync when online.');
+         setReceiptId(`RCPT-${Math.floor(100000 + Math.random() * 900000)}`);
        } else {
+         const { data } = await axios.post('/api/agent/operations/receipt', {
+            amount: numAmount,
+            payer_name: selectedTenant.name,
+            payer_phone: selectedTenant.phone,
+            payment_method: paymentMethod,
+            notes: paymentType,
+            transaction_id: `RCPT-${Date.now()}`
+         });
          toast.success('Receipt generated securely!');
+         setReceiptId(data.receipt?.transaction_id || `RCPT-${Math.floor(100000 + Math.random() * 900000)}`);
        }
-       setReceiptId(`RCPT-${Math.floor(100000 + Math.random() * 900000)}`);
        setIsSuccess(true);
-    } catch (e) {
-      toast.error('Failed to generate receipt');
+    } catch (e: any) {
+      if (e.response?.data?.message) {
+         toast.error(e.response.data.message);
+      } else {
+         toast.error('Failed to generate receipt');
+      }
     } finally {
       setIsSubmitting(false);
     }

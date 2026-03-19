@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import PurpleBubbles from '../components/PurpleBubbles';
 import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
 export default function AgentRegisterInvestor() {
   const navigate = useNavigate();
@@ -111,7 +113,21 @@ export default function AgentRegisterInvestor() {
         setValidationError("Please enter your full 4-digit PIN.");
         return;
       }
-      setIsSuccess(true);
+      setIsValidating(true);
+      try {
+        await axios.post('/api/agent/users/investor', {
+          account_name: formData.partnerName,
+          investment_amount: formData.amount,
+          duration_months: 6,
+          roi_percentage: formData.agreedRate,
+          roi_mode: 'monthly_payout',
+        });
+        setIsSuccess(true);
+      } catch (err: any) {
+        toast.error(err.response?.data?.message || 'Failed to authorize investment.');
+      } finally {
+        setIsValidating(false);
+      }
       return;
     }
 
@@ -426,10 +442,15 @@ export default function AgentRegisterInvestor() {
             ) : (
               <button 
                 onClick={handleNext} // The logic inside handleNext actually submits step 4
-                className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-bold shadow-lg shadow-emerald-600/25 transition-all outline-none"
+                disabled={isValidating}
+                className="w-full flex items-center justify-center gap-2 bg-emerald-600 disabled:bg-emerald-600/50 hover:bg-emerald-700 text-white py-4 rounded-xl font-bold shadow-lg shadow-emerald-600/25 transition-all outline-none"
               >
-                <CheckCircle2 size={20} />
-                Confirm & Invest
+                {isValidating ? (
+                   <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"/>
+                ) : (
+                   <CheckCircle2 size={20} />
+                )}
+                <span>{isValidating ? 'Authorizing...' : 'Confirm & Invest'}</span>
               </button>
             )}
           </div>

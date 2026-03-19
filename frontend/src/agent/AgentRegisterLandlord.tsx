@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import PurpleBubbles from '../components/PurpleBubbles';
 import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
 export default function AgentRegisterLandlord() {
   const navigate = useNavigate();
@@ -117,9 +119,26 @@ export default function AgentRegisterLandlord() {
     setValidationError(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSuccess(true);
+    setIsValidating(true);
+    try {
+      await axios.post('/api/agent/users/landlord', {
+        name: formData.fullName,
+        phone: formData.phoneNumber,
+        property_address: `${formData.villageCell}, ${formData.parishWard}, ${formData.subcounty}`,
+        monthly_rent: formData.rent || 0,
+        house_category: formData.propertyType,
+        district: formData.district,
+        is_agent_managed: true,
+        management_fee_rate: 10
+      });
+      setIsSuccess(true);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to register landlord.');
+    } finally {
+      setIsValidating(false);
+    }
   };
 
   return (
@@ -477,10 +496,20 @@ export default function AgentRegisterLandlord() {
             ) : (
               <button 
                 onClick={handleSubmit}
-                className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-bold shadow-lg shadow-emerald-600/25 transition-all outline-none"
+                disabled={isValidating}
+                className="w-full flex items-center justify-center gap-2 bg-emerald-600 disabled:bg-emerald-600/50 hover:bg-emerald-700 text-white py-4 rounded-xl font-bold shadow-lg shadow-emerald-600/25 transition-all outline-none"
               >
-                <CheckCircle2 size={20} />
-                Submit Verification
+                {isValidating ? (
+                  <>
+                     <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"/>
+                     <span>Submitting...</span>
+                  </>
+                ) : (
+                  <>
+                     <CheckCircle2 size={20} />
+                     <span>Submit Verification</span>
+                  </>
+                )}
               </button>
             )}
           </div>

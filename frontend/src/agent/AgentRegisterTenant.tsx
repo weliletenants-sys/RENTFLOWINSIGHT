@@ -11,10 +11,13 @@ import {
 } from 'lucide-react';
 import PurpleBubbles from '../components/PurpleBubbles';
 import { motion } from 'framer-motion';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
 export default function AgentRegisterTenant() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     // Step 1
     fullName: '',
@@ -43,13 +46,26 @@ export default function AgentRegisterTenant() {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleNext = (e: React.FormEvent) => {
+  const handleNext = async (e: React.FormEvent) => {
     e.preventDefault();
     if (step < 4) {
       setStep(step + 1);
     } else {
-      console.log('Final Submission:', formData);
-      navigate(-1); // Simulated finish
+      setIsSubmitting(true);
+      try {
+        await axios.post('/api/agent/users/tenant', {
+          name: formData.fullName,
+          phone: formData.phoneNumber,
+          district: formData.district,
+          reference: 'Agent Registration'
+        });
+        toast.success('Tenant onboarded successfully!');
+        navigate(-1);
+      } catch (err: any) {
+        toast.error(err.response?.data?.message || 'Failed to register tenant.');
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -319,9 +335,10 @@ export default function AgentRegisterTenant() {
               </button>
               <button
                 type="submit"
-                className="w-full sm:w-auto bg-[#6d28d9] hover:bg-[#6d28d9]/90 text-white font-bold px-10 py-3 rounded-xl shadow-lg shadow-[#6d28d9]/20 flex items-center justify-center gap-2 transition-all"
+                disabled={isSubmitting}
+                className="w-full sm:w-auto bg-[#6d28d9] hover:bg-[#6d28d9]/90 text-white font-bold px-10 py-3 rounded-xl shadow-lg shadow-[#6d28d9]/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
               >
-                {step === 4 ? 'Finish & Submit' : 'Next Step'}
+                {step === 4 ? (isSubmitting ? 'Submitting...' : 'Finish & Submit') : 'Next Step'}
                 {step < 4 && <ArrowRight size={20} />}
               </button>
             </div>
