@@ -182,7 +182,6 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance = 2_
   /* ── summary stats ── */
   const totalInvested = portfolios.reduce((s, p) => s + p.investmentAmount, 0);
   const totalEarned   = portfolios.reduce((s, p) => s + p.totalRoiEarned, 0);
-  const totalExpected = portfolios.reduce((s, p) => s + p.expectedAmount, 0);
   const avgRoi        = portfolios.length
     ? Math.round(portfolios.reduce((s, p) => s + p.roiPercentage, 0) / portfolios.length)
     : 0;
@@ -202,7 +201,7 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance = 2_
       {/* Summary Stats */}
       <div className="mb-8 space-y-4">
         {/* ROW 1: PRIMARY - Current Portfolio Value */}
-        <div className="bg-[#1e1b4b] rounded-[24px] p-6 lg:p-8 text-white shadow-xl relative overflow-hidden">
+        <div className="bg-gradient-to-br from-[#1E144B] to-[#451C81] rounded-[24px] p-6 lg:p-8 text-white shadow-xl relative overflow-hidden">
           {/* Background decoration */}
           <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full blur-3xl opacity-50" style={{ background: 'var(--color-primary)' }} />
           <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-600 rounded-full blur-3xl opacity-30" />
@@ -226,7 +225,7 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance = 2_
         </div>
 
         {/* ROW 2: SECONDARY CARDS */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="bg-white rounded-[24px] border border-slate-100 p-5 lg:p-6 shadow-sm">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center">
@@ -248,21 +247,7 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance = 2_
           </div>
         </div>
 
-        {/* ROW 3: TERTIARY / PROJECTIONS */}
-        <div className="bg-[var(--color-primary-faint)] rounded-[20px] border border-[var(--color-primary-border)] p-5 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm">
-              <Target className="w-6 h-6 text-[var(--color-primary)]" />
-            </div>
-            <div>
-              <p className="text-[10px] text-[var(--color-primary)] font-bold uppercase tracking-wider mb-1">Projected Portfolio Value</p>
-              <p className="font-black text-lg lg:text-xl text-[var(--color-primary)] tracking-tight">UGX {totalExpected.toLocaleString()}</p>
-            </div>
-          </div>
-          <div className="hidden sm:flex text-xs font-bold text-[var(--color-primary)] opacity-70 bg-white px-3 py-1.5 rounded-lg border border-[var(--color-primary-border)]">
-            Est. Maturity
-          </div>
-        </div>
+
       </div>
 
       {/* Filter Bar */}
@@ -327,50 +312,53 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance = 2_
               <div
                 key={p.id}
                 onClick={() => navigate(`/funder/portfolio/${p.portfolioCode}`)}
-                className="bg-white rounded-[24px] border border-slate-100 shadow-sm hover:shadow-lg hover:border-slate-200 transition-all cursor-pointer group flex flex-col sm:flex-row sm:items-center justify-between p-6 lg:p-8 gap-6 lg:gap-8"
+                className="bg-white rounded-[24px] border border-slate-100 shadow-sm hover:shadow-lg hover:border-slate-200 transition-all cursor-pointer group flex flex-col p-5 sm:flex-row sm:items-center justify-between sm:p-6 lg:p-8 gap-4 sm:gap-6 lg:gap-8"
               >
-                {/* Left Side: Identity */}
-                <div className="flex items-start sm:items-center gap-5 lg:gap-6 min-w-0">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-2xl overflow-hidden flex-shrink-0 relative group-hover:shadow-md transition-shadow">
+                {/* Header: Identity */}
+                <div className="flex items-center gap-4 sm:gap-5 lg:gap-6 min-w-0 flex-1">
+                  <div className="w-14 h-14 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-2xl overflow-hidden flex-shrink-0 relative group-hover:shadow-md transition-shadow">
                     <img src={imgUrl} alt={p.portfolioName || 'Portfolio'} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                   </div>
-                  <div className="min-w-0">
-                    <h3 className="font-black text-slate-900 text-lg sm:text-xl lg:text-2xl group-hover:text-[var(--color-primary)] transition-colors line-clamp-2">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-black text-slate-900 text-base sm:text-xl lg:text-2xl group-hover:text-[var(--color-primary)] transition-colors line-clamp-2 leading-tight">
                       {p.portfolioName || `Portfolio ${p.portfolioCode}`}
                     </h3>
-                    <div className="flex items-center gap-2 mt-2 flex-wrap">
-                      <span className="text-xs font-bold text-slate-400">
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <span className="text-[10px] sm:text-xs font-bold text-slate-400 shrink-0">
                         {p.portfolioCode}
                       </span>
-                      <span className="w-1 h-1 rounded-full bg-slate-200" />
-                      <div className="flex items-center gap-1.5">
+                      <span className="w-1 h-1 rounded-full bg-slate-200 shrink-0" />
+                      <div className="flex items-center gap-1.5 shrink-0">
                         <span className={`w-1.5 h-1.5 rounded-full ${
                           p.status === 'active' ? 'bg-green-500' :
                           p.status === 'pending' ? 'bg-orange-500' :
                           p.status === 'pending_approval' ? 'bg-yellow-500' :
                           'bg-red-500'
                         }`} />
-                        <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-widest">{sts.label}</span>
+                        <span className="text-[9px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-widest">{sts.label}</span>
                       </div>
-                      <span className="w-1 h-1 rounded-full bg-slate-200 hidden sm:block" />
-                      <span className="text-[11px] sm:text-xs font-semibold text-slate-400 hidden sm:block">
+                      <span className="w-1 h-1 rounded-full bg-slate-200 hidden sm:block shrink-0" />
+                      <span className="text-[11px] sm:text-xs font-semibold text-slate-400 hidden sm:block truncate">
                         Pool Contribution: UGX {p.investmentAmount.toLocaleString()}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Right Side: Value & Performance */}
-                <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 sm:gap-2.5 border-t sm:border-t-0 border-slate-100 pt-5 sm:pt-0 shrink-0">
+                {/* Separator on mobile */}
+                <div className="w-full h-px bg-slate-50 my-1 sm:hidden shrink-0" />
+
+                {/* Footer: Value & Performance */}
+                <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 shrink-0">
                   <div className="text-left sm:text-right">
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Total Value</p>
-                    <p className="font-black text-2xl lg:text-3xl text-slate-900 tracking-tight">
+                    <p className="text-[9px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-0.5 sm:mb-1">Total Value</p>
+                    <p className="font-black text-xl sm:text-2xl lg:text-3xl text-slate-900 tracking-tight">
                       UGX {currentValue.toLocaleString()}
                     </p>
                   </div>
                   
-                  <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-sm font-bold ${
+                  <div className={`inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg text-[10px] sm:text-sm font-bold shrink-0 ${
                     isGrowthPositive
                       ? 'bg-emerald-50 text-emerald-600'
                       : isGrowthNegative
@@ -378,11 +366,11 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance = 2_
                       : 'bg-slate-50 text-slate-500'
                   }`}>
                     {isGrowthPositive ? (
-                      <TrendingUp className="w-4 h-4" />
+                      <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
                     ) : isGrowthNegative ? (
-                      <TrendingUp className="w-4 h-4" style={{ transform: 'scaleY(-1)' }} />
+                      <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" style={{ transform: 'scaleY(-1)' }} />
                     ) : (
-                      <span className="w-1.5 h-1.5 rounded-full bg-slate-400 mx-1" />
+                      <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-slate-400 mx-1" />
                     )}
                     {isGrowthPositive ? '+' : isGrowthNegative ? '-' : ''}UGX {Math.abs(growth).toLocaleString()}
                   </div>

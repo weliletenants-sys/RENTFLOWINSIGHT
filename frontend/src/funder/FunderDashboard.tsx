@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { Lightbulb } from 'lucide-react';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
@@ -127,36 +126,11 @@ export default function FunderDashboard() {
   const [activePage, setActivePage] = useState<string>('Dashboard');
 
   useEffect(() => {
-    let isMounted = true;
-    const loadData = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const config = { headers: { Authorization: `Bearer ${token}` }, timeout: 2000 };
-        
-        const [statsRes, portfoliosRes, activitiesRes] = await Promise.all([
-          axios.get('http://localhost:3000/api/supporter/dashboard', config),
-          axios.get('http://localhost:3000/api/supporter/portfolios', config),
-          axios.get('http://localhost:3000/api/supporter/activities', config)
-        ]);
-
-        if (isMounted) {
-          setStats(statsRes.data);
-          setPortfolios(portfoliosRes.data);
-          setActivities(activitiesRes.data);
-        }
-      } catch (err) {
-        console.error('Failed to load funder data', err);
-        // Fallback to mocks if no local API is tethered
-        if (isMounted) {
-          setStats(MOCK_STATS);
-          setPortfolios(MOCK_PORTFOLIOS);
-        }
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
-    loadData();
-    return () => { isMounted = false; };
+    // Pure frontend UI mode: Load mock data instantly
+    setStats(MOCK_STATS);
+    setPortfolios(MOCK_PORTFOLIOS);
+    setActivities(MOCK_ACTIVITIES);
+    setIsLoading(false);
   }, [user, navigate]);
 
   const handleInvestSuccess = (amount: number) => {
