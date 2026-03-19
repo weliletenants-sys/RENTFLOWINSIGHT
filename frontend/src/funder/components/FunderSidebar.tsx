@@ -19,14 +19,8 @@ export default function FunderSidebar({ activePage = 'Dashboard' }: FunderSideba
   return (
     <aside className="hidden lg:flex w-72 bg-white border-r border-[var(--color-primary-border)] flex-col sticky top-0 h-screen z-40">
       {/* Logo */}
-      <div className="p-6 flex items-center gap-3">
-        <div
-          className="w-9 h-9 rounded-xl flex items-center justify-center"
-          style={{ background: 'var(--color-primary)', boxShadow: '0 4px 12px var(--color-primary-shadow)' }}
-        >
-          <Wallet className="w-5 h-5 text-white" />
-        </div>
-        <h2 className="text-xl font-bold tracking-tight text-slate-900">Welile</h2>
+      <div className="p-6 flex items-center">
+        <img src="/welile-colored.png" alt="Welile Logo" className="h-8 object-contain" />
       </div>
 
       {/* Navigation */}
