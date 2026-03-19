@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { getDashboardStats, getPortfolios, getRecentActivities } from '../controllers/funder.controller';
-import { authGuard, rolesGuard } from '../middlewares/auth.middleware';
+import { getDashboardStats, getPortfolios, getRecentActivities } from '../../controllers/funder.controller';
+import { authGuard, rolesGuard } from '../../middlewares/auth.middleware';
 
 const router = Router();
 

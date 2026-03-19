@@ -1,16 +1,16 @@
 import { Router } from 'express';
 
-import authRoutes from '../routes/auth.routes';
-import walletsRoutes from '../routes/wallets.routes';
-import rentRequestsRoutes from '../routes/rent-requests.routes';
-import applicationsRoutes from '../routes/applications.routes';
-import uploadRoutes from '../routes/upload.routes';
-import supporterRoutes from '../routes/supporter.routes';
-import tenantRoutes from '../routes/tenant.routes';
+import authRoutes from './auth/auth.routes';
+import walletsRoutes from './wallets/wallets.routes';
+import rentRequestsRoutes from './rent-requests/rent-requests.routes';
+import applicationsRoutes from './applications/applications.routes';
+import uploadRoutes from './upload/upload.routes';
+import supporterRoutes from './supporter/supporter.routes';
+import tenantRoutes from './tenant/tenant.routes';
 import agentRoutes from './agent/agent.routes';
-import cfoRoutes from '../routes/cfo.routes';
-import funderRoutes from '../routes/funder.routes';
-import rolesRoutes from '../routes/roles.routes';
+import cfoRoutes from './cfo/cfo.routes';
+import funderRoutes from './funder/funder.routes';
+import rolesRoutes from './roles/roles.routes';
 
 const api = Router();
 

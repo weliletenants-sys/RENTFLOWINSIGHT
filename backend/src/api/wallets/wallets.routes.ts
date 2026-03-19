@@ -1,7 +1,7 @@
 
 import { Router } from 'express';
-import { getMyWallet, deposit, withdraw, transfer, requestDeposit } from '../controllers/wallets.controller';
-import { authGuard } from '../middlewares/auth.middleware';
+import { getMyWallet, deposit, withdraw, transfer, requestDeposit } from '../../controllers/wallets.controller';
+import { authGuard } from '../../middlewares/auth.middleware';
 
 const router = Router();
 

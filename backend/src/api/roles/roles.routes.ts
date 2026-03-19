@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { getMyRoles, requestRole, switchRole } from '../controllers/roles.controller';
-import { authGuard } from '../middlewares/auth.middleware';
+import { getMyRoles, requestRole, switchRole } from '../../controllers/roles.controller';
+import { authGuard } from '../../middlewares/auth.middleware';
 
 const router = Router();
 

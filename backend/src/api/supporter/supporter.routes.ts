@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { getDashboardStats, getVirtualHouses, fundPool, proxyInvest, funderSignup, funderOnboard, getInvestmentOptions, cooProxyInvest, requestWithdrawal, processRoi, getPortfolios, getActivities, dispatchActivations, activateAccount } from '../controllers/supporter.controller';
-import { authGuard, rolesGuard } from '../middlewares/auth.middleware';
+import { getDashboardStats, getVirtualHouses, fundPool, proxyInvest, funderSignup, funderOnboard, getInvestmentOptions, cooProxyInvest, requestWithdrawal, processRoi, getPortfolios, getActivities, dispatchActivations, activateAccount } from '../../controllers/supporter.controller';
+import { authGuard, rolesGuard } from '../../middlewares/auth.middleware';
 
 const router = Router();
 

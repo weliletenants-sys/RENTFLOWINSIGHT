@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { getRentProgress, getRecentActivities } from '../controllers/tenant.controller';
-import { authGuard } from '../middlewares/auth.middleware';
+import { getRentProgress, getRecentActivities } from '../../controllers/tenant.controller';
+import { authGuard } from '../../middlewares/auth.middleware';
 
 const router = Router();
 

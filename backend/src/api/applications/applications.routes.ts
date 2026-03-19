@@ -2,7 +2,7 @@ import { Router } from 'express';
 import {
   startApplication, saveStep1, saveStep2, saveStep3, saveStep4, getApplication,
   startAgentKyc, saveAgentKycStep1, saveAgentKycStep2, saveAgentKycStep3, getAgentApplication
-} from '../controllers/applications.controller';
+} from '../../controllers/applications.controller';
 
 const router = Router();
 

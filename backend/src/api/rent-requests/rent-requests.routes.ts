@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { createRequest, getMyRequests, getAllRequests, updateStatus } from '../controllers/rent-requests.controller';
-import { authGuard, rolesGuard } from '../middlewares/auth.middleware';
+import { createRequest, getMyRequests, getAllRequests, updateStatus } from '../../controllers/rent-requests.controller';
+import { authGuard, rolesGuard } from '../../middlewares/auth.middleware';
 
 const router = Router();
 

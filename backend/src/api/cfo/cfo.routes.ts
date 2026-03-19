@@ -7,7 +7,7 @@ import {
   rejectWithdrawal,
   getLedger,
   getStatements
-} from '../controllers/cfo.controller';
+} from '../../controllers/cfo.controller';
 
 const router = express.Router();
 
