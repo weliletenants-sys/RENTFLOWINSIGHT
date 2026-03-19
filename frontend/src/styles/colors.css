@@ -6,13 +6,13 @@
  */
  :root {
    /* ── Brand Primary ─────────────────────────────────── */
-  --color-primary:          #9234EA;   /* Main purple */
-  --color-primary-dark:     #7B2AC5;   /* Hover / pressed state */
-  --color-primary-darker:   #5E1FA0;   /* Active / deep */
-  --color-primary-light:    #F3E8FF;   /* Faint surface / backgrounds */
-  --color-primary-faint:    #FAF5FF;   /* Ultra-light page background */
-  --color-primary-border:   #E9D5FF;   /* Subtle border */
-  --color-primary-shadow:   rgba(146, 52, 234, 0.18); /* Box shadow tint */
+  --color-primary:          #4C158D;   /* Main purple */
+  --color-primary-dark:     #3B1070;   /* Hover / pressed state */
+  --color-primary-darker:   #2C0A56;   /* Active / deep */
+  --color-primary-light:    #F3EDFA;   /* Faint surface / backgrounds */
+  --color-primary-faint:    #F9F7FC;   /* Ultra-light page background */
+  --color-primary-border:   #E6DCF3;   /* Subtle border */
+  --color-primary-shadow:   rgba(76, 21, 141, 0.18); /* Box shadow tint */
 
   /* ── Text on Primary ───────────────────────────────── */
   --color-on-primary:       #FFFFFF;

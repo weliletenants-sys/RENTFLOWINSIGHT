@@ -249,9 +249,7 @@ export default function FunderKYCOnboarding() {
 
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="w-16 h-16 bg-[var(--color-primary)] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-[var(--color-primary-shadow)]">
-            <ShieldCheck className="w-8 h-8 text-white" />
-          </div>
+          <img src="/welile-colored.png" alt="Welile Logo" className="h-[52px] w-auto mx-auto mb-6 object-contain" />
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">Activate Your Account</h1>
           <p className="text-slate-500 mt-2 text-sm max-w-sm mx-auto">
             To comply with financial regulations and secure the Rent Management Pool, we need to verify your identity.
