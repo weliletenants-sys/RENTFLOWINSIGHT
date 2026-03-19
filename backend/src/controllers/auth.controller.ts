@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import prisma from '../prisma/prisma.client';
 import { logSecurityEvent } from '../utils/logger';
-
+import { OTPService } from '../services/otp.service';
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
 
 // Standard RFC 7807 Error Response wrapper matching api.md
@@ -177,7 +177,15 @@ export const sendOTP = async (req: Request, res: Response) => {
     const { phone } = req.body;
     if (!phone) return problemResponse(res, 400, 'Validation Error', 'Phone is required', 'missing-phone');
 
-    const otp_code = '1234'; // Mocked OTP
+    const otp_code = OTPService.generateCode(4);
+    const message = `Your RentFlowInsight verification code is ${otp_code}. It expires in 10 minutes.`;
+    
+    // Dispatch SMS asynchronously
+    const smsSent = await OTPService.sendSMS(phone, message);
+    if (!smsSent) {
+      console.warn("Africa's Talking SMS dispatch failed. The code may not have been delivered.");
+      // Proceed gracefully for development/testing environments despite SMS failure.
+    }
     const now = new Date();
     const expires_at = new Date(now.getTime() + 10 * 60000).toISOString(); 
 
