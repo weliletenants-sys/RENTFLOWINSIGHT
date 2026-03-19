@@ -234,7 +234,13 @@ export default function AgentWithdrawSheet({ isOpen, onClose, onSuccess, availab
                   </div>
                   <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
                     <span className="text-slate-500 text-sm">Destination</span>
-                    <span className="font-bold">{phone}</span>
+                    <div className="flex items-center gap-2">
+                      {(phone.startsWith('077') || phone.startsWith('078') || phone.startsWith('076')) ? 
+                        <img src="/mtn.png" alt="MTN" className="w-5 h-5 rounded-full object-cover" /> :
+                        <img src="/airtel.png" alt="Airtel" className="w-5 h-5 rounded-full object-cover" />
+                      }
+                      <span className="font-bold">{phone}</span>
+                    </div>
                   </div>
                 </div>
 

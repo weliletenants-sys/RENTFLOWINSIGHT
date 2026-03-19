@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CheckCircle2, Smartphone, WifiOff, Loader2 } from 'lucide-react';
+import { X, CheckCircle2, WifiOff, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 
@@ -156,7 +156,8 @@ export default function AgentDepositSheet({ isOpen, onClose, onSuccess }: Props)
                   </div>
                   {provider && (
                     <div className="flex items-center gap-2 mt-2">
-                       <Smartphone size={14} className={provider === 'MTN' ? 'text-yellow-500' : 'text-red-500'} />
+                       {provider === 'MTN' && <img src="/mtn.png" alt="MTN" className="w-4 h-4 rounded-full object-cover" />}
+                       {provider === 'Airtel' && <img src="/airtel.png" alt="Airtel" className="w-4 h-4 rounded-full object-cover" />}
                        <span className="text-xs font-bold text-slate-500">Auto-detected: {provider}</span>
                     </div>
                   )}
@@ -181,7 +182,11 @@ export default function AgentDepositSheet({ isOpen, onClose, onSuccess }: Props)
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500 text-sm">Provider</span>
-                    <span className="font-bold">{provider || 'Unknown'} Mobile Money</span>
+                    <div className="flex items-center gap-2">
+                       {provider === 'MTN' && <img src="/mtn.png" alt="MTN" className="w-5 h-5 rounded-full object-cover" />}
+                       {provider === 'Airtel' && <img src="/airtel.png" alt="Airtel" className="w-5 h-5 rounded-full object-cover" />}
+                       <span className="font-bold">{provider || 'Unknown'} Mobile Money</span>
+                    </div>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500 text-sm">TID</span>
