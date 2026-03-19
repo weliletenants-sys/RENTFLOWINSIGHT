@@ -1,7 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useRouteRole } from '../hooks/useRouteRole';
+import { useAuth } from '../contexts/AuthContext';
+import { registerUser } from '../services/authApi';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
+import toast from 'react-hot-toast';
 import {
   ArrowLeft, Check, X, Shield, Home, TrendingUp, Banknote,
   ChevronRight, BadgeCheck, Eye, EyeOff, Mail, Phone, Lock,
@@ -709,8 +712,11 @@ const STEP_LABELS = ['Welcome', 'Support', 'Create Account'];
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function FunderOnboarding() {
   const navigate = useNavigate();
+  const definedRole = useRouteRole();
+  const { updateSession } = useAuth();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState('');
   const TOTAL = 3;
 
   const [form, setForm] = useState<FormState>({
@@ -732,24 +738,29 @@ export default function FunderOnboarding() {
       setStep(s => s + 1);
     } else {
       setIsSubmitting(true);
+      setApiError('');
       try {
-        const payload = {
+        const response = await registerUser({
           email: form.email,
           password: form.password,
           firstName: form.firstName,
           lastName: form.lastName,
           phone: form.phone,
-          investPath: form.investPath
-        };
-        const response = await axios.post('http://localhost:3000/api/supporter/signup', payload);
+          role: definedRole || 'FUNDER' // dynamically pulled from URL (/funder)
+        });
         
-        // Simulating the automatic JWT attachment for now since we just need the flow visually completed
-        if (response.status === 201) {
+        if (response.status === 'success') {
+          updateSession(response.data.access_token, response.data.user);
+          toast.success('Successfully funded your future! Welcome aboard.', {
+            icon: '🎉',
+            duration: 4000
+          });
           navigate('/funder');
         }
       } catch (err: any) {
         console.error('Signup failed:', err);
-        alert(err.response?.data?.message || 'Failed to create account. Please try again.');
+        const respError = err.response?.data?.detail || err.response?.data?.message || err.message;
+        setApiError(respError || 'Failed to create account. Please try again.');
         setIsSubmitting(false);
       }
     }
@@ -826,6 +837,14 @@ export default function FunderOnboarding() {
         {/* Footer CTA */}
         <div className="px-6 pb-5 pt-3 bg-white border-t border-gray-100 shrink-0 lg:px-[18px]">
           <div className="max-w-md mx-auto w-full">
+            {step === TOTAL && apiError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-2 animate-in fade-in slide-in-from-top-1">
+                <X size={16} strokeWidth={3} className="text-red-500 mt-0.5 shrink-0" />
+                <p className="text-[13px] text-red-600 font-semibold leading-relaxed">
+                  {apiError}
+                </p>
+              </div>
+            )}
             <motion.button
               onClick={valid && !isSubmitting ? handleNext : undefined}
               disabled={!valid || isSubmitting}

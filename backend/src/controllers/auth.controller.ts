@@ -37,6 +37,14 @@ export const register = async (req: Request, res: Response) => {
       return problemResponse(res, 409, 'Conflict', 'Account with this email already exists', 'email-exists');
     }
 
+    if (phone && phone.trim().length > 0) {
+      const phoneTrimmed = phone.trim();
+      const existingPhoneUser = await prisma.profiles.findFirst({ where: { phone: phoneTrimmed } });
+      if (existingPhoneUser) {
+        return problemResponse(res, 409, 'Conflict', 'Account with this phone number already exists', 'phone-exists');
+      }
+    }
+
     const now = new Date().toISOString();
     const password_hash = await bcrypt.hash(password, 12); // secure hashing
     

@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import PurpleBubbles from '../../components/PurpleBubbles';
 import { loginUser } from '../../services/authApi';
+import toast from 'react-hot-toast';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -31,6 +32,7 @@ export default function Login() {
       // Update real JWT session via AuthContext
       if (res.status === 'success') {
         updateSession(res.data.access_token, res.data.user);
+        toast.success('Successfully logged in!');
         navigate('/dashboard');
       }
     } catch (err: any) {

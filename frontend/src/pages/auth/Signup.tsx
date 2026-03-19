@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Phone, Mail, Lock, Eye, EyeOff, ArrowRight, User } from 'lucide-react';
 import PurpleBubbles from '../../components/PurpleBubbles';
 import { registerUser } from '../../services/authApi';
+import toast from 'react-hot-toast';
 
 export default function Signup() {
   const [firstName, setFirstName] = useState('');
@@ -51,6 +52,7 @@ export default function Signup() {
 
       if (res.status === 'success') {
         updateSession(res.data.access_token, res.data.user);
+        toast.success(`Welcome, ${res.data.user.firstName}! Your account has been created.`);
         if (intendedRole === 'TENANT') {
           navigate('/tenant-agreement');
         } else {
