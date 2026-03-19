@@ -10,7 +10,7 @@ servers:
     description: Local Dev Server
 
 paths:
-  /api/agent/kyc-status:
+  /api/agent/kyc:
     get:
       summary: Get KYC Status
       operationId: getKycStatus
@@ -28,7 +28,6 @@ paths:
         "401": { $ref: "#/components/responses/Unauthorized" }
         "500": { $ref: "#/components/responses/InternalError" }
 
-  /api/agent/kyc/submit:
     post:
       summary: Submit KYC
       operationId: submitKyc
@@ -47,7 +46,7 @@ paths:
         "401": { $ref: "#/components/responses/Unauthorized" }
         "500": { $ref: "#/components/responses/InternalError" }
         
-  /api/agent/dashboard/summary:
+  /api/agent/statistics/dashboard:
     get:
       summary: Get Dashboard Summary
       operationId: getDashboardSummary
@@ -69,7 +68,7 @@ paths:
         "401": { $ref: "#/components/responses/Unauthorized" }
         "500": { $ref: "#/components/responses/InternalError" }
 
-  /api/agent/advances/request:
+  /api/agent/advances:
     post:
       summary: Request an operational advance
       operationId: requestAdvance

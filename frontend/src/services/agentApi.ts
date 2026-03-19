@@ -44,7 +44,7 @@ agentClient.interceptors.response.use(
 /*                            DASHBOARD & ANALYTICS                           */
 /* -------------------------------------------------------------------------- */
 export const getDashboardSummary = async () => {
-  const { data } = await agentClient.get('/agent/dashboard/summary');
+  const { data } = await agentClient.get('/agent/statistics/dashboard');
   return data;
 };
 
@@ -62,17 +62,17 @@ export const getReferrals = async () => {
 /*                               FIELD OPERATIONS                             */
 /* -------------------------------------------------------------------------- */
 export const recordVisit = async (payload: { tenant_id?: string; location_name: string; latitude: number; longitude: number; accuracy?: number }) => {
-  const { data } = await agentClient.post('/agent/operations/visit', payload);
+  const { data } = await agentClient.post('/agent/visits', payload);
   return data;
 };
 
 export const recordCollection = async (payload: { amount: number; payment_method: string; notes?: string; tenant_id?: string }) => {
-  const { data } = await agentClient.post('/agent/operations/collection', payload);
+  const { data } = await agentClient.post('/agent/collections', payload);
   return data;
 };
 
 export const issueReceipt = async (payload: { amount: number; payer_name: string; payer_phone: string; payment_method: string }) => {
-  const { data } = await agentClient.post('/agent/operations/receipt', payload);
+  const { data } = await agentClient.post('/agent/receipts', payload);
   return data;
 };
 
@@ -90,7 +90,7 @@ export const createRentRequest = async (payload: { tenant_name: string; amount: 
 };
 
 export const processRentRequest = async (id: string) => {
-  const { data } = await agentClient.put(`/agent/rent-requests/${id}/process`);
+  const { data } = await agentClient.patch(`/agent/rent-requests/${id}/status`);
   return data;
 };
 
@@ -103,12 +103,12 @@ export const getAdvances = async () => {
 };
 
 export const requestAdvance = async (payload: { amount: number; reason: string }) => {
-  const { data } = await agentClient.post('/agent/advances/request', payload);
+  const { data } = await agentClient.post('/agent/advances', payload);
   return data;
 };
 
 export const getTransactions = async () => {
-  const { data } = await agentClient.get('/agent/financials/transactions');
+  const { data } = await agentClient.get('/agent/transactions');
   return data;
 };
 
@@ -119,12 +119,12 @@ export const getWalletBalance = async () => {
 };
 
 export const requestWithdrawal = async (payload: { amount: number; method: string; recipient_number: string; provider?: string; reference?: string }) => {
-  const { data } = await agentClient.post('/agent/financials/withdrawal', payload);
+  const { data } = await agentClient.post('/agent/withdrawals', payload);
   return data;
 };
 
 export const requestDeposit = async (payload: { amount: number; method: string; reference?: string }) => {
-  const { data } = await agentClient.post('/agent/financials/deposit', payload);
+  const { data } = await agentClient.post('/agent/deposits', payload);
   return data;
 };
 
@@ -136,27 +136,27 @@ export const requestTransfer = async (payload: { amount: number; recipientId: st
 
 // USER REGISTRATIONS
 export const registerTenant = async (payload: any) => {
-  const { data } = await agentClient.post('/agent/users/tenant', payload);
+  const { data } = await agentClient.post('/agent/tenants', payload);
   return data;
 };
 
 export const registerLandlord = async (payload: any) => {
-  const { data } = await agentClient.post('/agent/users/landlord', payload);
+  const { data } = await agentClient.post('/agent/landlords', payload);
   return data;
 };
 
 export const registerSubAgent = async (payload: any) => {
-  const { data } = await agentClient.post('/agent/users/subagent', payload);
+  const { data } = await agentClient.post('/agent/subagents', payload);
   return data;
 };
 
 export const registerInvestor = async (payload: any) => {
-  const { data } = await agentClient.post('/agent/users/investor', payload);
+  const { data } = await agentClient.post('/agent/investors', payload);
   return data;
 };
 
 // KYC & Identity
 export const submitKyc = async (payload: any) => {
-  const { data } = await agentClient.post('/agent/kyc/submit', payload);
+  const { data } = await agentClient.post('/agent/kyc', payload);
   return data;
 };
