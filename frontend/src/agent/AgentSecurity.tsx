@@ -1,9 +1,11 @@
-import { ArrowLeft, KeyRound, Smartphone, Fingerprint, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, KeyRound, Smartphone, Fingerprint, ShieldAlert, UserCog } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function AgentSecurity() {
   const navigate = useNavigate();
+  const { user, role } = useAuth();
   
   const [settings, setSettings] = useState({
     twoFactor: false,
@@ -73,6 +75,43 @@ export default function AgentSecurity() {
                 <Toggle active={settings.biometric} onClick={() => toggle('biometric')} />
               </div>
 
+            </div>
+          </section>
+
+          <section>
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">User Roles</h3>
+            <div className="space-y-4 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded-lg">
+                    <UserCog size={20} />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">Active Role View</p>
+                    <p className="text-xs text-slate-500">Currently viewing as</p>
+                  </div>
+                </div>
+                <div className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs font-bold">
+                  {role || 'None'}
+                </div>
+              </div>
+
+              <hr className="border-slate-200 dark:border-slate-700" />
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg">
+                    <UserCog size={20} />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">Assigned Account Role</p>
+                    <p className="text-xs text-slate-500">Primary registered role</p>
+                  </div>
+                </div>
+                <div className="px-3 py-1 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full text-xs font-bold">
+                  {user?.role || 'None'}
+                </div>
+              </div>
             </div>
           </section>
 

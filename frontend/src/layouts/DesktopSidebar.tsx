@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth, type Role } from '../contexts/AuthContext';
+import RoleSwitcher from '../components/RoleSwitcher';
 import { 
   Home, 
   Wallet, 
@@ -62,7 +63,8 @@ export default function DesktopSidebar({ onClose }: DesktopSidebarProps) {
         <h1 className="text-2xl font-black tracking-tight text-white mb-1">
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D8B4FE] to-[#FCA5A5]">Welile</span>
         </h1>
-        <p className="text-xs font-semibold text-gray-400 tracking-widest uppercase">{role}</p>
+        <p className="text-xs font-semibold text-gray-400 tracking-widest uppercase mb-4">{role}</p>
+        <RoleSwitcher />
       </div>
 
       <nav className="flex-1 px-4 space-y-2 mt-4">
