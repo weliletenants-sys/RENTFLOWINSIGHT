@@ -69,7 +69,7 @@ export default function AgentCheckout() {
           </div>
 
           <div className="w-full max-w-sm space-y-3 pt-6">
-            <button onClick={() => navigate('/agent-shop/orders')} className="w-full bg-[#6d28d9] hover:bg-[#5a1bb9] py-4 rounded-xl text-white font-bold text-lg shadow-lg active:scale-[0.98] transition-all">
+            <button onClick={() => navigate('/agent-shop/orders')} className="w-full bg-[#6c11d4] hover:bg-[#5a1bb9] py-4 rounded-xl text-white font-bold text-lg shadow-lg active:scale-[0.98] transition-all">
               Track Order
             </button>
             <button onClick={() => navigate('/agent-shop')} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 py-4 rounded-xl text-slate-900 dark:text-white font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
@@ -87,7 +87,7 @@ export default function AgentCheckout() {
        <header className="sticky top-0 z-50 bg-white/80 dark:bg-[#1e1e1e]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 p-4">
         <div className="max-w-[960px] mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-[#6d28d9]/10 transition-colors -ml-2">
+            <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-[#6c11d4]/10 transition-colors -ml-2">
               <ChevronLeft size={24} />
             </button>
             <h1 className="text-lg font-bold text-slate-900 dark:text-white">Secure Checkout</h1>
@@ -102,7 +102,7 @@ export default function AgentCheckout() {
            <div className="flex-1 flex flex-col justify-between">
               <div>
                 <h3 className="font-bold text-slate-900 dark:text-white line-clamp-2 leading-tight">{product.name}</h3>
-                <p className="text-xs text-[#6d28d9] font-semibold mt-1">{product.seller}</p>
+                <p className="text-xs text-[#6c11d4] font-semibold mt-1">{product.seller}</p>
               </div>
               <div className="flex items-center justify-between mt-2">
                  <p className="font-black text-slate-900 dark:text-white">UGX {product.price.toLocaleString()}</p>
@@ -118,15 +118,15 @@ export default function AgentCheckout() {
         {/* Delivery Options */}
         <section className="space-y-3">
           <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Truck size={18} className="text-[#6d28d9]" /> Delivery Method
+            <Truck size={18} className="text-[#6c11d4]" /> Delivery Method
           </h3>
           <div className="grid grid-cols-2 gap-3">
-             <label className={`flex flex-col p-4 rounded-2xl border-2 cursor-pointer transition-all ${deliveryMethod === 'DELIVERY' ? 'border-[#6d28d9] bg-[#6d28d9]/5' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'}`}>
+             <label className={`flex flex-col p-4 rounded-2xl border-2 cursor-pointer transition-all ${deliveryMethod === 'DELIVERY' ? 'border-[#6c11d4] bg-[#6c11d4]/5' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'}`}>
                 <input type="radio" name="delivery" className="sr-only" checked={deliveryMethod === 'DELIVERY'} onChange={() => setDeliveryMethod('DELIVERY')} />
                 <span className="font-bold text-sm text-slate-900 dark:text-white mb-1">Standard Delivery</span>
                 <span className="text-xs text-slate-500">+UGX 15,000</span>
              </label>
-             <label className={`flex flex-col p-4 rounded-2xl border-2 cursor-pointer transition-all ${deliveryMethod === 'PICKUP' ? 'border-[#6d28d9] bg-[#6d28d9]/5' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'}`}>
+             <label className={`flex flex-col p-4 rounded-2xl border-2 cursor-pointer transition-all ${deliveryMethod === 'PICKUP' ? 'border-[#6c11d4] bg-[#6c11d4]/5' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'}`}>
                 <input type="radio" name="delivery" className="sr-only" checked={deliveryMethod === 'PICKUP'} onChange={() => setDeliveryMethod('PICKUP')} />
                 <span className="font-bold text-sm text-slate-900 dark:text-white mb-1">Store Pickup</span>
                 <span className="text-xs text-green-500 font-semibold">Free</span>
@@ -138,7 +138,7 @@ export default function AgentCheckout() {
         <section className="bg-slate-900 rounded-2xl overflow-hidden shadow-lg">
           <div className="p-4 bg-slate-800/50 border-b border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-2 text-white">
-              <Wallet size={18} className="text-[#6d28d9]" />
+              <Wallet size={18} className="text-[#6c11d4]" />
               <span className="font-bold text-sm">Pay with Welile Wallet</span>
             </div>
             <span className="text-xs text-slate-400">Available: UGX {MOCK_WALLET_BALANCE.toLocaleString()}</span>
@@ -154,7 +154,7 @@ export default function AgentCheckout() {
               </div>
               <div className="flex justify-between font-black text-lg pt-3 border-t border-slate-700">
                 <span>Total Cost</span>
-                <span className="text-[#6d28d9]">UGX {totalCost.toLocaleString()}</span>
+                <span className="text-[#6c11d4]">UGX {totalCost.toLocaleString()}</span>
               </div>
           </div>
           <div className={`p-3 text-xs font-bold text-center ${canAfford ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-500'}`}>
@@ -176,7 +176,7 @@ export default function AgentCheckout() {
           <button 
             onClick={handleConfirmPurchase}
             disabled={!canAfford || isSubmitting}
-            className="w-full bg-[#6d28d9] hover:bg-[#5a1bb9] py-4 rounded-xl text-white font-bold text-lg shadow-lg shadow-[#6d28d9]/30 active:scale-[0.98] transition-transform disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full bg-[#6c11d4] hover:bg-[#5a1bb9] py-4 rounded-xl text-white font-bold text-lg shadow-lg shadow-[#6c11d4]/30 active:scale-[0.98] transition-transform disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isSubmitting ? (
                <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>

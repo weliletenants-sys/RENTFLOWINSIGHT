@@ -30,7 +30,7 @@ const COOTransactions: React.FC = () => {
                 onClick={() => setFilter(f)}
                 className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                   filter === f 
-                    ? 'bg-white shadow-sm text-[#7B61FF]' 
+                    ? 'bg-white shadow-sm text-[#6c11d4]' 
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -38,7 +38,7 @@ const COOTransactions: React.FC = () => {
               </button>
             ))}
           </div>
-          <button className="flex items-center space-x-2 bg-[#EAE5FF] text-[#7B61FF] px-4 py-2 rounded-lg hover:bg-purple-100 transition text-sm font-bold">
+          <button className="flex items-center space-x-2 bg-[#EAE5FF] text-[#6c11d4] px-4 py-2 rounded-lg hover:bg-purple-100 transition text-sm font-bold">
             <Download size={16} /> <span className="hidden sm:inline">Export CSV</span>
           </button>
         </div>
@@ -51,7 +51,7 @@ const COOTransactions: React.FC = () => {
             <input 
               type="text"
               placeholder="Search by ID, party or category..."
-              className="w-full pl-10 pr-4 py-2 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9234EA] focus:border-transparent text-sm"
+              className="w-full pl-10 pr-4 py-2 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6c11d4] focus:border-transparent text-sm"
             />
           </div>
           <button className="flex items-center space-x-2 text-slate-600 px-3 py-2 border border-slate-100 rounded-lg hover:bg-slate-50 text-sm font-medium bg-white">

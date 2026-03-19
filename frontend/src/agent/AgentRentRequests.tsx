@@ -108,7 +108,7 @@ export default function AgentRentRequests() {
           <div className="flex items-center gap-2">
             <button className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 relative">
               <Bell size={20} />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-[#6d28d9] rounded-full ring-2 ring-white dark:ring-slate-900"></span>
+              <span className="absolute top-2 right-2 w-2 h-2 bg-[#6c11d4] rounded-full ring-2 ring-white dark:ring-slate-900"></span>
             </button>
             <button className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400">
               <Settings size={20} />
@@ -123,19 +123,19 @@ export default function AgentRentRequests() {
           <nav className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
             <button 
               onClick={() => setActiveTab('approved')}
-              className={`px-6 py-2.5 text-sm font-bold rounded-lg transition-colors ${activeTab === 'approved' ? 'bg-white dark:bg-slate-700 text-[#6d28d9] shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+              className={`px-6 py-2.5 text-sm font-bold rounded-lg transition-colors ${activeTab === 'approved' ? 'bg-white dark:bg-slate-700 text-[#6c11d4] shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
             >
               Approved ({approvedRequests.length})
             </button>
             <button 
               onClick={() => setActiveTab('pending')}
-              className={`px-6 py-2.5 text-sm font-bold rounded-lg transition-colors ${activeTab === 'pending' ? 'bg-white dark:bg-slate-700 text-[#6d28d9] shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+              className={`px-6 py-2.5 text-sm font-bold rounded-lg transition-colors ${activeTab === 'pending' ? 'bg-white dark:bg-slate-700 text-[#6c11d4] shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
             >
               Pending ({pendingRequests.length})
             </button>
             <button 
               onClick={() => setActiveTab('archive')}
-              className={`px-6 py-2.5 text-sm font-bold rounded-lg transition-colors ${activeTab === 'archive' ? 'bg-white dark:bg-slate-700 text-[#6d28d9] shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+              className={`px-6 py-2.5 text-sm font-bold rounded-lg transition-colors ${activeTab === 'archive' ? 'bg-white dark:bg-slate-700 text-[#6c11d4] shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
             >
               Archive
             </button>
@@ -145,7 +145,7 @@ export default function AgentRentRequests() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
               <input 
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-[#6d28d9]/50 text-sm outline-none" 
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-[#6c11d4]/50 text-sm outline-none" 
                 placeholder="Search tenants, properties, or amounts..." 
                 type="text" 
               />
@@ -154,7 +154,7 @@ export default function AgentRentRequests() {
               <SlidersHorizontal size={18} />
               <span>Filters</span>
             </button>
-            <button className="flex items-center gap-2 px-6 py-2.5 bg-[#6d28d9] text-white rounded-xl text-sm font-bold shadow-lg shadow-[#6d28d9]/20 hover:bg-[#6d28d9]/90 transition-all hover:-translate-y-0.5">
+            <button className="flex items-center gap-2 px-6 py-2.5 bg-[#6c11d4] text-white rounded-xl text-sm font-bold shadow-lg shadow-[#6c11d4]/20 hover:bg-[#6c11d4]/90 transition-all hover:-translate-y-0.5">
               <Plus size={18} />
               <span>New Request</span>
             </button>
@@ -194,7 +194,7 @@ export default function AgentRentRequests() {
                         <tr key={req.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                           <td className="px-6 py-5">
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-xl bg-[#6d28d9]/10 flex items-center justify-center text-[#6d28d9] font-bold uppercase">
+                              <div className="w-10 h-10 rounded-xl bg-[#6c11d4]/10 flex items-center justify-center text-[#6c11d4] font-bold uppercase">
                                 {(req.tenant_name || 'U').substring(0, 2)}
                               </div>
                               <div>
@@ -209,7 +209,7 @@ export default function AgentRentRequests() {
                           </td>
                           <td className="px-6 py-5">
                             <div className="inline-flex flex-col">
-                              <span className="text-sm font-bold text-[#6d28d9]">UGX {Math.round(req.payback_plan_daily || (req.amount * 1.02)/30).toLocaleString()}/day</span>
+                              <span className="text-sm font-bold text-[#6c11d4]">UGX {Math.round(req.payback_plan_daily || (req.amount * 1.02)/30).toLocaleString()}/day</span>
                               <span className="text-[10px] text-slate-400">30 Days Duration</span>
                             </div>
                           </td>
@@ -225,11 +225,11 @@ export default function AgentRentRequests() {
                           <td className="px-6 py-5 text-right">
                             <div className="flex items-center justify-end gap-2">
                               {req.status === 'Approved' && (
-                                <button onClick={() => handleProcess(req.id)} className="px-4 py-2 bg-[#6d28d9] text-white text-xs font-bold rounded-lg hover:bg-[#6d28d9]/90">
+                                <button onClick={() => handleProcess(req.id)} className="px-4 py-2 bg-[#6c11d4] text-white text-xs font-bold rounded-lg hover:bg-[#6c11d4]/90">
                                   Process
                                 </button>
                               )}
-                              <button className="w-9 h-9 flex items-center justify-center border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:text-[#6d28d9] transition-colors">
+                              <button className="w-9 h-9 flex items-center justify-center border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:text-[#6c11d4] transition-colors">
                                 <MoreVertical size={18} />
                               </button>
                             </div>
@@ -304,7 +304,7 @@ export default function AgentRentRequests() {
                       <input 
                         value={tenantName}
                         onChange={(e) => setTenantName(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-[#6d28d9]/50 text-sm outline-none" 
+                        className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-[#6c11d4]/50 text-sm outline-none" 
                         placeholder="Search or specify tenant name..." 
                         type="text" 
                         required 
@@ -317,7 +317,7 @@ export default function AgentRentRequests() {
                       <input 
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
-                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-[#6d28d9]/50 text-sm font-bold outline-none" 
+                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-[#6c11d4]/50 text-sm font-bold outline-none" 
                         placeholder="e.g. 1,000,000" 
                         type="number" 
                         required 
@@ -329,7 +329,7 @@ export default function AgentRentRequests() {
                          type="date" 
                          value={date}
                          onChange={(e) => setDate(e.target.value)}
-                         className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-[#6d28d9]/50 text-xs outline-none" 
+                         className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-[#6c11d4]/50 text-xs outline-none" 
                       />
                     </div>
                     <div>
@@ -337,7 +337,7 @@ export default function AgentRentRequests() {
                       <select 
                          value={duration}
                          onChange={(e) => setDuration(e.target.value)}
-                         className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-[#6d28d9]/50 text-sm outline-none appearance-none"
+                         className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-[#6c11d4]/50 text-sm outline-none appearance-none"
                       >
                         <option value="30">30 Days</option>
                         <option value="60">60 Days</option>
@@ -346,22 +346,22 @@ export default function AgentRentRequests() {
                     </div>
                   </div>
                   
-                  <div className="p-4 bg-[#6d28d9]/5 dark:bg-[#6d28d9]/10 rounded-2xl border border-[#6d28d9]/10 space-y-3">
+                  <div className="p-4 bg-[#6c11d4]/5 dark:bg-[#6c11d4]/10 rounded-2xl border border-[#6c11d4]/10 space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Daily Repayment</span>
-                      <span className="text-sm font-bold text-[#6d28d9]">UGX {Math.round(dailyRepayment).toLocaleString()}</span>
+                      <span className="text-sm font-bold text-[#6c11d4]">UGX {Math.round(dailyRepayment).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Processing Fee (2%)</span>
-                      <span className="text-sm font-bold text-[#6d28d9]">UGX {Math.round(processingFee).toLocaleString()}</span>
+                      <span className="text-sm font-bold text-[#6c11d4]">UGX {Math.round(processingFee).toLocaleString()}</span>
                     </div>
-                    <div className="pt-2 border-t border-[#6d28d9]/10 flex justify-between items-center">
+                    <div className="pt-2 border-t border-[#6c11d4]/10 flex justify-between items-center">
                       <span className="text-xs font-bold text-slate-900 dark:text-white uppercase">Total Repayment</span>
                       <span className="text-base font-black text-slate-900 dark:text-white">UGX {Math.round(totalRepayment).toLocaleString()}</span>
                     </div>
                   </div>
                   
-                  <button disabled={formLoading} className="w-full py-4 bg-[#6d28d9] text-white font-bold rounded-xl shadow-lg shadow-[#6d28d9]/20 hover:bg-[#6d28d9]/90 transition-all hover:-translate-y-1 disabled:opacity-50" type="submit">
+                  <button disabled={formLoading} className="w-full py-4 bg-[#6c11d4] text-white font-bold rounded-xl shadow-lg shadow-[#6c11d4]/20 hover:bg-[#6c11d4]/90 transition-all hover:-translate-y-1 disabled:opacity-50" type="submit">
                     {formLoading ? 'Executing...' : 'Submit Request'}
                   </button>
                 </form>
@@ -372,7 +372,7 @@ export default function AgentRentRequests() {
       </main>
 
       {/* Decorative Blur Backgrounds */}
-      <div className="fixed top-0 right-0 -z-10 w-[500px] h-[500px] bg-[#6d28d9]/5 blur-[120px] rounded-full pointer-events-none"></div>
+      <div className="fixed top-0 right-0 -z-10 w-[500px] h-[500px] bg-[#6c11d4]/5 blur-[120px] rounded-full pointer-events-none"></div>
       <div className="fixed bottom-0 left-0 -z-10 w-[300px] h-[300px] bg-blue-500/5 blur-[100px] rounded-full pointer-events-none"></div>
     </div>
   );

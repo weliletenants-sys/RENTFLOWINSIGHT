@@ -94,7 +94,7 @@ export default function CfoDashboard() {
       {/* LEFT SIDEBAR */}
       <aside className="w-64 bg-white border-r border-slate-200 flex flex-col shadow-sm z-10 shrink-0">
         <div className="p-6 border-b border-slate-100 flex items-center gap-3">
-           <div className="w-8 h-8 bg-[#6d28d9] rounded-lg flex items-center justify-center font-black text-white">W</div>
+           <div className="w-8 h-8 bg-[#6c11d4] rounded-lg flex items-center justify-center font-black text-white">W</div>
            <span className="font-black text-lg tracking-tight">CFO Console</span>
         </div>
         
@@ -108,11 +108,11 @@ export default function CfoDashboard() {
                 onClick={() => setActiveTab(tab.id as TabType)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-bold ${
                   isActive 
-                    ? 'bg-[#6d28d9]/10 text-[#6d28d9]' 
+                    ? 'bg-[#6c11d4]/10 text-[#6c11d4]' 
                     : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
                 }`}
               >
-                <Icon size={18} className={isActive ? 'text-[#6d28d9]' : 'text-slate-400'} />
+                <Icon size={18} className={isActive ? 'text-[#6c11d4]' : 'text-slate-400'} />
                 {tab.label}
               </button>
             )
@@ -148,7 +148,7 @@ export default function CfoDashboard() {
             </div>
             
             <div className="flex items-center gap-4 border-l border-slate-200 pl-6">
-              <button className="text-slate-400 hover:text-[#6d28d9] transition-colors relative">
+              <button className="text-slate-400 hover:text-[#6c11d4] transition-colors relative">
                 <Bell size={20} />
                 <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
               </button>
@@ -217,14 +217,14 @@ export default function CfoDashboard() {
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 h-96 flex flex-col">
                    <div className="flex justify-between items-center mb-6">
                       <h3 className="text-lg font-bold text-slate-800">Financial Trends</h3>
-                      <button className="text-xs font-bold text-[#6d28d9] bg-[#6d28d9]/10 px-3 py-1.5 rounded-lg">Export CSV</button>
+                      <button className="text-xs font-bold text-[#6c11d4] bg-[#6c11d4]/10 px-3 py-1.5 rounded-lg">Export CSV</button>
                    </div>
                    <div className="flex-1 border-t border-l border-slate-100 relative w-full flex items-end justify-between px-4 pb-4">
                       {/* Very simplistic mock chart render using css bars */}
                       {overviewMetrics.trends.map((t: any, i: number) => (
                          <div key={i} className="flex flex-col items-center gap-2 group w-1/4">
                             <div className="relative w-8 bg-indigo-100 rounded-t-sm" style={{height: `${t.inflow / 1000}px`}}>
-                               <div className="absolute bottom-0 w-full bg-[#6d28d9] rounded-t-sm" style={{height: `${t.outflow / 1000}px`}}></div>
+                               <div className="absolute bottom-0 w-full bg-[#6c11d4] rounded-t-sm" style={{height: `${t.outflow / 1000}px`}}></div>
                             </div>
                             <span className="text-xs font-bold text-slate-400">{t.date}</span>
                          </div>
@@ -253,7 +253,7 @@ export default function CfoDashboard() {
                   </div>
                   <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
                     <p className="text-sm font-bold text-slate-500">Total Gap Risk</p>
-                    <h3 className="text-3xl font-black text-[#6d28d9]">UGX {reconciliation.summary.totalGap.toLocaleString()}</h3>
+                    <h3 className="text-3xl font-black text-[#6c11d4]">UGX {reconciliation.summary.totalGap.toLocaleString()}</h3>
                   </div>
                 </div>
 
@@ -261,7 +261,7 @@ export default function CfoDashboard() {
                   <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                      <input type="text" placeholder="Search users or phones" className="pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#6d28d9] bg-white w-64" />
+                      <input type="text" placeholder="Search users or phones" className="pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#6c11d4] bg-white w-64" />
                     </div>
                     <button className="flex items-center gap-2 text-sm font-bold text-slate-600 bg-white border border-slate-200 px-4 py-2 rounded-lg hover:bg-slate-50 transition-colors">
                       <Download size={16} /> Export
@@ -357,7 +357,7 @@ export default function CfoDashboard() {
                         <button onClick={() => handleReject(w.id)} className="py-2.5 font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:text-red-600 rounded-xl transition-colors">
                           Reject
                         </button>
-                        <button onClick={() => handleApprove(w.id)} className="py-2.5 font-bold text-white bg-[#6d28d9] hover:bg-[#5b21b6] shadow-lg shadow-[#6d28d9]/20 rounded-xl transition-all flex items-center justify-center gap-2">
+                        <button onClick={() => handleApprove(w.id)} className="py-2.5 font-bold text-white bg-[#6c11d4] hover:bg-[#5b21b6] shadow-lg shadow-[#6c11d4]/20 rounded-xl transition-all flex items-center justify-center gap-2">
                           <CheckCircle2 size={16} /> Approve
                         </button>
                       </div>

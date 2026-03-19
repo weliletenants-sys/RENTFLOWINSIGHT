@@ -20,7 +20,7 @@ const COOBottomNav: React.FC = () => {
           end={item.path === '/coo'}
           className={({ isActive }) =>
             `flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${
-              isActive ? 'text-[#7B61FF]' : 'text-slate-400 hover:text-slate-600'
+              isActive ? 'text-[#6c11d4]' : 'text-slate-400 hover:text-slate-600'
             }`
           }
         >

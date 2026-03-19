@@ -157,7 +157,7 @@ export default function AgentRegisterInvestor() {
           </button>
           <div className="flex flex-col items-center">
              <h1 className="text-lg font-bold">Invest for Partner</h1>
-             {!isSuccess && <p className="text-[10px] font-bold text-[#6d28d9] uppercase tracking-widest">Step {step} of 4</p>}
+             {!isSuccess && <p className="text-[10px] font-bold text-[#6c11d4] uppercase tracking-widest">Step {step} of 4</p>}
           </div>
           <div className="w-9" />
         </header>
@@ -166,7 +166,7 @@ export default function AgentRegisterInvestor() {
         {!isSuccess && (
           <div className="w-full bg-slate-200 dark:bg-slate-800 h-1">
             <div 
-              className="bg-[#6d28d9] h-1 transition-all duration-300"
+              className="bg-[#6c11d4] h-1 transition-all duration-300"
               style={{ width: `${(step / 4) * 100}%` }}
             />
           </div>
@@ -205,16 +205,16 @@ export default function AgentRegisterInvestor() {
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Partner Full Name</label>
                       <div className="relative group">
-                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#6d28d9]" size={18} />
-                        <input name="partnerName" value={formData.partnerName} onChange={handleChange} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6d28d9]/20" placeholder="e.g. Jane Doe" />
+                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#6c11d4]" size={18} />
+                        <input name="partnerName" value={formData.partnerName} onChange={handleChange} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6c11d4]/20" placeholder="e.g. Jane Doe" />
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Partner ID / Phone Number</label>
                       <div className="relative group">
-                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#6d28d9]" size={18} />
-                        <input name="partnerId" value={formData.partnerId} onChange={handleChange} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6d28d9]/20" placeholder="e.g. 0770000000" />
+                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#6c11d4]" size={18} />
+                        <input name="partnerId" value={formData.partnerId} onChange={handleChange} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6c11d4]/20" placeholder="e.g. 0770000000" />
                       </div>
                       <p className="text-[10px] text-slate-400 ml-1">Type "0000" to simulate a verification error.</p>
                     </div>
@@ -233,8 +233,8 @@ export default function AgentRegisterInvestor() {
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Investment Amount (UGX)</label>
                       <div className="relative group">
-                        <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#6d28d9]" size={18} />
-                        <input type="number" name="amount" value={formData.amount} onChange={handleChange} className="w-full pl-11 pr-4 py-4 text-lg font-bold bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6d28d9]/20" placeholder="0" />
+                        <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#6c11d4]" size={18} />
+                        <input type="number" name="amount" value={formData.amount} onChange={handleChange} className="w-full pl-11 pr-4 py-4 text-lg font-bold bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6c11d4]/20" placeholder="0" />
                       </div>
                     </div>
 
@@ -242,13 +242,13 @@ export default function AgentRegisterInvestor() {
                       <div className="space-y-1.5 flex-[1.5]">
                         <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Agreed Monthly Rate (%)</label>
                         <div className="relative group">
-                          <TrendingUp className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#6d28d9]" size={16} />
+                          <TrendingUp className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#6c11d4]" size={16} />
                           <input 
                             type="number" 
                             name="agreedRate" 
                             value={formData.agreedRate} 
                             onChange={handleChange} 
-                            className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6d28d9]/20 font-medium text-sm" 
+                            className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6c11d4]/20 font-medium text-sm" 
                             placeholder="15" 
                             step="0.1"
                           />
@@ -257,8 +257,8 @@ export default function AgentRegisterInvestor() {
                       <div className="space-y-1.5 flex-1">
                         <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Start Date</label>
                         <div className="relative group">
-                          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#6d28d9]" size={16} />
-                          <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} className="w-full py-3 pr-2 pl-9 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6d28d9]/20 font-medium text-sm" />
+                          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#6c11d4]" size={16} />
+                          <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} className="w-full py-3 pr-2 pl-9 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6c11d4]/20 font-medium text-sm" />
                         </div>
                       </div>
                     </div>
@@ -266,8 +266,8 @@ export default function AgentRegisterInvestor() {
                     <div className="space-y-1.5 pt-2">
                         <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Source of Funds</label>
                         <div className="relative group">
-                          <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6d28d9]" size={18} />
-                          <select name="sourceOfFunds" value={formData.sourceOfFunds} onChange={handleChange} className="w-full pl-11 pr-4 py-3 bg-[#6d28d9]/5 border border-[#6d28d9]/20 text-[#6d28d9] rounded-xl outline-none focus:ring-2 focus:ring-[#6d28d9]/40 appearance-none font-bold">
+                          <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6c11d4]" size={18} />
+                          <select name="sourceOfFunds" value={formData.sourceOfFunds} onChange={handleChange} className="w-full pl-11 pr-4 py-3 bg-[#6c11d4]/5 border border-[#6c11d4]/20 text-[#6c11d4] rounded-xl outline-none focus:ring-2 focus:ring-[#6c11d4]/40 appearance-none font-bold">
                             <option value="agent_wallet">Agent Wallet (UGX {AGENT_WALLET_BALANCE.toLocaleString()})</option>
                           </select>
                         </div>
@@ -299,7 +299,7 @@ export default function AgentRegisterInvestor() {
                     <div className="bg-slate-50 dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
                       
                       <div className="p-4 bg-white dark:bg-slate-800 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3">
-                        <div className="size-10 bg-[#6d28d9]/10 text-[#6d28d9] rounded-full flex items-center justify-center font-bold">
+                        <div className="size-10 bg-[#6c11d4]/10 text-[#6c11d4] rounded-full flex items-center justify-center font-bold">
                           {formData.partnerName.charAt(0).toUpperCase()}
                         </div>
                         <div>
@@ -328,7 +328,7 @@ export default function AgentRegisterInvestor() {
                         
                         <div className="pt-4 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center">
                           <span className="text-sm font-bold text-slate-900 dark:text-slate-300">Total Deduction</span>
-                          <span className="text-xl font-black text-[#6d28d9]">UGX {totalDeduction.toLocaleString()}</span>
+                          <span className="text-xl font-black text-[#6c11d4]">UGX {totalDeduction.toLocaleString()}</span>
                         </div>
                         <div className="flex justify-between items-center mt-1">
                           <span className="text-xs text-slate-500">Source</span>
@@ -344,7 +344,7 @@ export default function AgentRegisterInvestor() {
                 {step === 4 && (
                   <div className="space-y-6 flex flex-col items-center justify-center pt-8">
                     
-                    <div className="size-16 bg-[#6d28d9]/10 text-[#6d28d9] rounded-full flex items-center justify-center mb-2">
+                    <div className="size-16 bg-[#6c11d4]/10 text-[#6c11d4] rounded-full flex items-center justify-center mb-2">
                        <Lock size={32} />
                     </div>
 
@@ -365,7 +365,7 @@ export default function AgentRegisterInvestor() {
                           value={formData.pin[index]}
                           onChange={(e) => handlePinChange(index, e.target.value)}
                           onKeyDown={(e) => handlePinKeyDown(index, e)}
-                          className="w-14 h-16 text-center text-3xl font-black bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:border-[#6d28d9] focus:ring-4 focus:ring-[#6d28d9]/20 transition-all shadow-sm"
+                          className="w-14 h-16 text-center text-3xl font-black bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:border-[#6c11d4] focus:ring-4 focus:ring-[#6c11d4]/20 transition-all shadow-sm"
                         />
                       ))}
                     </div>
@@ -402,7 +402,7 @@ export default function AgentRegisterInvestor() {
                 <div className="w-full flex flex-col gap-3">
                   <button 
                     onClick={() => navigate('/agent-clients')}
-                    className="w-full bg-[#6d28d9] hover:bg-[#5b21b6] text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg shadow-[#6d28d9]/25"
+                    className="w-full bg-[#6c11d4] hover:bg-[#5b21b6] text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg shadow-[#6c11d4]/25"
                   >
                     View Partner Portfolio
                   </button>
@@ -425,7 +425,7 @@ export default function AgentRegisterInvestor() {
               <button 
                 onClick={handleNext}
                 disabled={isValidating}
-                className="w-full flex items-center justify-center gap-2 bg-[#6d28d9] disabled:bg-[#6d28d9]/50 hover:bg-[#5b21b6] text-white py-4 rounded-xl font-bold shadow-lg shadow-[#6d28d9]/25 transition-all outline-none"
+                className="w-full flex items-center justify-center gap-2 bg-[#6c11d4] disabled:bg-[#6c11d4]/50 hover:bg-[#5b21b6] text-white py-4 rounded-xl font-bold shadow-lg shadow-[#6c11d4]/25 transition-all outline-none"
               >
                 {isValidating ? (
                   <>

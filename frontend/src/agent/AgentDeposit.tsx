@@ -90,8 +90,8 @@ export default function AgentDeposit() {
                 <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Current Balance</p>
                 <p className="text-2xl font-bold mt-1">UGX {fmt(currentBalance)}</p>
               </div>
-              <div className="size-12 rounded-full bg-[#6d28d9]/10 flex items-center justify-center">
-                <Wallet size={24} className="text-[#6d28d9]" />
+              <div className="size-12 rounded-full bg-[#6c11d4]/10 flex items-center justify-center">
+                <Wallet size={24} className="text-[#6c11d4]" />
               </div>
             </div>
 
@@ -107,7 +107,7 @@ export default function AgentDeposit() {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0.00"
-                  className="w-full pl-16 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border border-transparent focus:border-[#6d28d9] focus:ring-2 focus:ring-[#6d28d9]/20 rounded-xl text-xl font-bold transition-all placeholder:text-slate-300 focus:outline-none"
+                  className="w-full pl-16 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border border-transparent focus:border-[#6c11d4] focus:ring-2 focus:ring-[#6c11d4]/20 rounded-xl text-xl font-bold transition-all placeholder:text-slate-300 focus:outline-none"
                 />
               </div>
               <div className="flex flex-wrap gap-2 mt-4">
@@ -115,7 +115,7 @@ export default function AgentDeposit() {
                   <button
                     key={q}
                     onClick={() => setAmount(String(q))}
-                    className="px-4 py-2 rounded-lg bg-[#6d28d9]/5 hover:bg-[#6d28d9]/10 border border-[#6d28d9]/20 text-[#6d28d9] text-sm font-semibold transition-colors"
+                    className="px-4 py-2 rounded-lg bg-[#6c11d4]/5 hover:bg-[#6c11d4]/10 border border-[#6c11d4]/20 text-[#6c11d4] text-sm font-semibold transition-colors"
                   >
                     {fmt(q)}
                   </button>
@@ -130,31 +130,31 @@ export default function AgentDeposit() {
                 {/* Mobile Money */}
                 <div
                   onClick={() => setMethod('mobile')}
-                  className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${method === 'mobile' ? 'border-[#6d28d9] bg-[#6d28d9]/5 dark:bg-[#6d28d9]/10' : 'border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900'}`}
+                  className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${method === 'mobile' ? 'border-[#6c11d4] bg-[#6c11d4]/5 dark:bg-[#6c11d4]/10' : 'border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900'}`}
                 >
-                  <div className={`size-10 rounded-lg flex items-center justify-center ${method === 'mobile' ? 'bg-[#6d28d9] text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`}>
+                  <div className={`size-10 rounded-lg flex items-center justify-center ${method === 'mobile' ? 'bg-[#6c11d4] text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`}>
                     <Smartphone size={20} />
                   </div>
                   <div className="flex-1">
                     <p className="font-bold text-slate-900 dark:text-slate-100">Mobile Money</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">Instant deposit</p>
                   </div>
-                  {method === 'mobile' && <CheckCircle2 size={20} className="text-[#6d28d9] shrink-0" />}
+                  {method === 'mobile' && <CheckCircle2 size={20} className="text-[#6c11d4] shrink-0" />}
                 </div>
 
                 {/* Agent Deposit */}
                 <div
                   onClick={() => setMethod('agent')}
-                  className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${method === 'agent' ? 'border-[#6d28d9] bg-[#6d28d9]/5 dark:bg-[#6d28d9]/10' : 'border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900'}`}
+                  className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${method === 'agent' ? 'border-[#6c11d4] bg-[#6c11d4]/5 dark:bg-[#6c11d4]/10' : 'border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900'}`}
                 >
-                  <div className={`size-10 rounded-lg flex items-center justify-center ${method === 'agent' ? 'bg-[#6d28d9] text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`}>
+                  <div className={`size-10 rounded-lg flex items-center justify-center ${method === 'agent' ? 'bg-[#6c11d4] text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`}>
                     <Store size={20} />
                   </div>
                   <div className="flex-1">
                     <p className="font-bold text-slate-900 dark:text-slate-100">Agent Deposit</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">At physical branch</p>
                   </div>
-                  {method === 'agent' && <CheckCircle2 size={20} className="text-[#6d28d9] shrink-0" />}
+                  {method === 'agent' && <CheckCircle2 size={20} className="text-[#6c11d4] shrink-0" />}
                 </div>
               </div>
             </div>
@@ -162,7 +162,7 @@ export default function AgentDeposit() {
             {/* Instructions */}
             <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
               <h4 className="text-sm font-bold mb-4 flex items-center gap-2">
-                <Info size={18} className="text-[#6d28d9]" />
+                <Info size={18} className="text-[#6c11d4]" />
                 Deposit Instructions
               </h4>
               {method === 'mobile' ? (
@@ -174,7 +174,7 @@ export default function AgentDeposit() {
                     <>Enter your account reference number: <span className="font-bold text-slate-900 dark:text-slate-100">W-9023</span></>,
                   ].map((step, i) => (
                     <div key={i} className="flex gap-3">
-                      <span className="flex-shrink-0 size-6 rounded-full bg-[#6d28d9]/10 text-[#6d28d9] text-xs font-bold flex items-center justify-center border border-[#6d28d9]/20">
+                      <span className="flex-shrink-0 size-6 rounded-full bg-[#6c11d4]/10 text-[#6c11d4] text-xs font-bold flex items-center justify-center border border-[#6c11d4]/20">
                         {i + 1}
                       </span>
                       <p className="text-sm text-slate-600 dark:text-slate-400">{step}</p>
@@ -191,7 +191,7 @@ export default function AgentDeposit() {
 
           {/* ───── Right column ───── */}
           <div className="lg:col-span-5">
-            <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-xl shadow-[#6d28d9]/5 border border-slate-100 dark:border-slate-800 sticky top-24">
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-xl shadow-[#6c11d4]/5 border border-slate-100 dark:border-slate-800 sticky top-24">
               <h2 className="text-lg font-bold mb-6">Summary</h2>
               <div className="space-y-4 mb-8">
                 <div className="flex justify-between items-center py-3 border-b border-slate-50 dark:border-slate-800">
@@ -200,7 +200,7 @@ export default function AgentDeposit() {
                 </div>
                 <div className="flex justify-between items-center py-3 border-b border-slate-50 dark:border-slate-800">
                   <span className="text-slate-500 dark:text-slate-400 text-sm">Selected method</span>
-                  <span className="font-medium text-[#6d28d9]">{method === 'mobile' ? 'Mobile Money' : 'Agent Deposit'}</span>
+                  <span className="font-medium text-[#6c11d4]">{method === 'mobile' ? 'Mobile Money' : 'Agent Deposit'}</span>
                 </div>
                 <div className="flex justify-between items-center py-3 border-b border-slate-50 dark:border-slate-800">
                   <span className="text-slate-500 dark:text-slate-400 text-sm">Transaction fee</span>
@@ -221,7 +221,7 @@ export default function AgentDeposit() {
               <button
                 onClick={handleDeposit}
                 disabled={isLoading || numericAmount <= 0}
-                className="w-full bg-[#6d28d9] hover:bg-[#6d28d9]/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-[#6d28d9]/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                className="w-full bg-[#6c11d4] hover:bg-[#6c11d4]/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-[#6c11d4]/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
               >
                 {isLoading ? (
                   <>
@@ -248,7 +248,7 @@ export default function AgentDeposit() {
                 <p className="text-sm font-bold">Need help?</p>
                 <p className="text-xs text-slate-500">Our support is available 24/7</p>
               </div>
-              <a className="ml-auto text-[#6d28d9] text-sm font-bold hover:underline" href="#">Chat now</a>
+              <a className="ml-auto text-[#6c11d4] text-sm font-bold hover:underline" href="#">Chat now</a>
             </div>
           </div>
         </div>
@@ -291,7 +291,7 @@ export default function AgentDeposit() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500">Reference</span>
-                <span className="font-mono font-bold text-[#6d28d9]">{txRef}</span>
+                <span className="font-mono font-bold text-[#6c11d4]">{txRef}</span>
               </div>
               <div className="h-px bg-slate-200 dark:bg-slate-700" />
               <div className="flex justify-between text-sm">
@@ -302,7 +302,7 @@ export default function AgentDeposit() {
 
             <button
               onClick={() => { setShowSuccess(false); navigate(-1); }}
-              className="w-full bg-[#6d28d9] hover:bg-[#6d28d9]/90 text-white font-bold py-3 rounded-xl transition-all"
+              className="w-full bg-[#6c11d4] hover:bg-[#6c11d4]/90 text-white font-bold py-3 rounded-xl transition-all"
             >
               Back to Dashboard
             </button>

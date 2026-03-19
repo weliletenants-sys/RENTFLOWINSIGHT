@@ -41,9 +41,9 @@ const COOReports: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
            {reportTypes.map(report => (
-             <div key={report.id} className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-[#9234EA] transition-colors group">
+             <div key={report.id} className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-[#6c11d4] transition-colors group">
                <div className="flex items-start space-x-4">
-                 <div className="w-10 h-10 rounded-lg bg-[#EAE5FF] text-[#7B61FF] flex items-center justify-center flex-shrink-0 group-hover:bg-[#9234EA] group-hover:text-white transition-colors">
+                 <div className="w-10 h-10 rounded-lg bg-[#EAE5FF] text-[#6c11d4] flex items-center justify-center flex-shrink-0 group-hover:bg-[#6c11d4] group-hover:text-white transition-colors">
                    <FileText size={20} />
                  </div>
                  <div>
@@ -57,11 +57,11 @@ const COOReports: React.FC = () => {
                  className={`flex-shrink-0 flex items-center space-x-2 px-4 py-2 rounded-lg font-bold text-sm transition-colors ${
                    generating === report.id 
                      ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                     : 'bg-white border-2 border-slate-100 text-[#7B61FF] hover:bg-[#EAE5FF] hover:border-[#9234EA]'
+                     : 'bg-white border-2 border-slate-100 text-[#6c11d4] hover:bg-[#EAE5FF] hover:border-[#6c11d4]'
                  }`}
                >
                  {generating === report.id ? (
-                   <div className="w-4 h-4 border-2 border-[#9234EA] border-t-transparent rounded-full animate-spin"></div>
+                   <div className="w-4 h-4 border-2 border-[#6c11d4] border-t-transparent rounded-full animate-spin"></div>
                  ) : (
                    <Download size={16} />
                  )}
@@ -81,14 +81,14 @@ const COOReports: React.FC = () => {
            <div className="space-y-4">
              <div>
                <label className="block text-xs font-bold text-slate-700 mb-1 uppercase">Start Date</label>
-               <input type="date" className="w-full px-3 py-2 border border-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-[#9234EA] focus:outline-none" />
+               <input type="date" className="w-full px-3 py-2 border border-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-[#6c11d4] focus:outline-none" />
              </div>
              <div>
                <label className="block text-xs font-bold text-slate-700 mb-1 uppercase">End Date</label>
-               <input type="date" className="w-full px-3 py-2 border border-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-[#9234EA] focus:outline-none" />
+               <input type="date" className="w-full px-3 py-2 border border-slate-100 rounded-lg text-sm focus:ring-2 focus:ring-[#6c11d4] focus:outline-none" />
              </div>
              
-             <button className="w-full flex items-center justify-center space-x-2 bg-[#9234EA] text-white px-4 py-2.5 rounded-lg hover:bg-[#7a2bc4] transition text-sm font-bold mt-2">
+             <button className="w-full flex items-center justify-center space-x-2 bg-[#6c11d4] text-white px-4 py-2.5 rounded-lg hover:bg-[#7a2bc4] transition text-sm font-bold mt-2">
                 <Download size={16} /> <span>Download Raw CSV</span>
              </button>
            </div>

@@ -201,7 +201,7 @@ export default function AgentVisitDetail() {
   return (
     <div className="bg-[#f8f6f6] dark:bg-[#221610] text-slate-900 dark:text-slate-100 min-h-screen font-['Public_Sans'] pb-24">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-[#6d28d9] text-white shadow-md">
+      <header className="sticky top-0 z-50 bg-[#6c11d4] text-white shadow-md">
         <div className="max-w-md mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors">
@@ -236,7 +236,7 @@ export default function AgentVisitDetail() {
             {/* Context Cards */}
             <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-700">
               <div className="flex items-center gap-4 mb-4">
-                <div className="size-14 rounded-full bg-[#6d28d9]/10 text-[#6d28d9] flex items-center justify-center font-bold text-2xl">
+                <div className="size-14 rounded-full bg-[#6c11d4]/10 text-[#6c11d4] flex items-center justify-center font-bold text-2xl">
                   {tenant.name.charAt(0)}
                 </div>
                 <div>
@@ -290,7 +290,7 @@ export default function AgentVisitDetail() {
               <button 
                 onClick={handleStartVisit}
                 disabled={isCheckingIn}
-                className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-[#6d28d9] text-white font-bold text-lg hover:bg-[#5a1bb9] transition-all shadow-lg shadow-[#6d28d9]/30 disabled:opacity-70"
+                className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-[#6c11d4] text-white font-bold text-lg hover:bg-[#5a1bb9] transition-all shadow-lg shadow-[#6c11d4]/30 disabled:opacity-70"
               >
                 {isCheckingIn ? (
                   <>
@@ -330,13 +330,13 @@ export default function AgentVisitDetail() {
             <div className="grid gap-3">
               <button 
                 onClick={() => { setActionType('RECORD'); setPaymentAmount(tenant.outstandingBalance.toString()); setCurrentStep('RECORD_PAYMENT'); }}
-                className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-xl border-2 border-slate-100 dark:border-slate-700 hover:border-[#6d28d9] transition-all text-left group"
+                className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-xl border-2 border-slate-100 dark:border-slate-700 hover:border-[#6c11d4] transition-all text-left group"
               >
                 <div>
-                  <h3 className="font-bold text-slate-900 dark:text-white text-lg group-hover:text-[#6d28d9] transition-colors">Full Payment</h3>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-lg group-hover:text-[#6c11d4] transition-colors">Full Payment</h3>
                   <p className="text-sm text-slate-500 mt-1">Collect UGX {tenant.outstandingBalance.toLocaleString()}</p>
                 </div>
-                <div className="size-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center group-hover:bg-[#6d28d9]/10 group-hover:text-[#6d28d9] transition-colors">
+                <div className="size-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center group-hover:bg-[#6c11d4]/10 group-hover:text-[#6c11d4] transition-colors">
                   <CheckCircle2 size={20} />
                 </div>
               </button>
@@ -401,7 +401,7 @@ export default function AgentVisitDetail() {
         {currentStep === 'RECORD_PAYMENT' && (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
             <div className="flex items-center justify-between">
-              <button onClick={() => setCurrentStep('ACTION_SELECT')} className="text-[#6d28d9] flex items-center font-bold text-sm">
+              <button onClick={() => setCurrentStep('ACTION_SELECT')} className="text-[#6c11d4] flex items-center font-bold text-sm">
                 <ChevronLeft size={16} /> Back
               </button>
               <h2 className="text-lg font-bold">{actionType === 'RECORD' ? 'Full Payment' : 'Partial Payment'}</h2>
@@ -418,7 +418,7 @@ export default function AgentVisitDetail() {
                     value={paymentAmount}
                     onChange={(e) => setPaymentAmount(e.target.value)}
                     placeholder="e.g. 50000"
-                    className="w-full pl-14 pr-4 py-4 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-0 focus:border-[#6d28d9] font-bold text-xl outline-none transition-colors"
+                    className="w-full pl-14 pr-4 py-4 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-0 focus:border-[#6c11d4] font-bold text-xl outline-none transition-colors"
                   />
                 </div>
               </div>
@@ -428,13 +428,13 @@ export default function AgentVisitDetail() {
                 <div className="grid grid-cols-2 gap-3">
                   <button 
                     onClick={() => setPaymentMethod('CASH')}
-                    className={`py-3 rounded-xl font-bold border-2 transition-all ${paymentMethod === 'CASH' ? 'border-[#6d28d9] bg-[#6d28d9]/10 text-[#6d28d9]' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'}`}
+                    className={`py-3 rounded-xl font-bold border-2 transition-all ${paymentMethod === 'CASH' ? 'border-[#6c11d4] bg-[#6c11d4]/10 text-[#6c11d4]' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'}`}
                   >
                     Cash
                   </button>
                   <button 
                     onClick={() => setPaymentMethod('MOBILE_MONEY')}
-                    className={`py-3 rounded-xl font-bold border-2 transition-all ${paymentMethod === 'MOBILE_MONEY' ? 'border-[#6d28d9] bg-[#6d28d9]/10 text-[#6d28d9]' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'}`}
+                    className={`py-3 rounded-xl font-bold border-2 transition-all ${paymentMethod === 'MOBILE_MONEY' ? 'border-[#6c11d4] bg-[#6c11d4]/10 text-[#6c11d4]' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'}`}
                   >
                     Mobile Money
                   </button>
@@ -442,7 +442,7 @@ export default function AgentVisitDetail() {
               </div>
 
               {/* Dynamic Calculation */}
-              <div className="bg-[#6d28d9]/5 dark:bg-[#6d28d9]/10 p-4 rounded-xl space-y-2 border border-[#6d28d9]/20">
+              <div className="bg-[#6c11d4]/5 dark:bg-[#6c11d4]/10 p-4 rounded-xl space-y-2 border border-[#6c11d4]/20">
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500">Current Balance</span>
                   <span className="font-medium text-slate-900 dark:text-white">UGX {tenant.outstandingBalance.toLocaleString()}</span>
@@ -451,7 +451,7 @@ export default function AgentVisitDetail() {
                   <span className="text-slate-500">Amount Paying</span>
                   <span className="font-bold text-green-600">- UGX {(numPaymentAmount || 0).toLocaleString()}</span>
                 </div>
-                <div className="pt-2 border-t border-[#6d28d9]/20 flex justify-between">
+                <div className="pt-2 border-t border-[#6c11d4]/20 flex justify-between">
                   <span className="font-bold text-slate-900 dark:text-white">New Balance</span>
                   <span className={`font-extrabold ${remainingBalance > 0 ? 'text-amber-600' : 'text-green-600'}`}>
                     UGX {remainingBalance.toLocaleString()}
@@ -471,7 +471,7 @@ export default function AgentVisitDetail() {
             <button 
               onClick={handleSubmitVisit}
               disabled={isSubmitting || numPaymentAmount <= 0}
-              className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-[#6d28d9] text-white font-bold text-lg hover:bg-[#5a1bb9] transition-all disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-[#6c11d4] text-white font-bold text-lg hover:bg-[#5a1bb9] transition-all disabled:opacity-50"
             >
               {isSubmitting ? (
                  <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -486,7 +486,7 @@ export default function AgentVisitDetail() {
         {currentStep === 'NO_PAYMENT' && (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
             <div className="flex items-center justify-between">
-              <button onClick={() => setCurrentStep('ACTION_SELECT')} className="text-[#6d28d9] flex items-center font-bold text-sm">
+              <button onClick={() => setCurrentStep('ACTION_SELECT')} className="text-[#6c11d4] flex items-center font-bold text-sm">
                 <ChevronLeft size={16} /> Back
               </button>
               <h2 className="text-lg font-bold text-red-600 flex items-center gap-2">
@@ -521,7 +521,7 @@ export default function AgentVisitDetail() {
                   value={noPaymentNotes}
                   onChange={(e) => setNoPaymentNotes(e.target.value)}
                   placeholder="e.g. Met wife, husband traveling until weekend."
-                  className="w-full p-3 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-0 focus:border-[#6d28d9] outline-none text-sm transition-colors resize-none"
+                  className="w-full p-3 bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-0 focus:border-[#6c11d4] outline-none text-sm transition-colors resize-none"
                 />
               </div>
 
@@ -597,7 +597,7 @@ export default function AgentVisitDetail() {
               )}
               <button 
                 onClick={() => navigate('/agent-visit')}
-                className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-[#6d28d9] text-white font-bold hover:bg-[#5a1bb9] transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-[#6c11d4] text-white font-bold hover:bg-[#5a1bb9] transition-colors"
               >
                 Close & Return to List
               </button>

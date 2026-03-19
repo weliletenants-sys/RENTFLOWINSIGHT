@@ -7,7 +7,7 @@ export default function AgentWelcome() {
   return (
     <div className="bg-sky-50 dark:bg-[#0c4a6e] font-sans text-sky-950 dark:text-sky-100 relative flex min-h-screen w-full flex-col overflow-x-hidden">
       {/* Header/Navigation */}
-      <header className="sticky top-0 z-50 w-full border-b border-primary/10 bg-[#6D28D9] dark:bg-[#6D28D9] px-6 md:px-20 py-4 shadow-xl">
+      <header className="sticky top-0 z-50 w-full border-b border-primary/10 bg-[#6c11d4] dark:bg-[#6c11d4] px-6 md:px-20 py-4 shadow-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div 
             className="flex items-center gap-3 cursor-pointer"
@@ -31,7 +31,7 @@ export default function AgentWelcome() {
             </button>
             <button 
               onClick={() => navigate('/agent-signup')}
-              className="rounded-full bg-white px-6 py-2.5 text-sm font-bold text-[#6D28D9] shadow-lg hover:bg-slate-50 transition-all"
+              className="rounded-full bg-white px-6 py-2.5 text-sm font-bold text-[#6c11d4] shadow-lg hover:bg-slate-50 transition-all"
             >
               Become an Agent
             </button>
@@ -44,7 +44,7 @@ export default function AgentWelcome() {
         <section className="relative px-6 py-16 md:py-24 md:px-20 overflow-hidden">
           <div className="mx-auto max-w-7xl">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
-              <div className="flex h-full flex-col items-center justify-center text-center gap-8 bg-[#6D28D9] p-8 md:p-12 rounded-[2rem] shadow-2xl">
+              <div className="flex h-full flex-col items-center justify-center text-center gap-8 bg-[#6c11d4] p-8 md:p-12 rounded-[2rem] shadow-2xl">
                 <div className="inline-flex w-fit items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-white shadow-sm">
                   <ShieldCheck size={16} />
                   <span className="text-xs font-bold uppercase tracking-wider">Official Strategic Partner Program</span>
@@ -58,10 +58,10 @@ export default function AgentWelcome() {
                 <div className="flex flex-col sm:flex-row gap-4 mt-2">
                   <button 
                     onClick={() => navigate('/agent-signup')}
-                    className="flex items-center justify-center gap-3 rounded-full bg-white px-8 py-4 text-lg font-bold text-[#6D28D9] shadow-xl hover:bg-slate-50 transition-colors"
+                    className="flex items-center justify-center gap-3 rounded-full bg-white px-8 py-4 text-lg font-bold text-[#6c11d4] shadow-xl hover:bg-slate-50 transition-colors"
                   >
                     <span>Get Started Now</span>
-                    <ArrowRight size={20} className="text-[#6D28D9]" />
+                    <ArrowRight size={20} className="text-[#6c11d4]" />
                   </button>
                 </div>
               </div>
@@ -90,7 +90,7 @@ export default function AgentWelcome() {
         </section>
 
         {/* Earnings Pool Section */}
-        <section className="bg-[#6D28D9] px-6 py-12 md:px-20">
+        <section className="bg-[#6c11d4] px-6 py-12 md:px-20">
           <div className="mx-auto max-w-7xl">
             <div className="flex flex-col md:flex-row items-center justify-between gap-8 rounded-3xl bg-white/10 p-8 md:p-12 backdrop-blur-lg border border-white/20">
               <div className="flex flex-col gap-2 text-center md:text-left">
@@ -103,7 +103,7 @@ export default function AgentWelcome() {
               <div className="h-px w-full md:h-16 md:w-px bg-white/20"></div>
               <div className="flex flex-col gap-4 items-center md:items-end">
                 <p className="text-white/90 text-center md:text-right max-w-[280px]">Our high-performance network is distributing rewards every second.</p>
-                <button className="bg-white text-[#6D28D9] rounded-full px-8 py-3 font-bold hover:bg-slate-50 transition-colors shadow-xl">
+                <button className="bg-white text-[#6c11d4] rounded-full px-8 py-3 font-bold hover:bg-slate-50 transition-colors shadow-xl">
                   Claim Your Share
                 </button>
               </div>
@@ -121,7 +121,7 @@ export default function AgentWelcome() {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Feature 1 */}
-              <div className="group rounded-3xl border border-[#6D28D9]/20 hover:border-[#6D28D9] bg-white p-10 transition-all hover:shadow-xl">
+              <div className="group rounded-3xl border border-[#6c11d4]/20 hover:border-[#6c11d4] bg-white p-10 transition-all hover:shadow-xl">
                 <div className="flex items-center gap-3 mb-6">
                   <Wallet size={24} className="text-primary" />
                   <h3 className="text-xl font-bold text-sky-950">High Commissions</h3>
@@ -130,7 +130,7 @@ export default function AgentWelcome() {
               </div>
               
               {/* Feature 2 */}
-              <div className="group rounded-3xl border border-[#6D28D9]/20 hover:border-[#6D28D9] bg-white p-10 transition-all hover:shadow-xl">
+              <div className="group rounded-3xl border border-[#6c11d4]/20 hover:border-[#6c11d4] bg-white p-10 transition-all hover:shadow-xl">
                 <div className="flex items-center gap-3 mb-6">
                   <Clock size={24} className="text-primary" />
                   <h3 className="text-xl font-bold text-sky-950">Flexible Hours</h3>
@@ -139,7 +139,7 @@ export default function AgentWelcome() {
               </div>
               
               {/* Feature 3 */}
-              <div className="group rounded-3xl border border-[#6D28D9]/20 hover:border-[#6D28D9] bg-white p-10 transition-all hover:shadow-xl">
+              <div className="group rounded-3xl border border-[#6c11d4]/20 hover:border-[#6c11d4] bg-white p-10 transition-all hover:shadow-xl">
                 <div className="flex items-center gap-3 mb-6">
                   <Globe size={24} className="text-primary" />
                   <h3 className="text-xl font-bold text-sky-950">Global Network</h3>
@@ -153,7 +153,7 @@ export default function AgentWelcome() {
         {/* CTA Section */}
         <section className="relative px-6 py-20 md:px-20 overflow-hidden">
           <div className="absolute inset-0 -z-10 bg-primary/5"></div>
-          <div className="mx-auto max-w-4xl rounded-[40px] bg-[#6D28D9] p-12 md:p-20 text-center relative shadow-2xl">
+          <div className="mx-auto max-w-4xl rounded-[40px] bg-[#6c11d4] p-12 md:p-20 text-center relative shadow-2xl">
             <div className="absolute top-0 right-0 p-8 opacity-20">
               <Sparkles size={96} className="text-white" />
             </div>
@@ -164,7 +164,7 @@ export default function AgentWelcome() {
             <div className="flex flex-col sm:flex-row justify-center gap-6">
               <button 
                 onClick={() => navigate('/agent-signup')}
-                className="rounded-full bg-white px-10 py-5 text-xl font-bold text-[#6D28D9] shadow-2xl hover:bg-slate-50 transition-colors"
+                className="rounded-full bg-white px-10 py-5 text-xl font-bold text-[#6c11d4] shadow-2xl hover:bg-slate-50 transition-colors"
               >
                 Become an Agent
               </button>
@@ -184,8 +184,8 @@ export default function AgentWelcome() {
             {/* Logo Column */}
             <div className="lg:col-span-2">
               <div className="flex items-center gap-3 mb-4">
-                <ShieldCheck size={28} className="text-[#9234EA]" />
-                <h2 className="text-lg font-extrabold text-[#9234EA]">Welile Agents</h2>
+                <ShieldCheck size={28} className="text-[#6c11d4]" />
+                <h2 className="text-lg font-extrabold text-[#6c11d4]">Welile Agents</h2>
               </div>
               
               <p className="text-[#0081C9] text-xs leading-relaxed max-w-xs">

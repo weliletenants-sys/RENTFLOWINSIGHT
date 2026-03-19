@@ -17,8 +17,8 @@ export default function AgentPrivacyPolicy() {
         </header>
 
         <div className="p-6">
-          <div className="flex flex-col items-center justify-center p-6 bg-[#6d28d9]/5 border border-[#6d28d9]/10 rounded-2xl mb-8">
-            <div className="size-16 bg-[#6d28d9]/10 text-[#6d28d9] rounded-full flex items-center justify-center mb-4">
+          <div className="flex flex-col items-center justify-center p-6 bg-[#6c11d4]/5 border border-[#6c11d4]/10 rounded-2xl mb-8">
+            <div className="size-16 bg-[#6c11d4]/10 text-[#6c11d4] rounded-full flex items-center justify-center mb-4">
               <ShieldCheck size={32} />
             </div>
             <h2 className="text-xl font-bold text-center">Your Privacy Matters</h2>

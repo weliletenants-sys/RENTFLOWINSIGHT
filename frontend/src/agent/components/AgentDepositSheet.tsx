@@ -124,7 +124,7 @@ export default function AgentDepositSheet({ isOpen, onClose, onSuccess }: Props)
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
                       placeholder="Enter amount"
-                      className="w-full pl-16 pr-4 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xl font-black text-slate-900 dark:text-white outline-none focus:border-[#6d28d9] focus:ring-1 focus:ring-[#6d28d9] transition-all"
+                      className="w-full pl-16 pr-4 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xl font-black text-slate-900 dark:text-white outline-none focus:border-[#6c11d4] focus:ring-1 focus:ring-[#6c11d4] transition-all"
                     />
                   </div>
                   <div className="flex gap-2 mt-3 overflow-x-auto pb-1 hide-scrollbar">
@@ -132,7 +132,7 @@ export default function AgentDepositSheet({ isOpen, onClose, onSuccess }: Props)
                       <button 
                         key={val} 
                         onClick={() => setAmount(val.toString())}
-                        className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-[#6d28d9]/10 hover:text-[#6d28d9] text-sm font-bold rounded-lg whitespace-nowrap transition-colors"
+                        className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-[#6c11d4]/10 hover:text-[#6c11d4] text-sm font-bold rounded-lg whitespace-nowrap transition-colors"
                       >
                         {val / 1000}K
                       </button>
@@ -148,7 +148,7 @@ export default function AgentDepositSheet({ isOpen, onClose, onSuccess }: Props)
                       value={tid}
                       onChange={(e) => setTid(e.target.value.toUpperCase())}
                       placeholder="e.g. 192384729"
-                      className="w-full pl-4 pr-12 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-base font-bold text-slate-900 dark:text-white outline-none focus:border-[#6d28d9] focus:ring-1 focus:ring-[#6d28d9] uppercase"
+                      className="w-full pl-4 pr-12 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-base font-bold text-slate-900 dark:text-white outline-none focus:border-[#6c11d4] focus:ring-1 focus:ring-[#6c11d4] uppercase"
                     />
                     {tid.length >= 6 && (
                       <CheckCircle2 className="absolute right-4 top-1/2 -translate-y-1/2 text-green-500" size={20} />
@@ -166,7 +166,7 @@ export default function AgentDepositSheet({ isOpen, onClose, onSuccess }: Props)
                 <button 
                   disabled={!isValid}
                   onClick={() => setStep('preview')}
-                  className="w-full py-4 bg-[#6d28d9] hover:bg-[#5b21b6] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all shadow-lg shadow-[#6d28d9]/20"
+                  className="w-full py-4 bg-[#6c11d4] hover:bg-[#5b21b6] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all shadow-lg shadow-[#6c11d4]/20"
                 >
                   Continue
                 </button>
@@ -190,7 +190,7 @@ export default function AgentDepositSheet({ isOpen, onClose, onSuccess }: Props)
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500 text-sm">TID</span>
-                    <span className="font-bold text-[#6d28d9]">{tid}</span>
+                    <span className="font-bold text-[#6c11d4]">{tid}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500 text-sm">Date</span>
@@ -208,7 +208,7 @@ export default function AgentDepositSheet({ isOpen, onClose, onSuccess }: Props)
                   <button 
                     onClick={handleConfirm}
                     disabled={isLoading}
-                    className="flex-[2] py-4 flex items-center justify-center gap-2 bg-[#6d28d9] hover:bg-[#5b21b6] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#6d28d9]/20"
+                    className="flex-[2] py-4 flex items-center justify-center gap-2 bg-[#6c11d4] hover:bg-[#5b21b6] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#6c11d4]/20"
                   >
                     {isLoading ? <Loader2 className="animate-spin" size={20} /> : 'Confirm Deposit'}
                   </button>
@@ -225,10 +225,10 @@ export default function AgentDepositSheet({ isOpen, onClose, onSuccess }: Props)
                 <p className="text-slate-500 mb-8">UGX {numericAmount.toLocaleString()} has been added to your queue.</p>
                 
                 <div className="w-full space-y-3">
-                  <button onClick={onClose} className="w-full py-4 bg-[#6d28d9] text-white font-bold rounded-xl">
+                  <button onClick={onClose} className="w-full py-4 bg-[#6c11d4] text-white font-bold rounded-xl">
                     Back to Wallet
                   </button>
-                  <button onClick={() => { setAmount(''); setTid(''); setStep('input'); }} className="w-full py-4 text-[#6d28d9] font-bold rounded-xl">
+                  <button onClick={() => { setAmount(''); setTid(''); setStep('input'); }} className="w-full py-4 text-[#6c11d4] font-bold rounded-xl">
                     Make Another Deposit
                   </button>
                 </div>

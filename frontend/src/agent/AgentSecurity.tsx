@@ -32,7 +32,7 @@ export default function AgentSecurity() {
           
           <button className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
             <div className="flex items-center gap-4">
-              <div className="size-10 rounded-full bg-[#6d28d9]/10 text-[#6d28d9] flex items-center justify-center">
+              <div className="size-10 rounded-full bg-[#6c11d4]/10 text-[#6c11d4] flex items-center justify-center">
                 <KeyRound size={20} />
               </div>
               <div className="text-left">
@@ -132,7 +132,7 @@ function Toggle({ active, onClick }: { active: boolean, onClick: () => void }) {
   return (
     <button 
       onClick={onClick}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${active ? 'bg-[#6d28d9]' : 'bg-slate-300 dark:bg-slate-600'}`}
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${active ? 'bg-[#6c11d4]' : 'bg-slate-300 dark:bg-slate-600'}`}
     >
       <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${active ? 'translate-x-6' : 'translate-x-1'}`} />
     </button>

@@ -131,7 +131,7 @@ export default function AgentListHouse() {
         {!isSuccess && (
           <div className="max-w-md mx-auto mt-3">
             <div className="flex items-center justify-between mb-1 px-1">
-              <span className="text-[10px] font-bold text-[#6d28d9] uppercase tracking-widest">Step {currentStep} of {totalSteps}</span>
+              <span className="text-[10px] font-bold text-[#6c11d4] uppercase tracking-widest">Step {currentStep} of {totalSteps}</span>
               <span className="text-[10px] font-bold text-slate-400 uppercase">
                 {currentStep === 1 && 'Location'}
                 {currentStep === 2 && 'Details'}
@@ -142,7 +142,7 @@ export default function AgentListHouse() {
             </div>
             <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
               <div 
-                className="bg-[#6d28d9] h-full rounded-full transition-all duration-300 ease-in-out"
+                className="bg-[#6c11d4] h-full rounded-full transition-all duration-300 ease-in-out"
                 style={{ width: `${(currentStep / totalSteps) * 100}%` }}
               ></div>
             </div>
@@ -179,7 +179,7 @@ export default function AgentListHouse() {
 
             <button 
               onClick={() => navigate('/dashboard')}
-              className="w-full mt-4 flex items-center justify-center gap-2 py-4 rounded-xl bg-[#6d28d9] text-white font-bold hover:bg-[#5a1bb9] transition-colors"
+              className="w-full mt-4 flex items-center justify-center gap-2 py-4 rounded-xl bg-[#6c11d4] text-white font-bold hover:bg-[#5a1bb9] transition-colors"
             >
               Return to Dashboard
             </button>
@@ -205,10 +205,10 @@ export default function AgentListHouse() {
                     <button 
                       onClick={handleCaptureGPS}
                       disabled={isLocating}
-                      className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all ${gpsLocation ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800' : 'bg-[#6d28d9]/10 text-[#6d28d9] hover:bg-[#6d28d9]/20'}`}
+                      className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all ${gpsLocation ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800' : 'bg-[#6c11d4]/10 text-[#6c11d4] hover:bg-[#6c11d4]/20'}`}
                     >
                       {isLocating ? (
-                        <div className="size-5 border-2 border-[#6d28d9]/30 border-t-[#6d28d9] rounded-full animate-spin"></div>
+                        <div className="size-5 border-2 border-[#6c11d4]/30 border-t-[#6c11d4] rounded-full animate-spin"></div>
                       ) : gpsLocation ? (
                         <><CheckCircle2 size={18} /> GPS Locked: {gpsLocation.lat.toFixed(4)}, {gpsLocation.lng.toFixed(4)}</>
                       ) : (
@@ -221,33 +221,33 @@ export default function AgentListHouse() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">District</label>
-                      <input type="text" name="district" value={formData.district} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#6d28d9] outline-none" placeholder="e.g. Kampala" />
+                      <input type="text" name="district" value={formData.district} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#6c11d4] outline-none" placeholder="e.g. Kampala" />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Subcounty/Div</label>
-                      <input type="text" name="subcounty" value={formData.subcounty} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#6d28d9] outline-none" placeholder="e.g. Nakawa" />
+                      <input type="text" name="subcounty" value={formData.subcounty} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#6c11d4] outline-none" placeholder="e.g. Nakawa" />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Parish/Ward</label>
-                      <input type="text" name="parish" value={formData.parish} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#6d28d9] outline-none" placeholder="e.g. Ntinda" />
+                      <input type="text" name="parish" value={formData.parish} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#6c11d4] outline-none" placeholder="e.g. Ntinda" />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Village/Cell</label>
-                      <input type="text" name="village" value={formData.village} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#6d28d9] outline-none" placeholder="e.g. Kigoowa" />
+                      <input type="text" name="village" value={formData.village} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#6c11d4] outline-none" placeholder="e.g. Kigoowa" />
                     </div>
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Landmark (Optional)</label>
-                    <input type="text" name="landmark" value={formData.landmark} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#6d28d9] outline-none" placeholder="Near Tuskys" />
+                    <input type="text" name="landmark" value={formData.landmark} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#6c11d4] outline-none" placeholder="Near Tuskys" />
                   </div>
                 </div>
 
                 <button 
                   onClick={() => setCurrentStep(2)}
                   disabled={!canProceedStep1}
-                  className="w-full py-4 rounded-xl bg-[#6d28d9] text-white font-bold hover:bg-[#5a1bb9] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-4 rounded-xl bg-[#6c11d4] text-white font-bold hover:bg-[#5a1bb9] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Confirm Location
                 </button>
@@ -261,7 +261,7 @@ export default function AgentListHouse() {
                   
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Property Type</label>
-                    <select name="propertyType" value={formData.propertyType} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl p-4 font-bold focus:ring-0 focus:border-[#6d28d9] outline-none appearance-none">
+                    <select name="propertyType" value={formData.propertyType} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl p-4 font-bold focus:ring-0 focus:border-[#6c11d4] outline-none appearance-none">
                       <option value="" disabled>Select Type...</option>
                       <option value="single_room">Single Room</option>
                       <option value="double_room">Double Room</option>
@@ -274,23 +274,23 @@ export default function AgentListHouse() {
                   {formData.propertyType === 'apartment' && (
                     <div className="animate-in fade-in slide-in-from-top-2">
                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Number of Units/Rooms</label>
-                      <input type="number" name="units" value={formData.units} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl p-4 font-bold focus:ring-0 focus:border-[#6d28d9] outline-none" placeholder="e.g. 2 Bedroom" />
+                      <input type="number" name="units" value={formData.units} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl p-4 font-bold focus:ring-0 focus:border-[#6c11d4] outline-none" placeholder="e.g. 2 Bedroom" />
                     </div>
                   )}
 
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Rent Price per Month (UGX)</label>
-                    <input type="number" name="rentPrice" value={formData.rentPrice} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl p-4 text-xl font-extrabold focus:ring-0 focus:border-[#6d28d9] outline-none text-[#6d28d9]" placeholder="e.g. 150000" />
+                    <input type="number" name="rentPrice" value={formData.rentPrice} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl p-4 text-xl font-extrabold focus:ring-0 focus:border-[#6c11d4] outline-none text-[#6c11d4]" placeholder="e.g. 150000" />
                   </div>
                   
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Current Status</label>
                     <div className="grid grid-cols-2 gap-3">
-                      <label className={`flex justify-center p-3 rounded-xl border-2 cursor-pointer font-bold transition-colors ${formData.availability === 'vacant' ? 'border-[#6d28d9] bg-[#6d28d9]/10 text-[#6d28d9]' : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                      <label className={`flex justify-center p-3 rounded-xl border-2 cursor-pointer font-bold transition-colors ${formData.availability === 'vacant' ? 'border-[#6c11d4] bg-[#6c11d4]/10 text-[#6c11d4]' : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
                         <input type="radio" name="availability" value="vacant" checked={formData.availability === 'vacant'} onChange={handleInputChange} className="hidden" />
                         Vacant
                       </label>
-                      <label className={`flex justify-center p-3 rounded-xl border-2 cursor-pointer font-bold transition-colors ${formData.availability === 'occupied' ? 'border-[#6d28d9] bg-[#6d28d9]/10 text-[#6d28d9]' : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                      <label className={`flex justify-center p-3 rounded-xl border-2 cursor-pointer font-bold transition-colors ${formData.availability === 'occupied' ? 'border-[#6c11d4] bg-[#6c11d4]/10 text-[#6c11d4]' : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
                         <input type="radio" name="availability" value="occupied" checked={formData.availability === 'occupied'} onChange={handleInputChange} className="hidden" />
                         Occupied
                       </label>
@@ -302,11 +302,11 @@ export default function AgentListHouse() {
                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Amenities</label>
                        <div className="flex gap-4">
                          <label className="flex items-center gap-2 cursor-pointer text-sm font-bold">
-                           <input type="checkbox" name="water" checked={formData.water} onChange={handleInputChange} className="rounded border-slate-300 text-[#6d28d9] focus:ring-[#6d28d9]" />
+                           <input type="checkbox" name="water" checked={formData.water} onChange={handleInputChange} className="rounded border-slate-300 text-[#6c11d4] focus:ring-[#6c11d4]" />
                            Piped Water
                          </label>
                          <label className="flex items-center gap-2 cursor-pointer text-sm font-bold">
-                           <input type="checkbox" name="electricity" checked={formData.electricity} onChange={handleInputChange} className="rounded border-slate-300 text-[#6d28d9] focus:ring-[#6d28d9]" />
+                           <input type="checkbox" name="electricity" checked={formData.electricity} onChange={handleInputChange} className="rounded border-slate-300 text-[#6c11d4] focus:ring-[#6c11d4]" />
                            Electricity
                          </label>
                        </div>
@@ -317,7 +317,7 @@ export default function AgentListHouse() {
 
                 <div className="flex gap-3">
                   <button onClick={() => setCurrentStep(1)} className="w-[30%] py-4 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">Back</button>
-                  <button onClick={() => setCurrentStep(3)} disabled={!canProceedStep2} className="flex-1 py-4 rounded-xl bg-[#6d28d9] text-white font-bold hover:bg-[#5a1bb9] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Continue to Photos</button>
+                  <button onClick={() => setCurrentStep(3)} disabled={!canProceedStep2} className="flex-1 py-4 rounded-xl bg-[#6c11d4] text-white font-bold hover:bg-[#5a1bb9] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Continue to Photos</button>
                 </div>
               </div>
             )}
@@ -404,7 +404,7 @@ export default function AgentListHouse() {
 
                 <div className="flex gap-3 pt-2">
                   <button onClick={() => setCurrentStep(2)} className="w-[30%] py-4 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">Back</button>
-                  <button onClick={() => setCurrentStep(4)} disabled={!canProceedStep3} className="flex-1 py-4 rounded-xl bg-[#6d28d9] text-white font-bold hover:bg-[#5a1bb9] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Proceed</button>
+                  <button onClick={() => setCurrentStep(4)} disabled={!canProceedStep3} className="flex-1 py-4 rounded-xl bg-[#6c11d4] text-white font-bold hover:bg-[#5a1bb9] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Proceed</button>
                 </div>
               </div>
             )}
@@ -415,40 +415,40 @@ export default function AgentListHouse() {
                 
                 <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 space-y-4">
                   <h3 className="font-bold border-b border-slate-100 dark:border-slate-700 pb-2 mb-4 flex items-center gap-2">
-                    <User size={18} className="text-[#6d28d9]" /> Landlord Details
+                    <User size={18} className="text-[#6c11d4]" /> Landlord Details
                   </h3>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Landlord Full Name</label>
-                    <input type="text" name="landlordName" value={formData.landlordName} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#6d28d9] outline-none" placeholder="e.g. John Doe" />
+                    <input type="text" name="landlordName" value={formData.landlordName} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#6c11d4] outline-none" placeholder="e.g. John Doe" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Landlord Phone Number</label>
-                    <input type="tel" name="landlordPhone" value={formData.landlordPhone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#6d28d9] outline-none" placeholder="+256 700 000000" />
+                    <input type="tel" name="landlordPhone" value={formData.landlordPhone} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#6c11d4] outline-none" placeholder="+256 700 000000" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 flex justify-between">Landlord Address <span className="font-normal text-[10px]">(Optional)</span></label>
-                    <input type="text" name="landlordAddress" value={formData.landlordAddress} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#6d28d9] outline-none" placeholder="Same logic or other place" />
+                    <input type="text" name="landlordAddress" value={formData.landlordAddress} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#6c11d4] outline-none" placeholder="Same logic or other place" />
                   </div>
                 </div>
 
                 <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 space-y-4">
                   <h3 className="font-bold border-b border-slate-100 dark:border-slate-700 pb-2 mb-4 flex items-center gap-2">
-                    <ShieldCheck size={18} className="text-[#6d28d9]" /> Local Council (LC1) Verification
+                    <ShieldCheck size={18} className="text-[#6c11d4]" /> Local Council (LC1) Verification
                   </h3>
                   <p className="text-xs text-slate-500 mb-2">Providing LC1 details massively speeds up verification.</p>
                   <div>
                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">LC1 Chairperson Name</label>
-                    <input type="text" name="lc1Name" value={formData.lc1Name} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#6d28d9] outline-none" placeholder="e.g. Owek. Kizito" />
+                    <input type="text" name="lc1Name" value={formData.lc1Name} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#6c11d4] outline-none" placeholder="e.g. Owek. Kizito" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 flex justify-between">LC1 Contact <span className="font-normal text-[10px]">(Optional)</span></label>
-                    <input type="tel" name="lc1Contact" value={formData.lc1Contact} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#6d28d9] outline-none" placeholder="Optional phone number" />
+                    <input type="tel" name="lc1Contact" value={formData.lc1Contact} onChange={handleInputChange} className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#6c11d4] outline-none" placeholder="Optional phone number" />
                   </div>
                 </div>
 
                 <div className="flex gap-3 pt-2">
                   <button onClick={() => setCurrentStep(3)} className="w-[30%] py-4 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">Back</button>
-                  <button onClick={() => setCurrentStep(5)} disabled={!canProceedStep4} className="flex-1 py-4 rounded-xl bg-[#6d28d9] text-white font-bold hover:bg-[#5a1bb9] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Review Details</button>
+                  <button onClick={() => setCurrentStep(5)} disabled={!canProceedStep4} className="flex-1 py-4 rounded-xl bg-[#6c11d4] text-white font-bold hover:bg-[#5a1bb9] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Review Details</button>
                 </div>
               </div>
             )}
@@ -463,7 +463,7 @@ export default function AgentListHouse() {
                   
                   {/* Location Summary */}
                   <div className="p-4 border-b border-slate-100 dark:border-slate-700">
-                    <p className="text-xs font-bold text-[#6d28d9] uppercase tracking-widest mb-2 flex items-center gap-1"><MapPin size={12}/> Location & GPS</p>
+                    <p className="text-xs font-bold text-[#6c11d4] uppercase tracking-widest mb-2 flex items-center gap-1"><MapPin size={12}/> Location & GPS</p>
                     <p className="font-bold text-slate-900 dark:text-white">{formData.district}, {formData.subcounty}</p>
                     <p className="text-slate-500">{formData.village}, {formData.parish}</p>
                     {gpsLocation && <p className="text-xs font-mono text-slate-400 mt-1">GPS: {gpsLocation.lat.toFixed(6)}, {gpsLocation.lng.toFixed(6)}</p>}
@@ -471,7 +471,7 @@ export default function AgentListHouse() {
 
                   {/* Property Details Summary */}
                   <div className="p-4 border-b border-slate-100 dark:border-slate-700">
-                    <p className="text-xs font-bold text-[#6d28d9] uppercase tracking-widest mb-2">Property Details</p>
+                    <p className="text-xs font-bold text-[#6c11d4] uppercase tracking-widest mb-2">Property Details</p>
                     <div className="grid grid-cols-2 gap-y-3 gap-x-4">
                       <div>
                         <span className="text-slate-500 text-xs block">Type</span>
@@ -494,7 +494,7 @@ export default function AgentListHouse() {
 
                   {/* Landlord Info Summary */}
                   <div className="p-4 border-b border-slate-100 dark:border-slate-700">
-                    <p className="text-xs font-bold text-[#6d28d9] uppercase tracking-widest mb-2">Landlord</p>
+                    <p className="text-xs font-bold text-[#6c11d4] uppercase tracking-widest mb-2">Landlord</p>
                     <div className="flex justify-between items-center">
                        <div>
                          <p className="font-bold">{formData.landlordName}</p>
@@ -505,7 +505,7 @@ export default function AgentListHouse() {
 
                   {/* Photos Summary */}
                   <div className="p-4">
-                    <p className="text-xs font-bold text-[#6d28d9] uppercase tracking-widest mb-2 flex items-center gap-1"><Camera size={12}/> Photos Captured</p>
+                    <p className="text-xs font-bold text-[#6c11d4] uppercase tracking-widest mb-2 flex items-center gap-1"><Camera size={12}/> Photos Captured</p>
                     <div className="flex gap-2">
                       <div className="size-16 rounded-lg bg-slate-100 dark:bg-slate-900 overflow-hidden border border-slate-200 dark:border-slate-700">
                         {photos.front && <img src={photos.front} className="w-full h-full object-cover" alt="Front" />}

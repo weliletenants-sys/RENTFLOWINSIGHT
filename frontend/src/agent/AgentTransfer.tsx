@@ -101,10 +101,10 @@ export default function AgentTransfer() {
                   value={recipient}
                   onChange={(e) => setRecipient(e.target.value)}
                   placeholder="Enter recipient phone or user ID" 
-                  className="block w-full rounded-xl border-slate-200 py-3.5 pl-4 pr-12 focus:border-[#6d28d9] focus:ring-[#6d28d9] text-base outline-none border focus:ring-1 transition-all bg-white" 
+                  className="block w-full rounded-xl border-slate-200 py-3.5 pl-4 pr-12 focus:border-[#6c11d4] focus:ring-[#6c11d4] text-base outline-none border focus:ring-1 transition-all bg-white" 
                   required
                 />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer text-slate-400 hover:text-[#6d28d9] transition-colors">
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer text-slate-400 hover:text-[#6c11d4] transition-colors">
                   <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
                   </svg>
@@ -126,7 +126,7 @@ export default function AgentTransfer() {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0" 
-                  className="block w-full rounded-xl border-slate-200 py-3.5 pl-16 pr-4 focus:border-[#6d28d9] focus:ring-[#6d28d9] text-xl font-semibold outline-none border focus:ring-1 transition-all" 
+                  className="block w-full rounded-xl border-slate-200 py-3.5 pl-16 pr-4 focus:border-[#6c11d4] focus:ring-[#6c11d4] text-xl font-semibold outline-none border focus:ring-1 transition-all" 
                   required
                 />
               </div>
@@ -166,7 +166,7 @@ export default function AgentTransfer() {
                 name="note" 
                 placeholder="What is this for?" 
                 rows={3} 
-                className="block w-full rounded-xl border-slate-200 p-4 focus:border-[#6d28d9] focus:ring-[#6d28d9] resize-none text-base outline-none border focus:ring-1 transition-all"
+                className="block w-full rounded-xl border-slate-200 p-4 focus:border-[#6c11d4] focus:ring-[#6c11d4] resize-none text-base outline-none border focus:ring-1 transition-all"
               ></textarea>
             </div>
 
@@ -175,7 +175,7 @@ export default function AgentTransfer() {
               <button 
                 type="submit" 
                 disabled={isLoading || amountValue <= 0 || !recipient}
-                className="w-full flex items-center justify-center gap-2 bg-[#6d28d9] hover:bg-[#5b21b6] text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-[#6d28d9]/20 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 bg-[#6c11d4] hover:bg-[#5b21b6] text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-[#6c11d4]/20 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading && <Loader2 size={18} className="animate-spin" />}
                 Send Transfer

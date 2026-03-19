@@ -56,7 +56,7 @@ export default function AgentOrders() {
        {/* Header */}
        <header className="sticky top-0 z-50 bg-white/80 dark:bg-[#1e1e1e]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 p-4">
         <div className="max-w-[960px] mx-auto flex items-center gap-4">
-          <button onClick={() => navigate('/agent-shop')} className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-[#6d28d9]/10 transition-colors -ml-2">
+          <button onClick={() => navigate('/agent-shop')} className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-[#6c11d4]/10 transition-colors -ml-2">
             <ChevronLeft size={24} />
           </button>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">My Orders</h1>
@@ -72,7 +72,7 @@ export default function AgentOrders() {
                onClick={() => setActiveTab(tab)}
                className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors whitespace-nowrap ${
                  activeTab === tab 
-                   ? 'bg-[#6d28d9] text-white shadow-md shadow-[#6d28d9]/20'
+                   ? 'bg-[#6c11d4] text-white shadow-md shadow-[#6c11d4]/20'
                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
                }`}
              >
@@ -110,7 +110,7 @@ export default function AgentOrders() {
                        <img src={order.imageUrl} className="w-16 h-16 rounded-xl object-cover border border-slate-100 dark:border-slate-700" />
                        <div className="flex-1">
                           <h3 className="font-bold text-slate-900 dark:text-white text-sm line-clamp-2">{order.productName}</h3>
-                          <p className="text-xs text-[#6d28d9] font-medium mt-1">{order.seller}</p>
+                          <p className="text-xs text-[#6c11d4] font-medium mt-1">{order.seller}</p>
                           <p className="font-black text-slate-900 dark:text-white mt-1">UGX {order.total.toLocaleString()}</p>
                        </div>
                     </div>
@@ -124,7 +124,7 @@ export default function AgentOrders() {
                             Leave Review
                           </button>
                        ) : (
-                          <button className="flex-1 py-2.5 rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] font-bold text-xs hover:bg-[#6d28d9]/20 transition-colors">
+                          <button className="flex-1 py-2.5 rounded-xl bg-[#6c11d4]/10 text-[#6c11d4] font-bold text-xs hover:bg-[#6c11d4]/20 transition-colors">
                             Track
                           </button>
                        )}

@@ -84,16 +84,16 @@ export default function AgentShop() {
       <header className="sticky top-0 z-50 bg-white/80 dark:bg-[#1e1e1e]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 md:px-10 py-4">
         <div className="max-w-[960px] mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/dashboard')} className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-[#6d28d9]/10 hover:text-[#6d28d9] transition-colors -ml-2">
+            <button onClick={() => navigate('/dashboard')} className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-[#6c11d4]/10 hover:text-[#6c11d4] transition-colors -ml-2">
               <ChevronLeft size={24} />
             </button>
             <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-              <ShoppingBag size={24} className="text-[#6d28d9]" />
+              <ShoppingBag size={24} className="text-[#6c11d4]" />
               Welile Market
             </h1>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/agent-shop/seller')} className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#6d28d9]/10 text-[#6d28d9] text-sm font-semibold hover:bg-[#6d28d9]/20 transition-colors">
+            <button onClick={() => navigate('/agent-shop/seller')} className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#6c11d4]/10 text-[#6c11d4] text-sm font-semibold hover:bg-[#6c11d4]/20 transition-colors">
               <Store size={16} />
               <span className="hidden sm:inline">Seller Hub</span>
             </button>
@@ -114,10 +114,10 @@ export default function AgentShop() {
               placeholder="Search products, services, sellers..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-800 border-transparent focus:border-[#6d28d9]/30 focus:ring-4 focus:ring-[#6d28d9]/10 rounded-2xl shadow-sm text-slate-900 dark:text-white transition-all outline-none"
+              className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-800 border-transparent focus:border-[#6c11d4]/30 focus:ring-4 focus:ring-[#6c11d4]/10 rounded-2xl shadow-sm text-slate-900 dark:text-white transition-all outline-none"
             />
           </div>
-          <button className="flex items-center justify-center w-14 h-14 bg-white dark:bg-slate-800 rounded-2xl shadow-sm text-slate-600 dark:text-slate-400 hover:text-[#6d28d9] transition-colors">
+          <button className="flex items-center justify-center w-14 h-14 bg-white dark:bg-slate-800 rounded-2xl shadow-sm text-slate-600 dark:text-slate-400 hover:text-[#6c11d4] transition-colors">
             <SlidersHorizontal size={24} />
           </button>
         </section>
@@ -134,8 +134,8 @@ export default function AgentShop() {
                   onClick={() => setActiveCategory(cat.id)}
                   className={`flex items-center gap-2 px-5 py-2.5 rounded-full whitespace-nowrap transition-all border ${
                     isActive 
-                      ? 'bg-[#6d28d9] border-[#6d28d9] text-white shadow-md shadow-[#6d28d9]/20' 
-                      : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-[#6d28d9]/50'
+                      ? 'bg-[#6c11d4] border-[#6c11d4] text-white shadow-md shadow-[#6c11d4]/20' 
+                      : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-[#6c11d4]/50'
                   }`}
                 >
                   <Icon size={16} />
@@ -151,7 +151,7 @@ export default function AgentShop() {
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <TrendingUp size={20} className="text-[#6d28d9]" /> Featured & Deals
+                <TrendingUp size={20} className="text-[#6c11d4]" /> Featured & Deals
               </h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -159,7 +159,7 @@ export default function AgentShop() {
                 <div 
                   key={product.id} 
                   onClick={() => navigate(`/agent-shop/product/${product.id}`)}
-                  className="group bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-sm border border-slate-100 dark:border-slate-700 cursor-pointer hover:shadow-md hover:border-[#6d28d9]/30 transition-all flex h-36"
+                  className="group bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-sm border border-slate-100 dark:border-slate-700 cursor-pointer hover:shadow-md hover:border-[#6c11d4]/30 transition-all flex h-36"
                 >
                   <div className="w-36 overflow-hidden relative">
                     <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -176,7 +176,7 @@ export default function AgentShop() {
                         <span>{product.rating}</span>
                         <span className="text-slate-400 font-normal">({product.reviews})</span>
                       </div>
-                      <p className="text-[#6d28d9] font-black tracking-tight">UGX {product.price.toLocaleString()}</p>
+                      <p className="text-[#6c11d4] font-black tracking-tight">UGX {product.price.toLocaleString()}</p>
                     </div>
                   </div>
                 </div>
@@ -198,7 +198,7 @@ export default function AgentShop() {
               <div 
                 key={product.id}
                 onClick={() => navigate(`/agent-shop/product/${product.id}`)}
-                className="group bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-sm border border-slate-100 dark:border-slate-700 cursor-pointer hover:shadow-md hover:border-[#6d28d9]/30 transition-all flex flex-col"
+                className="group bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-sm border border-slate-100 dark:border-slate-700 cursor-pointer hover:shadow-md hover:border-[#6c11d4]/30 transition-all flex flex-col"
               >
                 <div className="aspect-[4/3] w-full overflow-hidden relative">
                   <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -214,9 +214,9 @@ export default function AgentShop() {
                   
                   <div className="pt-2 border-t border-slate-100 dark:border-slate-700/50 flex items-end justify-between">
                     <div>
-                      <p className="text-[#6d28d9] font-black text-sm tracking-tight">UGX {product.price.toLocaleString()}</p>
+                      <p className="text-[#6c11d4] font-black text-sm tracking-tight">UGX {product.price.toLocaleString()}</p>
                     </div>
-                    <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-400 group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
+                    <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-400 group-hover:bg-[#6c11d4] group-hover:text-white transition-colors">
                       <ArrowRight size={14} />
                     </div>
                   </div>

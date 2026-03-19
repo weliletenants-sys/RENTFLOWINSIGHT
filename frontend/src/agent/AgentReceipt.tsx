@@ -87,7 +87,7 @@ export default function AgentReceipt() {
                 <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-[#f8fafc] dark:bg-[#1e1e1e] rounded-full"></div>
                 <div className="p-6 space-y-4">
                   <div className="text-center border-b border-dashed border-slate-200 dark:border-slate-700 pb-4">
-                    <p className="text-[10px] font-bold text-[#6d28d9] tracking-[0.2em] uppercase mb-1">Welile Fintech</p>
+                    <p className="text-[10px] font-bold text-[#6c11d4] tracking-[0.2em] uppercase mb-1">Welile Fintech</p>
                     <p className="text-2xl font-black text-slate-900 dark:text-white">UGX {numAmount.toLocaleString()}</p>
                     <p className="text-xs text-slate-500">{new Date(transactionDate).toLocaleDateString()} • {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
                   </div>
@@ -110,7 +110,7 @@ export default function AgentReceipt() {
                     </div>
                     <div className="flex justify-between items-center pt-2 border-t border-slate-50 dark:border-slate-700/50">
                       <span className="text-xs font-medium text-slate-900 dark:text-white">New Balance</span>
-                      <span className="text-sm font-bold text-[#6d28d9]">UGX {newBalance.toLocaleString()}</span>
+                      <span className="text-sm font-bold text-[#6c11d4]">UGX {newBalance.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
@@ -160,7 +160,7 @@ export default function AgentReceipt() {
               <div className="relative">
                 <input 
                   type="text" 
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 dark:text-white rounded-xl focus:ring-[#6d28d9] focus:border-[#6d28d9] text-sm transition-all" 
+                  className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 dark:text-white rounded-xl focus:ring-[#6c11d4] focus:border-[#6c11d4] text-sm transition-all" 
                   placeholder="Search by name or phone" 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -170,13 +170,13 @@ export default function AgentReceipt() {
             </div>
 
             {selectedTenant && (
-              <div className="bg-[#f5f3ff] dark:bg-[#6d28d9]/10 p-4 rounded-2xl border border-purple-100 dark:border-purple-900/30 flex flex-col gap-3">
+              <div className="bg-[#f5f3ff] dark:bg-[#6c11d4]/10 p-4 rounded-2xl border border-purple-100 dark:border-purple-900/30 flex flex-col gap-3">
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-bold text-slate-900 dark:text-white">{selectedTenant.name}</h3>
                     <p className="text-sm text-slate-600 dark:text-slate-400">{selectedTenant.phone}</p>
                   </div>
-                  <span className="bg-white dark:bg-slate-800 px-2 py-1 rounded text-[10px] font-bold text-[#6d28d9] border border-purple-200 dark:border-purple-800 uppercase">{selectedTenant.status}</span>
+                  <span className="bg-white dark:bg-slate-800 px-2 py-1 rounded text-[10px] font-bold text-[#6c11d4] border border-purple-200 dark:border-purple-800 uppercase">{selectedTenant.status}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-4 pt-2 border-t border-purple-200/50 dark:border-purple-900/30">
                   <div>
@@ -198,7 +198,7 @@ export default function AgentReceipt() {
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Amount Paid (UGX)</label>
               <input 
                 type="number" 
-                className="w-full text-3xl font-bold tracking-tight py-4 px-0 border-0 border-b-2 border-slate-200 dark:border-slate-700 bg-transparent dark:text-white focus:ring-0 focus:border-[#6d28d9] transition-all" 
+                className="w-full text-3xl font-bold tracking-tight py-4 px-0 border-0 border-b-2 border-slate-200 dark:border-slate-700 bg-transparent dark:text-white focus:ring-0 focus:border-[#6c11d4] transition-all" 
                 placeholder="0" 
                 value={amountPaid}
                 onChange={(e) => setAmountPaid(e.target.value)}
@@ -210,19 +210,19 @@ export default function AgentReceipt() {
               <div className="grid grid-cols-3 gap-3">
                 <button 
                   onClick={() => setPaymentMethod('CASH')}
-                  className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${paymentMethod === 'CASH' ? 'border-[#6d28d9] bg-[#f5f3ff] dark:bg-[#6d28d9]/10 text-[#6d28d9]' : 'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400'}`}
+                  className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${paymentMethod === 'CASH' ? 'border-[#6c11d4] bg-[#f5f3ff] dark:bg-[#6c11d4]/10 text-[#6c11d4]' : 'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400'}`}
                 >
                   <span className="text-xs font-semibold">Cash</span>
                 </button>
                 <button 
                   onClick={() => setPaymentMethod('MOMO')}
-                  className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${paymentMethod === 'MOMO' ? 'border-[#6d28d9] bg-[#f5f3ff] dark:bg-[#6d28d9]/10 text-[#6d28d9]' : 'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400'}`}
+                  className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${paymentMethod === 'MOMO' ? 'border-[#6c11d4] bg-[#f5f3ff] dark:bg-[#6c11d4]/10 text-[#6c11d4]' : 'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400'}`}
                 >
                   <span className="text-xs font-semibold">Mobile Money</span>
                 </button>
                 <button 
                   onClick={() => setPaymentMethod('BANK')}
-                  className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${paymentMethod === 'BANK' ? 'border-[#6d28d9] bg-[#f5f3ff] dark:bg-[#6d28d9]/10 text-[#6d28d9]' : 'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400'}`}
+                  className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${paymentMethod === 'BANK' ? 'border-[#6c11d4] bg-[#f5f3ff] dark:bg-[#6c11d4]/10 text-[#6c11d4]' : 'border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400'}`}
                 >
                   <span className="text-xs font-semibold">Bank</span>
                 </button>
@@ -233,13 +233,13 @@ export default function AgentReceipt() {
               <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Payment Type</p>
               <div className="grid grid-cols-1 gap-2">
                 {['Daily Repayment', 'Rent Contribution', 'Advance Payment'].map((type) => (
-                  <label key={type} className={`flex items-center p-3 rounded-xl border cursor-pointer transition-all ${paymentType === type ? 'border-[#6d28d9] bg-[#f5f3ff] dark:bg-[#6d28d9]/10' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>
+                  <label key={type} className={`flex items-center p-3 rounded-xl border cursor-pointer transition-all ${paymentType === type ? 'border-[#6c11d4] bg-[#f5f3ff] dark:bg-[#6c11d4]/10' : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}>
                     <input 
                       type="radio" 
                       name="payment_type" 
                       checked={paymentType === type}
                       onChange={() => setPaymentType(type)}
-                      className="text-[#6d28d9] focus:ring-[#6d28d9] h-4 w-4 border-slate-300"
+                      className="text-[#6c11d4] focus:ring-[#6c11d4] h-4 w-4 border-slate-300"
                     />
                     <span className="ml-3 text-sm font-medium dark:text-slate-200">{type}</span>
                   </label>
@@ -280,7 +280,7 @@ export default function AgentReceipt() {
                 type="date" 
                 value={transactionDate}
                 onChange={(e) => setTransactionDate(e.target.value)}
-                className="w-full p-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-[#6d28d9] focus:border-[#6d28d9] text-sm dark:text-white" 
+                className="w-full p-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-[#6c11d4] focus:border-[#6c11d4] text-sm dark:text-white" 
               />
             </div>
           </section>
@@ -293,7 +293,7 @@ export default function AgentReceipt() {
               <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-[#f8fafc] dark:bg-[#1e1e1e] rounded-full"></div>
               <div className="p-6 space-y-4">
                 <div className="text-center border-b border-dashed border-slate-200 dark:border-slate-700 pb-4">
-                  <p className="text-[10px] font-bold text-[#6d28d9] tracking-[0.2em] uppercase mb-1">Welile Fintech</p>
+                  <p className="text-[10px] font-bold text-[#6c11d4] tracking-[0.2em] uppercase mb-1">Welile Fintech</p>
                   <p className="text-2xl font-black text-slate-900 dark:text-white">UGX {numAmount.toLocaleString()}</p>
                   <p className="text-xs text-slate-500">{new Date(transactionDate).toLocaleDateString()} • {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
                 </div>
@@ -312,7 +312,7 @@ export default function AgentReceipt() {
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t border-slate-50 dark:border-slate-700/50">
                     <span className="text-xs font-medium text-slate-900 dark:text-white">New Balance</span>
-                    <span className="text-sm font-bold text-[#6d28d9]">UGX {newBalance.toLocaleString()}</span>
+                    <span className="text-sm font-bold text-[#6c11d4]">UGX {newBalance.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
@@ -341,7 +341,7 @@ export default function AgentReceipt() {
           <button 
             onClick={handleGenerateReceipt}
             disabled={isSubmitting || !selectedTenant || numAmount <= 0}
-            className="w-full bg-[#6d28d9] hover:bg-[#5a1bb9] text-white font-bold py-4 rounded-2xl transition-all shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
+            className="w-full bg-[#6c11d4] hover:bg-[#5a1bb9] text-white font-bold py-4 rounded-2xl transition-all shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
           >
             {isSubmitting ? (
               <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>

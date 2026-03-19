@@ -16,9 +16,9 @@ const COOWallets: React.FC = () => {
           <div className="relative z-10 flex justify-between items-start mb-4">
             <div>
               <p className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Platform Reserve</p>
-              <h3 className="text-3xl font-bold font-outfit text-[#7B61FF]">UGX 85.2M</h3>
+              <h3 className="text-3xl font-bold font-outfit text-[#6c11d4]">UGX 85.2M</h3>
             </div>
-            <div className="w-12 h-12 rounded-full bg-[#EAE5FF] flex items-center justify-center text-[#7B61FF]">
+            <div className="w-12 h-12 rounded-full bg-[#EAE5FF] flex items-center justify-center text-[#6c11d4]">
               <Wallet size={24} />
             </div>
           </div>

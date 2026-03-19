@@ -114,7 +114,7 @@ export default function AgentVisit() {
             placeholder="Search name, phone, or location..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white dark:bg-slate-800 border-none shadow-sm focus:ring-2 focus:ring-[#6d28d9] outline-none transition-all placeholder:text-slate-400"
+            className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white dark:bg-slate-800 border-none shadow-sm focus:ring-2 focus:ring-[#6c11d4] outline-none transition-all placeholder:text-slate-400"
           />
         </div>
 
@@ -122,13 +122,13 @@ export default function AgentVisit() {
         <div className="flex p-1 bg-slate-200 dark:bg-slate-800 rounded-xl">
           <button
             onClick={() => setActiveTab('assigned')}
-            className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'assigned' ? 'bg-white dark:bg-slate-700 text-[#6d28d9] shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+            className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'assigned' ? 'bg-white dark:bg-slate-700 text-[#6c11d4] shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
           >
             My Assigned (4)
           </button>
           <button
             onClick={() => setActiveTab('nearby')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'nearby' ? 'bg-white dark:bg-slate-700 text-[#6d28d9] shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'nearby' ? 'bg-white dark:bg-slate-700 text-[#6c11d4] shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
           >
             <MapPin size={16} />
             Nearby
@@ -149,11 +149,11 @@ export default function AgentVisit() {
               <div 
                 key={tenant.id}
                 onClick={() => navigate(`/agent-visit/${tenant.id}`)}
-                className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-700 cursor-pointer hover:border-[#6d28d9]/50 transition-all active:scale-[0.98]"
+                className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-700 cursor-pointer hover:border-[#6c11d4]/50 transition-all active:scale-[0.98]"
               >
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="size-10 rounded-full bg-[#6d28d9]/10 text-[#6d28d9] flex items-center justify-center font-bold text-lg">
+                    <div className="size-10 rounded-full bg-[#6c11d4]/10 text-[#6c11d4] flex items-center justify-center font-bold text-lg">
                       {tenant.name.charAt(0)}
                     </div>
                     <div>
@@ -189,7 +189,7 @@ export default function AgentVisit() {
                     <MapPin size={14} className="shrink-0" />
                     <span className="truncate">{tenant.location}</span>
                   </div>
-                  <div className="flex items-center gap-1 font-medium text-[#6d28d9] bg-[#6d28d9]/10 px-2 py-1 rounded-md">
+                  <div className="flex items-center gap-1 font-medium text-[#6c11d4] bg-[#6c11d4]/10 px-2 py-1 rounded-md">
                     <Navigation size={12} />
                     {tenant.distance}
                   </div>

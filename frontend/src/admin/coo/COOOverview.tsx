@@ -13,7 +13,7 @@ const COOOverview: React.FC = () => {
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
           <div className="flex justify-between items-start mb-4">
             <span className="text-slate-500 text-sm font-bold">Total Investors</span>
-            <div className="p-2 bg-[#EAE5FF] text-[#7B61FF] rounded-full">
+            <div className="p-2 bg-[#EAE5FF] text-[#6c11d4] rounded-full">
               <Users size={18} />
             </div>
           </div>
@@ -26,7 +26,7 @@ const COOOverview: React.FC = () => {
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
           <div className="flex justify-between items-start mb-4">
             <span className="text-slate-500 text-sm font-bold">Total Investments</span>
-            <div className="p-2 bg-[#EAE5FF] text-[#7B61FF] rounded-full">
+            <div className="p-2 bg-[#EAE5FF] text-[#6c11d4] rounded-full">
               <Briefcase size={18} />
             </div>
           </div>
@@ -76,7 +76,7 @@ const COOOverview: React.FC = () => {
           <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-slate-800">Agent Collections Overview</h3>
-              <button onClick={() => navigate('/coo/collections')} className="text-xs font-bold text-[#7B61FF] bg-[#EAE5FF] px-3 py-1.5 rounded-full hover:bg-purple-100 transition-colors">
+              <button onClick={() => navigate('/coo/collections')} className="text-xs font-bold text-[#6c11d4] bg-[#EAE5FF] px-3 py-1.5 rounded-full hover:bg-purple-100 transition-colors">
                  View All
               </button>
             </div>
@@ -84,7 +84,7 @@ const COOOverview: React.FC = () => {
               <div className="p-4 bg-slate-50 rounded-2xl flex flex-col justify-center">
                 <p className="text-sm text-slate-500 font-bold mb-1">Active Agents</p>
                 <div className="flex items-center space-x-2">
-                   <div className="w-8 h-8 rounded-full bg-[#EAE5FF] flex items-center justify-center text-[#7B61FF]">
+                   <div className="w-8 h-8 rounded-full bg-[#EAE5FF] flex items-center justify-center text-[#6c11d4]">
                      <UserCheck size={16} />
                    </div>
                    <p className="text-2xl font-bold text-slate-900">45</p>
@@ -93,7 +93,7 @@ const COOOverview: React.FC = () => {
               <div className="p-4 bg-slate-50 rounded-2xl flex flex-col justify-center">
                 <p className="text-sm text-slate-500 font-bold mb-1">Active Accounts</p>
                 <div className="flex items-center space-x-2">
-                   <div className="w-8 h-8 rounded-full bg-[#EAE5FF] flex items-center justify-center text-[#7B61FF]">
+                   <div className="w-8 h-8 rounded-full bg-[#EAE5FF] flex items-center justify-center text-[#6c11d4]">
                      <Users size={16} />
                    </div>
                    <p className="text-2xl font-bold text-slate-900">1,245</p>
@@ -109,12 +109,12 @@ const COOOverview: React.FC = () => {
                 </div>
               </div>
               <div className="p-4 bg-[#EAE5FF] rounded-2xl flex flex-col justify-center">
-                <p className="text-sm text-[#7B61FF] font-bold mb-1">Today's Visits</p>
+                <p className="text-sm text-[#6c11d4] font-bold mb-1">Today's Visits</p>
                 <div className="flex items-center space-x-2">
-                   <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#7B61FF]">
+                   <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#6c11d4]">
                      <Activity size={16} />
                    </div>
-                   <p className="text-xl font-bold text-[#7B61FF]">184</p>
+                   <p className="text-xl font-bold text-[#6c11d4]">184</p>
                 </div>
               </div>
             </div>
@@ -124,7 +124,7 @@ const COOOverview: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => navigate('/coo/wallets')}>
               <div className="flex items-center space-x-3 mb-6">
-                <div className="p-2 bg-[#EAE5FF] text-[#7B61FF] rounded-full"><Wallet size={20} /></div>
+                <div className="p-2 bg-[#EAE5FF] text-[#6c11d4] rounded-full"><Wallet size={20} /></div>
                 <h3 className="text-lg font-bold text-slate-800">Wallet Monitoring</h3>
               </div>
               <div className="space-y-5">
@@ -151,13 +151,13 @@ const COOOverview: React.FC = () => {
             
             <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => navigate('/coo/analytics')}>
               <div className="flex items-center space-x-3 mb-6">
-                <div className="p-2 bg-[#EAE5FF] text-[#7B61FF] rounded-full"><PieChart size={20} /></div>
+                <div className="p-2 bg-[#EAE5FF] text-[#6c11d4] rounded-full"><PieChart size={20} /></div>
                 <h3 className="text-lg font-bold text-slate-800">Payment Modes</h3>
               </div>
               <div className="space-y-4">
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center space-x-3">
-                     <span className="w-3 h-3 rounded-full bg-[#7B61FF]"></span>
+                     <span className="w-3 h-3 rounded-full bg-[#6c11d4]"></span>
                      <span className="font-bold text-slate-600">Mobile Money</span>
                   </div>
                   <span className="font-bold text-slate-900 bg-slate-50 px-2 py-1 rounded-md">65%</span>
@@ -207,8 +207,8 @@ const COOOverview: React.FC = () => {
               <p className="text-xs text-slate-500 leading-relaxed">12 tenants have been overdue for &gt; 3 days. Totaling <strong className="text-slate-700">UGX 1.4M</strong>.</p>
             </div>
             
-            <div className="p-4 bg-white border border-[#EAE5FF] rounded-2xl shadow-sm cursor-pointer hover:border-[#7B61FF] transition-all relative overflow-hidden">
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#7B61FF]"></div>
+            <div className="p-4 bg-white border border-[#EAE5FF] rounded-2xl shadow-sm cursor-pointer hover:border-[#6c11d4] transition-all relative overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#6c11d4]"></div>
               <h4 className="text-sm font-bold text-slate-800 mb-1">Upcoming Payouts</h4>
               <p className="text-xs text-slate-500 leading-relaxed"><strong className="text-slate-700">UGX 42M</strong> in Investor ROI payouts scheduled for tomorrow.</p>
             </div>

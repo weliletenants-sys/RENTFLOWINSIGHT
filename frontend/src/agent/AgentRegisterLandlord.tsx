@@ -159,7 +159,7 @@ export default function AgentRegisterLandlord() {
           </button>
           <div className="flex flex-col items-center">
              <h1 className="text-lg font-bold">Register Landlord</h1>
-             {!isSuccess && <p className="text-[10px] font-bold text-[#6d28d9] uppercase tracking-widest">Step {step} of 5</p>}
+             {!isSuccess && <p className="text-[10px] font-bold text-[#6c11d4] uppercase tracking-widest">Step {step} of 5</p>}
           </div>
           <div className="w-9" />
         </header>
@@ -168,7 +168,7 @@ export default function AgentRegisterLandlord() {
         {!isSuccess && (
           <div className="w-full bg-slate-200 dark:bg-slate-800 h-1">
             <div 
-              className="bg-[#6d28d9] h-1 transition-all duration-300"
+              className="bg-[#6c11d4] h-1 transition-all duration-300"
               style={{ width: `${(step / 5) * 100}%` }}
             />
           </div>
@@ -207,16 +207,16 @@ export default function AgentRegisterLandlord() {
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Full Name *</label>
                       <div className="relative group">
-                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#6d28d9]" size={18} />
-                        <input name="fullName" value={formData.fullName} onChange={handleChange} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6d28d9]/20" placeholder="e.g. John Doe" />
+                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#6c11d4]" size={18} />
+                        <input name="fullName" value={formData.fullName} onChange={handleChange} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6c11d4]/20" placeholder="e.g. John Doe" />
                       </div>
                     </div>
                     
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Phone Number *</label>
                       <div className="relative group">
-                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#6d28d9]" size={18} />
-                        <input name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6d28d9]/20" placeholder="e.g. 0700123456" />
+                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#6c11d4]" size={18} />
+                        <input name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6c11d4]/20" placeholder="e.g. 0700123456" />
                       </div>
                       <p className="text-[10px] text-slate-400 ml-1">This number must match the registered name.</p>
                     </div>
@@ -224,15 +224,15 @@ export default function AgentRegisterLandlord() {
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Email (Optional)</label>
                       <div className="relative group">
-                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#6d28d9]" size={18} />
-                        <input name="email" value={formData.email} onChange={handleChange} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6d28d9]/20" placeholder="e.g. jdoe@email.com" />
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#6c11d4]" size={18} />
+                        <input name="email" value={formData.email} onChange={handleChange} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6c11d4]/20" placeholder="e.g. jdoe@email.com" />
                       </div>
                     </div>
 
                     <div className="flex gap-4">
                       <div className="space-y-1.5 flex-[0.8]">
                         <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">ID Type</label>
-                        <select name="idType" value={formData.idType} onChange={handleChange} className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6d28d9]/20 appearance-none font-medium">
+                        <select name="idType" value={formData.idType} onChange={handleChange} className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6c11d4]/20 appearance-none font-medium">
                           <option value="national_id">National ID</option>
                           <option value="passport">Passport</option>
                           <option value="driving_permit">Driving Permit</option>
@@ -240,7 +240,7 @@ export default function AgentRegisterLandlord() {
                       </div>
                       <div className="space-y-1.5 flex-1">
                         <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">ID Number</label>
-                        <input name="idNumber" value={formData.idNumber} onChange={handleChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6d28d9]/20" placeholder="CM123..." />
+                        <input name="idNumber" value={formData.idNumber} onChange={handleChange} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6c11d4]/20" placeholder="CM123..." />
                       </div>
                     </div>
 
@@ -269,20 +269,20 @@ export default function AgentRegisterLandlord() {
                     <div className="space-y-4 p-4 bg-slate-50 dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-800">
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">District</label>
-                        <input name="district" value={formData.district} onChange={handleChange} className="w-full px-4 py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-[#6d28d9]/20" placeholder="e.g. Kampala" />
+                        <input name="district" value={formData.district} onChange={handleChange} className="w-full px-4 py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-[#6c11d4]/20" placeholder="e.g. Kampala" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Subcounty</label>
-                        <input name="subcounty" value={formData.subcounty} onChange={handleChange} className="w-full px-4 py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-[#6d28d9]/20" placeholder="e.g. Nakawa" />
+                        <input name="subcounty" value={formData.subcounty} onChange={handleChange} className="w-full px-4 py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-[#6c11d4]/20" placeholder="e.g. Nakawa" />
                       </div>
                       <div className="flex gap-3">
                         <div className="space-y-1.5 flex-1">
                           <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Parish/Ward</label>
-                          <input name="parishWard" value={formData.parishWard} onChange={handleChange} className="w-full px-4 py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-[#6d28d9]/20" placeholder="e.g. Ntinda" />
+                          <input name="parishWard" value={formData.parishWard} onChange={handleChange} className="w-full px-4 py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-[#6c11d4]/20" placeholder="e.g. Ntinda" />
                         </div>
                         <div className="space-y-1.5 flex-1">
                           <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Village/Cell</label>
-                          <input name="villageCell" value={formData.villageCell} onChange={handleChange} className="w-full px-4 py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-[#6d28d9]/20" placeholder="e.g. Zone A" />
+                          <input name="villageCell" value={formData.villageCell} onChange={handleChange} className="w-full px-4 py-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-[#6c11d4]/20" placeholder="e.g. Zone A" />
                         </div>
                       </div>
                     </div>
@@ -291,8 +291,8 @@ export default function AgentRegisterLandlord() {
                       <div className="space-y-1.5 flex-1">
                         <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Property Type</label>
                         <div className="relative group">
-                          <Home className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#6d28d9]" size={16} />
-                          <select name="propertyType" value={formData.propertyType} onChange={handleChange} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6d28d9]/20 appearance-none">
+                          <Home className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#6c11d4]" size={16} />
+                          <select name="propertyType" value={formData.propertyType} onChange={handleChange} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6c11d4]/20 appearance-none">
                             <option>House</option>
                             <option>Apartment</option>
                             <option>Shop</option>
@@ -303,8 +303,8 @@ export default function AgentRegisterLandlord() {
                       <div className="space-y-1.5 w-24">
                         <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Units</label>
                         <div className="relative group">
-                          <Grid className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#6d28d9]" size={16} />
-                          <input type="number" name="units" value={formData.units} onChange={handleChange} className="w-full pl-9 pr-2 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6d28d9]/20" placeholder="1" />
+                          <Grid className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#6c11d4]" size={16} />
+                          <input type="number" name="units" value={formData.units} onChange={handleChange} className="w-full pl-9 pr-2 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6c11d4]/20" placeholder="1" />
                         </div>
                       </div>
                     </div>
@@ -312,13 +312,13 @@ export default function AgentRegisterLandlord() {
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Rent per Month (Optional)</label>
                       <div className="relative group">
-                        <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#6d28d9]" size={18} />
-                        <input type="number" name="rent" value={formData.rent} onChange={handleChange} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6d28d9]/20" placeholder="UGX Amount" />
+                        <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#6c11d4]" size={18} />
+                        <input type="number" name="rent" value={formData.rent} onChange={handleChange} className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6c11d4]/20" placeholder="UGX Amount" />
                       </div>
                     </div>
                     
-                    <label className="flex items-center gap-3 p-4 bg-[#6d28d9]/5 border border-[#6d28d9]/20 rounded-xl cursor-pointer">
-                      <input type="checkbox" name="ownershipConfirmed" checked={formData.ownershipConfirmed} onChange={handleChange} className="w-5 h-5 accent-[#6d28d9] rounded" />
+                    <label className="flex items-center gap-3 p-4 bg-[#6c11d4]/5 border border-[#6c11d4]/20 rounded-xl cursor-pointer">
+                      <input type="checkbox" name="ownershipConfirmed" checked={formData.ownershipConfirmed} onChange={handleChange} className="w-5 h-5 accent-[#6c11d4] rounded" />
                       <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">I confirm that this person is the true owner / legal representative of this property.</span>
                     </label>
 
@@ -375,10 +375,10 @@ export default function AgentRegisterLandlord() {
 
                     {/* Contact 1 */}
                     <div className="p-4 bg-slate-50 dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-3">
-                      <h4 className="font-bold text-sm text-[#6d28d9] flex items-center gap-2"><Users size={16}/> Contact 1</h4>
-                      <input name="contact1Name" value={formData.contact1Name} onChange={handleChange} className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-[#6d28d9]/20 text-sm" placeholder="Full Name" />
+                      <h4 className="font-bold text-sm text-[#6c11d4] flex items-center gap-2"><Users size={16}/> Contact 1</h4>
+                      <input name="contact1Name" value={formData.contact1Name} onChange={handleChange} className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-[#6c11d4]/20 text-sm" placeholder="Full Name" />
                       <div className="flex gap-2">
-                        <input name="contact1Phone" value={formData.contact1Phone} onChange={handleChange} className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-[#6d28d9]/20 text-sm flex-1" placeholder="Phone" />
+                        <input name="contact1Phone" value={formData.contact1Phone} onChange={handleChange} className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-[#6c11d4]/20 text-sm flex-1" placeholder="Phone" />
                         <select name="contact1Relation" value={formData.contact1Relation} onChange={handleChange} className="px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none text-sm w-32">
                           <option>Neighbor</option>
                           <option>LC / Official</option>
@@ -389,10 +389,10 @@ export default function AgentRegisterLandlord() {
 
                     {/* Contact 2 */}
                     <div className="p-4 bg-slate-50 dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-3">
-                      <h4 className="font-bold text-sm text-[#6d28d9] flex items-center gap-2"><Users size={16}/> Contact 2</h4>
-                      <input name="contact2Name" value={formData.contact2Name} onChange={handleChange} className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-[#6d28d9]/20 text-sm" placeholder="Full Name" />
+                      <h4 className="font-bold text-sm text-[#6c11d4] flex items-center gap-2"><Users size={16}/> Contact 2</h4>
+                      <input name="contact2Name" value={formData.contact2Name} onChange={handleChange} className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-[#6c11d4]/20 text-sm" placeholder="Full Name" />
                       <div className="flex gap-2">
-                        <input name="contact2Phone" value={formData.contact2Phone} onChange={handleChange} className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-[#6d28d9]/20 text-sm flex-1" placeholder="Phone" />
+                        <input name="contact2Phone" value={formData.contact2Phone} onChange={handleChange} className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-[#6c11d4]/20 text-sm flex-1" placeholder="Phone" />
                         <select name="contact2Relation" value={formData.contact2Relation} onChange={handleChange} className="px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none text-sm w-32">
                           <option>Neighbor</option>
                           <option>LC / Official</option>
@@ -426,10 +426,10 @@ export default function AgentRegisterLandlord() {
                     <div className="space-y-1.5 mt-6">
                       <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider ml-1">Notes</label>
                       <div className="relative group">
-                        <FileText className="absolute left-4 top-4 text-slate-400 group-focus-within:text-[#6d28d9]" size={18} />
+                        <FileText className="absolute left-4 top-4 text-slate-400 group-focus-within:text-[#6c11d4]" size={18} />
                         <textarea 
                           name="notes" value={formData.notes} onChange={handleChange} 
-                          className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6d28d9]/20 min-h-[120px] resize-none" 
+                          className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl outline-none focus:ring-2 focus:ring-[#6c11d4]/20 min-h-[120px] resize-none" 
                           placeholder="Special instructions or observations..." 
                         />
                       </div>
@@ -459,7 +459,7 @@ export default function AgentRegisterLandlord() {
                 <div className="w-full flex flex-col gap-3">
                   <button 
                     onClick={() => navigate('/agent-clients')}
-                    className="w-full bg-[#6d28d9] hover:bg-[#5b21b6] text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg shadow-[#6d28d9]/25"
+                    className="w-full bg-[#6c11d4] hover:bg-[#5b21b6] text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg shadow-[#6c11d4]/25"
                   >
                     View Clients
                   </button>
@@ -482,7 +482,7 @@ export default function AgentRegisterLandlord() {
               <button 
                 onClick={handleNext}
                 disabled={isValidating}
-                className="w-full flex items-center justify-center gap-2 bg-[#6d28d9] disabled:bg-[#6d28d9]/50 hover:bg-[#5b21b6] text-white py-4 rounded-xl font-bold shadow-lg shadow-[#6d28d9]/25 transition-all outline-none"
+                className="w-full flex items-center justify-center gap-2 bg-[#6c11d4] disabled:bg-[#6c11d4]/50 hover:bg-[#5b21b6] text-white py-4 rounded-xl font-bold shadow-lg shadow-[#6c11d4]/25 transition-all outline-none"
               >
                 {isValidating ? (
                   <>

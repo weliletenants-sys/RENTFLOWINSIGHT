@@ -47,7 +47,7 @@ export default function AgentWallet() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="mb-6 relative overflow-hidden bg-[#6d28d9] rounded-2xl p-6 text-white shadow-xl shadow-[#6d28d9]/20"
+            className="mb-6 relative overflow-hidden bg-[#6c11d4] rounded-2xl p-6 text-white shadow-xl shadow-[#6c11d4]/20"
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full -ml-12 -mb-12 blur-xl"></div>
@@ -148,7 +148,7 @@ export default function AgentWallet() {
               )}
             </div>
             
-            <button className="w-full mt-4 py-3 text-sm font-bold text-[#6d28d9] bg-[#6d28d9]/5 hover:bg-[#6d28d9]/10 rounded-xl transition-colors">
+            <button className="w-full mt-4 py-3 text-sm font-bold text-[#6c11d4] bg-[#6c11d4]/5 hover:bg-[#6c11d4]/10 rounded-xl transition-colors">
               View All Transactions
             </button>
           </motion.section>
@@ -156,19 +156,19 @@ export default function AgentWallet() {
         </main>
 
         <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white dark:bg-[#221610] border-t border-slate-200 dark:border-slate-800 px-6 py-3 flex items-center justify-between z-50">
-          <button onClick={() => navigate('/dashboard')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9] transition-colors">
+          <button onClick={() => navigate('/dashboard')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6c11d4] transition-colors">
             <Home size={24} />
             <span className="text-[10px] font-bold">Home</span>
           </button>
-          <button className="flex flex-col items-center gap-1 text-[#6d28d9]">
+          <button className="flex flex-col items-center gap-1 text-[#6c11d4]">
             <Wallet size={24} />
             <span className="text-[10px] font-bold">Wallet</span>
           </button>
-          <button onClick={() => navigate('/dashboard/agent/clients')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9] transition-colors">
+          <button onClick={() => navigate('/dashboard/agent/clients')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6c11d4] transition-colors">
             <Users size={24} />
             <span className="text-[10px] font-bold">Clients</span>
           </button>
-          <button onClick={() => navigate('/dashboard/agent/settings')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9] transition-colors">
+          <button onClick={() => navigate('/dashboard/agent/settings')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6c11d4] transition-colors">
             <Settings size={24} />
             <span className="text-[10px] font-bold">Settings</span>
           </button>

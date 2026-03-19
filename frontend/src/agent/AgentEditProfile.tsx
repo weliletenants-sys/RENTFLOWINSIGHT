@@ -59,7 +59,7 @@ export default function AgentEditProfile() {
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">First Name</label>
               <input 
                 name="firstName" value={formData.firstName} onChange={handleChange} 
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-[#6d28d9]/50 transition-all font-medium" 
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-[#6c11d4]/50 transition-all font-medium" 
                 required 
               />
             </div>
@@ -68,7 +68,7 @@ export default function AgentEditProfile() {
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Last Name</label>
               <input 
                 name="lastName" value={formData.lastName} onChange={handleChange} 
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-[#6d28d9]/50 transition-all font-medium" 
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-[#6c11d4]/50 transition-all font-medium" 
                 required 
               />
             </div>
@@ -77,7 +77,7 @@ export default function AgentEditProfile() {
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Email Address</label>
               <input 
                 type="email" name="email" value={formData.email} onChange={handleChange} 
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-[#6d28d9]/50 transition-all font-medium text-slate-500" 
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-[#6c11d4]/50 transition-all font-medium text-slate-500" 
                 disabled 
               />
               <p className="text-[10px] text-slate-400 font-medium">Email address cannot be changed.</p>
@@ -87,11 +87,11 @@ export default function AgentEditProfile() {
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Phone Number</label>
               <input 
                 type="tel" name="phone" value={formData.phone} onChange={handleChange} 
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-[#6d28d9]/50 transition-all font-medium" 
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-[#6c11d4]/50 transition-all font-medium" 
               />
             </div>
 
-            <button type="submit" className="w-full mt-8 flex items-center justify-center gap-2 bg-[#6d28d9] hover:bg-[#5b21b6] text-white py-4 rounded-xl font-bold shadow-lg shadow-[#6d28d9]/25 transition-all active:scale-[0.98]">
+            <button type="submit" className="w-full mt-8 flex items-center justify-center gap-2 bg-[#6c11d4] hover:bg-[#5b21b6] text-white py-4 rounded-xl font-bold shadow-lg shadow-[#6c11d4]/25 transition-all active:scale-[0.98]">
               <Check size={20} />
               Save Changes
             </button>

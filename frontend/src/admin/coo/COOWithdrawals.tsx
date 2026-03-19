@@ -34,7 +34,7 @@ const COOWithdrawals: React.FC = () => {
               onClick={() => setFilter(status)}
               className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                 filter === status 
-                  ? 'bg-white shadow-sm text-[#7B61FF]' 
+                  ? 'bg-white shadow-sm text-[#6c11d4]' 
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -52,7 +52,7 @@ const COOWithdrawals: React.FC = () => {
             <input 
               type="text"
               placeholder="Search by requester or ID..."
-              className="w-full pl-10 pr-4 py-2 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9234EA] focus:border-transparent text-sm"
+              className="w-full pl-10 pr-4 py-2 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6c11d4] focus:border-transparent text-sm"
             />
           </div>
           <button className="flex items-center space-x-2 text-slate-600 px-3 py-2 border border-slate-100 rounded-lg hover:bg-slate-50 text-sm font-medium">

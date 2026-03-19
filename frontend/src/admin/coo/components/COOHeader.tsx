@@ -28,7 +28,7 @@ const COOHeader: React.FC<COOHeaderProps> = ({ pageTitle, pageSubtitle }) => {
         
         {/* Profile Pill */}
         <div className="hidden md:flex items-center space-x-3 bg-white border border-slate-200 rounded-full pl-2 pr-4 py-1.5 shadow-sm">
-          <div className="w-8 h-8 rounded-full bg-[#EAE5FF] overflow-hidden flex items-center justify-center text-[#7B61FF] font-bold">
+          <div className="w-8 h-8 rounded-full bg-[#EAE5FF] overflow-hidden flex items-center justify-center text-[#6c11d4] font-bold">
             C
           </div>
           <div className="flex flex-col">
@@ -38,7 +38,7 @@ const COOHeader: React.FC<COOHeaderProps> = ({ pageTitle, pageSubtitle }) => {
         </div>
 
         {/* Mobile Profile Avatar */}
-        <div className="md:hidden w-10 h-10 rounded-full border border-slate-200 bg-white text-[#7B61FF] flex items-center justify-center font-bold">
+        <div className="md:hidden w-10 h-10 rounded-full border border-slate-200 bg-white text-[#6c11d4] flex items-center justify-center font-bold">
           A
         </div>
       </div>

@@ -40,7 +40,7 @@ function PageLoader() {
         height: 36,
         borderRadius: '50%',
         border: '3px solid #E8DBFC',
-        borderTopColor: '#9234EA',
+        borderTopColor: '#6c11d4',
         animation: 'spin 0.7s linear infinite',
       }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>

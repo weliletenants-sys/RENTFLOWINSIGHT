@@ -48,7 +48,7 @@ export default function AgentProductDetail() {
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white leading-tight">{product.name}</h1>
                  </div>
                  <div className="flex items-baseline gap-2">
-                    <p className="text-3xl font-black text-[#6d28d9] tracking-tight">UGX {product.price.toLocaleString()}</p>
+                    <p className="text-3xl font-black text-[#6c11d4] tracking-tight">UGX {product.price.toLocaleString()}</p>
                  </div>
                  <div className="flex items-center gap-4 text-sm font-medium">
                     <div className="flex items-center gap-1 text-[#f59e0b]">
@@ -67,7 +67,7 @@ export default function AgentProductDetail() {
               {/* Seller Profiling */}
               <section className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-[#6d28d9]/10 text-[#6d28d9] flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-[#6c11d4]/10 text-[#6c11d4] flex items-center justify-center">
                     <Store size={24} />
                   </div>
                   <div>
@@ -77,7 +77,7 @@ export default function AgentProductDetail() {
                     <p className="text-xs text-slate-500">Verified Welile Seller</p>
                   </div>
                 </div>
-                <button className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center text-[#6d28d9] hover:bg-[#6d28d9]/10 transition-colors border border-slate-100 dark:border-slate-700">
+                <button className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center text-[#6c11d4] hover:bg-[#6c11d4]/10 transition-colors border border-slate-100 dark:border-slate-700">
                   <MessageCircle size={20} />
                 </button>
               </section>
@@ -88,14 +88,14 @@ export default function AgentProductDetail() {
                 <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                   High quality {product.name.toLowerCase()} available for immediate purchase. This item comes with a standard warranty directly from the seller and is verified by Welile standards. Available for delivery or pickup at the seller's location in {product.location}.
                 </p>
-                <button className="text-[#6d28d9] text-sm font-semibold flex items-center gap-1 mt-2">
+                <button className="text-[#6c11d4] text-sm font-semibold flex items-center gap-1 mt-2">
                    Read more
                 </button>
               </section>
 
               {/* Escrow Information */}
-              <section className="p-4 rounded-2xl bg-[#6d28d9]/5 border border-[#6d28d9]/20 flex gap-3">
-                 <div className="text-[#6d28d9] mt-0.5"><Info size={20} /></div>
+              <section className="p-4 rounded-2xl bg-[#6c11d4]/5 border border-[#6c11d4]/20 flex gap-3">
+                 <div className="text-[#6c11d4] mt-0.5"><Info size={20} /></div>
                  <div>
                    <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-1">Welile Protection</h4>
                    <p className="text-xs text-slate-600 dark:text-slate-400">Your payment is held securely in escrow and only released to the seller after order confirmation.</p>
@@ -110,7 +110,7 @@ export default function AgentProductDetail() {
           <div className="max-w-[960px] mx-auto flex gap-3">
             <button 
               onClick={() => navigate(`/agent-shop/checkout/${product.id}`)}
-              className="flex-1 bg-[#6d28d9] hover:bg-[#5a1bb9] py-4 rounded-xl text-white font-bold text-lg shadow-lg shadow-[#6d28d9]/30 active:scale-[0.98] transition-transform"
+              className="flex-1 bg-[#6c11d4] hover:bg-[#5a1bb9] py-4 rounded-xl text-white font-bold text-lg shadow-lg shadow-[#6c11d4]/30 active:scale-[0.98] transition-transform"
             >
               Buy Now
             </button>

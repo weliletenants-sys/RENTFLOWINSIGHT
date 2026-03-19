@@ -13,11 +13,11 @@ export default function AgentSellerDashboard() {
        <header className="sticky top-0 z-50 bg-white/80 dark:bg-[#1e1e1e]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 p-4">
         <div className="max-w-[960px] mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/agent-shop')} className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-[#6d28d9]/10 transition-colors -ml-2">
+            <button onClick={() => navigate('/agent-shop')} className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-[#6c11d4]/10 transition-colors -ml-2">
               <ChevronLeft size={24} />
             </button>
             <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Store size={20} className="text-[#6d28d9]" /> Seller Hub
+              <Store size={20} className="text-[#6c11d4]" /> Seller Hub
             </h1>
           </div>
           <div className="flex items-center gap-1 text-green-500 bg-green-500/10 px-2 py-1 rounded-md text-xs font-bold">
@@ -32,7 +32,7 @@ export default function AgentSellerDashboard() {
         <section className="bg-gradient-to-br from-[#1e1e1e] to-slate-800 dark:from-slate-800 dark:to-slate-900 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
            {/* Decorative circles */}
            <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
-           <div className="absolute bottom-[-20%] left-[-10%] w-40 h-40 bg-[#6d28d9]/20 rounded-full blur-3xl"></div>
+           <div className="absolute bottom-[-20%] left-[-10%] w-40 h-40 bg-[#6c11d4]/20 rounded-full blur-3xl"></div>
            
            <div className="relative z-10 flex flex-col items-center text-center space-y-2">
               <p className="text-slate-400 font-semibold text-sm">Escrow Balance & Earnings</p>
@@ -65,7 +65,7 @@ export default function AgentSellerDashboard() {
         <section className="space-y-4">
            <div className="flex items-center justify-between">
               <h3 className="font-bold text-lg text-slate-900 dark:text-white">Your Products</h3>
-              <button className="text-[#6d28d9] text-sm font-bold flex items-center gap-1">
+              <button className="text-[#6c11d4] text-sm font-bold flex items-center gap-1">
                  View All <ArrowRight size={16} />
               </button>
            </div>
@@ -102,7 +102,7 @@ export default function AgentSellerDashboard() {
       {/* Fixed Action Button */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 dark:bg-[#1e1e1e]/95 backdrop-blur border-t border-slate-200 dark:border-slate-800 z-50">
         <div className="max-w-[960px] mx-auto">
-          <button className="w-full bg-[#6d28d9] hover:bg-[#5a1bb9] py-4 rounded-xl text-white font-bold text-lg shadow-lg shadow-[#6d28d9]/30 active:scale-[0.98] transition-transform flex items-center justify-center gap-2">
+          <button className="w-full bg-[#6c11d4] hover:bg-[#5a1bb9] py-4 rounded-xl text-white font-bold text-lg shadow-lg shadow-[#6c11d4]/30 active:scale-[0.98] transition-transform flex items-center justify-center gap-2">
             <PlusCircle size={20} />
             Add New Product
           </button>

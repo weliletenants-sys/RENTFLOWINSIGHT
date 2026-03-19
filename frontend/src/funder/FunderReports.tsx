@@ -47,7 +47,7 @@ const allocationData = [
   { name: 'Mixed-Use', value: 20 },
 ];
 
-const COLORS = ['#9234EA', '#3b82f6', '#10b981'];
+const COLORS = ['#6c11d4', '#3b82f6', '#10b981'];
 
 export default function FunderReports() {
   const [statementRange, setStatementRange] = useState('Last 6 Months');

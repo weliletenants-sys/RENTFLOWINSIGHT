@@ -64,7 +64,7 @@ export default function RoleSelection() {
             className="group text-left bg-white p-8 rounded-2xl border border-purple-100 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-purple-200 opacity-0 animate-fade-in-up stagger-1"
           >
             <div className="flex items-start space-x-6">
-              <div className="p-4 bg-purple-100 rounded-xl text-[#6d28d9]">
+              <div className="p-4 bg-purple-100 rounded-xl text-[#6c11d4]">
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a11 11 0 002 2h10a2 2 0 002-2V10M9 21V9h6v12" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
                 </svg>
@@ -136,7 +136,7 @@ export default function RoleSelection() {
         <footer className="mt-16 text-center">
           <p className="text-gray-600 font-medium">
             Already have an account?{' '}
-            <button onClick={() => navigate('/login')} className="text-[#6d28d9] font-bold hover:underline transition-all">
+            <button onClick={() => navigate('/login')} className="text-[#6c11d4] font-bold hover:underline transition-all">
               Sign in
             </button>
           </p>

@@ -54,13 +54,13 @@ export default function AgentReferral() {
       <header className="sticky top-0 z-50 bg-[#f8fafc]/80 dark:bg-[#1e1e1e]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 md:px-10 py-4">
         <div className="max-w-[960px] mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/dashboard')} className="flex items-center justify-center rounded-full w-10 h-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-[#6d28d9]/10 hover:text-[#6d28d9] transition-colors">
+            <button onClick={() => navigate('/dashboard')} className="flex items-center justify-center rounded-full w-10 h-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-[#6c11d4]/10 hover:text-[#6c11d4] transition-colors">
               <ChevronLeft size={24} />
             </button>
             <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Refer & Earn</h1>
           </div>
           <div className="flex items-center gap-2">
-            <Wallet size={20} className="text-[#6d28d9]" />
+            <Wallet size={20} className="text-[#6c11d4]" />
             <span className="font-semibold text-slate-900 dark:text-white">UGX 12,500</span>
           </div>
         </div>
@@ -68,7 +68,7 @@ export default function AgentReferral() {
 
       <main className="max-w-[960px] mx-auto p-4 space-y-6">
         {/* Hero Section */}
-        <section className="rounded-2xl p-6 bg-gradient-to-br from-[#6d28d9] via-[#8b5cf6] to-[#a78bfa] text-white shadow-xl shadow-[#6d28d9]/20">
+        <section className="rounded-2xl p-6 bg-gradient-to-br from-[#6c11d4] via-[#8b5cf6] to-[#a78bfa] text-white shadow-xl shadow-[#6c11d4]/20">
           <div className="flex flex-col md:flex-row gap-6 items-center">
             <div className="flex-1 space-y-3">
               <h2 className="text-3xl font-bold leading-tight">Earn UGX 500 per signup</h2>
@@ -98,7 +98,7 @@ export default function AgentReferral() {
           </div>
           <div className="flex flex-col gap-1 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 shadow-sm">
             <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Total Earnings (UGX)</p>
-            <p className="text-2xl font-bold text-[#6d28d9]">12,500</p>
+            <p className="text-2xl font-bold text-[#6c11d4]">12,500</p>
           </div>
         </div>
 
@@ -112,11 +112,11 @@ export default function AgentReferral() {
                 value={referralLink}
                 className="bg-transparent border-none focus:ring-0 w-full text-slate-700 dark:text-slate-300 font-medium overflow-hidden text-ellipsis"
               />
-              <button onClick={handleCopy} className="text-[#6d28d9] hover:text-[#5a1bb9] ml-2 p-1">
+              <button onClick={handleCopy} className="text-[#6c11d4] hover:text-[#5a1bb9] ml-2 p-1">
                 <Copy size={20} />
               </button>
             </div>
-            <button onClick={handleRegenerate} className="flex items-center justify-center gap-2 px-6 py-3 bg-[#6d28d9] text-white font-bold rounded-xl hover:bg-[#5a1bb9] transition-all">
+            <button onClick={handleRegenerate} className="flex items-center justify-center gap-2 px-6 py-3 bg-[#6c11d4] text-white font-bold rounded-xl hover:bg-[#5a1bb9] transition-all">
               <RefreshCcw size={20} />
               Regenerate
             </button>
@@ -150,8 +150,8 @@ export default function AgentReferral() {
         </section>
 
         {/* Commission Card */}
-        <div className="bg-[#f5f3ff] dark:bg-[#6d28d9]/10 border border-[#6d28d9]/20 rounded-2xl p-5 flex gap-4">
-          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#6d28d9]/20 flex items-center justify-center text-[#6d28d9]">
+        <div className="bg-[#f5f3ff] dark:bg-[#6c11d4]/10 border border-[#6c11d4]/20 rounded-2xl p-5 flex gap-4">
+          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#6c11d4]/20 flex items-center justify-center text-[#6c11d4]">
             <Info size={20} />
           </div>
           <div className="space-y-1">
@@ -164,7 +164,7 @@ export default function AgentReferral() {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">Your Referrals</h3>
-            <button className="text-[#6d28d9] text-sm font-semibold hover:underline">View All</button>
+            <button className="text-[#6c11d4] text-sm font-semibold hover:underline">View All</button>
           </div>
           
           <div className="border border-slate-200 dark:border-slate-800 rounded-2xl divide-y divide-slate-200 dark:divide-slate-800 overflow-hidden bg-white dark:bg-slate-900/50">
@@ -219,7 +219,7 @@ export default function AgentReferral() {
       {/* Fixed Action Button */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 dark:bg-[#1e1e1e]/95 backdrop-blur border-t border-slate-200 dark:border-slate-800 z-50 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)] md:relative md:bg-transparent md:border-none md:shadow-none md:mt-6">
         <div className="max-w-[960px] mx-auto">
-          <button onClick={shareOther} className="w-full bg-[#6d28d9] hover:bg-[#5a1bb9] py-4 rounded-xl text-white font-bold text-lg shadow-lg shadow-[#6d28d9]/30 flex items-center justify-center gap-3 active:scale-[0.98] transition-all">
+          <button onClick={shareOther} className="w-full bg-[#6c11d4] hover:bg-[#5a1bb9] py-4 rounded-xl text-white font-bold text-lg shadow-lg shadow-[#6c11d4]/30 flex items-center justify-center gap-3 active:scale-[0.98] transition-all">
             <Send size={20} />
             Share Referral Link
           </button>

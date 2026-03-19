@@ -35,13 +35,13 @@ const COOTenants: React.FC = () => {
             <input 
               type="text" 
               placeholder="Search tenants by name, unit, or property..." 
-              className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-full text-sm focus:outline-none focus:border-[#7B61FF] focus:ring-1 focus:ring-[#7B61FF] transition-all bg-white"
+              className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-full text-sm focus:outline-none focus:border-[#6c11d4] focus:ring-1 focus:ring-[#6c11d4] transition-all bg-white"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <div className="flex space-x-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0">
-            <span className="px-3 py-1 bg-[#EAE5FF] text-[#7B61FF] text-xs font-bold rounded-full whitespace-nowrap cursor-pointer hover:bg-purple-100">All Tenants</span>
+            <span className="px-3 py-1 bg-[#EAE5FF] text-[#6c11d4] text-xs font-bold rounded-full whitespace-nowrap cursor-pointer hover:bg-purple-100">All Tenants</span>
             <span className="px-3 py-1 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-full whitespace-nowrap cursor-pointer hover:bg-slate-50">Overdue (2)</span>
             <span className="px-3 py-1 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-full whitespace-nowrap cursor-pointer hover:bg-slate-50">Pending</span>
           </div>
@@ -78,7 +78,7 @@ const COOTenants: React.FC = () => {
                   </td>
                   <td className="p-4">
                     <div className="flex items-center space-x-2">
-                       <div className="w-6 h-6 rounded-full bg-[#EAE5FF] text-[#7B61FF] flex items-center justify-center text-[10px] font-bold">
+                       <div className="w-6 h-6 rounded-full bg-[#EAE5FF] text-[#6c11d4] flex items-center justify-center text-[10px] font-bold">
                          {tenant.agentAvatar}
                        </div>
                        <span className="text-sm font-medium text-slate-600">{tenant.agentName}</span>
@@ -93,7 +93,7 @@ const COOTenants: React.FC = () => {
                      </div>
                   </td>
                   <td className="p-4 text-right pr-6">
-                    <button className="p-2 text-slate-400 hover:text-[#7B61FF] hover:bg-[#EAE5FF] rounded-full transition-colors">
+                    <button className="p-2 text-slate-400 hover:text-[#6c11d4] hover:bg-[#EAE5FF] rounded-full transition-colors">
                       <MoreVertical size={18} />
                     </button>
                   </td>
@@ -108,7 +108,7 @@ const COOTenants: React.FC = () => {
           <span>Showing 1 to 7 of 1,245 tenants</span>
           <div className="flex space-x-1">
              <button className="px-3 py-1 border border-slate-200 rounded-md bg-white text-slate-400 cursor-not-allowed">Prev</button>
-             <button className="px-3 py-1 border border-[#7B61FF] rounded-md bg-[#7B61FF] text-white font-bold">1</button>
+             <button className="px-3 py-1 border border-[#6c11d4] rounded-md bg-[#6c11d4] text-white font-bold">1</button>
              <button className="px-3 py-1 border border-slate-200 rounded-md bg-white hover:bg-slate-50">2</button>
              <button className="px-3 py-1 border border-slate-200 rounded-md bg-white hover:bg-slate-50">...</button>
              <button className="px-3 py-1 border border-slate-200 rounded-md bg-white hover:bg-slate-50">Next</button>

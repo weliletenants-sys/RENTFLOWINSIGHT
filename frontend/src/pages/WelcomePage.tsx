@@ -34,7 +34,7 @@ export default function WelcomePage() {
           </nav>
           <div className="flex items-center gap-4">
             <button onClick={handleLogin} className="hidden sm:block text-sm font-bold hover:text-[#8b5cf6] transition-colors">Log In</button>
-            <button onClick={handleJoin} className="rounded-lg bg-[#8b5cf6] px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-[#8b5cf6]/25 hover:bg-[#6d28d9] transition-all">
+            <button onClick={handleJoin} className="rounded-lg bg-[#8b5cf6] px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-[#8b5cf6]/25 hover:bg-[#6c11d4] transition-all">
               Request for Rent
             </button>
           </div>
@@ -63,7 +63,7 @@ export default function WelcomePage() {
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-4">
-                  <button onClick={handleJoin} className="rounded-xl bg-[#8b5cf6] px-8 py-4 text-lg font-bold text-white shadow-xl shadow-[#8b5cf6]/30 transition-all hover:-translate-y-1 hover:bg-[#6d28d9]">
+                  <button onClick={handleJoin} className="rounded-xl bg-[#8b5cf6] px-8 py-4 text-lg font-bold text-white shadow-xl shadow-[#8b5cf6]/30 transition-all hover:-translate-y-1 hover:bg-[#6c11d4]">
                     Request for Rent
                   </button>
                 </div>
@@ -210,7 +210,7 @@ export default function WelcomePage() {
               <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">Get the latest rental tips and market insights.</p>
               <div className="flex gap-2">
                 <input className="w-full rounded-lg border-slate-200 bg-slate-50 px-4 py-2 text-sm focus:border-[#8b5cf6] focus:ring-[#8b5cf6] dark:border-slate-700 dark:bg-slate-900" placeholder="Email" type="email" />
-                <button className="rounded-lg bg-[#8b5cf6] px-4 py-2 text-white hover:bg-[#6d28d9]">
+                <button className="rounded-lg bg-[#8b5cf6] px-4 py-2 text-white hover:bg-[#6c11d4]">
                   <Send size={18} />
                 </button>
               </div>

@@ -63,7 +63,7 @@ export default function LandingPage() {
     <div className="antialiased font-sans bg-[#ffffff] text-slate-900">
       <style>{`
         .glass-effect {
-          background: rgba(109, 40, 217, 0.8); /* #6d28d9 with 80% opacity */
+          background: rgba(109, 40, 217, 0.8); /* #6c11d4 with 80% opacity */
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -123,7 +123,7 @@ export default function LandingPage() {
               <a onClick={(e) => handleNavClick(e, 'how-it-works')} className="text-sm font-medium text-slate-200 hover:text-white transition-colors cursor-pointer" href="#how-it-works">How it Works</a>
             </div>
             <div className="hidden md:flex items-center space-x-4">
-              <button onClick={() => navigate('/role-selection')} className="text-sm font-medium bg-white text-[#6d28d9] px-6 py-2.5 rounded-lg hover:bg-slate-200 transition-all font-semibold">Sign Up</button>
+              <button onClick={() => navigate('/role-selection')} className="text-sm font-medium bg-white text-[#6c11d4] px-6 py-2.5 rounded-lg hover:bg-slate-200 transition-all font-semibold">Sign Up</button>
             </div>
           </div>
         </div>
@@ -143,10 +143,10 @@ export default function LandingPage() {
                   Welile connects tenants, agents, and supporters into one powerful rent ecosystem.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <button onClick={() => navigate('/role-selection')} className="px-8 py-4 bg-[#6d28d9] text-white font-bold rounded-xl shadow-lg hover:shadow-white/10 transition-all transform hover:scale-[1.02]">
+                  <button onClick={() => navigate('/role-selection')} className="px-8 py-4 bg-[#6c11d4] text-white font-bold rounded-xl shadow-lg hover:shadow-white/10 transition-all transform hover:scale-[1.02]">
                     Get Started
                   </button>
-                  <a onClick={(e) => handleNavClick(e, 'value-proposition')} className="px-8 py-4 bg-transparent border border-[#6d28d9] text-[#6d28d9] font-bold rounded-xl hover:bg-slate-50 shadow-sm border-slate-200 transition-all text-center cursor-pointer" href="#value-proposition">
+                  <a onClick={(e) => handleNavClick(e, 'value-proposition')} className="px-8 py-4 bg-transparent border border-[#6c11d4] text-[#6c11d4] font-bold rounded-xl hover:bg-slate-50 shadow-sm border-slate-200 transition-all text-center cursor-pointer" href="#value-proposition">
                     Learn More
                   </a>
                 </div>
@@ -472,7 +472,7 @@ export default function LandingPage() {
            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center reveal">
              <h2 className="text-4xl md:text-6xl font-heading font-bold mb-8">Start your journey <br/>with Welile today</h2>
              <p className="text-slate-500 text-lg md:text-xl mb-12 max-w-2xl mx-auto">Join the movement that's reshaping how Africa lives and earns. Secure your spot in the ecosystem.</p>
-             <button onClick={() => navigate('/role-selection')} className="px-12 py-5 bg-[#6d28d9] text-white font-bold text-lg rounded-2xl shadow-2xl hover:bg-slate-100 transition-all transform hover:scale-105">
+             <button onClick={() => navigate('/role-selection')} className="px-12 py-5 bg-[#6c11d4] text-white font-bold text-lg rounded-2xl shadow-2xl hover:bg-slate-100 transition-all transform hover:scale-105">
                Get Started
              </button>
            </div>

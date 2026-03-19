@@ -13,7 +13,7 @@ const COOAnalytics: React.FC = () => {
            <button className="flex items-center space-x-2 text-slate-600 px-3 py-2 border border-slate-100 rounded-lg hover:bg-slate-50 text-sm font-medium bg-white">
              <Calendar size={16} /> <span>This Month</span>
            </button>
-           <button className="flex items-center space-x-2 text-[#7B61FF] px-3 py-2 bg-[#EAE5FF] rounded-lg hover:bg-purple-100 transition text-sm font-bold">
+           <button className="flex items-center space-x-2 text-[#6c11d4] px-3 py-2 bg-[#EAE5FF] rounded-lg hover:bg-purple-100 transition text-sm font-bold">
              <Filter size={16} /> <span>Filter</span>
            </button>
         </div>
@@ -24,7 +24,7 @@ const COOAnalytics: React.FC = () => {
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-bold text-slate-800 flex items-center">
-              <PieChart className="text-[#7B61FF] mr-2" size={20} /> Channel Distribution
+              <PieChart className="text-[#6c11d4] mr-2" size={20} /> Channel Distribution
             </h3>
           </div>
           <div className="flex-1 flex flex-col justify-center space-y-6 relative">
@@ -70,28 +70,28 @@ const COOAnalytics: React.FC = () => {
                <div className="flex items-center">
                   <span className="w-12 text-xs font-bold text-slate-500">Week 4</span>
                   <div className="flex-1 ml-2 bg-slate-100 rounded-full h-3">
-                    <div className="bg-[#7B61FF] h-3 rounded-full" style={{ width: '85%' }}></div>
+                    <div className="bg-[#6c11d4] h-3 rounded-full" style={{ width: '85%' }}></div>
                   </div>
                   <span className="w-20 text-right text-xs font-bold text-slate-700 ml-2">UGX 4.2M</span>
                </div>
                <div className="flex items-center">
                   <span className="w-12 text-xs font-bold text-slate-500">Week 3</span>
                   <div className="flex-1 ml-2 bg-slate-100 rounded-full h-3">
-                    <div className="bg-[#7B61FF] h-3 rounded-full opacity-80" style={{ width: '65%' }}></div>
+                    <div className="bg-[#6c11d4] h-3 rounded-full opacity-80" style={{ width: '65%' }}></div>
                   </div>
                   <span className="w-20 text-right text-xs font-bold text-slate-700 ml-2">UGX 3.1M</span>
                </div>
                <div className="flex items-center">
                   <span className="w-12 text-xs font-bold text-slate-500">Week 2</span>
                   <div className="flex-1 ml-2 bg-slate-100 rounded-full h-3">
-                    <div className="bg-[#7B61FF] h-3 rounded-full opacity-60" style={{ width: '75%' }}></div>
+                    <div className="bg-[#6c11d4] h-3 rounded-full opacity-60" style={{ width: '75%' }}></div>
                   </div>
                   <span className="w-20 text-right text-xs font-bold text-slate-700 ml-2">UGX 3.8M</span>
                </div>
                <div className="flex items-center">
                   <span className="w-12 text-xs font-bold text-slate-500">Week 1</span>
                   <div className="flex-1 ml-2 bg-slate-100 rounded-full h-3">
-                    <div className="bg-[#7B61FF] h-3 rounded-full opacity-40" style={{ width: '45%' }}></div>
+                    <div className="bg-[#6c11d4] h-3 rounded-full opacity-40" style={{ width: '45%' }}></div>
                   </div>
                   <span className="w-20 text-right text-xs font-bold text-slate-700 ml-2">UGX 2.1M</span>
                </div>

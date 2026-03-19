@@ -38,7 +38,7 @@ function getStrength(pw: string): { score: number; label: string; color: string 
     { label: 'Weak', color: '#F97316' },
     { label: 'Fair', color: '#EAB308' },
     { label: 'Good', color: '#22C55E' },
-    { label: 'Strong', color: '#9234EA' },
+    { label: 'Strong', color: '#6c11d4' },
   ];
   return { score, ...map[score] };
 }
@@ -69,7 +69,7 @@ function StepDots({ total, current }: { total: number; current: number }) {
           key={i}
           animate={{
             width: i + 1 === current ? 24 : 6,
-            backgroundColor: i + 1 <= current ? '#9234EA' : '#DDD6FE',
+            backgroundColor: i + 1 <= current ? '#6c11d4' : '#DDD6FE',
           }}
           transition={{ duration: 0.3 }}
           className="h-1.5 rounded-full"
@@ -92,7 +92,7 @@ function ChoiceCard({
       onClick={onClick}
       whileTap={{ scale: 0.985 }}
       className={`w-full text-left p-5 rounded-2xl border-2 transition-all duration-200 relative overflow-hidden ${
-        selected ? 'border-[#9234EA] bg-[#F3F0FF]' : 'border-gray-100 bg-white hover:border-purple-200'
+        selected ? 'border-[#6c11d4] bg-[#F3F0FF]' : 'border-gray-100 bg-white hover:border-purple-200'
       }`}
     >
       {selected && (
@@ -103,7 +103,7 @@ function ChoiceCard({
       )}
       <div className="flex items-start gap-4 relative z-10">
         <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-          selected ? 'bg-[#9234EA] text-white' : 'bg-purple-50 text-[#9234EA]'
+          selected ? 'bg-[#6c11d4] text-white' : 'bg-purple-50 text-[#6c11d4]'
         }`}>
           <Icon size={20} strokeWidth={1.75} />
         </div>
@@ -111,7 +111,7 @@ function ChoiceCard({
           <div className="flex items-center justify-between gap-2 mb-1">
             <h4 className="font-bold text-gray-900 text-sm">{title}</h4>
             <span className={`text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 ${
-              selected ? 'bg-[#9234EA] text-white' : 'bg-purple-100 text-[#9234EA]'
+              selected ? 'bg-[#6c11d4] text-white' : 'bg-purple-100 text-[#6c11d4]'
             }`}>{badge}</span>
           </div>
           <p className="text-xs text-gray-500 leading-relaxed">{body}</p>
@@ -121,7 +121,7 @@ function ChoiceCard({
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="absolute top-0 right-0 w-5 h-5 rounded-full bg-[#9234EA] flex items-center justify-center"
+          className="absolute top-0 right-0 w-5 h-5 rounded-full bg-[#6c11d4] flex items-center justify-center"
         >
           <Check size={11} className="text-white" strokeWidth={3} />
         </motion.div>
@@ -207,7 +207,7 @@ function SupportGraph({ mode }: { mode: 'tenant' | 'pool' }) {
     ` L${xOf(MONTHS).toFixed(1)},${(PAD.top + innerH).toFixed(1)}` +
     ` L${PAD.left.toFixed(1)},${(PAD.top + innerH).toFixed(1)} Z`;
 
-  const color = mode === 'pool' ? '#9234EA' : '#7B2AC5';
+  const color = mode === 'pool' ? '#6c11d4' : '#7B2AC5';
   const labelStep = mode === 'pool' ? 3 : 2;
   const pathId = `graph-${mode}`;
 
@@ -226,7 +226,7 @@ function SupportGraph({ mode }: { mode: 'tenant' | 'pool' }) {
             {mode === 'tenant' ? 'Monthly rewards · 12 months' : 'Compounding growth · 12 months'}
           </p>
           <div className="flex items-center gap-1.5 mt-1.5 bg-purple-50 border border-purple-100 rounded-xl px-3 py-1.5">
-            <span className="text-[11px] font-bold text-[#9234EA] shrink-0">{currency.symbol}</span>
+            <span className="text-[11px] font-bold text-[#6c11d4] shrink-0">{currency.symbol}</span>
             <input
               type="text"
               inputMode="numeric"
@@ -241,7 +241,7 @@ function SupportGraph({ mode }: { mode: 'tenant' | 'pool' }) {
           key={mode + '-badge'}
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="text-[11px] font-black px-2.5 py-1 rounded-full bg-purple-100 text-[#9234EA] shrink-0 mt-4"
+          className="text-[11px] font-black px-2.5 py-1 rounded-full bg-purple-100 text-[#6c11d4] shrink-0 mt-4"
         >
           {mode === 'tenant' ? '+15% / mo' : 'Compounds'}
         </motion.span>
@@ -291,7 +291,7 @@ function SupportGraph({ mode }: { mode: 'tenant' | 'pool' }) {
             }
           </p>
         </div>
-        <motion.p key={points[MONTHS]} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-base font-black text-[#9234EA]">
+        <motion.p key={points[MONTHS]} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-base font-black text-[#6c11d4]">
           {formatCurrencyCompact(points[MONTHS], currency)}
         </motion.p>
       </div>
@@ -328,14 +328,14 @@ function Step1({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
       {/* Hero */}
       <motion.div variants={fadeUp} className="pt-2">
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-xl bg-[#9234EA]/10 flex items-center justify-center">
-            <Shield size={16} className="text-[#9234EA]" strokeWidth={1.75} />
+          <div className="w-8 h-8 rounded-xl bg-[#6c11d4]/10 flex items-center justify-center">
+            <Shield size={16} className="text-[#6c11d4]" strokeWidth={1.75} />
           </div>
-          <span className="text-xs font-bold text-[#9234EA] tracking-wide uppercase">Welile Housing Partner</span>
+          <span className="text-xs font-bold text-[#6c11d4] tracking-wide uppercase">Welile Housing Partner</span>
         </div>
         <h2 className="text-[28px] font-black text-gray-900 tracking-tight leading-[1.15]">
           Put Your Money<br />
-          <span className="text-[#9234EA]">to Work for Families.</span>
+          <span className="text-[#6c11d4]">to Work for Families.</span>
         </h2>
         <p className="text-[13.5px] text-gray-500 mt-3 leading-relaxed">
           You contribute capital. Welile pays rent for verified tenants, manages collections, and credits your wallet every 30 days. You don't manage anything.
@@ -349,7 +349,7 @@ function Step1({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
             key={title}
             className={`relative flex items-start gap-4 rounded-2xl p-4 border transition-all ${
               highlight
-                ? 'bg-[#F3F0FF] border-[#9234EA]/25 shadow-sm shadow-purple-100'
+                ? 'bg-[#F3F0FF] border-[#6c11d4]/25 shadow-sm shadow-purple-100'
                 : 'bg-white border-gray-100 shadow-sm'
             }`}
           >
@@ -357,18 +357,18 @@ function Step1({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
               <BadgeCheck
                 size={22}
                 className="absolute -top-1 -right-1 drop-shadow-md"
-                style={{ color: '#9234EA' }}
+                style={{ color: '#6c11d4' }}
                 strokeWidth={1.75}
                 fill="white"
               />
             )}
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-              highlight ? 'bg-[#9234EA] text-white' : 'bg-purple-50 text-[#9234EA]'
+              highlight ? 'bg-[#6c11d4] text-white' : 'bg-purple-50 text-[#6c11d4]'
             }`}>
               <Icon size={17} strokeWidth={1.75} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className={`text-sm font-bold ${highlight ? 'text-[#9234EA]' : 'text-gray-800'}`}>{title}</p>
+              <p className={`text-sm font-bold ${highlight ? 'text-[#6c11d4]' : 'text-gray-800'}`}>{title}</p>
               <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{body}</p>
             </div>
           </div>
@@ -383,7 +383,7 @@ function Step1({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
           { icon: Shield,   to: 30,   suffix: 'd', label: 'Payout Cycle'    },
         ].map(({ icon: Icon, to, suffix, label }) => (
           <div key={label} className="flex flex-col items-center gap-1.5 bg-white border border-gray-100 rounded-2xl py-3 px-2 shadow-sm">
-            <div className="w-7 h-7 rounded-xl bg-purple-50 flex items-center justify-center text-[#9234EA]">
+            <div className="w-7 h-7 rounded-xl bg-purple-50 flex items-center justify-center text-[#6c11d4]">
               <Icon size={14} strokeWidth={1.75} />
             </div>
             <CountUp to={to} suffix={suffix} />
@@ -399,7 +399,7 @@ function Step1({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
       >
         <div
           className={`w-5 h-5 rounded border-2 shrink-0 mt-0.5 flex items-center justify-center transition-colors ${
-            form.understoodRole ? 'bg-[#9234EA] border-[#9234EA]' : 'border-gray-300'
+            form.understoodRole ? 'bg-[#6c11d4] border-[#6c11d4]' : 'border-gray-300'
           }`}
           onClick={() => setForm(p => ({ ...p, understoodRole: !p.understoodRole }))}
         >
@@ -524,7 +524,7 @@ function Step3({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
               placeholder="First Name"
               value={form.firstName}
               onChange={e => setForm(p => ({ ...p, firstName: e.target.value }))}
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder:text-gray-300 outline-none focus:bg-white focus:border-[#9234EA] transition-all"
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder:text-gray-300 outline-none focus:bg-white focus:border-[#6c11d4] transition-all"
             />
           </div>
           <div className="space-y-1 flex-1 min-w-0">
@@ -534,7 +534,7 @@ function Step3({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
               placeholder="Last Name"
               value={form.lastName}
               onChange={e => setForm(p => ({ ...p, lastName: e.target.value }))}
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder:text-gray-300 outline-none focus:bg-white focus:border-[#9234EA] transition-all"
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder:text-gray-300 outline-none focus:bg-white focus:border-[#6c11d4] transition-all"
             />
           </div>
         </div>
@@ -551,7 +551,7 @@ function Step3({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
               placeholder="you@example.com"
               value={form.email}
               onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-3 text-sm text-gray-900 placeholder:text-gray-300 outline-none focus:bg-white focus:border-[#9234EA] focus:ring-2 focus:ring-[#9234EA]/10 transition-all"
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-3 text-sm text-gray-900 placeholder:text-gray-300 outline-none focus:bg-white focus:border-[#6c11d4] focus:ring-2 focus:ring-[#6c11d4]/10 transition-all"
             />
           </div>
         </div>
@@ -568,7 +568,7 @@ function Step3({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
               placeholder="+256 700 000 000"
               value={form.phone}
               onChange={e => setForm(p => ({ ...p, phone: e.target.value }))}
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-3 text-sm text-gray-900 placeholder:text-gray-300 outline-none focus:bg-white focus:border-[#9234EA] focus:ring-2 focus:ring-[#9234EA]/10 transition-all"
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-3 text-sm text-gray-900 placeholder:text-gray-300 outline-none focus:bg-white focus:border-[#6c11d4] focus:ring-2 focus:ring-[#6c11d4]/10 transition-all"
             />
           </div>
         </div>
@@ -588,7 +588,7 @@ function Step3({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
               placeholder="Min. 8 characters"
               value={form.password}
               onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-11 py-3 text-sm text-gray-900 placeholder:text-gray-300 outline-none focus:bg-white focus:border-[#9234EA] focus:ring-2 focus:ring-[#9234EA]/10 transition-all"
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-11 py-3 text-sm text-gray-900 placeholder:text-gray-300 outline-none focus:bg-white focus:border-[#6c11d4] focus:ring-2 focus:ring-[#6c11d4]/10 transition-all"
             />
             <button type="button" onClick={() => setShowPw(v => !v)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-0.5"
@@ -634,7 +634,7 @@ function Step3({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
                   ? passwordsMatch
                     ? 'border-emerald-400 focus:border-emerald-400 focus:ring-emerald-100'
                     : 'border-red-400 focus:border-red-400 focus:ring-red-100'
-                  : 'border-gray-200 focus:border-[#9234EA] focus:ring-[#9234EA]/10'
+                  : 'border-gray-200 focus:border-[#6c11d4] focus:ring-[#6c11d4]/10'
               }`}
             />
             <button type="button" onClick={() => setShowConfirm(v => !v)}
@@ -670,7 +670,7 @@ function Step3({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
         <label className="flex items-start gap-3 cursor-pointer bg-gray-50 border border-gray-100 rounded-xl p-3">
           <div
             className={`w-5 h-5 rounded-md border-2 shrink-0 mt-0.5 flex items-center justify-center transition-all ${
-              form.agreedToTerms ? 'bg-[#9234EA] border-[#9234EA] scale-100' : 'border-gray-300'
+              form.agreedToTerms ? 'bg-[#6c11d4] border-[#6c11d4] scale-100' : 'border-gray-300'
             }`}
             onClick={() => setForm(p => ({ ...p, agreedToTerms: !p.agreedToTerms }))}
           >
@@ -678,9 +678,9 @@ function Step3({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
           </div>
           <p className="text-[12px] text-gray-500 leading-snug">
             I agree to Welile's{' '}
-            <span className="text-[#9234EA] font-semibold">Terms of Service</span>
+            <span className="text-[#6c11d4] font-semibold">Terms of Service</span>
             {' '}and{' '}
-            <span className="text-[#9234EA] font-semibold">Privacy Policy</span>.
+            <span className="text-[#6c11d4] font-semibold">Privacy Policy</span>.
             {' '}<span className="text-gray-400">Your data is encrypted and never Exchanged.</span>
           </p>
         </label>
@@ -820,7 +820,7 @@ export default function FunderOnboarding() {
                 ? isSubmitting
                   ? 'bg-emerald-400 text-white cursor-not-allowed'
                   : 'bg-emerald-500 text-white shadow-sm hover:bg-emerald-600'
-                : 'bg-[#9234EA] text-white shadow-sm hover:bg-[#7B2AC5]'
+                : 'bg-[#6c11d4] text-white shadow-sm hover:bg-[#7B2AC5]'
           }`}
         >
           {!valid ? (

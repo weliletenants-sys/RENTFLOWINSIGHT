@@ -99,20 +99,20 @@ export default function AgentRegisterDialog({ isOpen, onClose }: AgentRegisterDi
               <button
                 key={option.id}
                 onClick={option.action}
-                className="w-full flex items-center p-4 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 rounded-2xl group transition-all text-left shadow-sm hover:shadow-md"
+                className="w-full flex items-center p-4 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 hover:border-[#6c11d4]/50 rounded-2xl group transition-all text-left shadow-sm hover:shadow-md"
               >
                 <div className={`size-12 rounded-xl flex items-center justify-center mr-4 ${option.color}`}>
                   {option.icon}
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-bold text-slate-900 dark:text-white group-hover:text-[#6d28d9] transition-colors">
+                  <h3 className="font-bold text-slate-900 dark:text-white group-hover:text-[#6c11d4] transition-colors">
                     {option.title}
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-tight">
                     {option.description}
                   </p>
                 </div>
-                <div className="ml-2 text-slate-300 group-hover:text-[#6d28d9] transition-colors">
+                <div className="ml-2 text-slate-300 group-hover:text-[#6c11d4] transition-colors">
                   <ChevronRight size={20} />
                 </div>
               </button>

@@ -18,7 +18,7 @@ const COOStaffPerformance: React.FC = () => {
     <div className="space-y-6">
       <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
         <div>
-          <h2 className="text-xl font-bold font-outfit text-[#7B61FF]">Staff Performance Oversight</h2>
+          <h2 className="text-xl font-bold font-outfit text-[#6c11d4]">Staff Performance Oversight</h2>
           <p className="text-sm text-slate-500">Cross-functional workforce productivity metrics</p>
         </div>
         <div className="flex gap-4">
@@ -27,8 +27,8 @@ const COOStaffPerformance: React.FC = () => {
             <p className="text-lg font-bold text-blue-700">145</p>
           </div>
           <div className="bg-[#EAE5FF] p-3 rounded-lg text-center border border-slate-100">
-            <p className="text-xs text-[#7B61FF] font-semibold uppercase">Top Performers</p>
-            <p className="text-lg font-bold text-[#7B61FF]">12</p>
+            <p className="text-xs text-[#6c11d4] font-semibold uppercase">Top Performers</p>
+            <p className="text-lg font-bold text-[#6c11d4]">12</p>
           </div>
         </div>
       </div>
@@ -40,7 +40,7 @@ const COOStaffPerformance: React.FC = () => {
             <input 
               type="text"
               placeholder="Search staff by name or ID..."
-              className="w-full pl-10 pr-4 py-2 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9234EA] focus:border-transparent text-sm"
+              className="w-full pl-10 pr-4 py-2 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6c11d4] focus:border-transparent text-sm"
             />
           </div>
           <div className="flex items-center space-x-2 bg-white border border-slate-100 p-1 rounded-lg w-full md:w-auto overflow-x-auto">
@@ -50,7 +50,7 @@ const COOStaffPerformance: React.FC = () => {
                 onClick={() => setFilter(role)}
                 className={`flex-shrink-0 px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${
                   filter === role 
-                    ? 'bg-[#9234EA] shadow-sm text-white' 
+                    ? 'bg-[#6c11d4] shadow-sm text-white' 
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
               >
@@ -79,7 +79,7 @@ const COOStaffPerformance: React.FC = () => {
                   </td>
                   <td className="p-4">
                     <div className="flex items-center space-x-2 mb-1">
-                      {staff.role.includes('Agent') ? <MapPin size={14} className="text-[#7B61FF]" /> : 
+                      {staff.role.includes('Agent') ? <MapPin size={14} className="text-[#6c11d4]" /> : 
                        staff.role.includes('Manager') ? <Shield size={14} className="text-orange-500" /> :
                        <Briefcase size={14} className="text-blue-500" />}
                       <span className="text-sm font-bold text-slate-700">{staff.role}</span>
@@ -88,7 +88,7 @@ const COOStaffPerformance: React.FC = () => {
                   </td>
                   <td className="p-4">
                     <p className="text-xs text-slate-500 uppercase font-bold">{staff.metricTitle}</p>
-                    <p className="text-sm font-bold text-[#7B61FF]">{staff.metricValue}</p>
+                    <p className="text-sm font-bold text-[#6c11d4]">{staff.metricValue}</p>
                   </td>
                   <td className="p-4 text-right">
                     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold

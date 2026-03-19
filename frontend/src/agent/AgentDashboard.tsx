@@ -80,7 +80,7 @@ export default function AgentDashboard() {
         <main className="flex-1 w-full max-w-5xl mx-auto px-4 pt-24 pb-24 space-y-6">
 
 
-          <section className="relative overflow-hidden rounded-2xl bg-[#6d28d9] p-6 text-white shadow-xl shadow-[#6d28d9]/20">
+          <section className="relative overflow-hidden rounded-2xl bg-[#6c11d4] p-6 text-white shadow-xl shadow-[#6c11d4]/20">
 
             <div className="relative z-10 space-y-6">
               <div>
@@ -107,38 +107,38 @@ export default function AgentDashboard() {
           <section className="space-y-4">
             <h3 className="text-lg font-bold text-slate-800 dark:text-white">Quick Actions</h3>
             <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-              <div onClick={() => navigate('/agent-visit')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
-                <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
+              <div onClick={() => navigate('/agent-visit')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6c11d4]/50 transition-all">
+                <div className="size-12 flex items-center justify-center rounded-xl bg-[#6c11d4]/10 text-[#6c11d4] group-hover:bg-[#6c11d4] group-hover:text-white transition-colors">
                   <MapPin size={24} />
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Visit</span>
               </div>
-              <div onClick={() => navigate('/agent-list-house')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
-                <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
+              <div onClick={() => navigate('/agent-list-house')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6c11d4]/50 transition-all">
+                <div className="size-12 flex items-center justify-center rounded-xl bg-[#6c11d4]/10 text-[#6c11d4] group-hover:bg-[#6c11d4] group-hover:text-white transition-colors">
                   <Home size={24} />
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400">List House</span>
               </div>
-              <div onClick={() => setIsRegisterDialogOpen(true)} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
-                <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
+              <div onClick={() => setIsRegisterDialogOpen(true)} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6c11d4]/50 transition-all">
+                <div className="size-12 flex items-center justify-center rounded-xl bg-[#6c11d4]/10 text-[#6c11d4] group-hover:bg-[#6c11d4] group-hover:text-white transition-colors">
                   <UserCheck size={24} />
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Register</span>
               </div>
-              <div onClick={() => navigate('/agent-receipt')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
-                <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
+              <div onClick={() => navigate('/agent-receipt')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6c11d4]/50 transition-all">
+                <div className="size-12 flex items-center justify-center rounded-xl bg-[#6c11d4]/10 text-[#6c11d4] group-hover:bg-[#6c11d4] group-hover:text-white transition-colors">
                   <FileText size={24} />
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Receipt</span>
               </div>
-              <div onClick={() => navigate('/agent-referral')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
-                <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
+              <div onClick={() => navigate('/agent-referral')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6c11d4]/50 transition-all">
+                <div className="size-12 flex items-center justify-center rounded-xl bg-[#6c11d4]/10 text-[#6c11d4] group-hover:bg-[#6c11d4] group-hover:text-white transition-colors">
                   <UserPlus size={24} />
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Refer</span>
               </div>
-              <div onClick={() => navigate('/agent-shop')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6d28d9]/50 transition-all">
-                <div className="size-12 flex items-center justify-center rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] group-hover:bg-[#6d28d9] group-hover:text-white transition-colors">
+              <div onClick={() => navigate('/agent-shop')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6c11d4]/50 transition-all">
+                <div className="size-12 flex items-center justify-center rounded-xl bg-[#6c11d4]/10 text-[#6c11d4] group-hover:bg-[#6c11d4] group-hover:text-white transition-colors">
                   <Store size={24} />
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Shop</span>
@@ -147,10 +147,10 @@ export default function AgentDashboard() {
           </section>
 
           <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div onClick={() => navigate('/agent-daily-ops')} className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between h-full cursor-pointer hover:border-[#6d28d9]/50 transition-all group">
+            <div onClick={() => navigate('/agent-daily-ops')} className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between h-full cursor-pointer hover:border-[#6c11d4]/50 transition-all group">
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider group-hover:text-[#6d28d9] transition-colors">Daily Operations</h4>
-                <LineChart className="text-[#6d28d9]" size={24} />
+                <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider group-hover:text-[#6c11d4] transition-colors">Daily Operations</h4>
+                <LineChart className="text-[#6c11d4]" size={24} />
               </div>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -158,7 +158,7 @@ export default function AgentDashboard() {
                   <span className="text-xl font-bold text-slate-900 dark:text-white">{summary.visits_today || 0}</span>
                 </div>
                 <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-1.5">
-                  <div className="bg-[#6d28d9] h-1.5 rounded-full" style={{ width: `${Math.min(((summary.visits_today || 0) / 20) * 100, 100)}%` }}></div>
+                  <div className="bg-[#6c11d4] h-1.5 rounded-full" style={{ width: `${Math.min(((summary.visits_today || 0) / 20) * 100, 100)}%` }}></div>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-700 dark:text-slate-300 font-medium">Collections</span>
@@ -169,7 +169,7 @@ export default function AgentDashboard() {
             <div className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between h-full">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Credit Access</h4>
-                <CreditCard className="text-[#6d28d9]" size={24} />
+                <CreditCard className="text-[#6c11d4]" size={24} />
               </div>
               <div className="space-y-4">
                 <div>
@@ -178,7 +178,7 @@ export default function AgentDashboard() {
                 </div>
                 <button 
                   onClick={() => navigate('/agent-advance-request')}
-                  className="w-full py-2.5 rounded-xl bg-[#6d28d9]/10 text-[#6d28d9] text-sm font-bold hover:bg-[#6d28d9]/20 transition-colors"
+                  className="w-full py-2.5 rounded-xl bg-[#6c11d4]/10 text-[#6c11d4] text-sm font-bold hover:bg-[#6c11d4]/20 transition-colors"
                 >
                   Request for Advance
                 </button>
@@ -186,14 +186,14 @@ export default function AgentDashboard() {
             </div>
             <div 
               onClick={() => navigate('/agent-rent-requests')} 
-              className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between h-full cursor-pointer hover:border-[#6d28d9]/50 transition-all group"
+              className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between h-full cursor-pointer hover:border-[#6c11d4]/50 transition-all group"
             >
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider group-hover:text-[#6d28d9] transition-colors">Rent Requests</h4>
-                <ClipboardCheck className="text-[#6d28d9]" size={24} />
+                <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider group-hover:text-[#6c11d4] transition-colors">Rent Requests</h4>
+                <ClipboardCheck className="text-[#6c11d4]" size={24} />
               </div>
               <div className="flex items-center gap-4">
-                <div className="size-14 rounded-full border-4 border-[#6d28d9]/20 flex items-center justify-center text-[#6d28d9] font-bold text-xl">
+                <div className="size-14 rounded-full border-4 border-[#6c11d4]/20 flex items-center justify-center text-[#6c11d4] font-bold text-xl">
                   14
                 </div>
                 <div>
@@ -213,7 +213,7 @@ export default function AgentDashboard() {
           <section className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 pb-20 md:pb-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">Recent Transactions</h3>
-              <button className="text-sm font-bold text-[#6d28d9]">View All</button>
+              <button className="text-sm font-bold text-[#6c11d4]">View All</button>
             </div>
             <div className="space-y-4">
               {transactions.length === 0 ? (
@@ -246,19 +246,19 @@ export default function AgentDashboard() {
         </main>
 
         <nav className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-white dark:bg-[#221610] border-t border-slate-200 dark:border-slate-800 px-6 py-3 flex items-center justify-between z-50">
-          <button onClick={() => navigate('/dashboard')} className="flex flex-col items-center gap-1 text-[#6d28d9]">
+          <button onClick={() => navigate('/dashboard')} className="flex flex-col items-center gap-1 text-[#6c11d4]">
             <Home size={24} />
             <span className="text-[10px] font-bold">Home</span>
           </button>
-          <button onClick={() => navigate('/agent-wallet')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9] transition-colors">
+          <button onClick={() => navigate('/agent-wallet')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6c11d4] transition-colors">
             <Wallet size={24} />
             <span className="text-[10px] font-bold">Wallet</span>
           </button>
-          <button onClick={() => navigate('/dashboard/agent/clients')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9] transition-colors">
+          <button onClick={() => navigate('/dashboard/agent/clients')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6c11d4] transition-colors">
             <Users size={24} />
             <span className="text-[10px] font-bold">Clients</span>
           </button>
-          <button onClick={() => navigate('/dashboard/agent/settings')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6d28d9] transition-colors">
+          <button onClick={() => navigate('/dashboard/agent/settings')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6c11d4] transition-colors">
             <Settings size={24} />
             <span className="text-[10px] font-bold">Settings</span>
           </button>

@@ -71,7 +71,7 @@ export default function AgentWithdraw() {
             <h2 className="text-xl font-bold leading-tight tracking-tight">Withdraw</h2>
           </div>
           <div className="flex items-center gap-2">
-            <ShieldCheck size={20} className="text-[#6d28d9]" />
+            <ShieldCheck size={20} className="text-[#6c11d4]" />
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Secure Transfer</span>
           </div>
         </div>
@@ -82,9 +82,9 @@ export default function AgentWithdraw() {
 
           {/* Balance card */}
           <section>
-            <div className="bg-[#6d28d9]/5 dark:bg-[#6d28d9]/10 border border-[#6d28d9]/20 rounded-xl p-6">
+            <div className="bg-[#6c11d4]/5 dark:bg-[#6c11d4]/10 border border-[#6c11d4]/20 rounded-xl p-6">
               <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Available Balance</p>
-              <p className="text-3xl font-bold text-[#6d28d9]">UGX {fmt(BALANCE)}</p>
+              <p className="text-3xl font-bold text-[#6c11d4]">UGX {fmt(BALANCE)}</p>
             </div>
           </section>
 
@@ -99,7 +99,7 @@ export default function AgentWithdraw() {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0"
-                  className="w-full pl-16 pr-4 py-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-2xl font-bold focus:outline-none focus:border-[#6d28d9] focus:ring-2 focus:ring-[#6d28d9]/20 transition-all placeholder:text-slate-300"
+                  className="w-full pl-16 pr-4 py-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-2xl font-bold focus:outline-none focus:border-[#6c11d4] focus:ring-2 focus:ring-[#6c11d4]/20 transition-all placeholder:text-slate-300"
                 />
               </div>
             </div>
@@ -110,14 +110,14 @@ export default function AgentWithdraw() {
                 <button
                   key={q}
                   onClick={() => handleQuick(q)}
-                  className="flex-1 min-w-[80px] py-2 px-4 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-[#6d28d9]/10 hover:text-[#6d28d9] dark:hover:bg-[#6d28d9]/20 border border-transparent hover:border-[#6d28d9]/30 transition-all text-sm font-bold text-slate-700 dark:text-slate-300"
+                  className="flex-1 min-w-[80px] py-2 px-4 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-[#6c11d4]/10 hover:text-[#6c11d4] dark:hover:bg-[#6c11d4]/20 border border-transparent hover:border-[#6c11d4]/30 transition-all text-sm font-bold text-slate-700 dark:text-slate-300"
                 >
                   {fmt(q)}
                 </button>
               ))}
               <button
                 onClick={handleMax}
-                className="flex-1 min-w-[80px] py-2 px-4 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-[#6d28d9]/10 hover:text-[#6d28d9] dark:hover:bg-[#6d28d9]/20 border border-transparent hover:border-[#6d28d9]/30 transition-all text-sm font-bold text-slate-700 dark:text-slate-300">
+                className="flex-1 min-w-[80px] py-2 px-4 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-[#6c11d4]/10 hover:text-[#6c11d4] dark:hover:bg-[#6c11d4]/20 border border-transparent hover:border-[#6c11d4]/30 transition-all text-sm font-bold text-slate-700 dark:text-slate-300">
                 Max
               </button>
             </div>
@@ -130,22 +130,22 @@ export default function AgentWithdraw() {
               {/* Mobile Money */}
               <div
                 onClick={() => setMethod('mobile')}
-                className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${method === 'mobile' ? 'border-[#6d28d9] bg-[#6d28d9]/5 dark:bg-[#6d28d9]/10' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'}`}
+                className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${method === 'mobile' ? 'border-[#6c11d4] bg-[#6c11d4]/5 dark:bg-[#6c11d4]/10' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'}`}
               >
-                <div className="h-10 w-10 rounded-full bg-[#6d28d9] flex items-center justify-center text-white shrink-0">
+                <div className="h-10 w-10 rounded-full bg-[#6c11d4] flex items-center justify-center text-white shrink-0">
                   <Smartphone size={20} />
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-bold text-slate-900 dark:text-white">Mobile Money</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">Instant transfer to your wallet</p>
                 </div>
-                {method === 'mobile' && <CheckCircle2 size={20} className="text-[#6d28d9] shrink-0" />}
+                {method === 'mobile' && <CheckCircle2 size={20} className="text-[#6c11d4] shrink-0" />}
               </div>
 
               {/* Bank Transfer */}
               <div
                 onClick={() => setMethod('bank')}
-                className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${method === 'bank' ? 'border-[#6d28d9] bg-[#6d28d9]/5 dark:bg-[#6d28d9]/10' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 opacity-70'}`}
+                className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${method === 'bank' ? 'border-[#6c11d4] bg-[#6c11d4]/5 dark:bg-[#6c11d4]/10' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 opacity-70'}`}
               >
                 <div className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 shrink-0">
                   <Landmark size={20} />
@@ -154,7 +154,7 @@ export default function AgentWithdraw() {
                   <p className="text-sm font-bold text-slate-900 dark:text-white">Bank Transfer</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">1–3 business days</p>
                 </div>
-                {method === 'bank' && <CheckCircle2 size={20} className="text-[#6d28d9] shrink-0" />}
+                {method === 'bank' && <CheckCircle2 size={20} className="text-[#6c11d4] shrink-0" />}
               </div>
             </div>
 
@@ -213,7 +213,7 @@ export default function AgentWithdraw() {
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 9))}
                       placeholder="7X XXX XXXX"
-                      className="w-full pl-14 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-base font-semibold focus:outline-none focus:border-[#6d28d9] focus:ring-2 focus:ring-[#6d28d9]/20 transition-all placeholder:text-slate-300 placeholder:font-normal"
+                      className="w-full pl-14 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-base font-semibold focus:outline-none focus:border-[#6c11d4] focus:ring-2 focus:ring-[#6c11d4]/20 transition-all placeholder:text-slate-300 placeholder:font-normal"
                     />
                   </div>
                   <p className="text-xs text-slate-400 ml-1">Enter the number where funds should be sent.</p>
@@ -238,7 +238,7 @@ export default function AgentWithdraw() {
                 <div className="h-px bg-slate-100 dark:bg-slate-700 my-1" />
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-bold text-slate-900 dark:text-slate-100">Total Deduction</span>
-                  <span className="text-lg font-bold text-[#6d28d9]">UGX {fmt(numericAmount)}</span>
+                  <span className="text-lg font-bold text-[#6c11d4]">UGX {fmt(numericAmount)}</span>
                 </div>
               </div>
               <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg border border-slate-100 dark:border-slate-800">
@@ -257,7 +257,7 @@ export default function AgentWithdraw() {
             <button
               onClick={handleWithdraw}
               disabled={isLoading || numericAmount <= 0 || numericAmount > BALANCE}
-              className="w-full bg-[#6d28d9] hover:bg-[#6d28d9]/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-[#6d28d9]/25 transition-all flex items-center justify-center gap-3"
+              className="w-full bg-[#6c11d4] hover:bg-[#6c11d4]/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-[#6c11d4]/25 transition-all flex items-center justify-center gap-3"
             >
               {isLoading ? (
                 <>
@@ -320,7 +320,7 @@ export default function AgentWithdraw() {
               )}
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500">Reference</span>
-                <span className="font-mono font-bold text-[#6d28d9]">{txRef}</span>
+                <span className="font-mono font-bold text-[#6c11d4]">{txRef}</span>
               </div>
               <div className="h-px bg-slate-200 dark:bg-slate-700" />
               <div className="flex justify-between text-sm">
@@ -331,7 +331,7 @@ export default function AgentWithdraw() {
 
             <button
               onClick={() => { setShowSuccess(false); navigate(-1); }}
-              className="w-full bg-[#6d28d9] hover:bg-[#6d28d9]/90 text-white font-bold py-3 rounded-xl transition-all"
+              className="w-full bg-[#6c11d4] hover:bg-[#6c11d4]/90 text-white font-bold py-3 rounded-xl transition-all"
             >
               Back to Dashboard
             </button>
@@ -343,15 +343,15 @@ export default function AgentWithdraw() {
       <footer className="mt-auto border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 py-8 px-4">
         <div className="mx-auto max-w-3xl flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 bg-[#6d28d9] rounded-lg flex items-center justify-center text-white">
+            <div className="h-8 w-8 bg-[#6c11d4] rounded-lg flex items-center justify-center text-white">
               <Banknote size={16} />
             </div>
             <span className="font-bold text-slate-900 dark:text-white">Welile Finance</span>
           </div>
           <div className="flex gap-6 text-sm text-slate-500 dark:text-slate-400">
-            <a className="hover:text-[#6d28d9] transition-colors" href="#">Support</a>
-            <a className="hover:text-[#6d28d9] transition-colors" href="#">Privacy</a>
-            <a className="hover:text-[#6d28d9] transition-colors" href="#">Security</a>
+            <a className="hover:text-[#6c11d4] transition-colors" href="#">Support</a>
+            <a className="hover:text-[#6c11d4] transition-colors" href="#">Privacy</a>
+            <a className="hover:text-[#6c11d4] transition-colors" href="#">Security</a>
           </div>
           <div className="text-xs text-slate-400">
             © 2024 Welile Fintech Platform. All rights reserved.

@@ -82,13 +82,13 @@ export default function AgentRegisterSubAgent() {
                   <div className="space-y-1.5">
                     <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Full Name</label>
                     <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6d28d9] transition-colors">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors">
                         <User size={18} strokeWidth={2} />
                       </div>
                       <input 
                         name="fullName" value={formData.fullName} onChange={handleChange} 
                         placeholder="John Doe"
-                        className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-800/50 border border-transparent focus:border-[#6d28d9]/30 focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-[#6d28d9]/10 rounded-xl transition-all outline-none font-medium placeholder:text-slate-400" 
+                        className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-800/50 border border-transparent focus:border-[#6c11d4]/30 focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none font-medium placeholder:text-slate-400" 
                         required 
                       />
                     </div>
@@ -97,14 +97,14 @@ export default function AgentRegisterSubAgent() {
                   <div className="space-y-1.5">
                     <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Phone Number</label>
                     <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6d28d9] transition-colors">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors">
                         <Phone size={18} strokeWidth={2} />
                       </div>
                       <input 
                         type="tel"
                         name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} 
                         placeholder="0700 000 000"
-                        className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-800/50 border border-transparent focus:border-[#6d28d9]/30 focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-[#6d28d9]/10 rounded-xl transition-all outline-none font-medium placeholder:text-slate-400" 
+                        className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-800/50 border border-transparent focus:border-[#6c11d4]/30 focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none font-medium placeholder:text-slate-400" 
                         required 
                       />
                     </div>
@@ -113,13 +113,13 @@ export default function AgentRegisterSubAgent() {
                   <div className="space-y-1.5 mb-8">
                     <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Location</label>
                     <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6d28d9] transition-colors">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors">
                         <MapPin size={18} strokeWidth={2} />
                       </div>
                       <input 
                         name="location" value={formData.location} onChange={handleChange} 
                         placeholder="Kampala, Uganda"
-                        className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-800/50 border border-transparent focus:border-[#6d28d9]/30 focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-[#6d28d9]/10 rounded-xl transition-all outline-none font-medium placeholder:text-slate-400" 
+                        className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-800/50 border border-transparent focus:border-[#6c11d4]/30 focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none font-medium placeholder:text-slate-400" 
                         required 
                       />
                     </div>
@@ -129,7 +129,7 @@ export default function AgentRegisterSubAgent() {
                     <button 
                       type="submit" 
                       disabled={isSubmitting}
-                      className="w-full bg-[#6d28d9] hover:bg-[#5b21b6] text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-[#6d28d9]/25 transition-all transform active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="w-full bg-[#6c11d4] hover:bg-[#5b21b6] text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-[#6c11d4]/25 transition-all transform active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       {isSubmitting ? (
                         <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"/>
@@ -163,14 +163,14 @@ export default function AgentRegisterSubAgent() {
                 <div className="w-full bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-800/30 rounded-2xl p-5 mb-8">
                   <p className="text-sm text-orange-800 dark:text-orange-400 font-medium mb-3">Default One-Time Password:</p>
                   <div className="bg-white dark:bg-slate-800 text-center py-3 rounded-xl border border-orange-100 dark:border-orange-900/20">
-                    <span className="text-xl font-mono font-bold tracking-widest text-[#6d28d9]">WELILE123</span>
+                    <span className="text-xl font-mono font-bold tracking-widest text-[#6c11d4]">WELILE123</span>
                   </div>
                   <p className="text-[11px] text-orange-600 dark:text-orange-500/70 mt-3 font-medium">Please share this password with the sub-agent. They will be prompted to change it upon their first login.</p>
                 </div>
 
                 <button 
                   onClick={() => navigate('/dashboard')}
-                  className="w-full bg-[#6d28d9]/10 hover:bg-[#6d28d9]/20 text-[#6d28d9] font-bold py-4 px-6 rounded-xl transition-colors"
+                  className="w-full bg-[#6c11d4]/10 hover:bg-[#6c11d4]/20 text-[#6c11d4] font-bold py-4 px-6 rounded-xl transition-colors"
                 >
                   Back to Dashboard
                 </button>

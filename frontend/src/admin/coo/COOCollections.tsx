@@ -19,7 +19,7 @@ const COOCollections: React.FC = () => {
         <div className="flex space-x-4">
           <div className="text-right">
             <p className="text-xs text-slate-500 font-bold uppercase">Total Today</p>
-            <p className="text-xl font-bold text-[#7B61FF]">UGX 4.69M</p>
+            <p className="text-xl font-bold text-[#6c11d4]">UGX 4.69M</p>
           </div>
         </div>
       </div>
@@ -31,7 +31,7 @@ const COOCollections: React.FC = () => {
             <input 
               type="text"
               placeholder="Search agents..."
-              className="w-full pl-10 pr-4 py-2 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9234EA] focus:border-transparent text-sm"
+              className="w-full pl-10 pr-4 py-2 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6c11d4] focus:border-transparent text-sm"
             />
           </div>
         </div>
@@ -57,7 +57,7 @@ const COOCollections: React.FC = () => {
                     </p>
                   </td>
                   <td className="p-4">
-                    <p className="font-bold text-[#7B61FF] text-lg">UGX {col.collected}</p>
+                    <p className="font-bold text-[#6c11d4] text-lg">UGX {col.collected}</p>
                   </td>
                   <td className="p-4">
                     <div className="space-y-1">
@@ -84,7 +84,7 @@ const COOCollections: React.FC = () => {
                         <span className="text-slate-700 font-medium">{col.floatBefore}</span>
                      </div>
                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-[#7B61FF] text-[10px] uppercase font-bold">Current</span>
+                        <span className="text-[#6c11d4] text-[10px] uppercase font-bold">Current</span>
                         <span className="text-slate-800 font-bold">{col.floatAfter}</span>
                      </div>
                   </td>

@@ -106,10 +106,10 @@ const AgentRequestAdvance = () => {
           <div className="flex items-center gap-3">
             <div className="text-right hidden sm:block">
               <p className="text-sm font-bold">{user ? `${user.firstName} ${user.lastName}` : 'Welile Agent'}</p>
-              <p className="text-[10px] text-[#6d28d9] font-bold uppercase tracking-widest">ID: {user?.id?.substring(0,8).toUpperCase() || 'AG-00000'}</p>
+              <p className="text-[10px] text-[#6c11d4] font-bold uppercase tracking-widest">ID: {user?.id?.substring(0,8).toUpperCase() || 'AG-00000'}</p>
             </div>
-            <div className="w-10 h-10 rounded-full bg-[#6d28d9]/10 border-2 border-[#6d28d9]/20 overflow-hidden">
-               <div className="w-full h-full bg-[#6d28d9]/20" />
+            <div className="w-10 h-10 rounded-full bg-[#6c11d4]/10 border-2 border-[#6c11d4]/20 overflow-hidden">
+               <div className="w-full h-full bg-[#6c11d4]/20" />
             </div>
           </div>
         </div>
@@ -123,8 +123,8 @@ const AgentRequestAdvance = () => {
             <section className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-sm border border-slate-200/50 dark:border-slate-800/50">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-center gap-5">
-                  <div className="w-16 h-16 rounded-2xl bg-[#6d28d9]/10 flex items-center justify-center overflow-hidden border border-[#6d28d9]/20">
-                    <ShieldCheck className="text-[#6d28d9]" size={36} />
+                  <div className="w-16 h-16 rounded-2xl bg-[#6c11d4]/10 flex items-center justify-center overflow-hidden border border-[#6c11d4]/20">
+                    <ShieldCheck className="text-[#6c11d4]" size={36} />
                   </div>
                   <div>
                     <h2 className="text-2xl font-black text-slate-900 dark:text-white">{user ? `${user.firstName} ${user.lastName}` : 'Welile Agent'}</h2>
@@ -141,7 +141,7 @@ const AgentRequestAdvance = () => {
                   </div>
                   <div>
                     <p className="text-[10px] text-slate-400 uppercase font-bold mb-1 tracking-wider">Available Limit</p>
-                    <p className="text-lg font-bold text-[#6d28d9] leading-none">{maxLimit.toLocaleString()} <span className="text-xs">UGX</span></p>
+                    <p className="text-lg font-bold text-[#6c11d4] leading-none">{maxLimit.toLocaleString()} <span className="text-xs">UGX</span></p>
                   </div>
                 </div>
               </div>
@@ -149,15 +149,15 @@ const AgentRequestAdvance = () => {
 
             <section className="space-y-4">
               <div className="flex items-center gap-2 px-2">
-                <LayoutGrid className="text-[#6d28d9]" size={20} />
+                <LayoutGrid className="text-[#6c11d4]" size={20} />
                 <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">Advance Type</h3>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label className="relative cursor-pointer group">
                   <input type="radio" checked={advanceType === 'Salary Advance'} onChange={() => setAdvanceType('Salary Advance')} className="peer sr-only" />
-                  <div className={`p-6 rounded-3xl border-2 transition-all h-full bg-white dark:bg-slate-900 shadow-sm ${advanceType === 'Salary Advance' ? 'border-[#6d28d9] ring-4 ring-[#6d28d9]/5' : 'border-white dark:border-slate-900 group-hover:border-slate-200 dark:group-hover:border-slate-700'}`}>
-                    <div className="w-12 h-12 rounded-2xl bg-[#6d28d9]/10 flex items-center justify-center mb-4 transition-colors">
-                      <Banknote className="text-[#6d28d9]" size={24} />
+                  <div className={`p-6 rounded-3xl border-2 transition-all h-full bg-white dark:bg-slate-900 shadow-sm ${advanceType === 'Salary Advance' ? 'border-[#6c11d4] ring-4 ring-[#6c11d4]/5' : 'border-white dark:border-slate-900 group-hover:border-slate-200 dark:group-hover:border-slate-700'}`}>
+                    <div className="w-12 h-12 rounded-2xl bg-[#6c11d4]/10 flex items-center justify-center mb-4 transition-colors">
+                      <Banknote className="text-[#6c11d4]" size={24} />
                     </div>
                     <p className="text-base font-bold text-slate-900 dark:text-white">Salary Advance</p>
                     <p className="text-xs text-slate-500 mt-1">Deducted from your monthly payout</p>
@@ -166,9 +166,9 @@ const AgentRequestAdvance = () => {
                 
                 <label className="relative cursor-pointer group">
                   <input type="radio" checked={advanceType === 'Float / Operational'} onChange={() => setAdvanceType('Float / Operational')} className="peer sr-only" />
-                  <div className={`p-6 rounded-3xl border-2 transition-all h-full bg-white dark:bg-slate-900 shadow-sm ${advanceType === 'Float / Operational' ? 'border-[#6d28d9] ring-4 ring-[#6d28d9]/5' : 'border-white dark:border-slate-900 group-hover:border-slate-200 dark:group-hover:border-slate-700'}`}>
-                    <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4 transition-colors group-hover:bg-[#6d28d9]/10">
-                      <Wallet className={advanceType === 'Float / Operational' ? 'text-[#6d28d9]' : 'text-slate-500 dark:text-slate-400 group-hover:text-[#6d28d9]'} size={24} />
+                  <div className={`p-6 rounded-3xl border-2 transition-all h-full bg-white dark:bg-slate-900 shadow-sm ${advanceType === 'Float / Operational' ? 'border-[#6c11d4] ring-4 ring-[#6c11d4]/5' : 'border-white dark:border-slate-900 group-hover:border-slate-200 dark:group-hover:border-slate-700'}`}>
+                    <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4 transition-colors group-hover:bg-[#6c11d4]/10">
+                      <Wallet className={advanceType === 'Float / Operational' ? 'text-[#6c11d4]' : 'text-slate-500 dark:text-slate-400 group-hover:text-[#6c11d4]'} size={24} />
                     </div>
                     <p className="text-base font-bold text-slate-900 dark:text-white">Float / Operational</p>
                     <p className="text-xs text-slate-500 mt-1">Short-term operational funding</p>
@@ -181,7 +181,7 @@ const AgentRequestAdvance = () => {
               <div className="space-y-4">
                 <div className="flex justify-between items-end px-2">
                   <div className="flex items-center gap-2">
-                    <CircleDollarSign className="text-[#6d28d9]" size={20} />
+                    <CircleDollarSign className="text-[#6c11d4]" size={20} />
                     <label className="text-base font-bold text-slate-800 dark:text-slate-200">Requested Amount</label>
                   </div>
                   <span className="text-[11px] text-slate-400 font-bold uppercase tracking-widest">MAX {maxLimit.toLocaleString()} UGX</span>
@@ -195,9 +195,9 @@ const AgentRequestAdvance = () => {
                       setError(null);
                     }}
                     placeholder="0.00"
-                    className={`w-full text-4xl font-black p-8 bg-white dark:bg-slate-900 border-2 rounded-3xl focus:border-[#6d28d9] focus:ring-4 focus:ring-[#6d28d9]/5 transition-all shadow-sm outline-none ${isOverLimit ? 'border-red-500 text-red-500' : 'border-white dark:border-slate-900'}`}
+                    className={`w-full text-4xl font-black p-8 bg-white dark:bg-slate-900 border-2 rounded-3xl focus:border-[#6c11d4] focus:ring-4 focus:ring-[#6c11d4]/5 transition-all shadow-sm outline-none ${isOverLimit ? 'border-red-500 text-red-500' : 'border-white dark:border-slate-900'}`}
                   />
-                  <div className={`absolute right-8 top-1/2 -translate-y-1/2 font-black text-2xl ${amount ? 'text-[#6d28d9]' : 'text-slate-300'}`}>UGX</div>
+                  <div className={`absolute right-8 top-1/2 -translate-y-1/2 font-black text-2xl ${amount ? 'text-[#6c11d4]' : 'text-slate-300'}`}>UGX</div>
                 </div>
                 
                 {isOverLimit && (
@@ -223,7 +223,7 @@ const AgentRequestAdvance = () => {
                      type="date"
                      value={date}
                      onChange={(e) => setDate(e.target.value)}
-                     className="w-full p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl focus:border-[#6d28d9] outline-none font-medium" 
+                     className="w-full p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl focus:border-[#6c11d4] outline-none font-medium" 
                   />
                 </div>
                 <div className="space-y-3">
@@ -233,7 +233,7 @@ const AgentRequestAdvance = () => {
                   <textarea 
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
-                    className="w-full p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:border-[#6d28d9] resize-none text-sm font-medium" 
+                    className="w-full p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:border-[#6c11d4] resize-none text-sm font-medium" 
                     placeholder="Explain the context for this request..." rows={1} 
                   />
                 </div>
@@ -245,9 +245,9 @@ const AgentRequestAdvance = () => {
           <div className="lg:col-span-5">
             <div className="sticky top-28 space-y-6">
               
-              <section className="bg-[#6d28d9]/5 dark:bg-[#6d28d9]/10 rounded-3xl p-8 border border-[#6d28d9]/20 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-[#6d28d9]/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#6d28d9] mb-8 flex items-center gap-2">
+              <section className="bg-[#6c11d4]/5 dark:bg-[#6c11d4]/10 rounded-3xl p-8 border border-[#6c11d4]/20 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#6c11d4]/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#6c11d4] mb-8 flex items-center gap-2">
                   <BarChart3 size={16} />
                   Repayment Breakdown
                 </h3>
@@ -264,10 +264,10 @@ const AgentRequestAdvance = () => {
                     <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Service Fee (1.25%)</span>
                     <span className="text-base font-bold text-slate-900 dark:text-white">{Math.round(serviceFee).toLocaleString()} UGX</span>
                   </div>
-                  <div className="pt-6 border-t border-[#6d28d9]/10 flex justify-between items-end">
+                  <div className="pt-6 border-t border-[#6c11d4]/10 flex justify-between items-end">
                     <div>
-                      <span className="text-xs font-bold text-[#6d28d9] uppercase tracking-widest">Total Repayment</span>
-                      <p className="text-3xl font-black text-[#6d28d9] mt-1">{Math.round(totalRepayment).toLocaleString()} <span className="text-sm">UGX</span></p>
+                      <span className="text-xs font-bold text-[#6c11d4] uppercase tracking-widest">Total Repayment</span>
+                      <p className="text-3xl font-black text-[#6c11d4] mt-1">{Math.round(totalRepayment).toLocaleString()} <span className="text-sm">UGX</span></p>
                     </div>
                   </div>
                 </div>
@@ -301,7 +301,7 @@ const AgentRequestAdvance = () => {
                   <button 
                     onClick={handleSubmit}
                     disabled={loading || numAmount <= 0 || isOverLimit}
-                    className="w-full bg-[#6d28d9] hover:bg-[#5b21b6] text-white font-black py-5 rounded-2xl shadow-xl shadow-[#6d28d9]/20 transition-all flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-[#6c11d4] hover:bg-[#5b21b6] text-white font-black py-5 rounded-2xl shadow-xl shadow-[#6c11d4]/20 transition-all flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <span className="text-lg">{loading ? 'Processing...' : 'Submit Advance Request'}</span>
                     {!loading && <ArrowRight className="group-hover:translate-x-1 transition-transform" size={24} />}
@@ -332,7 +332,7 @@ const AgentRequestAdvance = () => {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
-              <button onClick={() => navigate('/agent/history')} className="flex-1 bg-[#6d28d9] text-white font-bold py-4 rounded-2xl shadow-lg transition-all">View History</button>
+              <button onClick={() => navigate('/agent/history')} className="flex-1 bg-[#6c11d4] text-white font-bold py-4 rounded-2xl shadow-lg transition-all">View History</button>
               <button onClick={() => navigate('/dashboard/agent')} className="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold py-4 rounded-2xl transition-all">Return Home</button>
             </div>
           </div>

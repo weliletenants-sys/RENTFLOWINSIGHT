@@ -45,7 +45,7 @@ const COOSidebar: React.FC = () => {
                 className={({ isActive }) =>
                   `flex items-center space-x-3 px-4 py-3 rounded-full transition-all font-semibold ${
                     isActive
-                      ? 'bg-[#7B61FF] text-white shadow-md shadow-purple-500/20'
+                      ? 'bg-[#6c11d4] text-white shadow-md shadow-purple-500/20'
                       : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
                   }`
                 }
@@ -66,7 +66,7 @@ const COOSidebar: React.FC = () => {
                 className={({ isActive }) =>
                   `flex items-center space-x-3 px-4 py-3 rounded-full transition-all font-semibold ${
                     isActive
-                      ? 'bg-[#7B61FF] text-white shadow-md shadow-purple-500/20'
+                      ? 'bg-[#6c11d4] text-white shadow-md shadow-purple-500/20'
                       : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
                   }`
                 }
@@ -95,7 +95,7 @@ const COOSidebar: React.FC = () => {
       {/* Theme Toggle */}
       <div className="p-6">
          <div className="w-full bg-slate-100 rounded-full p-1 flex relative">
-            <div className="w-1/2 bg-[#7B61FF] rounded-full shadow flex items-center justify-center py-1.5 text-white z-10">
+            <div className="w-1/2 bg-[#6c11d4] rounded-full shadow flex items-center justify-center py-1.5 text-white z-10">
                <Sun size={16} />
             </div>
             <div className="w-1/2 flex items-center justify-center py-1.5 text-slate-400 z-10 transition-colors cursor-pointer hover:text-slate-600">

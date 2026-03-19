@@ -136,10 +136,10 @@ export default function AgentWithdrawSheet({ isOpen, onClose, onSuccess, availab
               <div className="space-y-6">
                 
                 {/* Balance Context */}
-                <div className="flex justify-between items-center p-4 bg-[#6d28d9]/5 dark:bg-[#6d28d9]/10 rounded-xl border border-[#6d28d9]/10">
+                <div className="flex justify-between items-center p-4 bg-[#6c11d4]/5 dark:bg-[#6c11d4]/10 rounded-xl border border-[#6c11d4]/10">
                   <div>
                     <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Available to Withdraw</p>
-                    <p className="text-2xl font-black text-[#6d28d9] tracking-tight">UGX {availableBalance.toLocaleString()}</p>
+                    <p className="text-2xl font-black text-[#6c11d4] tracking-tight">UGX {availableBalance.toLocaleString()}</p>
                   </div>
                 </div>
 
@@ -148,7 +148,7 @@ export default function AgentWithdrawSheet({ isOpen, onClose, onSuccess, availab
                   <div className="flex justify-between items-end mb-2">
                     <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">Destination Mobile</label>
                     {!isEditingPhone && (
-                      <button onClick={() => setIsEditingPhone(true)} className="flex items-center gap-1 text-xs font-bold text-[#6d28d9] hover:underline">
+                      <button onClick={() => setIsEditingPhone(true)} className="flex items-center gap-1 text-xs font-bold text-[#6c11d4] hover:underline">
                         <Edit2 size={12} /> Change
                       </button>
                     )}
@@ -160,7 +160,7 @@ export default function AgentWithdrawSheet({ isOpen, onClose, onSuccess, availab
                        onChange={(e) => setPhone(e.target.value)}
                        autoFocus
                        onBlur={() => setIsEditingPhone(false)}
-                       className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-900 border border-[#6d28d9] rounded-xl text-base font-bold outline-none"
+                       className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-900 border border-[#6c11d4] rounded-xl text-base font-bold outline-none"
                      />
                   ) : (
                     <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
@@ -174,7 +174,7 @@ export default function AgentWithdrawSheet({ isOpen, onClose, onSuccess, availab
                 <div>
                   <div className="flex justify-between items-end mb-2">
                     <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">Amount (UGX)</label>
-                    <button onClick={handleWithdrawAll} className="text-xs font-bold text-[#6d28d9] bg-[#6d28d9]/10 px-3 py-1 rounded-full hover:bg-[#6d28d9]/20 transition-colors">
+                    <button onClick={handleWithdrawAll} className="text-xs font-bold text-[#6c11d4] bg-[#6c11d4]/10 px-3 py-1 rounded-full hover:bg-[#6c11d4]/20 transition-colors">
                       Withdraw All
                     </button>
                   </div>
@@ -185,7 +185,7 @@ export default function AgentWithdrawSheet({ isOpen, onClose, onSuccess, availab
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
                       placeholder="Enter amount"
-                      className="w-full pl-16 pr-4 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xl font-black text-slate-900 dark:text-white outline-none focus:border-[#6d28d9] focus:ring-1 focus:ring-[#6d28d9] transition-all"
+                      className="w-full pl-16 pr-4 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xl font-black text-slate-900 dark:text-white outline-none focus:border-[#6c11d4] focus:ring-1 focus:ring-[#6c11d4] transition-all"
                     />
                   </div>
                   
@@ -209,7 +209,7 @@ export default function AgentWithdrawSheet({ isOpen, onClose, onSuccess, availab
                 <button 
                   disabled={!isValid}
                   onClick={() => setStep('preview')}
-                  className="w-full py-4 bg-[#6d28d9] hover:bg-[#5b21b6] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all shadow-lg shadow-[#6d28d9]/20"
+                  className="w-full py-4 bg-[#6c11d4] hover:bg-[#5b21b6] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all shadow-lg shadow-[#6c11d4]/20"
                 >
                   Continue
                 </button>
@@ -230,7 +230,7 @@ export default function AgentWithdrawSheet({ isOpen, onClose, onSuccess, availab
                   <div className="h-px w-full bg-slate-200 dark:bg-slate-700 my-2" />
                   <div className="flex justify-between items-center">
                     <span className="text-slate-900 dark:text-white font-bold">Net Received</span>
-                    <span className="font-black text-xl text-[#6d28d9]">UGX {netReceived.toLocaleString()}</span>
+                    <span className="font-black text-xl text-[#6c11d4]">UGX {netReceived.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
                     <span className="text-slate-500 text-sm">Destination</span>
@@ -254,7 +254,7 @@ export default function AgentWithdrawSheet({ isOpen, onClose, onSuccess, availab
                   <button 
                     onClick={handleConfirm}
                     disabled={isLoading}
-                    className="flex-[2] py-4 flex items-center justify-center gap-2 bg-[#6d28d9] hover:bg-[#5b21b6] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#6d28d9]/20"
+                    className="flex-[2] py-4 flex items-center justify-center gap-2 bg-[#6c11d4] hover:bg-[#5b21b6] text-white font-bold rounded-xl transition-all shadow-lg shadow-[#6c11d4]/20"
                   >
                     {isLoading ? <Loader2 className="animate-spin" size={20} /> : 'Confirm Withdrawal'}
                   </button>
@@ -276,10 +276,10 @@ export default function AgentWithdrawSheet({ isOpen, onClose, onSuccess, availab
                 {!isOffline && (
                   <div className="w-full bg-slate-50 dark:bg-slate-900 rounded-2xl p-5 mb-8">
                     <h4 className="text-xs font-bold uppercase text-slate-500 mb-4 tracking-wider">Processing Status</h4>
-                    <div className="relative border-l-2 border-[#6d28d9]/20 ml-3 pl-6 space-y-6">
+                    <div className="relative border-l-2 border-[#6c11d4]/20 ml-3 pl-6 space-y-6">
                       <div className="relative">
-                        <div className="absolute -left-[31px] top-1 w-4 h-4 rounded-full border-4 border-white dark:border-[#221610] bg-[#6d28d9]" />
-                        <p className="font-bold text-sm text-[#6d28d9]">Requested</p>
+                        <div className="absolute -left-[31px] top-1 w-4 h-4 rounded-full border-4 border-white dark:border-[#221610] bg-[#6c11d4]" />
+                        <p className="font-bold text-sm text-[#6c11d4]">Requested</p>
                         <p className="text-xs text-slate-500">Just now</p>
                       </div>
                       <div className="relative">
@@ -296,7 +296,7 @@ export default function AgentWithdrawSheet({ isOpen, onClose, onSuccess, availab
                 )}
                 
                 <div className="w-full space-y-3">
-                  <button onClick={onClose} className="w-full py-4 bg-[#6d28d9] hover:bg-[#5b21b6] text-white font-bold rounded-xl shadow-lg shadow-[#6d28d9]/20">
+                  <button onClick={onClose} className="w-full py-4 bg-[#6c11d4] hover:bg-[#5b21b6] text-white font-bold rounded-xl shadow-lg shadow-[#6c11d4]/20">
                     Done
                   </button>
                 </div>
