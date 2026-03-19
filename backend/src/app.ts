@@ -15,6 +15,7 @@ import tenantRoutes from './routes/tenant.routes';
 import agentRoutes from './routes/agent.routes';
 import cfoRoutes from './routes/cfo.routes';
 import funderRoutes from './routes/funder.routes';
+import rolesRoutes from './routes/roles.routes';
 
 dotenv.config();
 
@@ -44,6 +45,7 @@ app.use('/tenant', tenantRoutes);
 app.use('/agent', agentRoutes);
 app.use('/cfo', cfoRoutes);
 app.use('/funder', funderRoutes);
+app.use('/roles', rolesRoutes);
 
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
