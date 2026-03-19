@@ -142,11 +142,12 @@ export default function FunderDashboard() {
   };
 
   const handleVerificationCheck = (actionFn: () => void) => {
-    if (!user?.isVerified) {
-      alert("Verification Required. Please complete your KYC profile to use this feature.");
-      navigate('/funder/kyc');
-      return;
-    }
+    // TEMPORARY: disabled verification requirement
+    // if (!user?.isVerified) {
+    //   alert("Verification Required. Please complete your KYC profile to use this feature.");
+    //   navigate('/funder/kyc');
+    //   return;
+    // }
     actionFn();
   };
 
@@ -232,8 +233,8 @@ export default function FunderDashboard() {
                 <FunderWalletCard
                   walletBalance={stats.walletBalance}
                   cardId="WL-99201"
-                  onAddFunds={() => handleVerificationCheck(() => setIsModalOpen(true))}
-                  onWithdraw={() => handleVerificationCheck(() => console.log('Withdraw via card'))}
+                  onAddFunds={() => navigate('/funder/wallet')}
+                  onWithdraw={() => navigate('/funder/wallet')}
                   onPortfolio={() => navigate('/funder/portfolio')}
                 />
 

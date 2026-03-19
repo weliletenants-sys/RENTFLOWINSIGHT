@@ -1,20 +1,34 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { 
   Download, Upload, ArrowRightLeft, Clock, 
   CheckCircle, XCircle, AlertCircle, Plus
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import FunderSidebar from './components/FunderSidebar';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
 import FunderBottomNav from './components/FunderBottomNav';
 
 export default function FunderWallet() {
   const [activeTab, setActiveTab] = useState<'All' | 'Cash In' | 'Cash Out'>('All');
+  
+  // Wallet State
+  const [walletBalance, setWalletBalance] = useState(2500000);
+
+  // Deposit State
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
   const [depositProvider, setDepositProvider] = useState<'MTN' | 'Airtel' | 'Bank'>('MTN');
+  const [depositAmount, setDepositAmount] = useState('');
+  const [depositTid, setDepositTid] = useState('');
+  const [isSubmittingDeposit, setIsSubmittingDeposit] = useState(false);
 
-  // Mock Wallet Data Based on Business Logic
-  const walletBalance = 2500000;
-  
+  // Withdraw State
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const [withdrawProvider, setWithdrawProvider] = useState<'MTN' | 'Airtel' | 'Bank'>('MTN');
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [withdrawAccountName, setWithdrawAccountName] = useState('');
+  const [withdrawAccountNumber, setWithdrawAccountNumber] = useState('');
+  const [isSubmittingWithdraw, setIsSubmittingWithdraw] = useState(false);
+
   // Pending Withdrawal Notice (90 days)
   const pendingWithdrawal = {
     amount: 5000000,
@@ -25,7 +39,7 @@ export default function FunderWallet() {
   };
 
   // Double-Entry Ledger Transactions
-  const transactions = [
+  const [transactions, setTransactions] = useState([
     {
       id: 'tx-101',
       date: 'Today, 10:45 AM',
@@ -66,7 +80,78 @@ export default function FunderWallet() {
       status: 'completed',
       ref: 'MOMO-982XF'
     }
-  ];
+  ]);
+
+  const handleDepositSubmit = () => {
+    if (!depositAmount || !depositTid) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+    const amount = Number(depositAmount);
+    if (amount < 100000) {
+      toast.error('Minimum deposit is UGX 100,000');
+      return;
+    }
+    
+    setIsSubmittingDeposit(true);
+    setTimeout(() => {
+      setWalletBalance(prev => prev + amount);
+      setTransactions(prev => [{
+        id: `tx-dep-${Date.now()}`,
+        date: 'Just Now',
+        type: 'Cash In',
+        category: 'deposit',
+        description: `${depositProvider} Deposit`,
+        amount: amount,
+        status: 'completed',
+        ref: depositTid.toUpperCase()
+      }, ...prev]);
+      
+      setIsSubmittingDeposit(false);
+      setIsDepositModalOpen(false);
+      setDepositAmount('');
+      setDepositTid('');
+      toast.success('Deposit successfully verified and added to balance!');
+    }, 1500);
+  };
+
+  const handleWithdrawSubmit = () => {
+    if (!withdrawAmount || !withdrawAccountName || !withdrawAccountNumber) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+    const amount = Number(withdrawAmount);
+    if (amount <= 0) {
+      toast.error('Invalid withdrawal amount');
+      return;
+    }
+    if (amount > walletBalance) {
+      toast.error('Insufficient available liquidity');
+      return;
+    }
+
+    setIsSubmittingWithdraw(true);
+    setTimeout(() => {
+      setWalletBalance(prev => prev - amount);
+      setTransactions(prev => [{
+        id: `tx-with-${Date.now()}`,
+        date: 'Just Now',
+        type: 'Cash Out',
+        category: 'withdrawal',
+        description: `Withdraw to ${withdrawProvider}`,
+        amount: amount,
+        status: 'completed',
+        ref: `WD-${Math.random().toString().slice(2, 8).toUpperCase()}`
+      }, ...prev]);
+      
+      setIsSubmittingWithdraw(false);
+      setIsWithdrawModalOpen(false);
+      setWithdrawAmount('');
+      setWithdrawAccountName('');
+      setWithdrawAccountNumber('');
+      toast.success('Withdrawal successfully processed!');
+    }, 1500);
+  };
 
   const filteredTransactions = activeTab === 'All' 
     ? transactions 
@@ -123,7 +208,10 @@ export default function FunderWallet() {
                   >
                     <Plus className="w-4 h-4" /> Deposit
                   </button>
-                  <button className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all flex items-center gap-2 border border-white/10">
+                  <button 
+                    onClick={() => setIsWithdrawModalOpen(true)}
+                    className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all flex items-center gap-2 border border-white/10"
+                  >
                     <Download className="w-4 h-4" /> Withdraw
                   </button>
                   <button className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all flex items-center gap-2 border border-white/10">
@@ -273,50 +361,189 @@ export default function FunderWallet() {
       {/* Deposit Modal (Simple Simulation) */}
       {isDepositModalOpen && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center shrink-0">
               <h3 className="text-lg font-black text-slate-900">Add Funds (Deposit)</h3>
               <button onClick={() => setIsDepositModalOpen(false)} className="text-slate-400 hover:text-slate-600">
                 <XCircle className="w-6 h-6" />
               </button>
             </div>
-            <div className="p-6 space-y-5">
+            <div className="p-6 space-y-5 overflow-y-auto flex-1">
               
               <div>
                 <label className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2 block">Amount (UGX)</label>
-                <input type="number" placeholder="Enter amount..." className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-900 outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all" />
+                <input 
+                  type="number" 
+                  value={depositAmount}
+                  onChange={e => setDepositAmount(e.target.value)}
+                  placeholder="Enter amount..." 
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-900 outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all" 
+                />
               </div>
 
               <div>
                 <label className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2 block">Provider</label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-2">
                    <button 
                      onClick={() => setDepositProvider('MTN')}
-                     className={`flex flex-col items-center justify-center py-3 border-2 rounded-xl transition-all font-bold gap-2 ${depositProvider === 'MTN' ? 'border-[var(--color-primary)] bg-slate-50 text-[var(--color-primary)]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
+                     className={`flex flex-col items-center justify-center py-3 border-2 rounded-xl transition-all font-bold gap-1 ${depositProvider === 'MTN' ? 'border-[var(--color-primary)] bg-slate-50 text-[var(--color-primary)]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
                    >
-                     <img src="/mtn.png" alt="MTN" className="w-8 h-8 rounded-full object-cover shadow-sm mb-1" /> 
-                     <span>MTN MoMo</span>
-                     <span className="text-3xl font-black text-yellow-500 mt-1 tracking-tight">090777</span>
+                     <img src="/mtn.png" alt="MTN" className="w-7 h-7 rounded-full object-cover shadow-sm" /> 
+                     <span className="text-xs">MTN MoMo</span>
+                     <span className="text-lg font-black text-yellow-500 tracking-tight">090777</span>
                    </button>
                    <button 
                      onClick={() => setDepositProvider('Airtel')}
-                     className={`flex flex-col items-center justify-center py-3 border-2 rounded-xl transition-all font-bold gap-2 ${depositProvider === 'Airtel' ? 'border-[var(--color-primary)] bg-slate-50 text-[var(--color-primary)]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
+                     className={`flex flex-col items-center justify-center py-3 border-2 rounded-xl transition-all font-bold gap-1 ${depositProvider === 'Airtel' ? 'border-[var(--color-primary)] bg-slate-50 text-[var(--color-primary)]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
                    >
-                     <img src="/airtel.png" alt="Airtel" className="w-8 h-8 rounded-full object-cover shadow-sm mb-1" /> 
-                     <span>Airtel Money</span>
-                     <span className="text-3xl font-black text-red-600 mt-1 tracking-tight">4380664</span>
+                     <img src="/airtel.png" alt="Airtel" className="w-7 h-7 rounded-full object-cover shadow-sm" /> 
+                     <span className="text-xs">Airtel Money</span>
+                     <span className="text-lg font-black text-red-600 tracking-tight">4380664</span>
+                   </button>
+                   <button 
+                     onClick={() => setDepositProvider('Bank')}
+                     className={`flex flex-col items-center justify-center py-3 border-2 rounded-xl transition-all font-bold gap-1 ${depositProvider === 'Bank' ? 'border-[var(--color-primary)] bg-slate-50 text-[var(--color-primary)]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
+                   >
+                     <span className="text-2xl">🏦</span>
+                     <span className="text-xs">Bank Transfer</span>
+                     <span className="text-[10px] font-black text-slate-400 tracking-tight">STANBIC / UF</span>
+                   </button>
+                </div>
+                {depositProvider === 'Bank' && (
+                  <div className="mt-3 bg-purple-50 border border-purple-100 rounded-xl p-3 text-xs font-semibold text-purple-700 leading-relaxed">
+                    <p className="font-black text-purple-900 mb-1">Bank Transfer Details</p>
+                    <p>Bank: <span className="font-black">Stanbic Bank Uganda</span></p>
+                    <p>Account Name: <span className="font-black">Welile Housing Ltd</span></p>
+                    <p>Account No: <span className="font-black">9030012872445</span></p>
+                    <p>Branch: <span className="font-black">Kampala Main</span></p>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2 block">
+                  {depositProvider === 'Bank' ? 'Bank Reference / Transaction ID' : 'Transaction ID (TID) *'}
+                </label>
+                <input 
+                  type="text" 
+                  value={depositTid}
+                  onChange={e => setDepositTid(e.target.value)}
+                  placeholder={depositProvider === 'Bank' ? 'e.g. TRF20261803XXXX' : 'e.g. 153839202'}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-mono font-bold text-slate-900 outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all" 
+                />
+                <p className="text-[10px] font-semibold text-slate-500 mt-2">Min deposit: UGX 100,000. Required for manager verification.</p>
+              </div>
+
+              <button 
+                onClick={handleDepositSubmit}
+                disabled={isSubmittingDeposit}
+                className="w-full bg-slate-900 hover:bg-black text-white py-4 rounded-xl font-black transition-colors shadow-md mt-4 disabled:bg-slate-400 disabled:cursor-not-allowed flex items-center justify-center"
+              >
+                {isSubmittingDeposit ? 'VERIFYING...' : 'SUBMIT FOR VERIFICATION'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Withdraw Modal */}
+      {isWithdrawModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center shrink-0">
+              <div>
+                <h3 className="text-lg font-black text-slate-900">Withdraw Funds</h3>
+                <p className="text-xs font-bold text-slate-400 mt-0.5">Avail: UGX {walletBalance.toLocaleString()}</p>
+              </div>
+              <button onClick={() => setIsWithdrawModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4 overflow-y-auto flex-1">
+              
+              <div>
+                <label className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2 block">Amount (UGX)</label>
+                <div className="relative">
+                  <input 
+                    type="number" 
+                    value={withdrawAmount}
+                    onChange={e => setWithdrawAmount(e.target.value)}
+                    placeholder="Enter amount..." 
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 text-left py-3 font-bold text-slate-900 outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all" 
+                  />
+                  <button 
+                    onClick={() => setWithdrawAmount(walletBalance.toString())}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-black text-[var(--color-primary)] bg-[var(--color-primary-faint)] px-2 py-1 rounded-md hover:bg-purple-100"
+                  >
+                    MAX
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2 block">Destination Provider</label>
+                <div className="grid grid-cols-3 gap-2">
+                   <button 
+                     onClick={() => setWithdrawProvider('MTN')}
+                     className={`flex flex-col items-center justify-center py-2.5 border-2 rounded-xl transition-all font-bold gap-1 text-sm ${withdrawProvider === 'MTN' ? 'border-[var(--color-primary)] bg-slate-50 text-[var(--color-primary)]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
+                   >
+                     <span>📱</span>
+                     <span className="text-xs">MTN MoMo</span>
+                   </button>
+                   <button 
+                     onClick={() => setWithdrawProvider('Airtel')}
+                     className={`flex flex-col items-center justify-center py-2.5 border-2 rounded-xl transition-all font-bold gap-1 text-sm ${withdrawProvider === 'Airtel' ? 'border-[var(--color-primary)] bg-slate-50 text-[var(--color-primary)]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
+                   >
+                     <span>📱</span>
+                     <span className="text-xs">Airtel Money</span>
+                   </button>
+                   <button 
+                     onClick={() => setWithdrawProvider('Bank')}
+                     className={`flex flex-col items-center justify-center py-2.5 border-2 rounded-xl transition-all font-bold gap-1 text-sm ${withdrawProvider === 'Bank' ? 'border-[var(--color-primary)] bg-slate-50 text-[var(--color-primary)]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
+                   >
+                     <span>🏦</span>
+                     <span className="text-xs">Bank</span>
                    </button>
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2 block">Transaction ID (TID) *</label>
-                <input type="text" placeholder="e.g. 153839202" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-mono font-bold text-slate-900 outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all" />
-                <p className="text-[10px] font-semibold text-slate-500 mt-2">Required for manager verification to comply with double-entry mechanics.</p>
+                <label className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2 block">Account Name</label>
+                <input 
+                  type="text" 
+                  value={withdrawAccountName}
+                  onChange={e => setWithdrawAccountName(e.target.value)}
+                  placeholder="e.g. John Doe" 
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-900 outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all" 
+                />
               </div>
 
-              <button className="w-full bg-slate-900 hover:bg-black text-white py-4 rounded-xl font-black transition-colors shadow-md mt-4">
-                SUBMIT FOR VERIFICATION
+              <div>
+                <label className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2 block">
+                  {withdrawProvider === 'Bank' ? 'Account Number' : 'Phone Number'}
+                </label>
+                <input 
+                  type={withdrawProvider === 'Bank' ? 'text' : 'tel'} 
+                  value={withdrawAccountNumber}
+                  onChange={e => setWithdrawAccountNumber(e.target.value)}
+                  placeholder={withdrawProvider === 'Bank' ? 'e.g. 9030000001234' : 'e.g. 0770000000'} 
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-900 outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all" 
+                />
+                {withdrawProvider === 'Bank' && (
+                  <p className="text-[10px] font-semibold text-slate-500 mt-1.5">Enter your bank account number. Withdrawals to bank accounts may take 1–3 business days.</p>
+                )}
+              </div>
+
+              <button 
+                onClick={handleWithdrawSubmit}
+                disabled={isSubmittingWithdraw}
+                className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-black text-white py-4 rounded-xl font-black transition-colors shadow-md mt-4 disabled:bg-slate-400 disabled:cursor-not-allowed"
+              >
+                {isSubmittingWithdraw ? (
+                  'PROCESSING...'
+                ) : (
+                  <>CONFIRM WITHDRAWAL <ArrowRightLeft className="w-4 h-4" /></>
+                )}
               </button>
             </div>
           </div>
