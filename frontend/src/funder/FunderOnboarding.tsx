@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
@@ -91,7 +91,7 @@ function ChoiceCard({
       type="button"
       onClick={onClick}
       whileTap={{ scale: 0.985 }}
-      className={`w-full text-left p-5 rounded-2xl border-2 transition-all duration-200 relative overflow-hidden ${
+      className={`w-full text-left p-4 rounded-2xl border-2 transition-all duration-200 relative overflow-hidden ${
         selected ? 'border-[#6c11d4] bg-[#F3F0FF]' : 'border-gray-100 bg-white hover:border-purple-200'
       }`}
     >
@@ -101,20 +101,20 @@ function ChoiceCard({
           className="absolute inset-0 bg-gradient-to-br from-purple-100/40 to-transparent pointer-events-none"
         />
       )}
-      <div className="flex items-start gap-4 relative z-10">
-        <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+      <div className="flex items-start gap-3 relative z-10">
+        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
           selected ? 'bg-[#6c11d4] text-white' : 'bg-purple-50 text-[#6c11d4]'
         }`}>
-          <Icon size={20} strokeWidth={1.75} />
+          <Icon size={18} strokeWidth={1.75} />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2 mb-1">
-            <h4 className="font-bold text-gray-900 text-sm">{title}</h4>
-            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 ${
+          <div className="flex items-center justify-between gap-2 mb-0.5">
+            <h4 className="font-bold text-gray-900 text-[13px]">{title}</h4>
+            <span className={`text-[9px] font-black px-2 py-0.5 rounded-full shrink-0 ${
               selected ? 'bg-[#6c11d4] text-white' : 'bg-purple-100 text-[#6c11d4]'
             }`}>{badge}</span>
           </div>
-          <p className="text-xs text-gray-500 leading-relaxed">{body}</p>
+          <p className="text-[11px] text-gray-500 leading-relaxed">{body}</p>
         </div>
       </div>
       {selected && (
@@ -333,11 +333,11 @@ function Step1({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
           </div>
           <span className="text-xs font-bold text-[#6c11d4] tracking-wide uppercase">Welile Housing Partner</span>
         </div>
-        <h2 className="text-[28px] font-black text-gray-900 tracking-tight leading-[1.15]">
+        <h2 className="text-2xl font-black text-gray-900 tracking-tight leading-[1.15]">
           Put Your Money<br />
           <span className="text-[#6c11d4]">to Work for Families.</span>
         </h2>
-        <p className="text-[13.5px] text-gray-500 mt-3 leading-relaxed">
+        <p className="text-xs text-gray-500 mt-2 leading-relaxed">
           You contribute capital. Welile pays rent for verified tenants, manages collections, and credits your wallet every 30 days. You don't manage anything.
         </p>
       </motion.div>
@@ -347,7 +347,7 @@ function Step1({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
         {cards.map(({ icon: Icon, title, body, highlight }) => (
           <div
             key={title}
-            className={`relative flex items-start gap-4 rounded-2xl p-4 border transition-all ${
+            className={`relative flex items-start gap-3 rounded-xl p-3 border transition-all ${
               highlight
                 ? 'bg-[#F3F0FF] border-[#6c11d4]/25 shadow-sm shadow-purple-100'
                 : 'bg-white border-gray-100 shadow-sm'
@@ -355,21 +355,21 @@ function Step1({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
           >
             {highlight && (
               <BadgeCheck
-                size={22}
+                size={18}
                 className="absolute -top-1 -right-1 drop-shadow-md"
                 style={{ color: '#6c11d4' }}
                 strokeWidth={1.75}
                 fill="white"
               />
             )}
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
               highlight ? 'bg-[#6c11d4] text-white' : 'bg-purple-50 text-[#6c11d4]'
             }`}>
-              <Icon size={17} strokeWidth={1.75} />
+              <Icon size={14} strokeWidth={1.75} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className={`text-sm font-bold ${highlight ? 'text-[#6c11d4]' : 'text-gray-800'}`}>{title}</p>
-              <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{body}</p>
+              <p className={`text-[13px] font-bold ${highlight ? 'text-[#6c11d4]' : 'text-gray-800'}`}>{title}</p>
+              <p className="text-[11px] text-gray-500 leading-relaxed">{body}</p>
             </div>
           </div>
         ))}
@@ -419,10 +419,10 @@ function Step2({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
   return (
     <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6">
       <motion.div variants={fadeUp}>
-        <h2 className="text-2xl font-black text-gray-900 tracking-tight leading-tight">
+        <h2 className="text-[22px] font-black text-gray-900 tracking-tight leading-tight">
           How Would You Like<br />to Contribute?
         </h2>
-        <p className="text-sm text-gray-400 mt-2">Choose your contribution style — you can always adjust later.</p>
+        <p className="text-xs text-gray-400 mt-1.5">Choose your contribution style — you can always adjust later.</p>
       </motion.div>
 
       <motion.div variants={fadeUp} className="space-y-3">
@@ -467,7 +467,7 @@ function Step3({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
       {/* ── Secure Header Card ── */}
       <motion.div
         variants={fadeUp}
-        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1C1433] via-[#261B4A] to-[#1C1433] px-5 py-4"
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1C1433] via-[#261B4A] to-[#1C1433] px-4 py-3"
       >
         {/* subtle grid texture */}
         <div
@@ -480,8 +480,8 @@ function Step3({ form, setForm }: { form: FormState; setForm: React.Dispatch<Rea
         />
         <div className="relative z-10 flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-black text-purple-400 uppercase tracking-[0.15em] mb-0.5">Secure Registration</p>
-            <h2 className="text-[22px] font-black text-white tracking-tight leading-snug">
+            <p className="text-[9px] font-black text-purple-400 uppercase tracking-[0.1em] mb-0.5">Secure Registration</p>
+            <h2 className="text-lg font-black text-white tracking-tight leading-snug">
               Create Your<br />Funder Account
             </h2>
           </div>
@@ -745,7 +745,7 @@ export default function FunderOnboarding() {
         
         // Simulating the automatic JWT attachment for now since we just need the flow visually completed
         if (response.status === 201) {
-          navigate('/funder-dashboard');
+          navigate('/funder');
         }
       } catch (err: any) {
         console.error('Signup failed:', err);
@@ -767,92 +767,112 @@ export default function FunderOnboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex flex-col">
+    <div className="min-h-screen flex font-sans bg-[#FAFAFA]">
 
-      {/* Header */}
-      <div className="bg-white/90 backdrop-blur-sm border-b border-gray-100 shrink-0 sticky top-0 z-20">
-        <div className="flex items-center justify-center pt-10 pb-2">
-          <StepDots total={TOTAL} current={step} />
-        </div>
-        <div className="px-5 pb-3 flex items-center justify-between">
-          <button
-            onClick={handleBack}
-            className="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition"
-          >
-            <ArrowLeft size={18} />
-          </button>
-          <p className="text-[13px] font-black text-gray-800 tracking-tight uppercase">
-            {STEP_LABELS[step - 1]}
-          </p>
-          <div className="w-9" />
+      {/* ── LEFT COLUMN (HERO IMAGE) ── */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900 overflow-hidden items-center justify-center">
+        <div className="absolute inset-0 bg-black/30 z-10 mix-blend-multiply" />
+        <img 
+          src="/agent-hero.jpeg" 
+          alt="Funder Onboarding Background" 
+          className="absolute inset-0 w-full h-full object-cover z-0"
+        />
+        <div className="relative z-20 p-12 flex flex-col items-center justify-center h-full text-center text-white">
+          <img src="/welile-colored.png" alt="Welile Logo" className="h-12 w-auto mb-8 brightness-0 invert drop-shadow-md" />
+          <h2 className="text-4xl lg:text-5xl font-black mb-4 tracking-tight drop-shadow-xl leading-tight">Fund The Future<br />Of Housing</h2>
+          <p className="text-lg text-white/90 font-medium max-w-md drop-shadow-md">Empower verified tenants and grow your active capital with steady, managed returns.</p>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto px-5 py-6">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={step}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-          >
-            {stepComponents[step]}
-          </motion.div>
-        </AnimatePresence>
+      {/* ── RIGHT COLUMN (WIZARD) ── */}
+      <div className="w-full lg:w-1/2 flex flex-col h-screen overflow-hidden shadow-2xl z-20 bg-[#FAFAFA]">
+
+        {/* Header */}
+        <div className="bg-white/90 backdrop-blur-sm border-b border-gray-100 shrink-0 sticky top-0 z-20">
+          <div className="flex items-center justify-center pt-5 pb-2">
+            <StepDots total={TOTAL} current={step} />
+          </div>
+          <div className="px-6 lg:px-[18px] pb-3 flex items-center justify-between">
+            <button
+              onClick={handleBack}
+              className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition"
+            >
+              <ArrowLeft size={16} />
+            </button>
+            <p className="text-[11px] font-black text-gray-800 tracking-widest uppercase">
+              {STEP_LABELS[step - 1]}
+            </p>
+            <div className="w-8" />
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto px-6 py-8 lg:px-[18px]">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              className="max-w-md mx-auto w-full"
+            >
+              {stepComponents[step]}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+
+        {/* Footer CTA */}
+        <div className="px-6 pb-5 pt-3 bg-white border-t border-gray-100 shrink-0 lg:px-[18px]">
+          <div className="max-w-md mx-auto w-full">
+            <motion.button
+              onClick={valid && !isSubmitting ? handleNext : undefined}
+              disabled={!valid || isSubmitting}
+              whileTap={valid && !isSubmitting ? { scale: 0.98 } : {}}
+              animate={{ opacity: valid ? 1 : 0.55 }}
+              transition={{ duration: 0.2 }}
+              className={`w-full py-3 rounded-xl font-bold text-[14px] flex items-center justify-center gap-2 transition-all duration-200 ${
+                !valid
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : step === TOTAL
+                    ? isSubmitting
+                      ? 'bg-emerald-400 text-white cursor-not-allowed'
+                      : 'bg-[var(--color-primary)] text-white shadow-sm hover:opacity-90'
+                    : 'bg-[#6c11d4] text-white shadow-sm hover:bg-[#7B2AC5]'
+              }`}
+            >
+              {!valid ? (
+                <>
+                  <Lock size={16} strokeWidth={2} />
+                  {step === 1 && 'Confirm above to continue'}
+                  {step === 2 && 'Choose a contribution style'}
+                  {step === 3 && 'Fill in all fields to continue'}
+                </>
+              ) : step === TOTAL ? (
+                isSubmitting ? (
+                  <>
+                    <svg className="animate-spin h-[18px] w-[18px] text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                      <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                    </svg>
+                    Creating Account…
+                  </>
+                ) : (
+                  <>Create Account <Check size={18} strokeWidth={2.5} /></>
+                )
+              ) : (
+                <>Continue <ChevronRight size={18} strokeWidth={2.5} /></>
+              )}
+            </motion.button>
+
+            <p className="text-center text-[10px] font-bold text-gray-400 tracking-wider uppercase mt-2">
+              Step {step} / {TOTAL}
+            </p>
+          </div>
+        </div>
+
       </div>
-
-
-      {/* Footer CTA — always visible; disabled until step requirements are met */}
-      <div className="px-5 pb-8 pt-4 bg-white border-t border-gray-100 shrink-0">
-
-        <motion.button
-          onClick={valid && !isSubmitting ? handleNext : undefined}
-          disabled={!valid || isSubmitting}
-          whileTap={valid && !isSubmitting ? { scale: 0.98 } : {}}
-          animate={{ opacity: valid ? 1 : 0.55 }}
-          transition={{ duration: 0.2 }}
-          className={`w-full py-4 rounded-2xl font-bold text-[15px] flex items-center justify-center gap-2 transition-all duration-200 ${
-            !valid
-              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : step === TOTAL
-                ? isSubmitting
-                  ? 'bg-emerald-400 text-white cursor-not-allowed'
-                  : 'bg-emerald-500 text-white shadow-sm hover:bg-emerald-600'
-                : 'bg-[#6c11d4] text-white shadow-sm hover:bg-[#7B2AC5]'
-          }`}
-        >
-          {!valid ? (
-            // Locked state — show what's missing
-            <>
-              <Lock size={16} strokeWidth={2} />
-              {step === 1 && 'Confirm above to continue'}
-              {step === 2 && 'Choose a contribution style'}
-              {step === 3 && 'Fill in all fields to continue'}
-            </>
-          ) : step === TOTAL ? (
-            isSubmitting ? (
-              <>
-                <svg className="animate-spin h-[18px] w-[18px] text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-                  <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                </svg>
-                Creating Account…
-              </>
-            ) : (
-              <>Create Account <Check size={18} strokeWidth={2.5} /></>
-            )
-          ) : (
-            <>Continue <ChevronRight size={18} strokeWidth={2.5} /></>
-          )}
-        </motion.button>
-
-        <p className="text-center text-[11px] text-gray-400 mt-3">
-          Step {step} of {TOTAL} · {STEP_LABELS[step - 1]}
-        </p>
-      </div>
-
     </div>
   );
 }

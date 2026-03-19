@@ -1,4 +1,4 @@
-﻿import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
 
 export type Role = 'TENANT' | 'AGENT' | 'LANDLORD' | 'FUNDER' | null;
@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     firstName: 'Frontend',
     lastName: 'Developer',
     role: 'FUNDER',
-    isVerified: true,
+    isVerified: false,
   });
   const [intendedRole, setIntendedRole] = useState<Role>('TENANT');
   const [rentAmount, setRentAmount] = useState<string>('');
