@@ -30,5 +30,6 @@ export const funderRoutes = [
   <Route key="funder-wallet"     path="/funder/wallet"      element={<FunderWallet />} />,
   // Pages needing FunderLayout wrapper
   <Route key="funder-portfolio"      path="/funder/portfolio"      element={<FunderLayout activePage="Portfolio" pageTitle="My Portfolio"><FunderPortfolioPage /></FunderLayout>} />,
-  <Route key="funder-properties"     path="/funder/properties"     element={<FunderLayout activePage="Properties" pageTitle="Opportunities & Properties"><FunderOpportunitiesPage /></FunderLayout>} />,
+  <Route key="funder-properties"     path="/funder/properties"     element={<FunderLayout activePage="Properties" pageTitle="My Properties"><FunderPortfolioPage /></FunderLayout>} />,
+  <Route key="funder-opportunities"  path="/funder/opportunities"  element={<FunderLayout activePage="Opportunities" pageTitle="Opportunities"><FunderOpportunitiesPage /></FunderLayout>} />,
 ];
