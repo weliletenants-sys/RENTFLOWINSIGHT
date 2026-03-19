@@ -29,14 +29,21 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  // Start with a mock verified user to bypass auth walls during frontend dev
-  const [user, setUser] = useState<User | null>({
-    id: 'usr_front_123',
-    email: 'frontend@welile.com',
-    firstName: 'Frontend',
-    lastName: 'Developer',
-    role: 'FUNDER',
-    isVerified: false,
+  // Initialize user from local storage if available, otherwise null
+  const [user, setUser] = useState<User | null>(() => {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      // Decode JWT token logic here if needed, but for now we rely on a temporary object
+      // since the true user context should be fetched from /me endpoint in production.
+      return {
+        id: 'restored-session',
+        email: 'restored@welile.com',
+        firstName: 'Active',
+        lastName: 'User',
+        role: 'FUNDER',
+      };
+    }
+    return null;
   });
   const [intendedRole, setIntendedRole] = useState<Role>('TENANT');
   const [rentAmount, setRentAmount] = useState<string>('');

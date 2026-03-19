@@ -713,9 +713,20 @@ const STEP_LABELS = ['Welcome', 'Support', 'Create Account'];
 export default function FunderOnboarding() {
   const navigate = useNavigate();
   const definedRole = useRouteRole();
-  const { updateSession } = useAuth();
+  const { updateSession, user } = useAuth();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loadingTextIdx, setLoadingTextIdx] = useState(0);
+  const loadingTexts = ["Creating Account...", "Securing Wallet...", "Getting you started...", "Just a moment..."];
+
+  useEffect(() => {
+    if (!isSubmitting) return;
+    const interval = setInterval(() => {
+      setLoadingTextIdx(p => (p + 1) % loadingTexts.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [isSubmitting]);
+
   const [apiError, setApiError] = useState('');
   const TOTAL = 3;
 
@@ -730,6 +741,10 @@ export default function FunderOnboarding() {
     phone: '',
     agreedToTerms: false,
   });
+
+  useEffect(() => {
+    if (user) navigate('/funder');
+  }, [user, navigate]);
 
   const valid = isValid(step, form);
 
@@ -870,13 +885,24 @@ export default function FunderOnboarding() {
                 </>
               ) : step === TOTAL ? (
                 isSubmitting ? (
-                  <>
-                    <svg className="animate-spin h-[18px] w-[18px] text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <div className="flex items-center gap-2 overflow-hidden h-6 w-full justify-center">
+                    <svg className="animate-spin h-[18px] w-[18px] text-white shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
                       <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
                     </svg>
-                    Creating Account…
-                  </>
+                    <AnimatePresence mode="wait">
+                      <motion.span
+                        key={loadingTextIdx}
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: -20, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="whitespace-nowrap"
+                      >
+                        {loadingTexts[loadingTextIdx]}
+                      </motion.span>
+                    </AnimatePresence>
+                  </div>
                 ) : (
                   <>Create Account <Check size={18} strokeWidth={2.5} /></>
                 )

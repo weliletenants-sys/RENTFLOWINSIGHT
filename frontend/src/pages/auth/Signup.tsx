@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Phone, Mail, Lock, Eye, EyeOff, ArrowRight, User } from 'lucide-react';
 import PurpleBubbles from '../../components/PurpleBubbles';
 import { registerUser } from '../../services/authApi';
 import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Signup() {
   const [firstName, setFirstName] = useState('');
@@ -20,10 +21,28 @@ export default function Signup() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
-  const { updateSession, intendedRole } = useAuth();
+  const [loadingTextIdx, setLoadingTextIdx] = useState(0);
+  const loadingTexts = ["Creating Account...", "Securing Wallet...", "Getting you started...", "Just a moment..."];
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!loading) return;
+    const interval = setInterval(() => {
+      setLoadingTextIdx(p => (p + 1) % loadingTexts.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [loading]);
+  
+  const { updateSession, intendedRole, user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const refCode = searchParams.get('ref');
+
+  useEffect(() => {
+    if (user) {
+      navigate(user.role === 'FUNDER' ? '/funder' : '/dashboard');
+    }
+  }, [user, navigate]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -280,10 +299,33 @@ export default function Signup() {
               <button 
                 type="submit" 
                 disabled={loading}
-                className="w-full bg-[#6c11d4] hover:bg-[#5b21b6] disabled:opacity-70 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg shadow-[#6c11d4]/20 flex items-center justify-center gap-2 group mt-4"
+                className="w-full bg-[#6c11d4] hover:bg-[#5b21b6] disabled:opacity-70 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg shadow-[#6c11d4]/20 flex items-center justify-center gap-2 group mt-4 h-[56px] overflow-hidden"
               >
-                <span>{loading ? 'Creating Account & Wallet...' : 'Complete Sign Up'}</span>
-                {!loading && <ArrowRight size={18} strokeWidth={2} className="group-hover:translate-x-1 transition-transform" />}
+                {loading ? (
+                  <div className="flex items-center gap-2 justify-center w-full">
+                    <svg className="animate-spin h-[18px] w-[18px] text-white shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                      <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                    </svg>
+                    <AnimatePresence mode="wait">
+                      <motion.span
+                        key={loadingTextIdx}
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: -20, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="whitespace-nowrap"
+                      >
+                        {loadingTexts[loadingTextIdx]}
+                      </motion.span>
+                    </AnimatePresence>
+                  </div>
+                ) : (
+                  <>
+                    <span>Complete Sign Up</span>
+                    <ArrowRight size={18} strokeWidth={2} className="group-hover:translate-x-1 transition-transform shrink-0" />
+                  </>
+                )}
               </button>
             </form>
 
