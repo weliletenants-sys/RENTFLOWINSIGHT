@@ -1,39 +1,44 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Phone, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import PurpleBubbles from '../../components/PurpleBubbles';
+import { loginUser } from '../../services/authApi';
 
 export default function Login() {
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   
-  const { login, intendedRole } = useAuth();
+  const { updateSession } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
-    if (!phoneNumber || !password) {
-      setError("Please enter your phone number and password.");
+    if (!email || !password) {
+      setError("Please enter your email and password.");
       return;
     }
     
-    // Mock login action
-    login({
-      id: 'mock-uuid',
-      email: phoneNumber + '@welile.com', // Mocked linking until actual Auth is wired
-      firstName: 'Paul',
-      lastName: 'Ndlovu',
-      role: intendedRole, // Assign the role they clicked back at step 1
-      isVerified: false,  // Force onboarding for demo
-    });
-    
-    // Send directly to the Dashboard
-    navigate('/dashboard');
+    try {
+      setLoading(true);
+      const res = await loginUser({ email, password });
+      
+      // Update real JWT session via AuthContext
+      if (res.status === 'success') {
+        updateSession(res.data.access_token, res.data.user);
+        navigate('/dashboard');
+      }
+    } catch (err: any) {
+      const respError = err.response?.data?.detail || err.response?.data?.message || err.message;
+      setError(respError);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -80,16 +85,16 @@ export default function Login() {
             <form onSubmit={handleLogin} className="space-y-5">
               
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 ml-1">Phone Number</label>
+                <label className="text-sm font-semibold text-slate-700 ml-1">Email Address</label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors">
-                    <Phone size={18} strokeWidth={2} />
+                    <Mail size={18} strokeWidth={2} />
                   </div>
                   <input 
-                    type="tel" 
-                    placeholder="0704825473"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    type="email" 
+                    placeholder="name@company.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border-transparent focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-medium" 
                   />
                 </div>
@@ -125,10 +130,11 @@ export default function Login() {
 
               <button 
                 type="submit" 
-                className="w-full bg-[#6c11d4] hover:bg-[#5b21b6] text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg shadow-[#6c11d4]/20 flex items-center justify-center gap-2 group mt-2"
+                disabled={loading}
+                className="w-full bg-[#6c11d4] hover:bg-[#5b21b6] disabled:opacity-70 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg shadow-[#6c11d4]/20 flex items-center justify-center gap-2 group mt-2"
               >
-                <span>Continue</span>
-                <ArrowRight size={18} strokeWidth={2} className="group-hover:translate-x-1 transition-transform" />
+                <span>{loading ? 'Authenticating...' : 'Continue'}</span>
+                {!loading && <ArrowRight size={18} strokeWidth={2} className="group-hover:translate-x-1 transition-transform" />}
               </button>
               
               <div className="text-center mt-6">

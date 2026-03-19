@@ -1441,3 +1441,16 @@ model AgentApplications {
 
   @@map("agent_applications")
 }
+
+model SecurityLogs {
+  id         String   @id @default(uuid())
+  event      String   // e.g "LOGIN_SUCCESS", "LOGIN_FAILED", "REGISTER"
+  user_id    String?  // nullable in case of failed login with unknown email
+  email      String?
+  ip_address String?
+  user_agent String?
+  details    String?  // JSON stringified additional info
+  created_at DateTime @default(now())
+
+  @@map("security_logs")
+}
