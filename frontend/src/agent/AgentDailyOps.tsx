@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, Calendar, Receipt, 
@@ -6,7 +6,7 @@ import {
   Edit, CheckCircle2, Clock
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import axios from 'axios';
+import { getDashboardSummary, fetchRentRequests } from '../services/agentApi';
 
 export default function AgentDailyOps() {
   const navigate = useNavigate();
@@ -17,17 +17,20 @@ export default function AgentDailyOps() {
     collections_count: 0,
     collections_amount: 0,
   });
+  const [recentRequests, setRecentRequests] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchSummary = async () => {
+    const fetchSummaryAndRequests = async () => {
       try {
-         const { data } = await axios.get('/api/agent/dashboard/summary');
+         const data = await getDashboardSummary();
          setSummary(data);
-      } catch (err) {
-         console.error('Failed to fetch summary:', err);
+         const reqData = await fetchRentRequests();
+         setRecentRequests((reqData.requests || []).slice(0, 3));
+      } catch (err: any) {
+         toast.error(err.isProblemDetail ? err.detail : 'Failed to fetch operations data');
       }
     };
-    fetchSummary();
+    fetchSummaryAndRequests();
   }, []);
 
   // Listen for online/offline status
@@ -326,16 +329,22 @@ export default function AgentDailyOps() {
                <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 shadow-sm">
                  <h3 className="text-lg font-bold mb-4 text-slate-900 dark:text-white">New Rent Requests</h3>
                  <div className="space-y-3">
-                   <div className="p-3 sm:p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center justify-between hover:border-[#6c11d4]/30 transition-colors">
-                     <div>
-                       <p className="font-bold text-sm text-slate-900 dark:text-white line-clamp-1">George Okello</p>
-                       <p className="text-xs text-slate-500 mt-0.5 max-w-[120px] truncate">Najeera II, Unit B1</p>
-                     </div>
-                     <span className="px-2 py-1 rounded text-[10px] sm:text-xs font-bold uppercase bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
-                       Verified
-                     </span>
-                   </div>
-                   <button className="w-full py-2.5 sm:py-3 text-sm font-bold text-[#6c11d4] hover:bg-[#6c11d4]/5 rounded-xl transition-colors">
+                   {recentRequests.length === 0 ? (
+                     <p className="text-sm text-center text-slate-500 py-2">No pending requests found.</p>
+                   ) : (
+                     recentRequests.map(req => (
+                       <div key={req.id} className="p-3 sm:p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center justify-between hover:border-[#6c11d4]/30 transition-colors">
+                         <div>
+                           <p className="font-bold text-sm text-slate-900 dark:text-white line-clamp-1">{req.tenant_name || 'Anonymous Tenant'}</p>
+                           <p className="text-xs text-slate-500 mt-0.5 max-w-[120px] truncate">UGX {req.amount.toLocaleString()}</p>
+                         </div>
+                         <span className="px-2 py-1 rounded text-[10px] sm:text-xs font-bold uppercase bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                           {req.status}
+                         </span>
+                       </div>
+                     ))
+                   )}
+                   <button onClick={() => navigate('/agent-rent-requests')} className="w-full py-2.5 sm:py-3 text-sm font-bold text-[#6c11d4] hover:bg-[#6c11d4]/5 rounded-xl transition-colors">
                      View all requests
                    </button>
                  </div>

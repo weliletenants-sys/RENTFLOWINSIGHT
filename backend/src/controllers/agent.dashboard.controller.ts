@@ -4,7 +4,13 @@ import prisma from '../prisma/prisma.client';
 export const getDashboardSummary = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.sub;
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    if (!userId) return res.status(401).json({
+      type: 'https://api.welile.com/errors/unauthorized',
+      title: 'Unauthorized',
+      status: 401,
+      detail: 'Missing or invalid authentication token',
+      instance: req.originalUrl
+    });
 
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
@@ -46,14 +52,26 @@ export const getDashboardSummary = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('getDashboardSummary error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({
+      type: 'https://api.welile.com/errors/internal-error',
+      title: 'Internal Server Error',
+      status: 500,
+      detail: 'An unexpected error occurred while processing the request',
+      instance: req.originalUrl
+    });
   }
 };
 
 export const getReferrals = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.sub;
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    if (!userId) return res.status(401).json({
+      type: 'https://api.welile.com/errors/unauthorized',
+      title: 'Unauthorized',
+      status: 401,
+      detail: 'Missing or invalid authentication token',
+      instance: req.originalUrl
+    });
 
     // Assuming Users table maps referral links or we aggregate via agent_earnings 'referral_bonus'
     const referralEarnings = await prisma.agentEarnings.findMany({
@@ -64,14 +82,26 @@ export const getReferrals = async (req: Request, res: Response) => {
     return res.status(200).json({ referrals: referralEarnings });
   } catch (error) {
     console.error('getReferrals error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({
+      type: 'https://api.welile.com/errors/internal-error',
+      title: 'Internal Server Error',
+      status: 500,
+      detail: 'An unexpected error occurred while processing the request',
+      instance: req.originalUrl
+    });
   }
 };
 
 export const getEarnings = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.sub;
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    if (!userId) return res.status(401).json({
+      type: 'https://api.welile.com/errors/unauthorized',
+      title: 'Unauthorized',
+      status: 401,
+      detail: 'Missing or invalid authentication token',
+      instance: req.originalUrl
+    });
 
     const earnings = await prisma.agentEarnings.findMany({
       where: { agent_id: userId },
@@ -86,6 +116,12 @@ export const getEarnings = async (req: Request, res: Response) => {
     return res.status(200).json({ earnings, baselines });
   } catch (error) {
     console.error('getEarnings error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({
+      type: 'https://api.welile.com/errors/internal-error',
+      title: 'Internal Server Error',
+      status: 500,
+      detail: 'An unexpected error occurred while processing the request',
+      instance: req.originalUrl
+    });
   }
 };

@@ -1,0 +1,132 @@
+openapi: "3.1.0"
+info:
+  title: Welile Agent API
+  description: Core API specifications for Agent Operations according to RFC 7807 standards
+  version: "1.0.0"
+  license:
+    name: MIT
+servers:
+  - url: http://localhost:3000
+    description: Local Dev Server
+
+paths:
+  /api/agent/kyc-status:
+    get:
+      summary: Get KYC Status
+      operationId: getKycStatus
+      tags: [Agent KYC]
+      responses:
+        "200":
+          description: Agent KYC status
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status: { type: string, enum: [NONE, UNDER_REVIEW, APPROVED, REJECTED] }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/agent/kyc/submit:
+    post:
+      summary: Submit KYC
+      operationId: submitKyc
+      tags: [Agent KYC]
+      responses:
+        "200":
+          description: KYC successfully submitted
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [message, status]
+                properties:
+                  message: { type: string }
+                  status: { type: string, example: "UNDER_REVIEW" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/InternalError" }
+        
+  /api/agent/dashboard/summary:
+    get:
+      summary: Get Dashboard Summary
+      operationId: getDashboardSummary
+      tags: [Agent Dashboard]
+      responses:
+        "200":
+          description: Summary metrics for the agent dashboard
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  visits_today: { type: integer, example: 12 }
+                  collections_count: { type: integer, example: 5 }
+                  collections_amount: { type: number, example: 120000 }
+                  float_limit: { type: number, example: 1000000 }
+                  collected_today: { type: number, example: 120000 }
+                  wallet_balance: { type: number, example: 50000 }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/agent/advances/request:
+    post:
+      summary: Request an operational advance
+      operationId: requestAdvance
+      tags: [Agent Financials]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount]
+              properties:
+                amount: { type: number }
+                advance_type: { type: string }
+                reason: { type: string }
+                expected_date: { type: string, format: date-time }
+      responses:
+        "201":
+          description: Advance requested
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+components:
+  schemas:
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string, format: uri }
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    Unauthorized:
+      description: Missing or invalid authentication token
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    InternalError:
+      description: Unexpected internal server error
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - BearerAuth: []

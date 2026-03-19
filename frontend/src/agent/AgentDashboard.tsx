@@ -1,8 +1,9 @@
-﻿import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { getDashboardSummary, getTransactions } from '../services/agentApi';
+import toast from 'react-hot-toast';
 import { MapPin, Home, UserCheck, FileText, UserPlus, Store, Wallet, PlusCircle, ArrowRightLeft, BadgeCheck, LineChart, CreditCard, ClipboardCheck, Download, Upload, Users, Settings } from 'lucide-react';
 import AgentRegisterDialog from './components/dialogs/AgentRegisterDialog';
 
@@ -24,22 +25,22 @@ export default function AgentDashboard() {
   useEffect(() => {
     const fetchSummary = async () => {
       try {
-         const { data } = await axios.get('/api/agent/dashboard/summary');
+         const data = await getDashboardSummary();
          setSummary(data);
-      } catch (err) {
-         console.error('Failed to fetch summary:', err);
+      } catch (err: any) {
+         toast.error(err.isProblemDetail ? err.detail : 'Failed to fetch dashboard metrics');
       }
     };
-    const fetchTransactions = async () => {
+    const fetchTransactionsList = async () => {
       try {
-         const { data } = await axios.get('/api/agent/financials/transactions');
+         const data = await getTransactions();
          setTransactions(data.transactions || []);
-      } catch (err) {
-         console.error('Failed to fetch transactions:', err);
+      } catch (err: any) {
+         toast.error(err.isProblemDetail ? err.detail : 'Failed to fetch transactions');
       }
     };
     fetchSummary();
-    fetchTransactions();
+    fetchTransactionsList();
   }, []);
 
   // Load Material Symbols

@@ -89,12 +89,17 @@ export const register = async (req: Request, res: Response) => {
     const payload = { email: result.email, sub: result.id, role: role };
     const access_token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
 
+    let onboarding_url = '/dashboard';
+    if (role === 'AGENT') onboarding_url = '/agent-onboarding';
+    if (role === 'TENANT') onboarding_url = '/tenant-agreement';
+
     // 4. Standardized Success Output {status, data, message} (backend.md)
     return res.status(201).json({
       status: 'success',
       message: 'Account registered successfully',
       data: {
         access_token,
+        onboarding_url,
         user: { id: result.id, email: result.email, firstName, lastName, role }
       }
     });
@@ -139,11 +144,17 @@ export const login = async (req: Request, res: Response) => {
 
     await logSecurityEvent({ event: 'LOGIN_SUCCESS', user_id: profile.id, email: profile.email, ip_address: req.ip, user_agent: req.headers['user-agent'] });
 
+    let onboarding_url = '/dashboard';
+    if (role === 'AGENT' && profile.verified === false) onboarding_url = '/agent-onboarding';
+    else if (role === 'AGENT') onboarding_url = '/dashboard';
+    if (role === 'TENANT') onboarding_url = '/tenant-agreement'; // or based on tenant onboarding status
+
     return res.status(200).json({
       status: 'success',
       message: 'Logged in successfully',
       data: {
         access_token,
+        onboarding_url,
         user: {
           id: profile.id,
           email: profile.email,

@@ -24,6 +24,7 @@ export default function Signup() {
   const [searchParams] = useSearchParams();
   const refCode = searchParams.get('ref');
 
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -50,11 +51,13 @@ export default function Signup() {
       });
 
       if (res.status === 'success') {
-        updateSession(res.data.access_token, res.data.user);
-        if (intendedRole === 'TENANT') {
-          navigate('/tenant-agreement');
+        const { access_token, user, onboarding_url } = res.data;
+        updateSession(access_token, user);
+        
+        if (onboarding_url) {
+          navigate(onboarding_url);
         } else {
-          navigate('/dashboard');
+          navigate(intendedRole === 'TENANT' ? '/tenant-agreement' : '/dashboard');
         }
       }
     } catch (err: any) {

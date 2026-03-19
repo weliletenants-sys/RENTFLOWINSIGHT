@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, CheckCircle2, User, Phone, 
@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import PurpleBubbles from '../components/PurpleBubbles';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
+import { registerInvestor } from '../services/agentApi';
 import toast from 'react-hot-toast';
 
 export default function AgentRegisterInvestor() {
@@ -115,7 +115,7 @@ export default function AgentRegisterInvestor() {
       }
       setIsValidating(true);
       try {
-        await axios.post('/api/agent/users/investor', {
+        await registerInvestor({
           account_name: formData.partnerName,
           investment_amount: formData.amount,
           duration_months: 6,
@@ -124,7 +124,7 @@ export default function AgentRegisterInvestor() {
         });
         setIsSuccess(true);
       } catch (err: any) {
-        toast.error(err.response?.data?.message || 'Failed to authorize investment.');
+        toast.error(err.isProblemDetail ? err.detail : 'Failed to authorize investment.');
       } finally {
         setIsValidating(false);
       }

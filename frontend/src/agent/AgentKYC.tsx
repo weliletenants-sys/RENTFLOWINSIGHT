@@ -1,12 +1,15 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ArrowLeft, ArrowRight, UploadCloud, Plus, Trash2, Camera, ShieldCheck } from 'lucide-react';
+import { submitKyc } from '../services/agentApi';
+import toast from 'react-hot-toast';
 
 export default function AgentKYC() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Step 1: Personal Profile
   const [profile, setProfile] = useState({
@@ -61,14 +64,27 @@ export default function AgentKYC() {
     setNextOfKin(updated);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!identity.consented) {
-      alert("You must consent to data processing to submit KYC.");
+      toast.error("You must consent to data processing to submit KYC.");
       return;
     }
-    // Mock submission to pending review state
-    navigate('/agent-kyc-review');
+    
+    setIsSubmitting(true);
+    try {
+      await submitKyc({
+        personal_profile: profile,
+        next_of_kin: nextOfKin,
+        identity_verification: identity
+      });
+      toast.success("KYC Details submitted successfully");
+      navigate('/agent-kyc-review');
+    } catch (err: any) {
+      toast.error(err.isProblemDetail ? err.detail : 'Failed to submit KYC.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -221,10 +237,11 @@ export default function AgentKYC() {
           <button 
             type="submit" 
             form="kyc-form"
-            className="w-full bg-[#4A3AFF] hover:bg-[#3427AC] text-white py-4 rounded-2xl font-bold text-[16px] shadow-[0_8px_20px_-6px_rgba(74,58,255,0.4)] flex items-center justify-center gap-2 transition active:scale-[0.98]"
+            disabled={isSubmitting}
+            className="w-full bg-[#4A3AFF] hover:bg-[#3427AC] text-white py-4 rounded-2xl font-bold text-[16px] shadow-[0_8px_20px_-6px_rgba(74,58,255,0.4)] flex items-center justify-center gap-2 transition active:scale-[0.98] disabled:opacity-50"
           >
             {step === 3 ? (
-              <><ShieldCheck size={20} /> Submit for Review</>
+              <>{isSubmitting ? 'Submitting...' : <><ShieldCheck size={20} /> Submit for Review</>}</>
             ) : (
               <>Continue <ArrowRight size={20} /></>
             )}

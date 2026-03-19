@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -12,7 +12,7 @@ import {
   CheckCircle,
   X,
 } from 'lucide-react';
-import axios from 'axios';
+import { requestWithdrawal } from '../services/agentApi';
 import toast from 'react-hot-toast';
 
 const BALANCE = 1_250_000;
@@ -31,7 +31,7 @@ export default function AgentWithdraw() {
   const handleWithdraw = async () => {
     setIsLoading(true);
     try {
-      await axios.post('/api/agent/financials/withdrawal', {
+      await requestWithdrawal({
         amount: numericAmount,
         method: method,
         recipient_number: phoneNumber,
@@ -40,7 +40,7 @@ export default function AgentWithdraw() {
       });
       setShowSuccess(true);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to process withdrawal.');
+      toast.error(err.isProblemDetail ? err.detail : 'Failed to process withdrawal.');
     } finally {
       setIsLoading(false);
     }

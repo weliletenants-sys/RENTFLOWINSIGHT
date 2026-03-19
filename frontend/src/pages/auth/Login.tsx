@@ -30,8 +30,14 @@ export default function Login() {
       
       // Update real JWT session via AuthContext
       if (res.status === 'success') {
-        updateSession(res.data.access_token, res.data.user);
-        navigate('/dashboard');
+        const { access_token, user, onboarding_url } = res.data;
+        updateSession(access_token, user);
+        
+        if (onboarding_url && !user.verified) {
+          navigate(onboarding_url);
+        } else {
+          navigate('/dashboard');
+        }
       }
     } catch (err: any) {
       const respError = err.response?.data?.detail || err.response?.data?.message || err.message;

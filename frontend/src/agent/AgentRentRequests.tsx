@@ -1,6 +1,7 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { fetchRentRequests as fetchRequestsApi, createRentRequest, processRentRequest as processRequestApi } from '../services/agentApi';
+import toast from 'react-hot-toast';
 import { 
   Bell, Settings, Search, SlidersHorizontal, Plus, 
   MoreVertical, UserSearch, ArrowLeft 
@@ -26,10 +27,10 @@ export default function AgentRentRequests() {
 
   const fetchRentRequests = async () => {
     try {
-      const { data } = await axios.get('/api/agent/rent-requests');
+      const data = await fetchRequestsApi();
       setRequests(data.requests || []);
-    } catch (error) {
-      console.error('Failed to fetch requests', error);
+    } catch (err: any) {
+      toast.error(err.isProblemDetail ? err.detail : 'Failed to fetch requests');
     }
   };
 
@@ -56,14 +57,14 @@ export default function AgentRentRequests() {
     }
 
     try {
-      await axios.post('/api/agent/rent-requests', payload);
-      alert("Request Successfully Created");
+      await createRentRequest(payload);
+      toast.success("Request Successfully Created");
       setTenantName('');
       setAmount('');
       fetchRentRequests();
       setActiveTab('pending');
-    } catch (error: any) {
-      alert(error.response?.data?.message || 'Error creating request');
+    } catch (err: any) {
+      toast.error(err.isProblemDetail ? err.detail : 'Error creating request');
     } finally {
       setFormLoading(false);
     }
@@ -72,10 +73,11 @@ export default function AgentRentRequests() {
   const handleProcess = async (id: string) => {
     if (!confirm("Are you sure you want to mark this request as processed and initiate disbursement?")) return;
     try {
-      await axios.put(`/api/agent/rent-requests/${id}/process`);
+      await processRequestApi(id);
+      toast.success("Request processed successfully");
       fetchRentRequests();
-    } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to process request');
+    } catch (err: any) {
+      toast.error(err.isProblemDetail ? err.detail : 'Failed to process request');
     }
   };
 
