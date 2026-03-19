@@ -8,6 +8,7 @@ const ActivateFunder   = lazy(() => import('../funder/ActivateFunder'));
 const FunderReports       = lazy(() => import('../funder/FunderReports'));
 const FunderWallet        = lazy(() => import('../funder/FunderWallet'));
 const FunderPortfolioPage = lazy(() => import('../funder/FunderPortfolioPage'));
+const FunderOpportunitiesPage = lazy(() => import('../funder/FunderOpportunitiesPage'));
 
 /**
  * Funder role routes — all pages are lazy-loaded.
@@ -22,4 +23,5 @@ export const funderRoutes = [
   <Route key="funder-reports"    path="/funder/reports"    element={<FunderReports />} />,
   <Route key="funder-wallet"     path="/funder/wallet"     element={<FunderWallet />} />,
   <Route key="funder-portfolio"  path="/funder/portfolio"  element={<FunderPortfolioPage />} />,
+  <Route key="funder-properties" path="/funder/properties" element={<FunderOpportunitiesPage />} />,
 ];
