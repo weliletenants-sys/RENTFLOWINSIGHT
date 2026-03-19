@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { 
   ShieldCheck, 
@@ -26,16 +26,24 @@ import {
   Info
 } from 'lucide-react';
 
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { getMyRoles, requestRole, switchRole, type RoleView } from '../services/rolesApi';
 import FunderSidebar from './components/FunderSidebar';
 import FunderBottomNav from './components/FunderBottomNav';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
 
 export default function FunderAccountSettings() {
+  const navigate = useNavigate();
+  const { updateSession } = useAuth();
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'financial' | 'proxy' | 'reporting' | 'roles'>('profile');
   const [newPassword, setNewPassword] = useState('');
   const [avatarPreview, setAvatarPreview] = useState<string>("https://api.dicebear.com/7.x/avataaars/svg?seed=Grace&backgroundColor=059669");
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [rewardMode, setRewardMode] = useState<'compound' | 'payout'>('compound');
+  const [platformRoles, setPlatformRoles] = useState<RoleView[]>([]);
+  const [rolesLoading, setRolesLoading] = useState(false);
+  const [activeRole, setActiveRole] = useState<string>('');
 
   const handleAvatarSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -761,71 +769,46 @@ export default function FunderAccountSettings() {
                   </div>
                 )}
 
-                {/* TAB 5: ROLE MANAGEMENt */}
+                {/* TAB 5: ROLE MANAGEMENT */}
                 {activeTab === 'roles' && (
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="lg:col-span-2 space-y-6">
-                      <div className="bg-white rounded-[24px] p-6 sm:p-8 shadow-sm border border-slate-100 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-primary-faint)] rounded-bl-full -mr-8 -mt-8 pointer-events-none" />
-                        <h3 className="text-xl font-black text-slate-800 tracking-tight mb-2 flex items-center gap-2">
-                          Platform Roles
-                        </h3>
-                        <p className="text-slate-500 text-sm font-medium mb-8 pr-12">
-                          Your Welile profile can hold multiple roles simultaneously. Request additional privileges to manage properties, refer clients, or rent spaces.
-                        </p>
-                        
-                        <div className="space-y-4">
-                          {/* Landlord Role */}
-                          <div className="p-5 border-2 border-slate-100 rounded-2xl bg-slate-50 relative overflow-hidden group hover:border-[var(--color-primary-light)] transition-colors">
-                            <div className="flex items-center gap-4 mb-3">
-                              <div className="w-12 h-12 rounded-xl bg-white text-[var(--color-primary)] flex items-center justify-center shadow-sm">
-                                <Building2 className="w-6 h-6" />
-                              </div>
-                              <div>
-                                <h4 className="font-bold text-slate-900">Landlord</h4>
-                                <p className="text-xs font-medium text-slate-500">Register and manage rental properties.</p>
-                              </div>
-                            </div>
-                            <button onClick={() => toast.success("Landlord role request submitted!")} className="cursor-pointer w-full bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition-colors shadow-sm text-sm">
-                              Request Landlord Access
-                            </button>
-                          </div>
-
-                          {/* Tenant Role */}
-                          <div className="p-5 border-2 border-slate-100 rounded-2xl bg-slate-50 relative overflow-hidden group hover:border-[var(--color-primary-light)] transition-colors">
-                            <div className="flex items-center gap-4 mb-3">
-                              <div className="w-12 h-12 rounded-xl bg-white text-[var(--color-primary)] flex items-center justify-center shadow-sm">
-                                <User className="w-6 h-6" />
-                              </div>
-                              <div>
-                                <h4 className="font-bold text-slate-900">Tenant</h4>
-                                <p className="text-xs font-medium text-slate-500">Find and rent verified properties seamlessly.</p>
-                              </div>
-                            </div>
-                            <button onClick={() => toast.success("Tenant role activated!")} className="cursor-pointer w-full bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition-colors shadow-sm text-sm">
-                              Activate Tenant Role
-                            </button>
-                          </div>
-
-                          {/* Agent Role */}
-                          <div className="p-5 border-2 border-slate-100 rounded-2xl bg-slate-50 relative overflow-hidden group hover:border-[var(--color-primary-light)] transition-colors">
-                            <div className="flex items-center gap-4 mb-3">
-                              <div className="w-12 h-12 rounded-xl bg-white text-[var(--color-primary)] flex items-center justify-center shadow-sm">
-                                <Users className="w-6 h-6" />
-                              </div>
-                              <div>
-                                <h4 className="font-bold text-slate-900">Agent</h4>
-                                <p className="text-xs font-medium text-slate-500">Refer tenants or manage properties on commission.</p>
-                              </div>
-                            </div>
-                            <button onClick={() => toast.success("Agent application started!")} className="cursor-pointer w-full bg-white border border-slate-200 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition-colors shadow-sm text-sm">
-                              Apply to be an Agent
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <RoleManagementTab
+                    platformRoles={platformRoles}
+                    rolesLoading={rolesLoading}
+                    activeRole={activeRole}
+                    onFetchRoles={async () => {
+                      setRolesLoading(true);
+                      try {
+                        const data = await getMyRoles();
+                        setPlatformRoles(data.roles);
+                        setActiveRole(data.activeRole);
+                      } catch { toast.error('Failed to load roles'); }
+                      finally { setRolesLoading(false); }
+                    }}
+                    onRequestRole={async (role: string) => {
+                      try {
+                        const res = await requestRole(role);
+                        toast.success(res.message);
+                        // Refresh roles
+                        const data = await getMyRoles();
+                        setPlatformRoles(data.roles);
+                      } catch (err: any) {
+                        toast.error(err.response?.data?.message || 'Failed to request role');
+                      }
+                    }}
+                    onSwitchRole={async (role: string) => {
+                      try {
+                        const res = await switchRole(role);
+                        updateSession(res.access_token, { ...res.user, role: res.user.role as any });
+                        toast.success(`Switched to ${role} dashboard!`);
+                        const dashboardRoutes: Record<string, string> = {
+                          FUNDER: '/funder', LANDLORD: '/landlord', TENANT: '/tenant', AGENT: '/agent'
+                        };
+                        navigate(dashboardRoutes[role] || '/');
+                      } catch (err: any) {
+                        toast.error(err.response?.data?.message || 'Failed to switch role');
+                      }
+                    }}
+                  />
                 )}
 
               </div>
@@ -871,3 +854,145 @@ export default function FunderAccountSettings() {
     </div>
   );
 }
+
+// ─────────── ROLE MANAGEMENT TAB SUB-COMPONENT ───────────
+const ROLE_META: Record<string, { icon: JSX.Element; label: string; description: string }> = {
+  FUNDER: { icon: <ShieldCheck className="w-6 h-6" />, label: 'Supporter / Funder', description: 'Fund the rent pool and earn monthly ROI rewards.' },
+  LANDLORD: { icon: <Building2 className="w-6 h-6" />, label: 'Landlord', description: 'Register and manage rental properties.' },
+  TENANT: { icon: <User className="w-6 h-6" />, label: 'Tenant', description: 'Find and rent verified properties seamlessly.' },
+  AGENT: { icon: <Users className="w-6 h-6" />, label: 'Agent', description: 'Refer tenants or manage properties on commission.' },
+};
+
+function RoleManagementTab({ platformRoles, rolesLoading, activeRole, onFetchRoles, onRequestRole, onSwitchRole }: {
+  platformRoles: RoleView[];
+  rolesLoading: boolean;
+  activeRole: string;
+  onFetchRoles: () => void;
+  onRequestRole: (role: string) => void;
+  onSwitchRole: (role: string) => void;
+}) {
+  useEffect(() => { onFetchRoles(); }, []);
+
+  const rolesToRender = platformRoles.length > 0 ? platformRoles : AVAILABLE_FALLBACK;
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="lg:col-span-2 space-y-6">
+        <div className="bg-white rounded-[24px] p-6 sm:p-8 shadow-sm border border-slate-100 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-primary-faint)] rounded-bl-full -mr-8 -mt-8 pointer-events-none" />
+          <h3 className="text-xl font-black text-slate-800 tracking-tight mb-2 flex items-center gap-2">
+            Platform Roles
+          </h3>
+          <p className="text-slate-500 text-sm font-medium mb-8 pr-12">
+            Your Welile profile can hold multiple roles simultaneously. Request additional privileges to manage properties, refer clients, or rent spaces.
+          </p>
+
+          {rolesLoading ? (
+            <div className="flex justify-center py-12">
+              <div className="w-10 h-10 rounded-full border-4 border-slate-200 border-t-[var(--color-primary)] animate-spin" />
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {rolesToRender.map((r) => {
+                const meta = ROLE_META[r.role] || { icon: <User className="w-6 h-6" />, label: r.role, description: '' };
+                const isCurrentActive = r.role === activeRole;
+
+                return (
+                  <div key={r.role} className={`p-5 border-2 rounded-2xl relative overflow-hidden group transition-colors ${
+                    r.status === 'ACTIVE' 
+                      ? (isCurrentActive ? 'border-emerald-500 bg-emerald-50/30' : 'border-emerald-200 bg-emerald-50/10')
+                      : r.status === 'PENDING' 
+                        ? 'border-orange-200 bg-orange-50/20'
+                        : 'border-slate-100 bg-slate-50 hover:border-[var(--color-primary-light)]'
+                  }`}>
+                    <div className="flex items-center gap-4 mb-3">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm ${
+                        r.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-600' : 'bg-white text-[var(--color-primary)]'
+                      }`}>
+                        {meta.icon}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-bold text-slate-900">{meta.label}</h4>
+                          {r.status === 'ACTIVE' && (
+                            <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest">
+                              {isCurrentActive ? 'Current' : 'Active'}
+                            </span>
+                          )}
+                          {r.status === 'PENDING' && (
+                            <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest">
+                              Pending Approval
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs font-medium text-slate-500">{meta.description}</p>
+                      </div>
+                    </div>
+
+                    {r.status === 'ACTIVE' && !isCurrentActive && (
+                      <button 
+                        onClick={() => onSwitchRole(r.role)} 
+                        className="cursor-pointer w-full bg-emerald-600 text-white font-bold py-3 rounded-xl hover:bg-emerald-700 transition-colors shadow-sm text-sm"
+                      >
+                        Switch to {meta.label} Dashboard
+                      </button>
+                    )}
+                    {r.status === 'ACTIVE' && isCurrentActive && (
+                      <div className="w-full text-center text-emerald-600 font-bold py-3 text-sm">
+                        ✓ You are currently using this role
+                      </div>
+                    )}
+                    {r.status === 'PENDING' && (
+                      <div className="w-full text-center text-orange-600 font-bold py-3 text-sm flex items-center justify-center gap-2">
+                        <Clock className="w-4 h-4" /> Awaiting admin approval...
+                      </div>
+                    )}
+                    {r.status === 'AVAILABLE' && (
+                      <button 
+                        onClick={() => onRequestRole(r.role)} 
+                        className="cursor-pointer w-full bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition-colors shadow-sm text-sm"
+                      >
+                        Request {meta.label} Access
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Side info panel */}
+      <div className="space-y-6">
+        <div className="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100">
+          <div className="flex items-start gap-3 mb-4">
+            <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-bold text-slate-800 text-sm mb-1">How Role Switching Works</h4>
+              <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                When you switch roles, a new security token is issued automatically. You'll be redirected to the corresponding dashboard without needing to log in again.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <ShieldAlert className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-bold text-slate-800 text-sm mb-1">Role Approval</h4>
+              <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                Requested roles require admin verification before activation. You'll be notified once approved.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const AVAILABLE_FALLBACK: RoleView[] = [
+  { role: 'FUNDER', status: 'ACTIVE', assignedAt: null },
+  { role: 'LANDLORD', status: 'AVAILABLE', assignedAt: null },
+  { role: 'TENANT', status: 'AVAILABLE', assignedAt: null },
+  { role: 'AGENT', status: 'AVAILABLE', assignedAt: null },
+];

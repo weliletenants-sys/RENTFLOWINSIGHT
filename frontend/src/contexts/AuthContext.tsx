@@ -19,6 +19,7 @@ interface AuthContextType {
   login: (userData: User) => void;
   logout: () => void;
   switchRoleMode: (newRole: Role) => void;
+  updateSession: (token: string, userData: User) => void;
   intendedRole: Role;
   setIntendedRole: (role: Role) => void;
   rentAmount: string;
@@ -41,7 +42,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [rentAmount, setRentAmount] = useState<string>('');
 
   const login = (userData: User) => setUser(userData);
-  const logout = () => setUser(null);
+  const logout = () => {
+    localStorage.removeItem('access_token');
+    setUser(null);
+  };
   
   // The magic mock method to switch dashboards quickly
   const switchRoleMode = (newRole: Role) => {
@@ -50,8 +54,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // Real JWT-based session update for role switching
+  const updateSession = (token: string, userData: User) => {
+    localStorage.setItem('access_token', token);
+    setUser(userData);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, role: user?.role || intendedRole, login, logout, switchRoleMode, intendedRole, setIntendedRole, rentAmount, setRentAmount }}>
+    <AuthContext.Provider value={{ user, role: user?.role || intendedRole, login, logout, switchRoleMode, updateSession, intendedRole, setIntendedRole, rentAmount, setRentAmount }}>
       {children}
     </AuthContext.Provider>
   );

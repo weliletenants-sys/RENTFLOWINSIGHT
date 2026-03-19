@@ -11,7 +11,7 @@ async function request(path: string, options: any = {}) {
     headers: { 'Content-Type': 'application/json', ...options.headers }
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message || res.statusText);
+  if (!res.ok) throw new Error(JSON.stringify(data));
   return data;
 }
 
@@ -23,23 +23,44 @@ async function run() {
     const profile = await prisma.profiles.findUnique({ where: { id: role.user_id } });
     if (!profile || !profile.email) return console.log('No profile found!');
 
-    console.log(`Generating JWT token for ${profile.email}...`);
     const token = jwt.sign({ email: profile.email, sub: profile.id, role: 'FUNDER' }, JWT_SECRET);
-    console.log('Token created successfully!');
+    const headers = { Authorization: `Bearer ${token}` };
 
-    console.log('Fetching Dashboard Stats...');
-    const dash = await request('/funder/dashboard', { headers: { Authorization: `Bearer ${token}` } });
-    console.log('Dashboard Stats:', dash);
+    // Test 1: Get my roles
+    console.log('1. Fetching my roles...');
+    const myRoles = await request('/roles/my-roles', { headers });
+    console.log('Active role:', myRoles.activeRole);
+    console.log('Roles:', myRoles.roles.map((r: any) => `${r.role}: ${r.status}`).join(', '));
 
-    console.log('Fetching Portfolios...');
-    const ports = await request('/funder/portfolios', { headers: { Authorization: `Bearer ${token}` } });
-    console.log(`Portfolios count: ${ports.length}`);
+    // Test 2: Request a new role (TENANT)
+    console.log('\n2. Requesting TENANT role...');
+    try {
+      const reqRes = await request('/roles/request', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ role: 'TENANT' })
+      });
+      console.log('Result:', reqRes.message);
+    } catch (err: any) {
+      console.log('Request result:', err.message);
+    }
 
-    console.log('Fetching Activities...');
-    const activities = await request('/funder/activities', { headers: { Authorization: `Bearer ${token}` } });
-    console.log(`Activities count: ${activities.length}`);
+    // Test 3: Fetch roles again to see PENDING
+    console.log('\n3. Fetching roles after request...');
+    const updatedRoles = await request('/roles/my-roles', { headers });
+    console.log('Roles:', updatedRoles.roles.map((r: any) => `${r.role}: ${r.status}`).join(', '));
 
-    console.log('✅ All Funder endpoints tested successfully!');
+    // Test 4: Try switching to FUNDER (should work - already active)
+    console.log('\n4. Switching to FUNDER role...');
+    const switchRes = await request('/roles/switch', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ role: 'FUNDER' })
+    });
+    console.log('New token received:', switchRes.access_token ? 'YES' : 'NO');
+    console.log('User role:', switchRes.user.role);
+
+    console.log('\n✅ All Role Management endpoints tested successfully!');
   } catch (error: any) {
     console.error('Test failed:', error.message);
   } finally {
