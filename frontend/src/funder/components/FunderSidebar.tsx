@@ -3,7 +3,8 @@ import { LayoutDashboard, Rocket, Banknote, FileText, Settings, LogOut, Building
 
 interface FunderSidebarProps {
   activePage?: string;
-  onNewsupport?: () => void;
+  onNavigate?: (page: string) => void;
+  onNewsupport?: () => void; // Ghost prop kept temporarily so FunderDashboard doesn't throw a type error
 }
 
 const navItems = [
@@ -15,7 +16,7 @@ const navItems = [
   { label: 'Reports', icon: <FileText className="w-5 h-5" />, path: '/funder/reports' },
 ];
 
-export default function FunderSidebar({ activePage = 'Dashboard' }: FunderSidebarProps) {
+export default function FunderSidebar({ activePage = 'Dashboard', onNavigate }: FunderSidebarProps) {
   return (
     <aside className="hidden lg:flex w-72 bg-white border-r border-[var(--color-primary-border)] flex-col sticky top-0 h-screen z-40">
       {/* Logo */}
@@ -30,7 +31,13 @@ export default function FunderSidebar({ activePage = 'Dashboard' }: FunderSideba
           return (
             <Link
               key={item.label}
-              to={item.path}
+              to={item.path || '#'}
+              onClick={(e) => {
+                if (!item.path || item.path === '#') {
+                  e.preventDefault();
+                }
+                onNavigate?.(item.label);
+              }}
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all"
               style={
                 isActive
