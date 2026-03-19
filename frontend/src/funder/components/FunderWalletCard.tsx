@@ -66,7 +66,7 @@ export default function FunderWalletCard({
         <div className="flex items-center gap-1.5 sm:gap-3 pt-3 sm:pt-4 mt-auto overflow-x-auto pb-1 hide-scrollbar -mx-1 px-1">
           <button
             onClick={onAddFunds}
-            className="flex items-center gap-1 sm:gap-1.5 bg-white text-[var(--color-primary)] hover:bg-white/90 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full font-extrabold text-[10px] sm:text-xs transition-colors shadow-sm whitespace-nowrap"
+            className="flex items-center gap-1 sm:gap-1.5 bg-white text-[var(--color-primary)] hover:bg-white/90 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full font-extrabold text-[10px] sm:text-xs transition-colors shadow-sm whitespace-nowrap cursor-pointer"
           >
             <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             Add Funds
@@ -74,7 +74,7 @@ export default function FunderWalletCard({
           
           <button
             onClick={onWithdraw}
-            className="flex items-center gap-1 sm:gap-1.5 bg-white/20 border border-white/30 hover:bg-white/30 text-white px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full font-extrabold text-[10px] sm:text-xs transition-colors backdrop-blur-md whitespace-nowrap"
+            className="flex items-center gap-1 sm:gap-1.5 bg-white/20 border border-white/30 hover:bg-white/30 text-white px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full font-extrabold text-[10px] sm:text-xs transition-colors backdrop-blur-md whitespace-nowrap cursor-pointer"
           >
             <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             Withdraw
@@ -82,7 +82,7 @@ export default function FunderWalletCard({
 
           <button
             onClick={onPortfolio}
-            className="flex items-center gap-1 sm:gap-1.5 bg-white/20 border border-white/30 hover:bg-white/30 text-white px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full font-extrabold text-[10px] sm:text-xs transition-colors backdrop-blur-md whitespace-nowrap"
+            className="flex items-center gap-1 sm:gap-1.5 bg-white/20 border border-white/30 hover:bg-white/30 text-white px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full font-extrabold text-[10px] sm:text-xs transition-colors backdrop-blur-md whitespace-nowrap cursor-pointer"
           >
             <Briefcase className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             Portfolio

@@ -230,7 +230,7 @@ export default function FunderDashboard() {
                   cardId="WL-99201"
                   onAddFunds={() => setIsModalOpen(true)}
                   onWithdraw={() => console.log('Withdraw via card')}
-                  onPortfolio={() => console.log('Portfolio view via card')}
+                  onPortfolio={() => navigate('/funder/portfolio')}
                 />
 
                                 
@@ -244,7 +244,7 @@ export default function FunderDashboard() {
 {/* Portfolio list */}
                 <FunderPortfolioList
                   portfolios={portfolios}
-                  onViewAll={() => console.log('View all portfolios')}
+                  onViewAll={() => navigate('/funder/portfolio')}
                   onCashOut={(id) => console.log('Cash out', id)}
                   onAddAsset={() => setIsModalOpen(true)}
                 />

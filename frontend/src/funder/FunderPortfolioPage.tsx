@@ -160,7 +160,7 @@ type FilterStatus = 'all' | PortfolioStatus;
 
 /* ═══════════ PROPS ═══════════ */
 interface FunderPortfolioPageProps {
-  onAddPortfolio: () => void;
+  onAddPortfolio?: () => void;
   walletBalance?: number;
 }
 
@@ -481,7 +481,7 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance = 2_
           onClose={() => setShowAddModal(false)}
           onSuccess={() => {
             setShowAddModal(false);
-            onAddPortfolio();
+            onAddPortfolio?.();
           }}
         />
       )}
