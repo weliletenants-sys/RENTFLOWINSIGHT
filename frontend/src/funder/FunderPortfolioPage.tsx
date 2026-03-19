@@ -1,10 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import FunderSidebar from './components/FunderSidebar';
-import FunderDashboardHeader from './components/FunderDashboardHeader';
-import FunderMobileHeader from './components/FunderMobileHeader';
-import FunderBottomNav from './components/FunderBottomNav';
 import {
   Plus,
   TrendingUp,
@@ -178,13 +172,6 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance = 2_
   const [selectedPortfolio, setSelectedPortfolio] = useState<PortfolioAccount | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
 
-  const navigate = useNavigate();
-  const { user } = useAuth();
-
-  const displayName = user?.firstName && user?.lastName
-    ? `${user.firstName} ${user.lastName}`
-    : 'Grace Nakato';
-
   const portfolios = MOCK_PORTFOLIOS;
   const filtered = filter === 'all' ? portfolios : portfolios.filter((p) => p.status === filter);
 
@@ -199,10 +186,9 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance = 2_
 
 
   /* ══════════════  VIRTUAL HOUSES (PROPERTY) DETAIL VIEW  ══════════════ */
-  let content = null;
   if (selectedPortfolio) {
     const monthlyReward = selectedPortfolio.investmentAmount * (selectedPortfolio.roiPercentage / 100);
-    content = (
+    return (
       <div className="flex-1 p-6 lg:p-8 pb-32 lg:pb-8">
         {/* Back Button */}
         <button
@@ -331,10 +317,11 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance = 2_
         )}
       </div>
     );
-  } else {
+  }
 
   /* ══════════════  MAIN PORTFOLIO LIST VIEW  ══════════════ */
-  content = (
+  return (
+    <>
     <div className="flex-1 p-6 lg:p-8 pb-32 lg:pb-8">
       {/* Page Header */}
       <div className="mb-8">
@@ -487,53 +474,19 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance = 2_
           </button>
         </div>
       )}
-
     </div>
-  );
-  }
 
-  return (
-    <div className="min-h-screen font-sans" style={{ background: 'var(--color-primary-faint)' }}>
-      <div className="flex h-screen overflow-hidden">
-        
-        {/* ──────────── DESKTOP SIDEBAR ──────────── */}
-        <FunderSidebar activePage="Portfolio" />
-
-        {/* ──────────── MAIN CONTENT AREA ──────────── */}
-        <div className="flex-1 flex flex-col min-h-screen overflow-y-auto">
-
-          {/* Desktop top navbar */}
-          <FunderDashboardHeader
-            user={{ fullName: displayName, role: 'supporter', avatarUrl: '' }}
-            pageTitle="Portfolio"
-          />
-
-          {/* Mobile top header */}
-          <FunderMobileHeader
-            user={{ fullName: displayName }}
-            onAvatarClick={() => navigate('/funder/account')}
-          />
-
-          {content}
-
-          {/* ══════════════  ADD PORTFOLIO MODAL  ══════════════ */}
-          {showAddModal && (
-            <AddPortfolioModal
-              walletBalance={walletBalance}
-              onClose={() => setShowAddModal(false)}
-              onSuccess={() => {
-                setShowAddModal(false);
-                onAddPortfolio?.();
-              }}
-            />
-          )}
-
-        </div>
-      </div>
-        
-      {/* ──────────── MOBILE BOTTOM NAV ──────────── */}
-      <FunderBottomNav activePage="Portfolio" />
-    </div>
+      {showAddModal && (
+        <AddPortfolioModal
+          walletBalance={walletBalance}
+          onClose={() => setShowAddModal(false)}
+          onSuccess={() => {
+            setShowAddModal(false);
+            onAddPortfolio?.();
+          }}
+        />
+      )}
+    </>
   );
 }
 

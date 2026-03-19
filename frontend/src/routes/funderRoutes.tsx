@@ -23,10 +23,12 @@ const FunderOpportunitiesPage = lazy(() => import('../funder/FunderOpportunities
 export const funderRoutes = [
   <Route key="funder-onboarding" path="/funder/onboarding" element={<FunderOnboarding />} />,
   <Route key="funder-activate"   path="/funder/activate"   element={<ActivateFunder />} />,
-  // Dashboard routing
-  <Route key="funder-dashboard"  path="/funder"  element={<FunderDashboard />} />,
-  <Route key="funder-account"    path="/funder/account"    element={<FunderSettings />} />,
-  <Route key="funder-reports"    path="/funder/reports"    element={<FunderReports />} />,
-  <Route key="funder-wallet"     path="/funder/wallet"     element={<FunderWallet />} />,
-  <Route key="funder-portfolio"  path="/funder/portfolio"  element={<FunderPortfolioPage />} />,
+  // Pages with their own layout
+  <Route key="funder-dashboard"  path="/funder"             element={<FunderDashboard />} />,
+  <Route key="funder-account"    path="/funder/account"     element={<FunderSettings />} />,
+  <Route key="funder-reports"    path="/funder/reports"     element={<FunderReports />} />,
+  <Route key="funder-wallet"     path="/funder/wallet"      element={<FunderWallet />} />,
+  // Pages needing FunderLayout wrapper
+  <Route key="funder-portfolio"      path="/funder/portfolio"      element={<FunderLayout activePage="Portfolio" pageTitle="My Portfolio"><FunderPortfolioPage /></FunderLayout>} />,
+  <Route key="funder-properties"     path="/funder/properties"     element={<FunderLayout activePage="Properties" pageTitle="Opportunities & Properties"><FunderOpportunitiesPage /></FunderLayout>} />,
 ];

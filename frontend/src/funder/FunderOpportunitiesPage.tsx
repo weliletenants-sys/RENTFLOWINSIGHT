@@ -1,10 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import FunderSidebar from './components/FunderSidebar';
-import FunderDashboardHeader from './components/FunderDashboardHeader';
-import FunderMobileHeader from './components/FunderMobileHeader';
-import FunderBottomNav from './components/FunderBottomNav';
 import {
   Search,
   MapPin,
@@ -139,12 +133,6 @@ export default function FunderOpportunitiesPage({ onSupport }: FunderOpportuniti
   const [search, setSearch] = useState('');
   const [selectedProperty, setSelectedProperty] = useState<RentOpportunity | null>(null);
 
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const displayName = user?.firstName && user?.lastName
-    ? `${user.firstName} ${user.lastName}`
-    : 'Grace Nakato';
-
   const opportunities = MOCK_OPPORTUNITIES;
 
   const filtered = opportunities.filter((p) => {
@@ -160,9 +148,8 @@ export default function FunderOpportunitiesPage({ onSupport }: FunderOpportuniti
   const totalRentNeeded = opportunities.filter(p => p.status !== 'taken').reduce((s, p) => s + p.rentRequired, 0);
 
   /* ══════════════  PROPERTY DETAIL VIEW  ══════════════ */
-  let content = null;
   if (selectedProperty) {
-    content = (
+    return (
       <div className="flex-1 p-6 lg:p-8 pb-32 lg:pb-8">
         <button
           onClick={() => setSelectedProperty(null)}
@@ -235,10 +222,10 @@ export default function FunderOpportunitiesPage({ onSupport }: FunderOpportuniti
         </div>
       </div>
     );
-  } else {
+  }
 
   /* ══════════════  MAIN OPPORTUNITIES LIST  ══════════════ */
-  content = (
+  return (
     <div className="flex-1 p-6 lg:p-8 pb-32 lg:pb-8">
       {/* Page Header */}
       <div className="mb-6">
@@ -350,39 +337,6 @@ export default function FunderOpportunitiesPage({ onSupport }: FunderOpportuniti
           })}
         </div>
       )}
-    </div>
-  );
-  }
-
-  return (
-    <div className="min-h-screen font-sans" style={{ background: 'var(--color-primary-faint)' }}>
-      <div className="flex h-screen overflow-hidden">
-        
-        {/* ──────────── DESKTOP SIDEBAR ──────────── */}
-        <FunderSidebar activePage="Properties" />
-
-        {/* ──────────── MAIN CONTENT AREA ──────────── */}
-        <div className="flex-1 flex flex-col min-h-screen overflow-y-auto">
-
-          {/* Desktop top navbar */}
-          <FunderDashboardHeader
-            user={{ fullName: displayName, role: 'supporter', avatarUrl: '' }}
-            pageTitle="Properties"
-          />
-
-          {/* Mobile top header */}
-          <FunderMobileHeader
-            user={{ fullName: displayName }}
-            onAvatarClick={() => navigate('/funder/account')}
-          />
-
-          {content}
-
-        </div>
-      </div>
-        
-      {/* ──────────── MOBILE BOTTOM NAV ──────────── */}
-      <FunderBottomNav activePage="Properties" />
     </div>
   );
 }
