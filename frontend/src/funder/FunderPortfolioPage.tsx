@@ -46,6 +46,8 @@ interface PortfolioAccount {
   createdDate: string;
   expectedAmount: number;
   virtualHouses: VirtualHouse[];
+  portfolioName?: string;
+  todayGrowth?: number;
 }
 
 /* ═══════════ STATUS CONFIG ═══════════ */
@@ -69,6 +71,8 @@ const MOCK_PORTFOLIOS: PortfolioAccount[] = [
   {
     id: '1',
     portfolioCode: 'WPF-7291',
+    portfolioName: 'Retirement Wealth Build',
+    todayGrowth: 45000,
     investmentAmount: 2_500_000,
     roiPercentage: 15,
     roiMode: 'monthly_payout',
@@ -88,6 +92,8 @@ const MOCK_PORTFOLIOS: PortfolioAccount[] = [
   {
     id: '2',
     portfolioCode: 'WPF-4103',
+    portfolioName: 'Kids University Fund',
+    todayGrowth: 12000,
     investmentAmount: 5_000_000,
     roiPercentage: 20,
     roiMode: 'monthly_compounding',
@@ -108,6 +114,8 @@ const MOCK_PORTFOLIOS: PortfolioAccount[] = [
   {
     id: '3',
     portfolioCode: 'WPF-8856',
+    portfolioName: 'High Yield Income',
+    todayGrowth: 0,
     investmentAmount: 1_200_000,
     roiPercentage: 15,
     roiMode: 'monthly_payout',
@@ -123,6 +131,8 @@ const MOCK_PORTFOLIOS: PortfolioAccount[] = [
   {
     id: '4',
     portfolioCode: 'WPF-3312',
+    portfolioName: 'Secondary Income Stream',
+    todayGrowth: -15000,
     investmentAmount: 3_800_000,
     roiPercentage: 20,
     roiMode: 'monthly_payout',
@@ -141,6 +151,8 @@ const MOCK_PORTFOLIOS: PortfolioAccount[] = [
   {
     id: '5',
     portfolioCode: 'WPF-9901',
+    portfolioName: 'Passive Yield Vault',
+    todayGrowth: 0,
     investmentAmount: 1_500_000,
     roiPercentage: 15,
     roiMode: 'monthly_compounding',
@@ -330,23 +342,69 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance = 2_
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {[
-          { label: 'Total Invested',   value: `UGX ${totalInvested.toLocaleString()}`, icon: <DollarSign className="w-5 h-5" />, color: 'var(--color-primary)', bg: 'var(--color-primary-light)' },
-          { label: 'Total Earned',     value: `UGX ${totalEarned.toLocaleString()}`,    icon: <TrendingUp className="w-5 h-5" />,  color: '#16a34a', bg: '#f0fdf4' },
-          { label: 'Expected Returns', value: `UGX ${totalExpected.toLocaleString()}`,  icon: <Target className="w-5 h-5" />,      color: '#2563eb', bg: '#eff6ff' },
-          { label: 'Avg. ROI',         value: `${avgRoi}%`,                              icon: <PieChart className="w-5 h-5" />,    color: '#ea580c', bg: '#fff7ed' },
-        ].map((stat) => (
-          <div key={stat.label} className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: stat.bg, color: stat.color }}>
-                {stat.icon}
+      <div className="mb-8 space-y-4">
+        {/* ROW 1: PRIMARY - Current Portfolio Value */}
+        <div className="bg-[#1e1b4b] rounded-[24px] p-6 lg:p-8 text-white shadow-xl relative overflow-hidden">
+          {/* Background decoration */}
+          <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full blur-3xl opacity-50" style={{ background: 'var(--color-primary)' }} />
+          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-600 rounded-full blur-3xl opacity-30" />
+          
+          <div className="relative z-10 flex flex-col justify-between h-full">
+            <div>
+              <p className="text-white/70 text-xs font-bold uppercase tracking-wider mb-2">Current Portfolio Value</p>
+              <div className="flex items-end gap-3 flex-wrap">
+                <h2 className="text-4xl lg:text-5xl font-black tracking-tight">UGX {(totalInvested + totalEarned).toLocaleString()}</h2>
+                {avgRoi > 0 && (
+                  <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 mb-1.5 lg:mb-2">
+                    <TrendingUp className="w-3.5 h-3.5" /> +{avgRoi}% ROI
+                  </span>
+                )}
               </div>
             </div>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">{stat.label}</p>
-            <p className="text-lg font-black text-slate-900 tracking-tight">{stat.value}</p>
+            <div className="mt-6 flex items-center gap-2 text-white/50 text-xs font-medium">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Updated in real-time
+            </div>
           </div>
-        ))}
+        </div>
+
+        {/* ROW 2: SECONDARY CARDS */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white rounded-[24px] border border-slate-100 p-5 lg:p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center">
+                <DollarSign className="w-5 h-5" />
+              </div>
+            </div>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Total Invested</p>
+            <p className="text-xl lg:text-2xl font-black text-slate-900 tracking-tight">UGX {totalInvested.toLocaleString()}</p>
+          </div>
+          
+          <div className="bg-emerald-50 rounded-[24px] border border-emerald-100 p-5 lg:p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5" />
+              </div>
+            </div>
+            <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider mb-1">Profit Earned</p>
+            <p className="text-xl lg:text-2xl font-black text-emerald-700 tracking-tight">UGX {totalEarned.toLocaleString()}</p>
+          </div>
+        </div>
+
+        {/* ROW 3: TERTIARY / PROJECTIONS */}
+        <div className="bg-[var(--color-primary-faint)] rounded-[20px] border border-[var(--color-primary-border)] p-5 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm">
+              <Target className="w-6 h-6 text-[var(--color-primary)]" />
+            </div>
+            <div>
+              <p className="text-[10px] text-[var(--color-primary)] font-bold uppercase tracking-wider mb-1">Projected Portfolio Value</p>
+              <p className="font-black text-lg lg:text-xl text-[var(--color-primary)] tracking-tight">UGX {totalExpected.toLocaleString()}</p>
+            </div>
+          </div>
+          <div className="hidden sm:flex text-xs font-bold text-[var(--color-primary)] opacity-70 bg-white px-3 py-1.5 rounded-lg border border-[var(--color-primary-border)]">
+            Est. Maturity
+          </div>
+        </div>
       </div>
 
       {/* Filter Bar */}
@@ -390,68 +448,86 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance = 2_
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filtered.map((p) => {
+        <div className="flex flex-col gap-4">
+          {filtered.map((p, idx) => {
             const sts = statusConfig[p.status];
+            const currentValue = p.investmentAmount + p.totalRoiEarned;
+            const growth = p.todayGrowth || 0;
+            const isGrowthPositive = growth > 0;
+            const isGrowthNegative = growth < 0;
+
+            const MOCK_IMAGES = [
+              'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=400&h=400', // Modern Architecture
+              'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=400&h=400', // House
+              'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=400&h=400', // Mansion
+              'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=400&h=400', // Corporate Building
+              'https://images.unsplash.com/photo-1582407947304-fd86f028f716?auto=format&fit=crop&q=80&w=400&h=400', // Real Estate
+            ];
+            const imgUrl = MOCK_IMAGES[idx % MOCK_IMAGES.length];
 
             return (
               <div
                 key={p.id}
-                className="bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200 transition-all group"
+                onClick={() => setSelectedPortfolio(p)}
+                className="bg-white rounded-[24px] border border-slate-100 shadow-sm hover:shadow-lg hover:border-slate-200 transition-all cursor-pointer group flex flex-col sm:flex-row sm:items-center justify-between p-6 lg:p-8 gap-6 lg:gap-8"
               >
-                {/* Header */}
-                <div className="px-4 pt-4 pb-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-slate-100">
-                      <Layers className="w-4 h-4 text-slate-500" />
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="font-bold text-slate-900 text-sm truncate">#{p.portfolioCode}</h3>
-                      <span className="text-[10px] text-slate-400">
-                        {p.roiMode === 'monthly_compounding' ? 'Compounding' : 'Payout'} • {p.durationMonths}M
+                {/* Left Side: Identity */}
+                <div className="flex items-start sm:items-center gap-5 lg:gap-6 min-w-0">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-2xl overflow-hidden flex-shrink-0 relative group-hover:shadow-md transition-shadow">
+                    <img src={imgUrl} alt={p.portfolioName || 'Portfolio'} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-black text-slate-900 text-lg sm:text-xl lg:text-2xl group-hover:text-[var(--color-primary)] transition-colors line-clamp-2">
+                      {p.portfolioName || `Portfolio ${p.portfolioCode}`}
+                    </h3>
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                      <span className="text-xs font-bold text-slate-400">
+                        {p.portfolioCode}
+                      </span>
+                      <span className="w-1 h-1 rounded-full bg-slate-200" />
+                      <div className="flex items-center gap-1.5">
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          p.status === 'active' ? 'bg-green-500' :
+                          p.status === 'pending' ? 'bg-orange-500' :
+                          p.status === 'pending_approval' ? 'bg-yellow-500' :
+                          'bg-red-500'
+                        }`} />
+                        <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-widest">{sts.label}</span>
+                      </div>
+                      <span className="w-1 h-1 rounded-full bg-slate-200 hidden sm:block" />
+                      <span className="text-[11px] sm:text-xs font-semibold text-slate-400 hidden sm:block">
+                        Invested: UGX {p.investmentAmount.toLocaleString()}
                       </span>
                     </div>
                   </div>
-                  <span className={`text-[8px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest shrink-0 ${sts.bg} ${sts.text}`}>
-                    {sts.label}
-                  </span>
                 </div>
 
-                {/* Metrics — simple rows */}
-                <div className="px-4 pb-3 space-y-1.5">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[11px] text-slate-400">Principal</span>
-                    <span className="text-[13px] font-bold text-slate-900">UGX {p.investmentAmount.toLocaleString()}</span>
+                {/* Right Side: Value & Performance */}
+                <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 sm:gap-2.5 border-t sm:border-t-0 border-slate-100 pt-5 sm:pt-0 shrink-0">
+                  <div className="text-left sm:text-right">
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Total Value</p>
+                    <p className="font-black text-2xl lg:text-3xl text-slate-900 tracking-tight">
+                      UGX {currentValue.toLocaleString()}
+                    </p>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-[11px] text-slate-400">Expected</span>
-                    <span className="text-[13px] font-bold text-slate-900">UGX {p.expectedAmount.toLocaleString()}</span>
+                  
+                  <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-sm font-bold ${
+                    isGrowthPositive
+                      ? 'bg-emerald-50 text-emerald-600'
+                      : isGrowthNegative
+                      ? 'bg-red-50 text-red-600'
+                      : 'bg-slate-50 text-slate-500'
+                  }`}>
+                    {isGrowthPositive ? (
+                      <TrendingUp className="w-4 h-4" />
+                    ) : isGrowthNegative ? (
+                      <TrendingUp className="w-4 h-4" style={{ transform: 'scaleY(-1)' }} />
+                    ) : (
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-400 mx-1" />
+                    )}
+                    {isGrowthPositive ? '+' : isGrowthNegative ? '-' : ''}UGX {Math.abs(growth).toLocaleString()}
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-[11px] text-slate-400">Earned</span>
-                    <span className={`text-[13px] font-bold ${p.totalRoiEarned > 0 ? 'text-green-600' : 'text-slate-400'}`}>
-                      {p.totalRoiEarned > 0 ? '+' : ''}UGX {p.totalRoiEarned.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-[11px] text-slate-400">ROI</span>
-                    <span className="text-[13px] font-bold" style={{ color: 'var(--color-primary)' }}>{p.roiPercentage}%</span>
-                  </div>
-                </div>
-
-                {/* Footer */}
-                <div className="border-t border-slate-50 px-4 py-2.5 flex items-center justify-between">
-                  <span className="text-[10px] text-slate-400">
-                    {p.nextRoiDate ? `Next: ${p.nextRoiDate}` : p.maturityDate}
-                  </span>
-                  <button
-                    onClick={() => setSelectedPortfolio(p)}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:bg-slate-100"
-                    style={{ color: 'var(--color-primary)' }}
-                  >
-                    <Eye className="w-3 h-3" />
-                    View
-                  </button>
                 </div>
               </div>
             );
@@ -460,17 +536,22 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance = 2_
           {/* Add New Portfolio Card */}
           <button
             onClick={() => setShowAddModal(true)}
-            className="bg-white rounded-xl border-2 border-dashed border-slate-200 p-6 flex flex-col items-center justify-center gap-2 text-center hover:border-[var(--color-primary)] hover:bg-[var(--color-primary-faint)] transition-all group cursor-pointer"
+            className="bg-white rounded-2xl border-2 border-dashed border-slate-200 p-5 flex flex-col sm:flex-row sm:items-center gap-4 text-left hover:border-[var(--color-primary)] hover:bg-[var(--color-primary-faint)] transition-all group cursor-pointer"
           >
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center transition-all group-hover:scale-110"
+              className="w-12 h-12 rounded-xl flex items-center justify-center transition-all group-hover:scale-110 flex-shrink-0"
               style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="w-6 h-6" />
             </div>
-            <p className="font-bold text-sm text-slate-500 group-hover:text-[var(--color-primary)] transition-colors">
-              Fund Rent Pool
-            </p>
+            <div>
+              <p className="font-bold text-base text-slate-700 group-hover:text-[var(--color-primary)] transition-colors">
+                Add New Portfolio
+              </p>
+              <p className="text-xs text-slate-400 mt-0.5 border-none">
+                Fund a new rent pool to start generating passive income.
+              </p>
+            </div>
           </button>
         </div>
       )}
