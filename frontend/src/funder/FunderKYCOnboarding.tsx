@@ -1,7 +1,92 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { CheckCircle2, ChevronRight, ShieldCheck, User, Briefcase, FileText, ChevronLeft, UploadCloud } from 'lucide-react';
+import { CheckCircle2, ChevronRight, ShieldCheck, User, Briefcase, FileText, ChevronLeft, UploadCloud, ChevronDown, Search } from 'lucide-react';
+
+const COMMON_COUNTRIES = [
+  "Uganda", "Kenya", "Tanzania", "Rwanda", "South Sudan", "Burundi",
+  "Democratic Republic of the Congo", "Somalia", "Ethiopia",
+  "Nigeria", "South Africa", "United States", "United Kingdom", "Canada", "Australia",
+  "United Arab Emirates", "India", "China"
+].sort();
+
+function CustomSelect({
+  value,
+  onChange,
+  options,
+  placeholder = "Select an option",
+  searchable = false
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  options: { label: string; value: string }[];
+  placeholder?: string;
+  searchable?: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const filteredOptions = searchable
+    ? options.filter(o => o.label.toLowerCase().includes(query.toLowerCase()))
+    : options;
+
+  const displayLabel = options.find(o => o.value === value)?.label || placeholder;
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer flex items-center justify-between hover:bg-white hover:border-[var(--color-primary)] transition-all font-medium text-slate-900"
+      >
+        <span className={value ? 'text-slate-900 truncate' : 'text-slate-400'}>{displayLabel}</span>
+        <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform shrink-0 ${isOpen ? 'rotate-180 text-[var(--color-primary)]' : ''}`} />
+      </div>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 w-full mt-2 bg-white border border-slate-100 shadow-xl rounded-xl z-50 overflow-hidden slide-up" style={{ animationDuration: '0.2s' }}>
+          {searchable && (
+            <div className="p-2 border-b border-slate-100 flex items-center gap-2 bg-slate-50">
+              <Search className="w-4 h-4 text-slate-400 ml-2" />
+              <input
+                autoFocus
+                type="text"
+                className="w-full bg-transparent border-none focus:outline-none text-sm py-1 font-medium text-slate-900"
+                placeholder="Search..."
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+              />
+            </div>
+          )}
+          <div className="max-h-60 overflow-y-auto custom-scrollbar py-1">
+            {filteredOptions.length > 0 ? filteredOptions.map(option => (
+              <div
+                key={option.value}
+                onClick={() => { onChange(option.value); setIsOpen(false); setQuery(''); }}
+                className={`px-4 py-2.5 text-sm font-medium cursor-pointer flex items-center justify-between hover:bg-slate-50 transition-colors ${value === option.value ? 'text-[var(--color-primary)] bg-[var(--color-primary-faint)]' : 'text-slate-700'}`}
+              >
+                {option.label}
+                {value === option.value && <CheckCircle2 className="w-4 h-4 text-[var(--color-primary)]" />}
+              </div>
+            )) : (
+              <div className="px-4 py-3 text-sm text-slate-400 text-center font-medium">No results found</div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
@@ -15,6 +100,8 @@ export default function FunderKYCOnboarding() {
   // File Upload State
   const [idFront, setIdFront] = useState<File | null>(null);
   const [idBack, setIdBack] = useState<File | null>(null);
+  const [idFrontPreview, setIdFrontPreview] = useState<string | null>(null);
+  const [idBackPreview, setIdBackPreview] = useState<string | null>(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -22,10 +109,10 @@ export default function FunderKYCOnboarding() {
     legalName: user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : '',
     dateOfBirth: '',
     gender: '',
+    country: 'Uganda',
     // Step 2: KYC
     idType: 'national_id',
     idNumber: '',
-    tin: '',
     // Step 3: Source of Funds
     employmentStatus: '',
     primarySource: '',
@@ -49,15 +136,24 @@ export default function FunderKYCOnboarding() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, side: 'front' | 'back') => {
     if (e.target.files && e.target.files[0]) {
-      if (side === 'front') setIdFront(e.target.files[0]);
-      else setIdBack(e.target.files[0]);
+      const file = e.target.files[0];
+      const previewUrl = URL.createObjectURL(file);
+      if (side === 'front') {
+        setIdFront(file);
+        if (idFrontPreview) URL.revokeObjectURL(idFrontPreview);
+        setIdFrontPreview(previewUrl);
+      } else {
+        setIdBack(file);
+        if (idBackPreview) URL.revokeObjectURL(idBackPreview);
+        setIdBackPreview(previewUrl);
+      }
     }
   };
 
   const canProceedToNextStep = () => {
     switch (currentStep) {
       case 1:
-        return formData.legalName.trim() !== '' && formData.dateOfBirth !== '' && formData.gender !== '';
+        return formData.legalName.trim() !== '' && formData.dateOfBirth !== '' && formData.gender !== '' && formData.country !== '';
       case 2:
         return formData.idType !== '' && formData.idNumber.trim() !== '' && idFront !== null && idBack !== null;
       case 3:
@@ -98,25 +194,23 @@ export default function FunderKYCOnboarding() {
     return (
       <div className="flex items-center justify-between mb-8 relative">
         <div className="absolute left-[20px] top-[20px] -translate-y-1/2 h-1 bg-slate-100 rounded-full z-0" style={{ width: 'calc(100% - 40px)' }} />
-        <div 
+        <div
           className="absolute left-[20px] top-[20px] -translate-y-1/2 h-1 bg-[var(--color-primary)] rounded-full z-0 transition-all duration-300"
           style={{ width: `calc(${((currentStep - 1) / 4) * 100}% - ${((currentStep - 1) / 4) * 40}px)` }}
         />
-        
+
         {steps.map(step => (
           <div key={step.num} className="relative z-10 flex flex-col items-center">
-            <div 
-              className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-colors duration-300 ${
-                currentStep >= step.num 
-                  ? 'bg-[var(--color-primary)] text-white shadow-md shadow-purple-500/20' 
+            <div
+              className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-colors duration-300 ${currentStep >= step.num
+                  ? 'bg-[var(--color-primary)] text-white shadow-md shadow-purple-500/20'
                   : 'bg-white border-2 border-slate-200 text-slate-400'
-              }`}
+                }`}
             >
               {currentStep > step.num ? <CheckCircle2 className="w-5 h-5" /> : step.num}
             </div>
-            <span className={`text-[10px] font-bold mt-2 uppercase tracking-tight ${
-              currentStep >= step.num ? 'text-[var(--color-primary)]' : 'text-slate-400'
-            }`}>
+            <span className={`text-[10px] font-bold mt-2 uppercase tracking-tight ${currentStep >= step.num ? 'text-[var(--color-primary)]' : 'text-slate-400'
+              }`}>
               {step.label}
             </span>
           </div>
@@ -135,10 +229,10 @@ export default function FunderKYCOnboarding() {
           </div>
           <h2 className="text-2xl font-black text-slate-900 mb-2">Verification Submitted!</h2>
           <p className="text-slate-500 text-sm leading-relaxed mb-8">
-            Thank you for completing your compliance profile. Our team is currently reviewing your documents. 
+            Thank you for completing your compliance profile. Our team is currently reviewing your documents.
             You will receive an email once your Funder Wallet is activated.
           </p>
-          <button 
+          <button
             onClick={() => navigate('/funder')}
             className="w-full py-3.5 bg-[var(--color-primary)] text-white font-bold rounded-xl hover:shadow-lg transition-all active:scale-[0.98]"
           >
@@ -152,7 +246,7 @@ export default function FunderKYCOnboarding() {
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
-        
+
         {/* Header */}
         <div className="text-center mb-10">
           <div className="w-16 h-16 bg-[var(--color-primary)] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-[var(--color-primary-shadow)]">
@@ -165,14 +259,14 @@ export default function FunderKYCOnboarding() {
         </div>
 
         {/* Wizard Container */}
-        <div className="bg-white rounded-[32px] shadow-xl border border-slate-100 overflow-hidden">
-          
+        <div className="bg-white rounded-[32px] shadow-xl border border-slate-100 overflow-visible">
+
           <div className="p-8 pb-0">
             {renderStepIndicator()}
           </div>
 
-          <form onSubmit={handleSubmit} className="p-8 pt-4">
-            
+          <form onSubmit={handleSubmit} className="p-8 pt-4" autoComplete="off">
+
             {/* ════ STEP 1: IDENTITY ════ */}
             {currentStep === 1 && (
               <div className="space-y-6 fade-in">
@@ -180,7 +274,7 @@ export default function FunderKYCOnboarding() {
                   <h3 className="text-lg font-bold text-slate-900">Legal Identity</h3>
                   <p className="text-xs text-slate-500 mt-1">Please ensure this matches your official government ID perfectly.</p>
                 </div>
-                
+
                 <div>
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Full Legal Name</label>
                   <input
@@ -194,7 +288,7 @@ export default function FunderKYCOnboarding() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Date of Birth</label>
                     <input
@@ -208,19 +302,28 @@ export default function FunderKYCOnboarding() {
                   </div>
                   <div>
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Gender</label>
-                    <select
-                      name="gender"
+                    <CustomSelect
                       value={formData.gender}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-light)] focus:border-[var(--color-primary)] transition-all font-medium text-slate-900"
-                      required
-                    >
-                      <option value="">Select gender</option>
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                      <option value="Other">Other</option>
-                    </select>
+                      onChange={(val) => setFormData(p => ({ ...p, gender: val }))}
+                      placeholder="Select gender"
+                      options={[
+                        { label: 'Male', value: 'Male' },
+                        { label: 'Female', value: 'Female' },
+                        { label: 'Other', value: 'Other' },
+                      ]}
+                    />
                   </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Country of Residence</label>
+                  <CustomSelect
+                    value={formData.country}
+                    onChange={(val) => setFormData(p => ({ ...p, country: val }))}
+                    placeholder="Search country..."
+                    searchable
+                    options={COMMON_COUNTRIES.map(c => ({ label: c, value: c }))}
+                  />
                 </div>
               </div>
             )}
@@ -236,16 +339,15 @@ export default function FunderKYCOnboarding() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">ID Type</label>
-                    <select
-                      name="idType"
+                    <CustomSelect
                       value={formData.idType}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-light)] focus:border-[var(--color-primary)] transition-all font-medium text-slate-900"
-                    >
-                      <option value="national_id">National ID (NIN)</option>
-                      <option value="passport">Passport</option>
-                      <option value="driving_permit">Driving Permit</option>
-                    </select>
+                      onChange={(val) => setFormData(p => ({ ...p, idType: val }))}
+                      options={[
+                        { label: 'National ID (NIN)', value: 'national_id' },
+                        { label: 'Passport', value: 'passport' },
+                        { label: 'Driving Permit', value: 'driving_permit' },
+                      ]}
+                    />
                   </div>
                   <div>
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">ID Document Number</label>
@@ -262,47 +364,43 @@ export default function FunderKYCOnboarding() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Tax Identification Number (TIN)</label>
-                  <input
-                    type="text"
-                    name="tin"
-                    value={formData.tin}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-light)] focus:border-[var(--color-primary)] transition-all font-medium text-slate-900"
-                    placeholder="Optional for starting tier"
-                  />
-                </div>
-
-                <div>
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Upload ID Documents (Front & Back)</label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <label className="border-2 border-dashed border-slate-300 rounded-xl p-6 flex flex-col items-center justify-center text-center hover:bg-slate-50 hover:border-[var(--color-primary)] transition-all cursor-pointer group bg-white h-32 relative overflow-hidden">
-                      <input type="file" className="hidden" accept="image/*,.pdf" onChange={(e) => handleFileChange(e, 'front')} />
-                      {idFront ? (
-                        <div className="flex flex-col items-center text-[var(--color-primary)]">
-                          <CheckCircle2 className="w-8 h-8 mb-2" />
-                          <p className="text-xs font-bold truncate max-w-[150px]">{idFront.name}</p>
+                    <label className="border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center text-center hover:bg-slate-50 hover:border-[var(--color-primary)] transition-all cursor-pointer group bg-white h-40 relative overflow-hidden">
+                      <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'front')} />
+                      {idFrontPreview ? (
+                        <div className="w-full h-full relative group/preview">
+                          <img src={idFrontPreview} className="w-full h-full object-cover" alt="ID Front" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/preview:opacity-100 flex items-center justify-center transition-opacity flex-col gap-2">
+                            <UploadCloud className="w-6 h-6 text-white" />
+                            <span className="text-white text-xs font-bold">Change Image</span>
+                          </div>
                         </div>
                       ) : (
-                        <>
+                        <div className="p-6 flex flex-col items-center">
                           <UploadCloud className="w-6 h-6 text-slate-400 group-hover:text-[var(--color-primary)] transition-colors mb-2" />
                           <p className="text-xs font-bold text-slate-700">ID Front side</p>
-                        </>
+                          <p className="text-[10px] text-slate-500 mt-1">Image only</p>
+                        </div>
                       )}
                     </label>
 
-                    <label className="border-2 border-dashed border-slate-300 rounded-xl p-6 flex flex-col items-center justify-center text-center hover:bg-slate-50 hover:border-[var(--color-primary)] transition-all cursor-pointer group bg-white h-32 relative overflow-hidden">
-                      <input type="file" className="hidden" accept="image/*,.pdf" onChange={(e) => handleFileChange(e, 'back')} />
-                      {idBack ? (
-                        <div className="flex flex-col items-center text-[var(--color-primary)]">
-                          <CheckCircle2 className="w-8 h-8 mb-2" />
-                          <p className="text-xs font-bold truncate max-w-[150px]">{idBack.name}</p>
+                    <label className="border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center text-center hover:bg-slate-50 hover:border-[var(--color-primary)] transition-all cursor-pointer group bg-white h-40 relative overflow-hidden">
+                      <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'back')} />
+                      {idBackPreview ? (
+                        <div className="w-full h-full relative group/preview">
+                          <img src={idBackPreview} className="w-full h-full object-cover" alt="ID Back" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/preview:opacity-100 flex items-center justify-center transition-opacity flex-col gap-2">
+                            <UploadCloud className="w-6 h-6 text-white" />
+                            <span className="text-white text-xs font-bold">Change Image</span>
+                          </div>
                         </div>
                       ) : (
-                        <>
+                        <div className="p-6 flex flex-col items-center">
                           <UploadCloud className="w-6 h-6 text-slate-400 group-hover:text-[var(--color-primary)] transition-colors mb-2" />
                           <p className="text-xs font-bold text-slate-700">ID Back side</p>
-                        </>
+                          <p className="text-[10px] text-slate-500 mt-1">Image only</p>
+                        </div>
                       )}
                     </label>
                   </div>
@@ -320,53 +418,47 @@ export default function FunderKYCOnboarding() {
 
                 <div>
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Employment Status</label>
-                  <select
-                    name="employmentStatus"
+                  <CustomSelect
                     value={formData.employmentStatus}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-light)] focus:border-[var(--color-primary)] transition-all font-medium text-slate-900"
-                    required
-                  >
-                    <option value="">Select status</option>
-                    <option value="Employed">Employed</option>
-                    <option value="Self-Employed">Self-Employed / Business Owner</option>
-                    <option value="Retired">Retired</option>
-                    <option value="Other">Other</option>
-                  </select>
+                    onChange={(val) => setFormData(p => ({ ...p, employmentStatus: val }))}
+                    placeholder="Select status"
+                    options={[
+                      { label: 'Employed', value: 'Employed' },
+                      { label: 'Self-Employed / Business Owner', value: 'Self-Employed' },
+                      { label: 'Retired', value: 'Retired' },
+                      { label: 'Other', value: 'Other' },
+                    ]}
+                  />
                 </div>
 
                 <div>
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Primary Source of Wealth</label>
-                  <select
-                    name="primarySource"
+                  <CustomSelect
                     value={formData.primarySource}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-light)] focus:border-[var(--color-primary)] transition-all font-medium text-slate-900"
-                    required
-                  >
-                    <option value="">Select source</option>
-                    <option value="Salary">Salary / Savings</option>
-                    <option value="Business Profits">Business Profits</option>
-                    <option value="Inheritance">Inheritance / Gift</option>
-                    <option value="Investment Returns">Investment Returns</option>
-                  </select>
+                    onChange={(val) => setFormData(p => ({ ...p, primarySource: val }))}
+                    placeholder="Select source"
+                    options={[
+                      { label: 'Salary / Savings', value: 'Salary' },
+                      { label: 'Business Profits', value: 'Business Profits' },
+                      { label: 'Inheritance / Gift', value: 'Inheritance' },
+                      { label: 'Investment Returns', value: 'Investment Returns' },
+                    ]}
+                  />
                 </div>
 
                 <div>
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Expected Annual Investment Volume (UGX)</label>
-                  <select
-                    name="investmentBand"
+                  <CustomSelect
                     value={formData.investmentBand}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-light)] focus:border-[var(--color-primary)] transition-all font-medium text-slate-900"
-                    required
-                  >
-                    <option value="">Select investment band</option>
-                    <option value="< 10M">Under 10,000,000 UGX</option>
-                    <option value="10M - 50M">10,000,000 - 50,000,000 UGX</option>
-                    <option value="50M - 200M">50,000,000 - 200,000,000 UGX</option>
-                    <option value="> 200M">Above 200,000,000 UGX</option>
-                  </select>
+                    onChange={(val) => setFormData(p => ({ ...p, investmentBand: val }))}
+                    placeholder="Select investment band"
+                    options={[
+                      { label: 'Under 10,000,000 UGX', value: '< 10M' },
+                      { label: '10,000,000 - 50,000,000 UGX', value: '10M - 50M' },
+                      { label: '50,000,000 - 200,000,000 UGX', value: '50M - 200M' },
+                      { label: 'Above 200,000,000 UGX', value: '> 200M' },
+                    ]}
+                  />
                 </div>
               </div>
             )}
@@ -430,17 +522,17 @@ export default function FunderKYCOnboarding() {
                 </div>
 
                 <div className="bg-slate-50 rounded-xl p-5 border border-slate-100 max-h-48 overflow-y-auto custom-scrollbar text-xs text-slate-600 leading-relaxed mb-6 space-y-4">
-                  <p><strong>1. Introduction</strong><br/>By acknowledging this document, you (the "Funder") agree to the terms binding the Rent Management Pool capital provisions hosted by Welile Platform.</p>
-                  <p><strong>2. Risk Acknowledgment</strong><br/>All real estate funding carries inherent risk. Yield projections are estimates based on active tenancy behavior. Past performance does not guarantee future rent pool stability.</p>
-                  <p><strong>3. 90-Day Liquidity Clause</strong><br/>You explicitly acknowledge that capital deposited into the master Rent Pool is locked. Direct withdrawal requests require a mandatory 90-day notice period to ensure platform solvency, during which standard ROI is paused.</p>
-                  <p><strong>4. Verification Honesty</strong><br/>You certify under penalty of perjury that all identity and source of wealth documentation provided herein is accurate and legitimate.</p>
+                  <p><strong>1. Introduction</strong><br />By acknowledging this document, you (the "Funder") agree to the terms binding the Rent Management Pool capital provisions hosted by Welile Platform.</p>
+                  <p><strong>2. Risk Acknowledgment</strong><br />All real estate funding carries inherent risk. Yield projections are estimates based on active tenancy behavior. Past performance does not guarantee future rent pool stability.</p>
+                  <p><strong>3. 90-Day Liquidity Clause</strong><br />You explicitly acknowledge that capital deposited into the master Rent Pool is locked. Direct withdrawal requests require a mandatory 90-day notice period to ensure platform solvency, during which standard ROI is paused.</p>
+                  <p><strong>4. Verification Honesty</strong><br />You certify under penalty of perjury that all identity and source of wealth documentation provided herein is accurate and legitimate.</p>
                 </div>
 
                 <div className="space-y-4">
                   <label className="flex items-start gap-4 cursor-pointer group">
                     <div className="relative flex items-center justify-center mt-0.5">
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         name="agreedToTerms"
                         checked={formData.agreedToTerms}
                         onChange={handleCheckbox}
@@ -456,8 +548,8 @@ export default function FunderKYCOnboarding() {
 
                   <label className="flex items-start gap-4 cursor-pointer group">
                     <div className="relative flex items-center justify-center mt-0.5">
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         name="agreedToRisks"
                         checked={formData.agreedToRisks}
                         onChange={handleCheckbox}
@@ -485,17 +577,16 @@ export default function FunderKYCOnboarding() {
                   <ChevronLeft className="w-4 h-4" /> Back
                 </button>
               )}
-              
+
               {currentStep < 5 ? (
                 <button
                   type="button"
                   onClick={nextStep}
                   disabled={!canProceedToNextStep()}
-                  className={`flex items-center gap-2 px-8 py-3 font-bold rounded-xl transition-all ml-auto ${
-                    canProceedToNextStep() 
-                      ? 'bg-[var(--color-primary)] text-white hover:shadow-lg active:scale-[0.98]' 
+                  className={`flex items-center gap-2 px-8 py-3 font-bold rounded-xl transition-all ml-auto ${canProceedToNextStep()
+                      ? 'bg-[var(--color-primary)] text-white hover:shadow-lg active:scale-[0.98]'
                       : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                  }`}
+                    }`}
                 >
                   Next Step <ChevronRight className="w-4 h-4" />
                 </button>
@@ -503,15 +594,14 @@ export default function FunderKYCOnboarding() {
                 <button
                   type="submit"
                   disabled={!formData.agreedToTerms || !formData.agreedToRisks || isSubmitting}
-                  className={`flex items-center gap-2 px-8 py-3 text-white font-bold rounded-xl transition-all ml-auto ${
-                    (formData.agreedToTerms && formData.agreedToRisks && !isSubmitting)
-                    ? 'bg-green-600 hover:bg-green-700 hover:shadow-lg active:scale-[0.98] cursor-pointer'
-                    : 'bg-slate-300 cursor-not-allowed'
-                  }`}
+                  className={`flex items-center gap-2 px-8 py-3 text-white font-bold rounded-xl transition-all ml-auto ${(formData.agreedToTerms && formData.agreedToRisks && !isSubmitting)
+                      ? 'bg-green-600 hover:bg-green-700 hover:shadow-lg active:scale-[0.98] cursor-pointer'
+                      : 'bg-slate-300 cursor-not-allowed'
+                    }`}
                 >
                   {isSubmitting ? (
                     <span className="flex items-center gap-2">
-                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Submitting...
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Submitting...
                     </span>
                   ) : (
                     <span className="flex items-center gap-2">
