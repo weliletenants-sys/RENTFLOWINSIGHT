@@ -1,3 +1,4 @@
+
 import { PrismaClient } from '@prisma/client';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -19,12 +20,12 @@ async function main() {
 
   const summaryCsv = fs.readFileSync(summaryCsvPath, 'utf8');
   // First column is empty string header, but standard otherwise. Delimiter is ';'
-  const records = parse(summaryCsv, { 
-    columns: true, 
-    skip_empty_lines: true, 
-    delimiter: ';' 
+  const records: any[] = parse(summaryCsv, {
+    columns: true,
+    skip_empty_lines: true,
+    delimiter: ';'
   });
-  
+
   console.log(`Read ${records.length} funder records. Beginning identity sync...`);
 
   // Secure temporary password
@@ -44,7 +45,7 @@ async function main() {
     try {
       // Step A: Upsert Profile
       let profile = await prisma.profiles.findFirst({ where: { email } });
-      
+
       if (!profile) {
         profile = await prisma.profiles.create({
           data: {
@@ -66,7 +67,7 @@ async function main() {
       const existingRole = await prisma.userRoles.findFirst({
         where: { user_id: profile.id, role: 'FUNDER' }
       });
-      
+
       if (!existingRole) {
         await prisma.userRoles.create({
           data: {
@@ -98,7 +99,7 @@ async function main() {
           where: { portfolio_code: portfolioCode },
           data: { investor_id: profile.id }
         });
-        
+
         if (updateResult.count > 0) {
           syncedPortfolios += updateResult.count;
         }

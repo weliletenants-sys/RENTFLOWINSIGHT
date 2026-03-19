@@ -10,6 +10,7 @@ import FunderBottomNav from './components/FunderBottomNav';
 export default function FunderWallet() {
   const [activeTab, setActiveTab] = useState<'All' | 'Cash In' | 'Cash Out'>('All');
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
+  const [depositProvider, setDepositProvider] = useState<'MTN' | 'Airtel' | 'Bank'>('MTN');
 
   // Mock Wallet Data Based on Business Logic
   const walletBalance = 2500000;
@@ -288,11 +289,22 @@ export default function FunderWallet() {
 
               <div>
                 <label className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2 block">Provider</label>
-                <select className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-900 outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all appearance-none cursor-pointer">
-                  <option>MTN MoMo</option>
-                  <option>Airtel Money</option>
-                  <option>Bank Transfer</option>
-                </select>
+                <div className="grid grid-cols-2 gap-3">
+                   <button 
+                     onClick={() => setDepositProvider('MTN')}
+                     className={`flex flex-col items-center justify-center py-3 border-2 rounded-xl transition-all font-bold gap-2 ${depositProvider === 'MTN' ? 'border-[var(--color-primary)] bg-slate-50 text-[var(--color-primary)]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
+                   >
+                     <img src="/mtn.png" alt="MTN" className="w-6 h-6 rounded-full object-cover shadow-sm" /> 
+                     MTN MoMo
+                   </button>
+                   <button 
+                     onClick={() => setDepositProvider('Airtel')}
+                     className={`flex flex-col items-center justify-center py-3 border-2 rounded-xl transition-all font-bold gap-2 ${depositProvider === 'Airtel' ? 'border-[var(--color-primary)] bg-slate-50 text-[var(--color-primary)]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
+                   >
+                     <img src="/airtel.png" alt="Airtel" className="w-6 h-6 rounded-full object-cover shadow-sm" /> 
+                     Airtel Money
+                   </button>
+                </div>
               </div>
 
               <div>
