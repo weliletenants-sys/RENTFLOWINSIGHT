@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -17,7 +17,6 @@ import {
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const CURRENT_BALANCE = 250_000;
 const QUICK_AMOUNTS = [10_000, 50_000, 100_000];
 
 export default function AgentDeposit() {
@@ -27,6 +26,19 @@ export default function AgentDeposit() {
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [txRef] = useState(() => 'WF-' + Math.random().toString(36).slice(2, 10).toUpperCase());
+  const [currentBalance, setCurrentBalance] = useState(0);
+
+  useEffect(() => {
+    const fetchBalance = async () => {
+      try {
+        const { data } = await axios.get('/api/wallets/my-wallet');
+        setCurrentBalance(data.balance || 0);
+      } catch (err) {
+        console.error('Failed to fetch wallet:', err);
+      }
+    };
+    fetchBalance();
+  }, []);
 
   const numericAmount = parseFloat(amount) || 0;
 
@@ -76,7 +88,7 @@ export default function AgentDeposit() {
             <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 flex justify-between items-center">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Current Balance</p>
-                <p className="text-2xl font-bold mt-1">UGX {fmt(CURRENT_BALANCE)}</p>
+                <p className="text-2xl font-bold mt-1">UGX {fmt(currentBalance)}</p>
               </div>
               <div className="size-12 rounded-full bg-[#6d28d9]/10 flex items-center justify-center">
                 <Wallet size={24} className="text-[#6d28d9]" />
@@ -284,7 +296,7 @@ export default function AgentDeposit() {
               <div className="h-px bg-slate-200 dark:bg-slate-700" />
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500">New Balance</span>
-                <span className="font-bold text-green-600">UGX {fmt(CURRENT_BALANCE + numericAmount)}</span>
+                <span className="font-bold text-green-600">UGX {fmt(currentBalance + numericAmount)}</span>
               </div>
             </div>
 
