@@ -178,7 +178,7 @@ export default function AgentWithdraw() {
                       <img src="/airtel.png" alt="Airtel" className="h-9 w-9 rounded-full object-cover shrink-0" />
                       <div className="text-left">
                         <p className="text-sm font-bold text-slate-900 dark:text-white">Airtel</p>
-                        <p className="text-[10px] text-slate-500">Airtel Money</p>
+                        <p className="text-[10px] text-slate-500">Airtel Money <span className="block text-xl font-black text-red-600 mt-1">4380664</span></p>
                       </div>
                       {mobileProvider === 'airtel' && <CheckCircle2 size={16} className="text-red-500 ml-auto shrink-0" />}
                     </button>
@@ -196,7 +196,7 @@ export default function AgentWithdraw() {
                       <img src="/mtn.png" alt="MTN" className="h-9 w-9 rounded-full object-cover shrink-0" />
                       <div className="text-left">
                         <p className="text-sm font-bold text-slate-900 dark:text-white">MTN</p>
-                        <p className="text-[10px] text-slate-500">MTN Mobile Money</p>
+                        <p className="text-[10px] text-slate-500">MTN Mobile Money <span className="block text-xl font-black text-yellow-500 mt-1">090777</span></p>
                       </div>
                       {mobileProvider === 'mtn' && <CheckCircle2 size={16} className="text-yellow-500 ml-auto shrink-0" />}
                     </button>

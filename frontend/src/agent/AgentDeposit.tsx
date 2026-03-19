@@ -168,8 +168,8 @@ export default function AgentDeposit() {
               {method === 'mobile' ? (
                 <div className="space-y-3">
                   {[
-                    'Dial the USSD code provided by your mobile money provider.',
-                    <>Enter the Welile Business Number: <span className="font-bold text-slate-900 dark:text-slate-100">882244</span></>,
+                    'Dial the USSD code (*165# for MTN, *185# for Airtel).',
+                    <>Enter the Welile Merchant Code: <span className="font-black text-yellow-600">MTN (090777)</span> or <span className="font-black text-red-600">Airtel (4380664)</span></>,
                     'Enter the amount you wish to deposit.',
                     <>Enter your account reference number: <span className="font-bold text-slate-900 dark:text-slate-100">W-9023</span></>,
                   ].map((step, i) => (

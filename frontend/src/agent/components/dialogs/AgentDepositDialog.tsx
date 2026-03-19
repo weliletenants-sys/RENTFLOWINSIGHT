@@ -76,16 +76,18 @@ export default function AgentDepositDialog({ isOpen, onClose }: AgentDepositDial
              <button 
                type="button"
                onClick={() => setProvider('MTN')}
-               className={`py-3 rounded-xl border-2 font-bold transition flex items-center justify-center gap-2 ${provider === 'MTN' ? 'border-yellow-400 bg-yellow-50 text-yellow-900' : 'border-gray-200 text-gray-500'}`}
+               className={`py-3 flex-col rounded-xl border-2 font-bold transition flex items-center justify-center gap-1 ${provider === 'MTN' ? 'border-yellow-400 bg-yellow-50 text-yellow-900' : 'border-gray-200 text-gray-500'}`}
              >
-               <img src="/mtn.png" alt="MTN" className="w-5 h-5 rounded-full object-cover" /> MTN MoMo
+               <div className="flex items-center gap-2"><img src="/mtn.png" alt="MTN" className="w-5 h-5 rounded-full object-cover" /> MTN MoMo</div>
+               <span className="text-3xl font-black text-yellow-500 mt-1">090777</span>
              </button>
              <button 
                type="button"
                onClick={() => setProvider('Airtel')}
-               className={`py-3 rounded-xl border-2 font-bold transition flex items-center justify-center gap-2 ${provider === 'Airtel' ? 'border-red-500 bg-red-50 text-red-900' : 'border-gray-200 text-gray-500'}`}
+               className={`py-3 flex-col rounded-xl border-2 font-bold transition flex items-center justify-center gap-1 ${provider === 'Airtel' ? 'border-red-500 bg-red-50 text-red-900' : 'border-gray-200 text-gray-500'}`}
              >
-               <img src="/airtel.png" alt="Airtel" className="w-5 h-5 rounded-full object-cover" /> Airtel Money
+               <div className="flex items-center gap-2"><img src="/airtel.png" alt="Airtel" className="w-5 h-5 rounded-full object-cover" /> Airtel Money</div>
+               <span className="text-3xl font-black text-red-600 mt-1">4380664</span>
              </button>
           </div>
 

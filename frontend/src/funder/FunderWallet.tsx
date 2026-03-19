@@ -294,15 +294,17 @@ export default function FunderWallet() {
                      onClick={() => setDepositProvider('MTN')}
                      className={`flex flex-col items-center justify-center py-3 border-2 rounded-xl transition-all font-bold gap-2 ${depositProvider === 'MTN' ? 'border-[var(--color-primary)] bg-slate-50 text-[var(--color-primary)]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
                    >
-                     <img src="/mtn.png" alt="MTN" className="w-6 h-6 rounded-full object-cover shadow-sm" /> 
-                     MTN MoMo
+                     <img src="/mtn.png" alt="MTN" className="w-8 h-8 rounded-full object-cover shadow-sm mb-1" /> 
+                     <span>MTN MoMo</span>
+                     <span className="text-3xl font-black text-yellow-500 mt-1 tracking-tight">090777</span>
                    </button>
                    <button 
                      onClick={() => setDepositProvider('Airtel')}
                      className={`flex flex-col items-center justify-center py-3 border-2 rounded-xl transition-all font-bold gap-2 ${depositProvider === 'Airtel' ? 'border-[var(--color-primary)] bg-slate-50 text-[var(--color-primary)]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
                    >
-                     <img src="/airtel.png" alt="Airtel" className="w-6 h-6 rounded-full object-cover shadow-sm" /> 
-                     Airtel Money
+                     <img src="/airtel.png" alt="Airtel" className="w-8 h-8 rounded-full object-cover shadow-sm mb-1" /> 
+                     <span>Airtel Money</span>
+                     <span className="text-3xl font-black text-red-600 mt-1 tracking-tight">4380664</span>
                    </button>
                 </div>
               </div>
