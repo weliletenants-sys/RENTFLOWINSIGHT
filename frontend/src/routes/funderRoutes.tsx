@@ -1,8 +1,9 @@
-﻿import { lazy } from 'react';
+import { lazy } from 'react';
 import { Route } from 'react-router-dom';
 import FunderLayout from '../funder/components/FunderLayout';
 
-const FunderOnboarding = lazy(() => import('../funder/FunderKYCOnboarding'));
+const FunderOnboarding = lazy(() => import('../funder/FunderOnboarding'));
+const FunderKYCOnboarding = lazy(() => import('../funder/FunderKYCOnboarding'));
 const FunderDashboard  = lazy(() => import('../funder/FunderDashboard'));
 const FunderSettings   = lazy(() => import('../funder/FunderAccountSettings'));
 const ActivateFunder   = lazy(() => import('../funder/ActivateFunder'));
@@ -23,6 +24,7 @@ const FunderOpportunitiesPage = lazy(() => import('../funder/FunderOpportunities
  */
 export const funderRoutes = [
   <Route key="funder-onboarding" path="/funder/onboarding" element={<FunderOnboarding />} />,
+  <Route key="funder-kyc" path="/funder/kyc" element={<FunderKYCOnboarding />} />,
   <Route key="funder-activate"   path="/funder/activate"   element={<ActivateFunder />} />,
   // Pages with their own layout
   <Route key="funder-dashboard"  path="/funder"             element={<FunderDashboard />} />,

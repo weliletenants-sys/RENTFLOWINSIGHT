@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Lightbulb, ShieldAlert, ArrowRight } from 'lucide-react';
@@ -144,7 +144,7 @@ export default function FunderDashboard() {
   const handleVerificationCheck = (actionFn: () => void) => {
     if (!user?.isVerified) {
       alert("Verification Required. Please complete your KYC profile to use this feature.");
-      navigate('/funder/onboarding');
+      navigate('/funder/kyc');
       return;
     }
     actionFn();
@@ -208,7 +208,7 @@ export default function FunderDashboard() {
                 </div>
               </div>
               <button 
-                onClick={() => navigate('/funder/onboarding')}
+                onClick={() => navigate('/funder/kyc')}
                 className="w-full sm:w-auto px-6 py-2.5 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-700 transition-colors flex items-center justify-center gap-2 shrink-0"
               >
                 Complete Profile <ArrowRight className="w-4 h-4" />
