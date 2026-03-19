@@ -12,6 +12,7 @@ import SubAgents from './agent/SubAgents';
 import AgentEarnings from './agent/AgentEarnings';
 import AgentClients from './agent/AgentClients';
 import AgentSettings from './agent/AgentSettings';
+import CfoDashboard from './cfo/CfoDashboard';
 import TenantPayments from './tenant/TenantPayments';
 import TenantProfile from './tenant/TenantProfile';
 
@@ -92,6 +93,7 @@ function App() {
                   <Route path="/dashboard/agent/earnings" element={<AgentEarnings />} />
                   <Route path="/dashboard/agent/clients" element={<AgentClients />} />
                   <Route path="/dashboard/agent/settings" element={<AgentSettings />} />
+                  <Route path="/dashboard/cfo" element={<CfoDashboard />} />
                   <Route path="/dashboard/tenant/payments" element={<TenantPayments />} />
                   <Route path="/dashboard/tenant/profile" element={<TenantProfile />} />
                 </Route>

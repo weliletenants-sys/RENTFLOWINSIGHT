@@ -8,7 +8,9 @@ export const requestDeposit = async (req: Request, res: Response) => {
 
     const { target_user_id, amount, provider, transition_id, notes } = req.body;
     
-    // Validate agent has sufficient wallet balance (skipped logic assuming Ledger handles this securely in prod)
+    // TODO: Verify if Agent deposits into the app should also deduct from their Agent Wallet here.
+    // Currently, deposit requests rely on external payment gateways or manual Admin approval 
+    // without locking/decrementing the agent's internal float beforehand.
 
     const request = await prisma.depositRequests.create({
       data: {
@@ -36,20 +38,56 @@ export const requestWithdrawal = async (req: Request, res: Response) => {
     const userId = req.user?.sub;
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
-    const { amount, mobile_money_number, mobile_money_provider } = req.body;
+    // Match frontend fields: method, recipient_number, provider, reference
+    const { amount, method, recipient_number, provider, reference } = req.body;
+    const withdrawalAmount = Number(amount);
 
-    const payout = await prisma.agentCommissionPayouts.create({
-      data: {
-        agent_id: userId,
-        amount: Number(amount),
-        mobile_money_number,
-        mobile_money_provider,
-        status: 'PENDING',
-        created_at: new Date().toISOString(),
-        requested_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-    });
+    if (!withdrawalAmount || withdrawalAmount <= 0) {
+      return res.status(400).json({ message: 'Invalid withdrawal amount' });
+    }
+
+    const wallet = await prisma.wallets.findFirst({ where: { user_id: userId } });
+    if (!wallet) return res.status(404).json({ message: 'Wallet not found' });
+    
+    if (wallet.balance < withdrawalAmount) {
+      return res.status(400).json({ message: 'Insufficient wallet balance.' });
+    }
+
+    const now = new Date().toISOString();
+
+    const [updatedWallet, payout, ledgerEntry] = await prisma.$transaction([
+      // 1. Deduct immediately from the agent's wallet
+      prisma.wallets.update({
+        where: { id: wallet.id },
+        data: { balance: { decrement: withdrawalAmount }, updated_at: now }
+      }),
+      // 2. Queue the payout for admin approval
+      prisma.agentCommissionPayouts.create({
+        data: {
+          agent_id: userId,
+          amount: withdrawalAmount,
+          mobile_money_number: recipient_number || '',
+          mobile_money_provider: provider || 'unknown',
+          transaction_id: reference || null,
+          status: 'PENDING',
+          created_at: now,
+          requested_at: now,
+          updated_at: now
+        }
+      }),
+      // 3. Append to General Ledger
+      prisma.generalLedger.create({
+        data: {
+          user_id: userId,
+          amount: withdrawalAmount,
+          direction: 'cash_out',
+          category: 'agent_withdrawal_request',
+          source_table: 'wallets',
+          transaction_date: now,
+          created_at: now,
+        }
+      })
+    ]);
 
     return res.status(201).json({ message: 'Withdrawal officially requested', payout });
   } catch (error) {
