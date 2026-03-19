@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
-const baseUrl = 'http://localhost:3000';
+const baseUrl = 'http://localhost:3000/api';
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
 
 async function request(path: string, options: any = {}) {

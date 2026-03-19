@@ -5,17 +5,7 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import fs from 'fs';
 
-import authRoutes from './routes/auth.routes';
-import walletsRoutes from './routes/wallets.routes';
-import rentRequestsRoutes from './routes/rent-requests.routes';
-import applicationsRoutes from './routes/applications.routes';
-import uploadRoutes from './routes/upload.routes';
-import supporterRoutes from './routes/supporter.routes';
-import tenantRoutes from './routes/tenant.routes';
-import agentRoutes from './routes/agent.routes';
-import cfoRoutes from './routes/cfo.routes';
-import funderRoutes from './routes/funder.routes';
-import rolesRoutes from './routes/roles.routes';
+import apiRouter from './api';
 
 dotenv.config();
 
@@ -35,17 +25,8 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-app.use('/auth', authRoutes);
-app.use('/wallets', walletsRoutes);
-app.use('/rent-requests', rentRequestsRoutes);
-app.use('/applications', applicationsRoutes);
-app.use('/upload', uploadRoutes);
-app.use('/supporter', supporterRoutes);
-app.use('/tenant', tenantRoutes);
-app.use('/agent', agentRoutes);
-app.use('/cfo', cfoRoutes);
-app.use('/funder', funderRoutes);
-app.use('/roles', rolesRoutes);
+// All API routes under /api prefix
+app.use('/api', apiRouter);
 
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
