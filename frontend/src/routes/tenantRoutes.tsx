@@ -1,4 +1,4 @@
-import { lazy } from 'react';
+﻿import { lazy } from 'react';
 import { Route } from 'react-router-dom';
 
 const TenantAgreement   = lazy(() => import('../tenant/TenantAgreement'));

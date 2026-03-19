@@ -1,4 +1,4 @@
-import { X, UserCheck, Briefcase, Home, TrendingUp, ChevronRight } from 'lucide-react';
+﻿import { X, UserCheck, Briefcase, Home, TrendingUp, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 

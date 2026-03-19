@@ -1,4 +1,4 @@
-import { CalendarDays, Clock3 } from 'lucide-react';
+﻿import { CalendarDays, Clock3 } from 'lucide-react';
 
 interface RentProgressCardProps {
   amountPaid: number;

@@ -1,4 +1,4 @@
-import { Wallet, PlusCircle, ArrowDownCircle, ArrowRightLeft } from 'lucide-react';
+﻿import { Wallet, PlusCircle, ArrowDownCircle, ArrowRightLeft } from 'lucide-react';
 
 interface WalletCardProps {
   balance: number;

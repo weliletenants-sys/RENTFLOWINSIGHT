@@ -1,4 +1,4 @@
-import { Banknote, TrendingUp, ArrowDownToLine, ChevronRight } from 'lucide-react';
+﻿import { Banknote, TrendingUp, ArrowDownToLine, ChevronRight } from 'lucide-react';
 import type { ActivityItem, ActivityCategory, ActivityStatus } from '../types';
 
 export type { ActivityItem };

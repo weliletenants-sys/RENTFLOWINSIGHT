@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 import { Home, User, FileText, Wallet } from 'lucide-react';
 
 interface FunderBottomNavProps {

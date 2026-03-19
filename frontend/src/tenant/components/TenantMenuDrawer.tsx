@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { X, FileText, Home, DollarSign, Calculator, Search, Share2, HelpCircle, Settings, FileSpreadsheet, Gift } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 

@@ -1,4 +1,4 @@
-import { ArrowLeft, KeyRound, Smartphone, Fingerprint, ShieldAlert, UserCog } from 'lucide-react';
+﻿import { ArrowLeft, KeyRound, Smartphone, Fingerprint, ShieldAlert, UserCog } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';

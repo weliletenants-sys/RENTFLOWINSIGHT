@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { X, MapPin, Banknote, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 interface VisitPaymentWizardProps {

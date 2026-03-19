@@ -1,4 +1,4 @@
-import { Bell, MapPin, Star } from 'lucide-react';
+﻿import { Bell, MapPin, Star } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function AgentEarnings() {

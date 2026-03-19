@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import WalletCard from './components/WalletCard';
 import RentProgressCard from './components/RentProgressCard';
 import RecentActivitiesCard from './components/RecentActivitiesCard';

@@ -1,4 +1,4 @@
-import { lazy } from 'react';
+﻿import { lazy } from 'react';
 import { Route } from 'react-router-dom';
 
 const AgentWelcome        = lazy(() => import('../agent/AgentWelcome'));

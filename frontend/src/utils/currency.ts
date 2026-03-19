@@ -1,4 +1,4 @@
-/**
+﻿/**
  * currency.ts
  * Detects the user's local currency via IP geolocation (ipapi.co).
  * Falls back to UGX (platform base currency) while the request loads or on error.

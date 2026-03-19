@@ -1,4 +1,4 @@
-import { MapPin, Banknote, Target, TrendingUp, RefreshCcw } from 'lucide-react';
+﻿import { MapPin, Banknote, Target, TrendingUp, RefreshCcw } from 'lucide-react';
 import { useOfflineAgentDashboard } from '../../hooks/useOfflineAgentDashboard';
 
 export default function AgentDailyOpsCard() {

@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 import { Clock, ShieldAlert, CheckCircle2, ArrowRight } from 'lucide-react';
 
 export default function AgentKYCReview() {

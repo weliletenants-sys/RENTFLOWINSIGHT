@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+﻿import { useState, type ReactNode } from 'react';
 import DesktopSidebar from './DesktopSidebar';
 import { Menu, Bell, Search, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';

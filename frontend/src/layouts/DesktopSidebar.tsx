@@ -1,4 +1,4 @@
-import { useNavigate, useLocation } from 'react-router-dom';
+﻿import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth, type Role } from '../contexts/AuthContext';
 import RoleSwitcher from '../components/RoleSwitcher';
 import { 

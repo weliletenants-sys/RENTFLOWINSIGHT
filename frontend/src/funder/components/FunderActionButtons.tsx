@@ -1,4 +1,4 @@
-import { TrendingUp, Wallet } from 'lucide-react';
+﻿import { TrendingUp, Wallet } from 'lucide-react';
 
 interface FunderActionButtonsProps {
   portfolioValue?: number;

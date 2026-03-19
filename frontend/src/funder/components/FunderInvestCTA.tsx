@@ -1,4 +1,4 @@
-import { ShieldAlert, TrendingUp, Clock, Tag } from 'lucide-react';
+﻿import { ShieldAlert, TrendingUp, Clock, Tag } from 'lucide-react';
 
 interface FunderInvestCTAProps {
   onStartsupporting?: () => void;

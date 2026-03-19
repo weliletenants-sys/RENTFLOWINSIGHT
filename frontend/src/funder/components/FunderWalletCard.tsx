@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Eye, EyeOff, Plus, ArrowUpRight, Briefcase } from 'lucide-react';
 
 interface FunderWalletCardProps {

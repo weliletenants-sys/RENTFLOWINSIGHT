@@ -1,4 +1,4 @@
-import { ArrowDownToLine, Home } from 'lucide-react';
+﻿import { ArrowDownToLine, Home } from 'lucide-react';
 
 export default function RecentActivitiesCard() {
   return (

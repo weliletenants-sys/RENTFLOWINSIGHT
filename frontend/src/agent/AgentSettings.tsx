@@ -1,4 +1,4 @@
-import { ArrowLeft, MoreVertical, Edit2, Verified, User as UserIcon, Bell, Shield, FileText, LogOut } from 'lucide-react';
+﻿import { ArrowLeft, MoreVertical, Edit2, Verified, User as UserIcon, Bell, Shield, FileText, LogOut } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 

@@ -1,4 +1,4 @@
-interface RecruitmentProgressCardProps {
+﻿interface RecruitmentProgressCardProps {
   totalClients: number;
   pendingPayments: number;
   conversionRate: number; // percentage (0-100)

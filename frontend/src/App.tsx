@@ -20,6 +20,7 @@ import { publicRoutes } from './routes/publicRoutes';
 import { agentRoutes } from './routes/agentRoutes';
 import { tenantRoutes } from './routes/tenantRoutes';
 import { funderRoutes } from './routes/funderRoutes';
+import { cooRoutes } from './routes/cooRoutes';
 
 const queryClient = new QueryClient();
 
@@ -84,6 +85,7 @@ function App() {
                 {agentRoutes}
                 {tenantRoutes}
                 {funderRoutes}
+                {cooRoutes}
 
                 {/* Protected: authenticated users only */}
                 <Route element={<ProtectedRoute />}>

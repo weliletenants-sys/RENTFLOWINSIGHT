@@ -1,4 +1,4 @@
-import { X, ArrowDownRight, ArrowUpRight, History } from 'lucide-react';
+﻿import { X, ArrowDownRight, ArrowUpRight, History } from 'lucide-react';
 
 interface FullScreenWalletSheetProps {
   isOpen: boolean;

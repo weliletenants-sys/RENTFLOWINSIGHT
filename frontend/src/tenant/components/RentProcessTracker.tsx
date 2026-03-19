@@ -1,4 +1,4 @@
-import { Check, Clock, AlertCircle } from 'lucide-react';
+﻿import { Check, Clock, AlertCircle } from 'lucide-react';
 
 interface RentProcessTrackerProps {
   status: 'pending' | 'approved' | 'funded' | 'disbursed' | 'completed';

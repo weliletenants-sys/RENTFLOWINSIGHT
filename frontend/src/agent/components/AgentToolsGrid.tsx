@@ -1,4 +1,4 @@
-import { UserPlus, Users, BarChart3, HelpCircle } from 'lucide-react';
+﻿import { UserPlus, Users, BarChart3, HelpCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface ToolItemProps {

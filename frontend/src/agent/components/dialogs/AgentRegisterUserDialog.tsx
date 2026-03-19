@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { X, UserPlus } from 'lucide-react';
 
 interface AgentRegisterUserDialogProps {

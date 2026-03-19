@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+﻿import { useState, useRef, useEffect } from 'react';
 import { Bell, User, CheckCircle, TrendingUp, Info } from 'lucide-react';
 
 interface FunderMobileHeaderProps {

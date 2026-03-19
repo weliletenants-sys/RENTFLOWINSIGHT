@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Star, ShieldCheck, Wallet, Wrench, Search, PenTool, CreditCard, Send } from 'lucide-react';
 

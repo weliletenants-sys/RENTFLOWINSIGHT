@@ -1,4 +1,4 @@
-import { ChevronRight } from 'lucide-react';
+﻿import { ChevronRight } from 'lucide-react';
 import type { PortfolioItem, PortfolioStatus } from '../types';
 
 export type { PortfolioItem };

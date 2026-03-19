@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, ArrowRight, Wallet, Clock, Globe, Sparkles, Mail, MessageSquare } from 'lucide-react';
 
 export default function AgentWelcome() {
