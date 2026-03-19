@@ -10,7 +10,7 @@ interface FunderSidebarProps {
 const navItems = [
   { label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" />, path: '/funder' },
   { label: 'Properties', icon: <Building2 className="w-5 h-5" />, path: '/funder/properties' },
-  { label: 'Opportunities', icon: <Rocket className="w-5 h-5" />, path: '#' },
+  { label: 'Opportunities', icon: <Rocket className="w-5 h-5" />, path: '/funder/opportunities' },
   { label: 'Payouts', icon: <Banknote className="w-5 h-5" />, path: '#' },
   { label: 'Wallet', icon: <Wallet className="w-5 h-5" />, path: '/funder/wallet' },
   { label: 'Reports', icon: <FileText className="w-5 h-5" />, path: '/funder/reports' },

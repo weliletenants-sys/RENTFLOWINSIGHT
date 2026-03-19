@@ -131,7 +131,7 @@ export default function FunderDashboard() {
     const loadData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const config = { headers: { Authorization: `Bearer ${token}` } };
+        const config = { headers: { Authorization: `Bearer ${token}` }, timeout: 2000 };
         
         const [statsRes, portfoliosRes, activitiesRes] = await Promise.all([
           axios.get('http://localhost:3000/api/supporter/dashboard', config),

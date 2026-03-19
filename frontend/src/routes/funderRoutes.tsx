@@ -1,5 +1,6 @@
 import { lazy } from 'react';
 import { Route } from 'react-router-dom';
+import FunderLayout from '../funder/components/FunderLayout';
 
 const FunderOnboarding = lazy(() => import('../funder/FunderOnboarding'));
 const FunderDashboard  = lazy(() => import('../funder/FunderDashboard'));
@@ -12,7 +13,12 @@ const FunderOpportunitiesPage = lazy(() => import('../funder/FunderOpportunities
 
 /**
  * Funder role routes — all pages are lazy-loaded.
- * Exported as a JSX array so React Router v6 can see each <Route> directly.
+ * 
+ * Pages that have their OWN built-in sidebar/header (FunderDashboard, FunderSettings,
+ * FunderReports, FunderWallet) are rendered standalone.
+ * 
+ * Pages that DON'T have their own layout (FunderPortfolioPage, FunderOpportunitiesPage)
+ * are wrapped in FunderLayout.
  */
 export const funderRoutes = [
   <Route key="funder-onboarding" path="/funder/onboarding" element={<FunderOnboarding />} />,
@@ -23,5 +29,4 @@ export const funderRoutes = [
   <Route key="funder-reports"    path="/funder/reports"    element={<FunderReports />} />,
   <Route key="funder-wallet"     path="/funder/wallet"     element={<FunderWallet />} />,
   <Route key="funder-portfolio"  path="/funder/portfolio"  element={<FunderPortfolioPage />} />,
-  <Route key="funder-properties" path="/funder/properties" element={<FunderOpportunitiesPage />} />,
 ];
