@@ -197,8 +197,8 @@ export default function FunderDashboard() {
 
           {/* ──────────── VERIFICATION INTERCEPTOR ──────────── */}
           {!user?.isVerified && activePage !== 'Portfolio' && activePage !== 'Opportunities' && (
-            <div className="bg-amber-50 border-b border-amber-200 p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shrink-0">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="bg-amber-50 border-b border-amber-200 p-4 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shrink-0">
+              <div className="flex items-start md:items-center gap-4">
                 <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
                   <ShieldAlert className="w-6 h-6 text-amber-600" />
                 </div>
