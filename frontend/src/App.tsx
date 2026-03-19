@@ -97,7 +97,15 @@ function App() {
                 </Route>
 
                 {/* Fallback */}
-                <Route path="*" element={<Navigate to="/" replace />} />
+                <Route path="*" element={
+                  <div style={{ padding: '40px', background: '#000', color: '#ff4444', height: '100vh', width: '100vw' }}>
+                    <h1 style={{fontSize: '40px'}}>404 - ROUTER CRASH TRAP</h1>
+                    <p style={{fontSize: '20px'}}>
+                      React Router explicitly failed to match the URL you requested. <br/><br/>
+                      If you arrived here, the Route mapping tree could not locate your path. Please take a screenshot of your URL bar so we know exactly what path was rejected!
+                    </p>
+                  </div>
+                } />
               </Routes>
             </Suspense>
           </BrowserRouter>

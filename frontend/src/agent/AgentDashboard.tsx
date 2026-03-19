@@ -153,9 +153,12 @@ export default function AgentDashboard() {
                 </button>
               </div>
             </div>
-            <div className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between h-full">
+            <div 
+              onClick={() => navigate('/agent-rent-requests')} 
+              className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between h-full cursor-pointer hover:border-[#6d28d9]/50 transition-all group"
+            >
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Rent Requests</h4>
+                <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider group-hover:text-[#6d28d9] transition-colors">Rent Requests</h4>
                 <ClipboardCheck className="text-[#6d28d9]" size={24} />
               </div>
               <div className="flex items-center gap-4">

@@ -1414,6 +1414,24 @@ model AgentNextOfKin {
   @@map("agent_next_of_kin")
 }
 
+model AgentRentRequests {
+  id                   String  @id @default(uuid())
+  agent_id             String
+  tenant_id            String? 
+  tenant_name          String? 
+  phone                String?
+  amount               Float
+  payback_plan_daily   Float?
+  status               String  
+  rejection_reason     String?
+  created_at           String
+  updated_at           String
+  approved_at          String?
+  processed_at         String?
+
+  @@map("agent_rent_requests")
+}
+
 model AgentApplications {
   id           String @id @default(uuid())
   agent_id     String @unique

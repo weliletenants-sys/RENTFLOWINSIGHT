@@ -26,6 +26,7 @@ const AgentReceipt        = lazy(() => import('../agent/AgentReceipt'));
 const AgentReferral       = lazy(() => import('../agent/AgentReferral'));
 const AgentDailyOps       = lazy(() => import('../agent/AgentDailyOps'));
 const AgentRequestAdvance = lazy(() => import('../agent/AgentRequestAdvance'));
+const AgentRentRequests   = lazy(() => import('../agent/AgentRentRequests'));
 
 // Marketplace Suite
 const AgentShop             = lazy(() => import('../agent/shop/AgentShop'));
@@ -60,6 +61,7 @@ export const agentRoutes = [
   <Route key="agent-visit-detail"      path="/agent-visit/:tenantId"   element={<AgentVisitDetail />} />,
   <Route key="agent-list-house"        path="/agent-list-house"        element={<AgentListHouse />} />,
   <Route key="agent-advance-request"   path="/agent-advance-request"   element={<AgentRequestAdvance />} />,
+  <Route key="agent-rent-requests"     path="/agent-rent-requests"     element={<AgentRentRequests />} />,
   <Route key="agent-receipt"           path="/agent-receipt"           element={<AgentReceipt />} />,
   <Route key="agent-referral"          path="/agent-referral"          element={<AgentReferral />} />,
   <Route key="agent-daily-ops"         path="/agent-daily-ops"         element={<AgentDailyOps />} />,
