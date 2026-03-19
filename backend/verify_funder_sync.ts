@@ -8,7 +8,7 @@ async function main() {
     select: { user_id: true }
   });
 
-  const funderIds = funderRoles.map(r => r.user_id);
+  const funderIds = funderRoles.map(r => r.user_id).filter((id): id is string => id !== null);
   
   const profiles = await prisma.profiles.findMany({
     where: { id: { in: funderIds } },

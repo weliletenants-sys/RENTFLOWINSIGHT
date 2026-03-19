@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
@@ -12,6 +12,7 @@ import SubAgents from './agent/SubAgents';
 import AgentEarnings from './agent/AgentEarnings';
 import AgentClients from './agent/AgentClients';
 import AgentSettings from './agent/AgentSettings';
+import CfoDashboard from './cfo/CfoDashboard';
 import TenantPayments from './tenant/TenantPayments';
 import TenantProfile from './tenant/TenantProfile';
 
@@ -94,6 +95,7 @@ function App() {
                   <Route path="/dashboard/agent/earnings" element={<AgentEarnings />} />
                   <Route path="/dashboard/agent/clients" element={<AgentClients />} />
                   <Route path="/dashboard/agent/settings" element={<AgentSettings />} />
+                  <Route path="/dashboard/cfo" element={<CfoDashboard />} />
                   <Route path="/dashboard/tenant/payments" element={<TenantPayments />} />
                   <Route path="/dashboard/tenant/profile" element={<TenantProfile />} />
                 </Route>

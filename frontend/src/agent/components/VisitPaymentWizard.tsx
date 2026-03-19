@@ -129,14 +129,20 @@ export default function VisitPaymentWizard({ isOpen, onClose }: VisitPaymentWiza
                 <div>
                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Payment Method</label>
                    <div className="grid grid-cols-3 gap-2">
-                     {['Cash', 'MTN MoMo', 'Airtel'].map((m) => (
+                     {[
+                       { id: 'Cash', label: 'Cash', icon: null },
+                       { id: 'MTN MoMo', label: 'MTN MoMo', icon: '/mtn.png' },
+                       { id: 'Airtel', label: 'Airtel', icon: '/airtel.png' }
+                     ].map((m) => (
                        <button
-                         key={m}
+                         key={m.id}
                          type="button"
-                         onClick={() => setMethod(m)}
-                         className={`py-3 rounded-xl text-sm font-bold border-2 transition ${method === m ? 'border-[#512DA8] bg-purple-50 text-[#512DA8]' : 'border-gray-100 bg-white text-gray-600 hover:border-gray-200'}`}
+                         onClick={() => setMethod(m.id)}
+                         className={`py-3 flex flex-col items-center justify-center gap-2 rounded-xl text-sm font-bold border-2 transition ${method === m.id ? 'border-[#512DA8] bg-purple-50 text-[#512DA8]' : 'border-gray-100 bg-white text-gray-600 hover:border-gray-200'}`}
                        >
-                         {m}
+                         {m.icon && <img src={m.icon} alt={m.label} className="w-6 h-6 rounded-full object-cover shadow-sm" />}
+                         {!m.icon && <Banknote size={24} className="text-gray-400" />}
+                         {m.label}
                        </button>
                      ))}
                    </div>

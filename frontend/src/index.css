@@ -74,7 +74,7 @@
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    --primary: 196 67% 45%; /* Matches #2596be */
+    --primary: 268 74% 32%; /* Matches #4c158d */
     --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
@@ -86,7 +86,7 @@
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
-    --ring: 196 67% 45%;
+    --ring: 268 74% 32%;
     --radius: 1rem;
   }
   .dark {
@@ -96,7 +96,7 @@
     --card-foreground: 0 0% 98%;
     --popover: 196 41% 12%;
     --popover-foreground: 0 0% 98%;
-    --primary: 196 67% 45%;
+    --primary: 268 74% 32%;
     --primary-foreground: 0 0% 98%;
     --secondary: 196 10% 20%;
     --secondary-foreground: 0 0% 98%;
@@ -108,7 +108,7 @@
     --destructive-foreground: 0 0% 98%;
     --border: 196 10% 20%;
     --input: 196 10% 20%;
-    --ring: 196 67% 45%;
+    --ring: 268 74% 32%;
   }
 }
 

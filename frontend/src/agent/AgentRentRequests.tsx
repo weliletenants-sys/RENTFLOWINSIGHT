@@ -1,20 +1,17 @@
 ﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useAuth } from '../contexts/AuthContext';
 import { 
-  Menu, Bell, Settings, Search, SlidersHorizontal, Plus, 
-  MoreVertical, UserSearch, ClipboardList, AlertTriangle, ArrowLeft 
+  Bell, Settings, Search, SlidersHorizontal, Plus, 
+  MoreVertical, UserSearch, ArrowLeft 
 } from 'lucide-react';
 
 export default function AgentRentRequests() {
   const navigate = useNavigate();
-  const { user } = useAuth();
   
   const [activeTab, setActiveTab] = useState<'approved' | 'pending' | 'archive'>('approved');
   
   const [requests, setRequests] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   
   // New Request Form State
   const [tenantName, setTenantName] = useState('');
@@ -33,8 +30,6 @@ export default function AgentRentRequests() {
       setRequests(data.requests || []);
     } catch (error) {
       console.error('Failed to fetch requests', error);
-    } finally {
-      setLoading(false);
     }
   };
 

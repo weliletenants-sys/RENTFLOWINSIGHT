@@ -78,14 +78,14 @@ export default function AgentDepositDialog({ isOpen, onClose }: AgentDepositDial
                onClick={() => setProvider('MTN')}
                className={`py-3 rounded-xl border-2 font-bold transition flex items-center justify-center gap-2 ${provider === 'MTN' ? 'border-yellow-400 bg-yellow-50 text-yellow-900' : 'border-gray-200 text-gray-500'}`}
              >
-               <div className="w-4 h-4 rounded-full bg-yellow-400"></div> MTN MoMo
+               <img src="/mtn.png" alt="MTN" className="w-5 h-5 rounded-full object-cover" /> MTN MoMo
              </button>
              <button 
                type="button"
                onClick={() => setProvider('Airtel')}
                className={`py-3 rounded-xl border-2 font-bold transition flex items-center justify-center gap-2 ${provider === 'Airtel' ? 'border-red-500 bg-red-50 text-red-900' : 'border-gray-200 text-gray-500'}`}
              >
-               <div className="w-4 h-4 rounded-full bg-red-500"></div> Airtel Money
+               <img src="/airtel.png" alt="Airtel" className="w-5 h-5 rounded-full object-cover" /> Airtel Money
              </button>
           </div>
 

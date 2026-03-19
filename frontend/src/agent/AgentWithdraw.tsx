@@ -175,7 +175,7 @@ export default function AgentWithdraw() {
                           : 'border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 hover:border-red-300'
                       }`}
                     >
-                      <div className="h-9 w-9 rounded-full bg-red-600 flex items-center justify-center text-white shrink-0 text-xs font-black">A</div>
+                      <img src="/airtel.png" alt="Airtel" className="h-9 w-9 rounded-full object-cover shrink-0" />
                       <div className="text-left">
                         <p className="text-sm font-bold text-slate-900 dark:text-white">Airtel</p>
                         <p className="text-[10px] text-slate-500">Airtel Money</p>
@@ -193,7 +193,7 @@ export default function AgentWithdraw() {
                           : 'border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 hover:border-yellow-300'
                       }`}
                     >
-                      <div className="h-9 w-9 rounded-full bg-yellow-400 flex items-center justify-center text-slate-900 shrink-0 text-xs font-black">M</div>
+                      <img src="/mtn.png" alt="MTN" className="h-9 w-9 rounded-full object-cover shrink-0" />
                       <div className="text-left">
                         <p className="text-sm font-bold text-slate-900 dark:text-white">MTN</p>
                         <p className="text-[10px] text-slate-500">MTN Mobile Money</p>

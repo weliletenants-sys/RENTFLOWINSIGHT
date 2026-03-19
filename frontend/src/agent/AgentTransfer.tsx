@@ -1,30 +1,58 @@
-﻿import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
 export default function AgentTransfer() {
   const navigate = useNavigate();
   const [amount, setAmount] = useState<string>('');
+  const [recipient, setRecipient] = useState<string>('');
+  const [initialBalance, setInitialBalance] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   
-  const INITIAL_BALANCE = 1450000;
   const FEE = 0; // Transfers are free
   
   const amountValue = parseInt(amount) || 0;
   const totalDeduction = amountValue > 0 ? amountValue + FEE : 0;
-  const remaining = INITIAL_BALANCE - totalDeduction;
+  const remaining = initialBalance - totalDeduction;
+
+  useEffect(() => {
+    const fetchBalance = async () => {
+      try {
+        const { data } = await axios.get('/api/wallets/my-wallet');
+        setInitialBalance(data.balance || 0);
+      } catch (err) {
+        console.error('Failed to load wallet balance', err);
+      }
+    };
+    fetchBalance();
+  }, []);
 
   const handleSetAmount = (val: number) => {
     setAmount(val.toString());
   };
 
-  const handleTransfer = (e: React.FormEvent) => {
+  const handleTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
     if (remaining < 0) {
-      alert("Insufficient funds!");
+      toast.error("Insufficient funds!");
       return;
     }
-    alert("Transfer successful! (Mocked)");
-    navigate(-1);
+    
+    setIsLoading(true);
+    try {
+      await axios.post('/api/wallets/transfer', {
+        amount: amountValue,
+        recipientId: recipient
+      });
+      toast.success("Transfer successful!");
+      navigate(-1);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to complete transfer. Please check recipient ID.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -56,7 +84,7 @@ export default function AgentTransfer() {
           {/* WalletBalanceHeader */}
           <section className="mb-8">
             <p className="text-slate-500 text-sm font-medium mb-1">Available Balance</p>
-            <h2 className="text-3xl font-bold tracking-tight">UGX {INITIAL_BALANCE.toLocaleString()}</h2>
+            <h2 className="text-3xl font-bold tracking-tight">UGX {initialBalance.toLocaleString()}</h2>
           </section>
 
           {/* TransferForm */}
@@ -70,8 +98,10 @@ export default function AgentTransfer() {
                   type="text" 
                   id="recipient" 
                   name="recipient" 
+                  value={recipient}
+                  onChange={(e) => setRecipient(e.target.value)}
                   placeholder="Enter recipient phone or user ID" 
-                  className="block w-full rounded-xl border-slate-200 py-3.5 pl-4 pr-12 focus:border-[#6d28d9] focus:ring-[#6d28d9] text-base outline-none border focus:ring-1 transition-all" 
+                  className="block w-full rounded-xl border-slate-200 py-3.5 pl-4 pr-12 focus:border-[#6d28d9] focus:ring-[#6d28d9] text-base outline-none border focus:ring-1 transition-all bg-white" 
                   required
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer text-slate-400 hover:text-[#6d28d9] transition-colors">
@@ -144,8 +174,10 @@ export default function AgentTransfer() {
             <div className="pt-4">
               <button 
                 type="submit" 
-                className="w-full bg-[#6d28d9] hover:bg-[#5b21b6] text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-[#6d28d9]/20 transition-all transform active:scale-[0.98]"
+                disabled={isLoading || amountValue <= 0 || !recipient}
+                className="w-full flex items-center justify-center gap-2 bg-[#6d28d9] hover:bg-[#5b21b6] text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-[#6d28d9]/20 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
               >
+                {isLoading && <Loader2 size={18} className="animate-spin" />}
                 Send Transfer
               </button>
             </div>

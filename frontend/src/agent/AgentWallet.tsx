@@ -1,13 +1,35 @@
-﻿import { useNavigate } from 'react-router-dom';
-import { Home, Wallet, Users, Settings, PlusCircle, ArrowDown, Send, FileText, Download } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Home, Wallet, Users, Settings, PlusCircle, ArrowDown, Send, FileText, Download, Upload } from 'lucide-react';
 import { motion } from 'framer-motion';
+import axios from 'axios';
+import AgentDepositSheet from './components/AgentDepositSheet';
+import AgentWithdrawSheet from './components/AgentWithdrawSheet';
 
 export default function AgentWallet() {
   const navigate = useNavigate();
-  const balance = 1450000; // Mock balance
+  const [balance, setBalance] = useState(0);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [activeSheet, setActiveSheet] = useState<'deposit' | 'withdraw' | null>(null);
+
+  const fetchWalletData = async () => {
+    try {
+      const [{ data: walletData }, { data: txData }] = await Promise.all([
+        axios.get('/api/wallets/my-wallet'),
+        axios.get('/api/agent/financials/transactions')
+      ]);
+      setBalance(walletData.balance || 0);
+      setTransactions(txData.transactions || []);
+    } catch (err) {
+      console.error('Failed to load wallet data:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchWalletData();
+  }, []);
 
   const handleDownloadStatement = () => {
-    // Mock download action
     alert("Downloading wallet statement PDF...");
   };
 
@@ -15,21 +37,18 @@ export default function AgentWallet() {
     <div className="bg-[#f8f6f6] dark:bg-[#221610] text-slate-900 dark:text-slate-100 antialiased min-h-screen font-['Public_Sans'] pb-20">
       <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden pt-4">
         
-        {/* Header */}
         <header className="px-4 py-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Your Wallet</h1>
         </header>
 
         <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-2 space-y-6">
 
-          {/* Wallet Card */}
           <motion.section 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
             className="mb-6 relative overflow-hidden bg-[#6d28d9] rounded-2xl p-6 text-white shadow-xl shadow-[#6d28d9]/20"
           >
-            {/* Abstract Background Patterns */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full -ml-12 -mb-12 blur-xl"></div>
             
@@ -40,10 +59,9 @@ export default function AgentWallet() {
               </div>
             </div>
             
-            {/* Action Buttons Grid */}
             <div className="grid grid-cols-3 gap-3 mt-8 relative z-10">
               <button 
-                onClick={() => navigate('/agent-deposit')}
+                onClick={() => setActiveSheet('deposit')}
                 className="flex flex-col items-center justify-center gap-2 py-3 bg-white/10 hover:bg-white/20 border border-white/10 backdrop-blur-sm rounded-xl transition-colors shadow-sm"
               >
                 <PlusCircle size={24} className="text-white" />
@@ -51,7 +69,7 @@ export default function AgentWallet() {
               </button>
               
               <button 
-                onClick={() => navigate('/agent-withdraw')}
+                onClick={() => setActiveSheet('withdraw')}
                 className="flex flex-col items-center justify-center gap-2 py-3 bg-white/10 hover:bg-white/20 border border-white/10 backdrop-blur-sm rounded-xl transition-colors shadow-sm"
               >
                 <ArrowDown size={24} className="text-white" />
@@ -68,7 +86,6 @@ export default function AgentWallet() {
             </div>
           </motion.section>
 
-          {/* Statement Section */}
           <motion.section 
              initial={{ opacity: 0, y: 20 }}
              animate={{ opacity: 1, y: 0 }}
@@ -96,7 +113,6 @@ export default function AgentWallet() {
             </button>
           </motion.section>
 
-          {/* Recent Activity Placeholders */}
           <motion.section 
              initial={{ opacity: 0, y: 20 }}
              animate={{ opacity: 1, y: 0 }}
@@ -105,28 +121,31 @@ export default function AgentWallet() {
           >
             <h3 className="text-base font-bold text-slate-900 dark:text-white mb-4">Recent Activity</h3>
             <div className="space-y-4">
-               {/* Activity items can be dynamically mapped here */}
-               <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-700/50 last:border-0 last:pb-0">
-                  <div className="flex flex-col">
-                     <span className="font-semibold text-slate-800 dark:text-slate-200 text-sm">Commission Earned</span>
-                     <span className="text-xs text-slate-400">Today, 2:45 PM</span>
-                  </div>
-                  <span className="text-green-600 font-bold text-sm">+ UGX 15,000</span>
-               </div>
-               <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-700/50 last:border-0 last:pb-0">
-                  <div className="flex flex-col">
-                     <span className="font-semibold text-slate-800 dark:text-slate-200 text-sm">Withdrawal to Bank</span>
-                     <span className="text-xs text-slate-400">Yesterday, 9:20 AM</span>
-                  </div>
-                  <span className="text-slate-700 dark:text-slate-300 font-bold text-sm">- UGX 200,000</span>
-               </div>
-               <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-700/50 last:border-0 last:pb-0">
-                  <div className="flex flex-col">
-                     <span className="font-semibold text-slate-800 dark:text-slate-200 text-sm">Commission Earned</span>
-                     <span className="text-xs text-slate-400">Oct 12, 4:10 PM</span>
-                  </div>
-                  <span className="text-green-600 font-bold text-sm">+ UGX 30,000</span>
-               </div>
+              {transactions.length === 0 ? (
+                <p className="text-sm text-center text-slate-500 py-4">No recent transactions synced.</p>
+              ) : (
+                transactions.slice(0, 10).map((tx) => {
+                  const isCredit = tx.direction === 'cash_in';
+                  return (
+                    <div key={tx.id} className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-700/50 last:border-0 last:pb-0">
+                      <div className="flex items-center gap-3">
+                        <div className={`size-10 rounded-full flex items-center justify-center ${isCredit ? 'bg-green-100 dark:bg-green-900/30 text-green-600' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'}`}>
+                          {isCredit ? <Download size={20} /> : <Upload size={20} />}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-slate-800 dark:text-slate-200 text-sm capitalize">{tx.category.replace(/_/g, ' ')}</span>
+                          <span className="text-xs text-slate-400">
+                            {new Date(tx.transaction_date).toLocaleDateString()} • {new Date(tx.transaction_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                      </div>
+                      <span className={`font-bold text-sm ${isCredit ? 'text-green-600' : 'text-slate-700 dark:text-slate-300'}`}>
+                        {isCredit ? '+' : '-'} UGX {tx.amount.toLocaleString()}
+                      </span>
+                    </div>
+                  );
+                })
+              )}
             </div>
             
             <button className="w-full mt-4 py-3 text-sm font-bold text-[#6d28d9] bg-[#6d28d9]/5 hover:bg-[#6d28d9]/10 rounded-xl transition-colors">
@@ -154,6 +173,20 @@ export default function AgentWallet() {
             <span className="text-[10px] font-bold">Settings</span>
           </button>
         </nav>
+
+        {/* Bottom Sheets */}
+        <AgentDepositSheet 
+          isOpen={activeSheet === 'deposit'} 
+          onClose={() => setActiveSheet(null)} 
+          onSuccess={() => fetchWalletData()} 
+        />
+        
+        <AgentWithdrawSheet 
+          isOpen={activeSheet === 'withdraw'} 
+          onClose={() => setActiveSheet(null)} 
+          availableBalance={balance}
+          onSuccess={() => fetchWalletData()} 
+        />
       </div>
     </div>
   );

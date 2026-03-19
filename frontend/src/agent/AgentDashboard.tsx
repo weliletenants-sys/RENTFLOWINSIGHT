@@ -19,6 +19,7 @@ export default function AgentDashboard() {
     collected_today: 0,
     wallet_balance: 0
   });
+  const [transactions, setTransactions] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchSummary = async () => {
@@ -29,7 +30,16 @@ export default function AgentDashboard() {
          console.error('Failed to fetch summary:', err);
       }
     };
+    const fetchTransactions = async () => {
+      try {
+         const { data } = await axios.get('/api/agent/financials/transactions');
+         setTransactions(data.transactions || []);
+      } catch (err) {
+         console.error('Failed to fetch transactions:', err);
+      }
+    };
     fetchSummary();
+    fetchTransactions();
   }, []);
 
   // Load Material Symbols
@@ -206,30 +216,31 @@ export default function AgentDashboard() {
               <button className="text-sm font-bold text-[#6d28d9]">View All</button>
             </div>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="size-10 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 flex items-center justify-center">
-                    <Download size={20} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">Collection - House #104</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Oct 24, 2023 • 10:30 AM</p>
-                  </div>
-                </div>
-                <p className="text-sm font-bold text-green-600">+ UGX 45,000</p>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="size-10 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 flex items-center justify-center">
-                    <Upload size={20} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">Withdrawal to Bank</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Oct 23, 2023 • 04:15 PM</p>
-                  </div>
-                </div>
-                <p className="text-sm font-bold text-slate-900 dark:text-white">- UGX 200,000</p>
-              </div>
+              {transactions.length === 0 ? (
+                <p className="text-sm text-center text-slate-500 py-4">No recent transactions found.</p>
+              ) : (
+                transactions.slice(0, 5).map((tx) => {
+                  const isCredit = tx.direction === 'cash_in';
+                  return (
+                    <div key={tx.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className={`size-10 rounded-full flex items-center justify-center ${isCredit ? 'bg-green-100 dark:bg-green-900/30 text-green-600' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'}`}>
+                          {isCredit ? <Download size={20} /> : <Upload size={20} />}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-900 dark:text-white capitalize">{tx.category.replace(/_/g, ' ')}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            {new Date(tx.transaction_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} • {new Date(tx.transaction_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </div>
+                      </div>
+                      <p className={`text-sm font-bold ${isCredit ? 'text-green-600' : 'text-slate-900 dark:text-white'}`}>
+                        {isCredit ? '+' : '-'} UGX {tx.amount.toLocaleString()}
+                      </p>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </section>
         </main>

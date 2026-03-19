@@ -31,7 +31,7 @@ import FunderBottomNav from './components/FunderBottomNav';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
 
 export default function FunderAccountSettings() {
-  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'financial' | 'proxy' | 'reporting'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'financial' | 'proxy' | 'reporting' | 'roles'>('profile');
   const [newPassword, setNewPassword] = useState('');
   const [avatarPreview, setAvatarPreview] = useState<string>("https://api.dicebear.com/7.x/avataaars/svg?seed=Grace&backgroundColor=059669");
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -197,6 +197,7 @@ export default function FunderAccountSettings() {
                   { id: 'financial', label: 'Capital & Escrow', icon: <Landmark className="w-4 h-4" /> },
                   { id: 'proxy', label: 'Proxy Relations', icon: <Users className="w-4 h-4" /> },
                   { id: 'reporting', label: 'Reporting & Compliance', icon: <FileText className="w-4 h-4" /> },
+                  { id: 'roles', label: 'Role Management', icon: <Building2 className="w-4 h-4" /> },
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -759,6 +760,74 @@ export default function FunderAccountSettings() {
                     </div>
                   </div>
                 )}
+
+                {/* TAB 5: ROLE MANAGEMENT */}
+                {activeTab === 'roles' && (
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="lg:col-span-2 space-y-6">
+                      <div className="bg-white rounded-[24px] p-6 sm:p-8 shadow-sm border border-slate-100 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-primary-faint)] rounded-bl-full -mr-8 -mt-8 pointer-events-none" />
+                        <h3 className="text-xl font-black text-slate-800 tracking-tight mb-2 flex items-center gap-2">
+                          Platform Roles
+                        </h3>
+                        <p className="text-slate-500 text-sm font-medium mb-8 pr-12">
+                          Your Welile profile can hold multiple roles simultaneously. Request additional privileges to manage properties, refer clients, or rent spaces.
+                        </p>
+                        
+                        <div className="space-y-4">
+                          {/* Landlord Role */}
+                          <div className="p-5 border-2 border-slate-100 rounded-2xl bg-slate-50 relative overflow-hidden group hover:border-[var(--color-primary-light)] transition-colors">
+                            <div className="flex items-center gap-4 mb-3">
+                              <div className="w-12 h-12 rounded-xl bg-white text-[var(--color-primary)] flex items-center justify-center shadow-sm">
+                                <Building2 className="w-6 h-6" />
+                              </div>
+                              <div>
+                                <h4 className="font-bold text-slate-900">Landlord</h4>
+                                <p className="text-xs font-medium text-slate-500">Register and manage rental properties.</p>
+                              </div>
+                            </div>
+                            <button onClick={() => toast.success("Landlord role request submitted!")} className="cursor-pointer w-full bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition-colors shadow-sm text-sm">
+                              Request Landlord Access
+                            </button>
+                          </div>
+
+                          {/* Tenant Role */}
+                          <div className="p-5 border-2 border-slate-100 rounded-2xl bg-slate-50 relative overflow-hidden group hover:border-[var(--color-primary-light)] transition-colors">
+                            <div className="flex items-center gap-4 mb-3">
+                              <div className="w-12 h-12 rounded-xl bg-white text-[var(--color-primary)] flex items-center justify-center shadow-sm">
+                                <User className="w-6 h-6" />
+                              </div>
+                              <div>
+                                <h4 className="font-bold text-slate-900">Tenant</h4>
+                                <p className="text-xs font-medium text-slate-500">Find and rent verified properties seamlessly.</p>
+                              </div>
+                            </div>
+                            <button onClick={() => toast.success("Tenant role activated!")} className="cursor-pointer w-full bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition-colors shadow-sm text-sm">
+                              Activate Tenant Role
+                            </button>
+                          </div>
+
+                          {/* Agent Role */}
+                          <div className="p-5 border-2 border-slate-100 rounded-2xl bg-slate-50 relative overflow-hidden group hover:border-[var(--color-primary-light)] transition-colors">
+                            <div className="flex items-center gap-4 mb-3">
+                              <div className="w-12 h-12 rounded-xl bg-white text-[var(--color-primary)] flex items-center justify-center shadow-sm">
+                                <Users className="w-6 h-6" />
+                              </div>
+                              <div>
+                                <h4 className="font-bold text-slate-900">Agent</h4>
+                                <p className="text-xs font-medium text-slate-500">Refer tenants or manage properties on commission.</p>
+                              </div>
+                            </div>
+                            <button onClick={() => toast.success("Agent application started!")} className="cursor-pointer w-full bg-white border border-slate-200 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition-colors shadow-sm text-sm">
+                              Apply to be an Agent
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
               </div>
             </div>
           </main>
