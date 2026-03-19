@@ -28,8 +28,8 @@ const COOSidebar: React.FC = () => {
     <div className="w-64 bg-white border-r border-slate-100 h-full flex flex-col hidden md:flex font-outfit">
       {/* Brand / Logo Area */}
       <div className="h-20 flex items-center px-6 mt-2">
-        <div className="w-full flex items-center justify-start">
-          <img src="/welile-colored.png" alt="Welile" className="h-14 min-w-[120px] object-contain" />
+        <div className="flex items-center space-x-2">
+          <img src="/welile-colored.png" alt="Welile" className="h-8 object-contain" />
         </div>
       </div>
 
