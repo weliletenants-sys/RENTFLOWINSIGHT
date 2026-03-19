@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../prisma/prisma.client';
+import { problemResponse } from '../utils/problem';
 
 export const createRequest = async (req: Request, res: Response) => {
   try {
@@ -7,7 +8,7 @@ export const createRequest = async (req: Request, res: Response) => {
     const { propertyId, amount, months } = req.body;
 
     if (!userId || !amount) {
-      return res.status(400).json({ message: 'Missing required data' });
+      return problemResponse(res, 400, 'Validation Error', `Missing required data`, 'validation-error');
     }
 
     // Default calculations for early stage
@@ -39,14 +40,14 @@ export const createRequest = async (req: Request, res: Response) => {
     return res.status(201).json(request);
   } catch (error) {
     console.error('Create rent request error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
   }
 };
 
 export const getMyRequests = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.sub;
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    if (!userId) return problemResponse(res, 401, 'Unauthorized', `Unauthorized`, 'unauthorized');
 
     const requests = await prisma.rentRequests.findMany({
       where: { tenant_id: userId },
@@ -56,7 +57,7 @@ export const getMyRequests = async (req: Request, res: Response) => {
     return res.status(200).json(requests);
   } catch (error) {
     console.error('Get my requests error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
   }
 };
 
@@ -68,7 +69,7 @@ export const getAllRequests = async (req: Request, res: Response) => {
     return res.status(200).json(requests);
   } catch (error) {
     console.error('Get all requests error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
   }
 };
 
@@ -85,6 +86,6 @@ export const updateStatus = async (req: Request, res: Response) => {
     return res.status(200).json(request);
   } catch (error) {
     console.error('Update rent request status error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
   }
 };

@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
 import prisma from '../prisma/prisma.client';
+import { problemResponse } from '../utils/problem';
 
 export const getRentProgress = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.sub;
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    if (!userId) return problemResponse(res, 401, 'Unauthorized', `Unauthorized`, 'unauthorized');
 
     const latestActiveRent = await prisma.rentRequests.findFirst({
       where: { tenant_id: userId, NOT: { status: 'REJECTED' } },
@@ -38,14 +39,14 @@ export const getRentProgress = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('getRentProgress error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
   }
 };
 
 export const getRecentActivities = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.sub;
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    if (!userId) return problemResponse(res, 401, 'Unauthorized', `Unauthorized`, 'unauthorized');
 
     const repayments = await prisma.repayments.findMany({
       where: { tenant_id: userId },
@@ -64,6 +65,6 @@ export const getRecentActivities = async (req: Request, res: Response) => {
     return res.status(200).json(activities);
   } catch (error) {
     console.error('getRecentActivities error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
   }
 };

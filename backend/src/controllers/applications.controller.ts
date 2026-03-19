@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../prisma/prisma.client';
+import { problemResponse } from '../utils/problem';
 
 export const startApplication = async (req: Request, res: Response) => {
   try {
@@ -7,7 +8,7 @@ export const startApplication = async (req: Request, res: Response) => {
     // mock implementation based on the previous NestJS controller
     res.status(201).json({ message: 'Application started', data });
   } catch (error) {
-    res.status(500).json({ message: 'Internal server error' });
+    problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
   }
 };
 

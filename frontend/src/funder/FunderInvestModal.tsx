@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import { X, ArrowRight, ShieldCheck } from 'lucide-react';
 
@@ -32,7 +32,7 @@ export default function FunderInvestModal({ isOpen, onClose, onSuccess, walletBa
     
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:3000/api/supporter/fund-pool', 
+      await axios.post('http://localhost:3000/api/supporter/funding-pools', 
         { amount: numAmount },
         { headers: { Authorization: `Bearer ${token}` } }
       );

@@ -4,10 +4,10 @@ import { authGuard, rolesGuard } from '../../middlewares/auth.middleware';
 
 const router = Router();
 
-router.post('/signup', funderSignup);
-router.post('/dispatch-activations', authGuard, rolesGuard(['ADMIN', 'COO']), dispatchActivations);
-router.post('/activate-account', activateAccount);
-router.post('/onboard', authGuard, rolesGuard(['FUNDER', 'SUPPORTER']), funderOnboard);
+router.post('/accounts', funderSignup);
+router.post('/activations', authGuard, rolesGuard(['ADMIN', 'COO']), dispatchActivations);
+router.post('/account-activations', activateAccount);
+router.post('/onboarding', authGuard, rolesGuard(['FUNDER', 'SUPPORTER']), funderOnboard);
 
 router.get('/investment-options', getInvestmentOptions);
 
@@ -15,11 +15,11 @@ router.get('/dashboard', authGuard, rolesGuard(['FUNDER', 'SUPPORTER']), getDash
 router.get('/virtual-houses', authGuard, rolesGuard(['FUNDER', 'SUPPORTER']), getVirtualHouses);
 router.get('/portfolios', authGuard, rolesGuard(['FUNDER', 'SUPPORTER']), getPortfolios);
 router.get('/activities', authGuard, rolesGuard(['FUNDER', 'SUPPORTER']), getActivities);
-router.post('/fund-pool', authGuard, rolesGuard(['FUNDER', 'SUPPORTER']), fundPool);
+router.post('/funding-pools', authGuard, rolesGuard(['FUNDER', 'SUPPORTER']), fundPool);
 
-router.post('/proxy-invest', authGuard, rolesGuard(['AGENT']), proxyInvest);
-router.post('/coo-proxy-invest', authGuard, rolesGuard(['COO', 'ADMIN']), cooProxyInvest);
-router.post('/request-withdrawal', authGuard, rolesGuard(['FUNDER', 'SUPPORTER']), requestWithdrawal);
-router.post('/process-roi', processRoi);
+router.post('/proxy-investments', authGuard, rolesGuard(['AGENT']), proxyInvest);
+router.post('/proxy-investments/coo', authGuard, rolesGuard(['COO', 'ADMIN']), cooProxyInvest);
+router.post('/withdrawals', authGuard, rolesGuard(['FUNDER', 'SUPPORTER']), requestWithdrawal);
+router.post('/roi-processing', processRoi);
 
 export default router;

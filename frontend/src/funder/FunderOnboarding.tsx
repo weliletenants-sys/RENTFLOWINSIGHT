@@ -741,7 +741,7 @@ export default function FunderOnboarding() {
           phone: form.phone,
           investPath: form.investPath
         };
-        const response = await axios.post('http://localhost:3000/api/supporter/signup', payload);
+        const response = await axios.post('http://localhost:3000/api/supporter/accounts', payload);
         
         // Simulating the automatic JWT attachment for now since we just need the flow visually completed
         if (response.status === 201) {

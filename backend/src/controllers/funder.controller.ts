@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../prisma/prisma.client';
+import { problemResponse } from '../utils/problem';
 
 export const getDashboardStats = async (req: Request, res: Response) => {
   try {
@@ -28,7 +29,7 @@ export const getDashboardStats = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('getDashboardStats error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
   }
 };
 
@@ -43,7 +44,7 @@ export const getPortfolios = async (req: Request, res: Response) => {
     return res.status(200).json(portfolios);
   } catch (error) {
     console.error('getPortfolios error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
   }
 };
 
@@ -68,6 +69,6 @@ export const getRecentActivities = async (req: Request, res: Response) => {
     return res.status(200).json(transactions);
   } catch (error) {
     console.error('getRecentActivities error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
   }
 };

@@ -4,18 +4,10 @@ import bcrypt from 'bcrypt';
 import prisma from '../prisma/prisma.client';
 import { logSecurityEvent } from '../utils/logger';
 import { OTPService } from '../services/otp.service';
+import { problemResponse } from '../utils/problem';
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
 
 // Standard RFC 7807 Error Response wrapper matching api.md
-const problemResponse = (res: Response, status: number, title: string, detail: string, type: string) => {
-  return res.status(status).contentType('application/problem+json').json({
-    type: `https://api.welile.com/errors/${type}`,
-    title,
-    status,
-    detail
-  });
-};
-
 export const register = async (req: Request, res: Response) => {
   try {
     const { email, password, firstName, lastName, role, phone } = req.body;

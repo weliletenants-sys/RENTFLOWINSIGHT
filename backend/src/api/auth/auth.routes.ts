@@ -18,9 +18,9 @@ const authLimiter = rateLimit({
   message: { type: 'https://api.example.com/errors/too-many-requests', title: 'Too Many Requests', status: 429, detail: 'Too many requests, please try again later' }
 });
 
-router.post('/register', authLimiter, register);
-router.post('/login', loginLimiter, login);
-router.post('/otp/send', authLimiter, sendOTP);
-router.post('/otp/verify', authLimiter, verifyOTP);
+router.post('/registrations', authLimiter, register);
+router.post('/sessions', loginLimiter, login);
+router.post('/otp', authLimiter, sendOTP);
+router.post('/otp/verifications', authLimiter, verifyOTP);
 
 export default router;

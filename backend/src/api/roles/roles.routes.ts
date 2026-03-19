@@ -8,7 +8,7 @@ const router = Router();
 router.use(authGuard);
 
 router.get('/my-roles', getMyRoles);
-router.post('/request', requestRole);
-router.post('/switch', switchRole);
+router.post('/requests', requestRole);
+router.post('/sessions/active', switchRole);
 
 export default router;

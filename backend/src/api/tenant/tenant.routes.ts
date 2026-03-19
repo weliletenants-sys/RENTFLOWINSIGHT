@@ -5,6 +5,6 @@ import { authGuard } from '../../middlewares/auth.middleware';
 const router = Router();
 
 router.get('/rent-progress', authGuard, getRentProgress);
-router.get('/recent-activities', authGuard, getRecentActivities);
+router.get('/activities', authGuard, getRecentActivities);
 
 export default router;

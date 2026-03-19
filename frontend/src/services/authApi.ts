@@ -1,14 +1,14 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000/auth',
+  baseURL: 'http://localhost:3000/api/auth',
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 export const loginUser = async (credentials: { email: string; password: string }) => {
-  const response = await api.post('/login', credentials);
+  const response = await api.post('/sessions', credentials);
   return response.data;
 };
 
@@ -20,6 +20,6 @@ export const registerUser = async (userData: {
   role: string;
   phone?: string;
 }) => {
-  const response = await api.post('/register', userData);
+  const response = await api.post('/registrations', userData);
   return response.data;
 };

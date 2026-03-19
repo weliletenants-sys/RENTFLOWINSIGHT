@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../prisma/prisma.client';
+import { problemResponse } from '../utils/problem';
 
 export const fetchRentRequests = async (req: Request, res: Response) => {
   try {

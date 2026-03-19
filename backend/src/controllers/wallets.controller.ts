@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
 import prisma from '../prisma/prisma.client';
+import { problemResponse } from '../utils/problem';
 
 export const getMyWallet = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.sub;
     if (!userId) {
-      return res.status(401).json({ message: 'Unauthorized' });
+      return problemResponse(res, 401, 'Unauthorized', `Unauthorized`, 'unauthorized');
     }
 
     const wallet = await prisma.wallets.findFirst({
@@ -13,13 +14,13 @@ export const getMyWallet = async (req: Request, res: Response) => {
     });
 
     if (!wallet) {
-      return res.status(404).json({ message: 'Wallet not found' });
+      return problemResponse(res, 404, 'Not Found', `Wallet not found`, 'not-found');
     }
 
     return res.status(200).json(wallet);
   } catch (error) {
     console.error('Get wallet error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
   }
 };
 
@@ -28,11 +29,11 @@ export const deposit = async (req: Request, res: Response) => {
     const userId = req.user?.sub;
     const { amount } = req.body;
 
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
-    if (!amount || amount <= 0) return res.status(400).json({ message: 'Invalid amount' });
+    if (!userId) return problemResponse(res, 401, 'Unauthorized', `Unauthorized`, 'unauthorized');
+    if (!amount || amount <= 0) return problemResponse(res, 400, 'Validation Error', `Invalid amount`, 'validation-error');
 
     const wallet = await prisma.wallets.findFirst({ where: { user_id: userId } });
-    if (!wallet) return res.status(404).json({ message: 'Wallet not found' });
+    if (!wallet) return problemResponse(res, 404, 'Not Found', `Wallet not found`, 'not-found');
 
     const now = new Date().toISOString();
 
@@ -54,7 +55,7 @@ export const deposit = async (req: Request, res: Response) => {
     return res.status(200).json({ message: 'Deposit successful', wallet: updatedWallet });
   } catch (error) {
     console.error('Deposit error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
   }
 };
 
@@ -63,14 +64,14 @@ export const withdraw = async (req: Request, res: Response) => {
     const userId = req.user?.sub;
     const { amount } = req.body;
 
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
-    if (!amount || amount <= 0) return res.status(400).json({ message: 'Invalid amount' });
+    if (!userId) return problemResponse(res, 401, 'Unauthorized', `Unauthorized`, 'unauthorized');
+    if (!amount || amount <= 0) return problemResponse(res, 400, 'Validation Error', `Invalid amount`, 'validation-error');
 
     const wallet = await prisma.wallets.findFirst({ where: { user_id: userId } });
-    if (!wallet) return res.status(404).json({ message: 'Wallet not found' });
+    if (!wallet) return problemResponse(res, 404, 'Not Found', `Wallet not found`, 'not-found');
 
     if (wallet.balance < amount) {
-      return res.status(400).json({ message: 'Insufficient funds' });
+      return problemResponse(res, 400, 'Validation Error', `Insufficient funds`, 'validation-error');
     }
 
     const now = new Date().toISOString();
@@ -93,7 +94,7 @@ export const withdraw = async (req: Request, res: Response) => {
     return res.status(200).json({ message: 'Withdrawal successful', wallet: updatedWallet });
   } catch (error) {
     console.error('Withdraw error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
   }
 };
 
@@ -102,19 +103,19 @@ export const transfer = async (req: Request, res: Response) => {
     const userId = req.user?.sub;
     const { amount, recipientId } = req.body;
 
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    if (!userId) return problemResponse(res, 401, 'Unauthorized', `Unauthorized`, 'unauthorized');
     if (!amount || amount <= 0 || !recipientId) {
-      return res.status(400).json({ message: 'Invalid transfer details' });
+      return problemResponse(res, 400, 'Validation Error', `Invalid transfer details`, 'validation-error');
     }
 
     const senderWallet = await prisma.wallets.findFirst({ where: { user_id: userId } });
     const recipientWallet = await prisma.wallets.findFirst({ where: { user_id: recipientId } });
 
-    if (!senderWallet) return res.status(404).json({ message: 'Sender wallet not found' });
-    if (!recipientWallet) return res.status(404).json({ message: 'Recipient wallet not found' });
+    if (!senderWallet) return problemResponse(res, 404, 'Not Found', `Sender wallet not found`, 'not-found');
+    if (!recipientWallet) return problemResponse(res, 404, 'Not Found', `Recipient wallet not found`, 'not-found');
 
     if (senderWallet.balance < amount) {
-      return res.status(400).json({ message: 'Insufficient funds for transfer' });
+      return problemResponse(res, 400, 'Validation Error', `Insufficient funds for transfer`, 'validation-error');
     }
 
     const now = new Date().toISOString();
@@ -142,7 +143,7 @@ export const transfer = async (req: Request, res: Response) => {
     return res.status(200).json({ message: 'Transfer successful', wallet: updatedSenderWallet });
   } catch (error) {
     console.error('Transfer error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
   }
 };
 
@@ -151,9 +152,9 @@ export const requestDeposit = async (req: Request, res: Response) => {
     const userId = req.user?.sub;
     const { amount, provider, transactionId, notes } = req.body;
 
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    if (!userId) return problemResponse(res, 401, 'Unauthorized', `Unauthorized`, 'unauthorized');
     if (!amount || amount <= 0 || !transactionId) {
-      return res.status(400).json({ message: 'Invalid payload. Requires amount and transactionId' });
+      return problemResponse(res, 400, 'Validation Error', `Invalid payload. Requires amount and transactionId`, 'validation-error');
     }
 
     const depositRequest = await prisma.depositRequests.create({
@@ -173,6 +174,6 @@ export const requestDeposit = async (req: Request, res: Response) => {
     return res.status(201).json({ message: 'Deposit request submitted for manager approval', depositRequest });
   } catch (error) {
     console.error('Deposit Request Error:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    problemResponse(res, 500, 'Internal Server Error', `Internal Server Error`, 'internal-server-error');
   }
 };

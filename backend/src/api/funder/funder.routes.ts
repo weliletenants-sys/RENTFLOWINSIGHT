@@ -9,7 +9,7 @@ router.use(authGuard);
 // Apply rolesGuard to ensure user is a FUNDER
 router.use(rolesGuard(['FUNDER']));
 
-router.get('/dashboard', getDashboardStats);
+router.get('/statistics/dashboard', getDashboardStats);
 router.get('/portfolios', getPortfolios);
 router.get('/activities', getRecentActivities);
 

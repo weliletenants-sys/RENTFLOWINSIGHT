@@ -6,9 +6,9 @@ import { authGuard } from '../../middlewares/auth.middleware';
 const router = Router();
 
 router.get('/my-wallet', authGuard, getMyWallet);
-router.post('/deposit', authGuard, deposit);
-router.post('/request-deposit', authGuard, requestDeposit);
-router.post('/withdraw', authGuard, withdraw);
-router.post('/transfer', authGuard, transfer);
+router.post('/deposits', authGuard, deposit);
+router.post('/deposits/requests', authGuard, requestDeposit);
+router.post('/withdrawals', authGuard, withdraw);
+router.post('/transfers', authGuard, transfer);
 
 export default router;

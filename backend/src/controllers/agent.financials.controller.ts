@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../prisma/prisma.client';
+import { problemResponse } from '../utils/problem';
 
 export const requestDeposit = async (req: Request, res: Response) => {
   try {
@@ -152,7 +153,7 @@ export const proxyInvestment = async (req: Request, res: Response) => {
     const { investment_amount, partner_name } = req.body;
 
     // Similar logic to registerInvestor but explicitly defining Proxy Cash flows
-    return res.status(201).json({ message: `Proxy investment of UGX ${investment_amount} queued for ${partner_name}`});
+    return problemResponse(res, 201, 'Error', `Proxy investment of UGX ${investment_amount} queued for ${partner_name}`, 'error');
   } catch (error) {
     console.error('proxyInvestment error:', error);
     return res.status(500).json({

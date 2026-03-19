@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../prisma/prisma.client';
+import { problemResponse } from '../utils/problem';
 
 export const getKycStatus = async (req: Request, res: Response) => {
   try {
@@ -56,7 +57,7 @@ export const submitKyc = async (req: Request, res: Response) => {
       create: { agent_id: userId, status: 'PENDING', submitted_at: now, updated_at: now }
     });
 
-    return res.status(200).json({ message: 'KYC submitted successfully', status: 'UNDER_REVIEW' });
+    return problemResponse(res, 200, 'Error', `KYC submitted successfully', status: 'UNDER_REVIEW`, 'error');
   } catch (error) {
     console.error('submitKyc error:', error);
     return res.status(500).json({

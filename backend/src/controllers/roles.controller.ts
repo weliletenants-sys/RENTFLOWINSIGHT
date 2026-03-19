@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import prisma from '../prisma/prisma.client';
+import { problemResponse } from '../utils/problem';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
 
@@ -40,7 +41,7 @@ export const getMyRoles = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('getMyRoles error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
   }
 };
 
@@ -55,7 +56,7 @@ export const requestRole = async (req: Request, res: Response) => {
     const { role } = req.body;
 
     if (!role || !AVAILABLE_ROLES.includes(role)) {
-      return res.status(400).json({ message: `Invalid role. Must be one of: ${AVAILABLE_ROLES.join(', ')}` });
+      return problemResponse(res, 400, 'Validation Error', `Invalid role. Must be one of: ${AVAILABLE_ROLES.join(', ')}`, 'validation-error');
     }
 
     // Check if user already has this role (active or pending)
@@ -64,11 +65,11 @@ export const requestRole = async (req: Request, res: Response) => {
     });
 
     if (existing && existing.enabled) {
-      return res.status(409).json({ message: `You already have the ${role} role active.` });
+      return problemResponse(res, 409, 'Conflict', `You already have the ${role} role active.`, 'conflict');
     }
 
     if (existing && !existing.enabled) {
-      return res.status(409).json({ message: `Your ${role} role request is already pending approval.` });
+      return problemResponse(res, 409, 'Conflict', `Your ${role} role request is already pending approval.`, 'conflict');
     }
 
     const now = new Date().toISOString();
@@ -82,10 +83,10 @@ export const requestRole = async (req: Request, res: Response) => {
       }
     });
 
-    return res.status(201).json({ message: `${role} role requested successfully. Awaiting admin approval.` });
+    return problemResponse(res, 201, 'Error', `${role} role requested successfully. Awaiting admin approval.`, 'error');
   } catch (error) {
     console.error('requestRole error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
   }
 };
 
@@ -100,7 +101,7 @@ export const switchRole = async (req: Request, res: Response) => {
     const { role } = req.body;
 
     if (!role || !AVAILABLE_ROLES.includes(role)) {
-      return res.status(400).json({ message: `Invalid role. Must be one of: ${AVAILABLE_ROLES.join(', ')}` });
+      return problemResponse(res, 400, 'Validation Error', `Invalid role. Must be one of: ${AVAILABLE_ROLES.join(', ')}`, 'validation-error');
     }
 
     // Check if user has this role enabled
@@ -109,13 +110,13 @@ export const switchRole = async (req: Request, res: Response) => {
     });
 
     if (!userRole) {
-      return res.status(403).json({ message: `You do not have an active ${role} role.` });
+      return problemResponse(res, 403, 'Forbidden', `You do not have an active ${role} role.`, 'forbidden');
     }
 
     // Fetch user profile for the new token
     const profile = await prisma.profiles.findUnique({ where: { id: userId } });
     if (!profile) {
-      return res.status(404).json({ message: 'Profile not found' });
+      return problemResponse(res, 404, 'Not Found', `Profile not found`, 'not-found');
     }
 
     // Issue new JWT with the switched role
@@ -134,6 +135,6 @@ export const switchRole = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('switchRole error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
   }
 };

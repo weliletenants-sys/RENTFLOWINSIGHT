@@ -45,7 +45,7 @@ export default function AgentSignup() {
 
     setIsLoading(true);
     try {
-      const response = await axios.post('/api/auth/register', {
+      const response = await axios.post('/api/auth/registrations', {
         name: fullName,
         email: email || undefined,
         phone: phone,
