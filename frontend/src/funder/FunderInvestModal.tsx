@@ -19,8 +19,8 @@ export default function FunderInvestModal({ isOpen, onClose, onSuccess, walletBa
     e.preventDefault();
     const numAmount = parseInt(amount.replace(/,/g, ''), 10);
     
-    if (isNaN(numAmount) || numAmount <= 0) {
-      alert('Please enter a valid amount.');
+    if (isNaN(numAmount) || numAmount < 100000) {
+      alert('Minimum investment amount is 100,000 UGX.');
       return;
     }
     if (numAmount > walletBalance) {

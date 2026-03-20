@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { 
   Download, Upload, ArrowRightLeft, Clock, 
   CheckCircle, XCircle, AlertCircle, Plus, Loader2
@@ -17,6 +17,18 @@ export default function FunderWallet() {
   const [stats, setStats] = useState<DashboardStatsResponse | null>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Check if wallet is idle for >= 7 days AND has > 100,000 UGX
+  const isWalletIdle = useMemo(() => {
+    if (!stats || stats.availableLiquid < 100000) return false;
+    
+    if (!transactions || transactions.length === 0) return true;
+    
+    // Assuming transactions are sorted by date, newest first
+    const latestTx = new Date(transactions[0].date).getTime();
+    const daysIdle = (Date.now() - latestTx) / (1000 * 60 * 60 * 24);
+    return daysIdle >= 7;
+  }, [transactions, stats]);
 
   // Deposit State
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
@@ -123,20 +135,15 @@ export default function FunderWallet() {
   };
 
   const handleFundRentPool = async () => {
-    const defaultAmount = 1000000;
-    if (!stats || stats.availableLiquid < defaultAmount) {
-      toast.error('Insufficient available liquidity to fund the pool.');
-      return;
-    }
-    
-    // Attempt funding
-    const loadingToast = toast.loading('Funding Rent Pool...');
     try {
-      await fundRentPool(defaultAmount);
-      toast.success('Successfully funded the rent pool!', { id: loadingToast });
-      await fetchData();
+      setIsLoading(true);
+      await fundRentPool(100000); // Trigger a 100,000 UGX pool funding natively
+      toast.success("Successfully transferred 100,000 UGX into active Rent Pool!");
+      fetchData();
     } catch (error: any) {
-      toast.error(error.message || 'Funding failed', { id: loadingToast });
+      toast.error(error.response?.data?.message || "Failed to allocate funds to rent pool.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -169,7 +176,7 @@ export default function FunderWallet() {
             
             {/* Header */}
             <div className="mb-8">
-              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Financial Hub</h2>
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Wallet Management</h2>
               <p className="text-sm text-slate-500 font-medium mt-1">
                 Manage your liquid capital, deposits, and withdrawal gates.
               </p>
@@ -179,7 +186,7 @@ export default function FunderWallet() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
               
               {/* Main Balance Card */}
-              <div className="lg:col-span-2 bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-8 text-white shadow-lg relative overflow-hidden">
+              <div className={`${!isWalletIdle ? 'lg:col-span-3' : 'lg:col-span-2'} bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-8 text-white shadow-lg relative overflow-hidden transition-all duration-300`}>
                 <div className="absolute -right-20 -top-20 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
                 
                 {/* Loading State Overlay */}
@@ -214,21 +221,21 @@ export default function FunderWallet() {
                 </div>
               </div>
 
-              {/* Idle Cash Notice - Shown only if liquid > 1M */}
-              {(stats?.availableLiquid || 0) >= 1000000 && (
-                <div className="bg-emerald-50 rounded-3xl p-6 border border-emerald-100 flex flex-col justify-center items-center text-center">
+              {/* Idle Cash / Promo Notice - Visible after 7 days idle */}
+              {isWalletIdle && (
+                <div className="bg-emerald-50 rounded-3xl p-6 border border-emerald-100 flex flex-col justify-center items-center text-center animate-in fade-in slide-in-from-right-4 duration-500">
                   <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-4">
                     <AlertCircle className="w-6 h-6" />
                   </div>
-                  <h3 className="text-sm font-black text-emerald-900 mb-2">Idle Cash Detected</h3>
+                  <h3 className="text-sm font-black text-emerald-900 mb-2">Fund & Earn</h3>
                   <p className="text-xs font-semibold text-emerald-700 leading-relaxed mb-4">
-                    You have liquid funds that are not earning rewards. Fund the Rent Pool today to earn up to <span className="font-bold underline">15% monthly</span>.
+                    Put your capital to work. Fund the Rent Pool today to earn up to <span className="font-bold underline">15% monthly</span>.
                   </p>
                   <button 
                     onClick={handleFundRentPool}
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl text-sm font-bold transition-all shadow-md"
                   >
-                    Fund Rent Pool (1M UGX)
+                    Fund Rent Pool (min 100k)
                   </button>
                 </div>
               )}
