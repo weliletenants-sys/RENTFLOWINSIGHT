@@ -43,15 +43,15 @@ export default function FunderWallet() {
         getFunderActivities()
       ]);
       setStats(liveStats);
-      setTransactions(liveTx.map((tx: any) => ({
-        id: tx.id,
-        date: new Date(tx.created_at || tx.transaction_date).toLocaleString(),
+      setTransactions((liveTx || []).map((tx: any) => ({
+        id: tx.id || `tx-${Math.random()}`,
+        date: new Date(tx.created_at || tx.transaction_date || Date.now()).toLocaleString(),
         type: tx.direction === 'cash_in' ? 'Cash In' : 'Cash Out',
-        category: tx.category,
-        description: tx.description || tx.category.replace(/_/g, ' '),
-        amount: tx.amount,
+        category: tx.category || 'general_transfer',
+        description: tx.description || (tx.category ? String(tx.category).replace(/_/g, ' ') : 'Transfer'),
+        amount: tx.amount || 0,
         status: 'completed', // Ledger entries are inherently completed
-        ref: tx.reference_id || tx.id.slice(0, 8)
+        ref: tx.reference_id || (tx.id ? String(tx.id).slice(0, 8) : 'REF-N/A')
       })));
     } catch (error) {
       console.error("Error loading wallet", error);
@@ -311,10 +311,23 @@ export default function FunderWallet() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredTransactions.map((tx) => (
-                      <tr key={tx.id} className="hover:bg-slate-50 transition-colors group">
-                        <td className="px-6 py-4 border-b border-slate-50">
-                          <div className="flex items-center gap-3">
+                    {filteredTransactions.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="py-12 border-b border-slate-50 text-center">
+                          <div className="flex flex-col items-center justify-center">
+                            <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mb-4 text-slate-300 shadow-inner">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17V7"/></svg>
+                            </div>
+                            <p className="text-sm font-bold text-slate-500 mb-1">Nothing to Display</p>
+                            <p className="text-xs font-semibold text-slate-400">No ledger entries exist for the selected filter.</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredTransactions.map((tx) => (
+                        <tr key={tx.id} className="hover:bg-slate-50 transition-colors group">
+                          <td className="px-6 py-4 border-b border-slate-50">
+                            <div className="flex items-center gap-3">
                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
                               tx.type === 'Cash In' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
                             }`}>
@@ -345,7 +358,8 @@ export default function FunderWallet() {
                           </div>
                         </td>
                       </tr>
-                    ))}
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
