@@ -50,3 +50,43 @@ export const fetchOverviewMetrics = async (): Promise<COOOverviewMetrics> => {
     throw new Error(error.response?.data?.message || 'Failed to fetch COO overview metrics');
   }
 };
+
+export const fetchTransactions = async () => {
+  const response = await axios.get(`${API}/v1/coo/metrics/transactions`, getAuthHeaders());
+  return response.data;
+};
+
+export const fetchCollections = async () => {
+  const response = await axios.get(`${API}/v1/coo/metrics/collections`, getAuthHeaders());
+  return response.data;
+};
+
+export const fetchWallets = async () => {
+  const response = await axios.get(`${API}/v1/coo/metrics/wallets`, getAuthHeaders());
+  return response.data;
+};
+
+export const fetchWithdrawals = async () => {
+  const response = await axios.get(`${API}/v1/coo/metrics/withdrawals`, getAuthHeaders());
+  return response.data;
+};
+
+export const fetchAnalytics = async () => {
+  const response = await axios.get(`${API}/v1/coo/metrics/analytics`, getAuthHeaders());
+  return response.data;
+};
+
+export const fetchPartners = async () => {
+  const response = await axios.get(`${API}/v1/coo/metrics/partners`, getAuthHeaders());
+  return response.data;
+};
+
+export const fetchTenants = async () => {
+  const response = await axios.get(`${API}/v1/coo/metrics/tenants`, getAuthHeaders());
+  return response.data;
+};
+
+export const fetchAlerts = async () => {
+  const response = await axios.get(`${API}/v1/coo/metrics/alerts`, getAuthHeaders());
+  return response.data;
+};

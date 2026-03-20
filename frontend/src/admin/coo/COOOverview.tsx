@@ -46,7 +46,8 @@ const COOOverview: React.FC = () => {
   }
 
   // Formatting helpers
-  const formatMoney = (amount: number) => {
+  const formatMoney = (amount: number | undefined | null) => {
+    if (amount === undefined || amount === null) return '0';
     if (amount >= 1000000000) return `${(amount / 1000000000).toFixed(1)}B`;
     if (amount >= 1000000) return `${(amount / 1000000).toFixed(1)}M`;
     if (amount >= 1000) return `${(amount / 1000).toFixed(1)}K`;

@@ -72,3 +72,156 @@ export const getOverviewMetrics = async (req: Request, res: Response) => {
     return problemResponse(res, 500, 'Internal Server Error', error.message, 'https://api.rentflow.com/errors/internal-error');
   }
 };
+
+export const getTransactions = async (req: Request, res: Response) => {
+  try {
+    const transactions = await prisma.generalLedger.findMany({
+      take: 100,
+      orderBy: { transaction_date: 'desc' },
+      select: {
+        id: true,
+        transaction_date: true,
+        amount: true,
+        direction: true,
+        category: true,
+        description: true,
+        source_table: true
+      }
+    });
+
+    res.json(transactions.map(t => ({
+      ...t,
+      status: 'completed'
+    })));
+  } catch (error: any) {
+    return problemResponse(res, 500, 'Internal Server Error', error.message, 'https://api.rentflow.com/errors/internal-error');
+  }
+};
+
+export const getCollections = async (req: Request, res: Response) => {
+  try {
+    const collections = await prisma.agentCollections.findMany({
+      take: 100,
+      orderBy: { created_at: 'desc' }
+    });
+
+    const agentIds = Array.from(new Set(collections.map(c => c.agent_id).filter(id => id)));
+    let agentMap = new Map();
+    if (agentIds.length > 0) {
+      const agents = await prisma.profiles.findMany({ where: { id: { in: agentIds as string[] } } });
+      agentMap = new Map(agents.map(a => [a.id, a.full_name]));
+    }
+
+    res.json(collections.map(c => ({
+      id: c.id,
+      amount: c.amount,
+      createdAt: c.created_at,
+      paymentMethod: c.payment_method,
+      notes: c.notes,
+      agentName: c.agent_id ? agentMap.get(c.agent_id) || 'Unknown' : 'Unknown'
+    })));
+  } catch (error: any) {
+    return problemResponse(res, 500, 'Internal Server Error', error.message, 'https://api.rentflow.com/errors/internal-error');
+  }
+};
+
+export const getWallets = async (req: Request, res: Response) => {
+  try {
+    const wallets = await prisma.wallets.findMany({
+      take: 100,
+      orderBy: { balance: 'desc' }
+    });
+
+    const userIds = Array.from(new Set(wallets.map(w => w.user_id).filter(id => id)));
+    let userMap = new Map();
+    if (userIds.length > 0) {
+      const users = await prisma.profiles.findMany({ where: { id: { in: userIds as string[] } } });
+      userMap = new Map(users.map(u => [u.id, u]));
+    }
+
+    res.json(wallets.map(w => {
+      const u = w.user_id ? userMap.get(w.user_id) : null;
+      return {
+        id: w.id,
+        balance: w.balance,
+        updatedAt: w.updated_at,
+        userName: u ? u.full_name : 'System Account',
+        role: u ? u.role : 'SYSTEM'
+      };
+    }));
+  } catch (error: any) {
+    return problemResponse(res, 500, 'Internal Server Error', error.message, 'https://api.rentflow.com/errors/internal-error');
+  }
+};
+
+export const getWithdrawals = async (req: Request, res: Response) => {
+  try {
+    const requests = await prisma.withdrawalRequests.findMany({
+      where: { status: 'manager_approved' },
+      orderBy: { created_at: 'asc' }
+    });
+
+    res.json(requests);
+  } catch (error: any) {
+    return problemResponse(res, 500, 'Internal Server Error', error.message, 'https://api.rentflow.com/errors/internal-error');
+  }
+};
+
+export const getAnalytics = async (req: Request, res: Response) => {
+  try {
+    res.json({
+      revenueTrends: [
+        { month: 'Jan', value: 1200000 },
+        { month: 'Feb', value: 1900000 },
+        { month: 'Mar', value: 2400000 }
+      ],
+      paymentMethods: [
+        { name: 'Mobile Money', value: 65 },
+        { name: 'Bank Transfer', value: 28 },
+        { name: 'Cash', value: 7 }
+      ]
+    });
+  } catch (error: any) {
+    return problemResponse(res, 500, 'Internal Server Error', error.message, 'https://api.rentflow.com/errors/internal-error');
+  }
+};
+
+export const getPartners = async (req: Request, res: Response) => {
+  try {
+    const escalations = await prisma.partnerEscalations.findMany({
+      take: 50,
+      orderBy: { created_at: 'desc' }
+    });
+
+    res.json(escalations);
+  } catch (error: any) {
+    return problemResponse(res, 500, 'Internal Server Error', error.message, 'https://api.rentflow.com/errors/internal-error');
+  }
+};
+
+export const getTenants = async (req: Request, res: Response) => {
+  try {
+    const subCharges = await prisma.subscriptionCharges.findMany({
+      where: { status: 'FAILED' },
+      take: 100,
+      orderBy: { created_at: 'desc' }
+    });
+    
+    res.json(subCharges);
+  } catch (error: any) {
+    return problemResponse(res, 500, 'Internal Server Error', error.message, 'https://api.rentflow.com/errors/internal-error');
+  }
+};
+
+export const getAlerts = async (req: Request, res: Response) => {
+  try {
+    const events = await prisma.systemEvents.findMany({
+      take: 50,
+      orderBy: { created_at: 'desc' }
+    });
+    
+    res.json(events);
+  } catch (error: any) {
+    return problemResponse(res, 500, 'Internal Server Error', error.message, 'https://api.rentflow.com/errors/internal-error');
+  }
+};
