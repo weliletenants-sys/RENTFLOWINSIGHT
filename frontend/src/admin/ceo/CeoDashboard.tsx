@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
 
 const ceoColors = `
   .bg-surface { background-color: #f7f9fb; }
@@ -52,8 +51,7 @@ const ceoColors = `
 `;
 
 export default function CeoDashboard() {
-  const { user, profile } = useAuth();
-  const navigate = useNavigate();
+  const { profile } = useAuth();
 
   return (
     <div className="bg-surface text-on-surface min-h-screen font-body relative">

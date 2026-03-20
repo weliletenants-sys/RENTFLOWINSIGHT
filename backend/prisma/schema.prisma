@@ -1493,7 +1493,6 @@ model PersonaRequisitions {
   @@map("persona_requisitions")
 }
 
-<<<<<<< HEAD
 model DailyPlatformStats {
   date               String  @id
   total_users        Float
@@ -1537,7 +1536,8 @@ model StaffAuditLogs {
   time_taken_ms Float?
 
   @@map("staff_audit_logs")
-=======
+}
+
 model Sessions {
   id          String   @id @default(uuid())
   user_id     String
@@ -1551,5 +1551,4 @@ model Sessions {
 
   @@index([user_id])
   @@map("sessions")
->>>>>>> ac5b3f71bc76156ec7a598c41a427221353a29c2
 }
