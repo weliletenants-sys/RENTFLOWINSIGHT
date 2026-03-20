@@ -22,6 +22,7 @@ interface AuthContextType {
   logout: () => void;
   switchRoleMode: (newRole: Role) => void;
   updateSession: (token: string, userData: User) => void;
+  originalRole: Role;
   intendedRole: Role;
   setIntendedRole: (role: Role) => void;
   rentAmount: string;
@@ -55,6 +56,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     return null;
   });
+  
+  // Track the absolute original role so we don't lose admin privileges when switching views
+  const [originalRole, setOriginalRole] = useState<Role>(() => {
+    const storedUser = localStorage.getItem('user_data');
+    if (storedUser) {
+      try {
+        return JSON.parse(storedUser).role;
+      } catch(e) {}
+    }
+    return user?.role || null;
+  });
+
   const [intendedRole, setIntendedRole] = useState<Role>('TENANT');
   const [rentAmount, setRentAmount] = useState<string>('');
 
@@ -87,10 +100,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('access_token', token);
     localStorage.setItem('user_data', JSON.stringify(userData));
     setUser(userData);
+    setOriginalRole(userData.role);
   };
 
   return (
-    <AuthContext.Provider value={{ user, role: user?.role || intendedRole, login, logout, switchRoleMode, updateSession, intendedRole, setIntendedRole, rentAmount, setRentAmount }}>
+    <AuthContext.Provider value={{ user, role: user?.role || intendedRole, originalRole, login, logout, switchRoleMode, updateSession, intendedRole, setIntendedRole, rentAmount, setRentAmount }}>
       {children}
     </AuthContext.Provider>
   );

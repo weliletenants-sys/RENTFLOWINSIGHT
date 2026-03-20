@@ -1,4 +1,4 @@
-﻿import { lazy } from 'react';
+import { lazy } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import DashboardLayout from '../../layouts/DashboardLayout';
 
@@ -7,6 +7,7 @@ const TenantDashboard   = lazy(() => import('../../tenant/TenantDashboard'));
 const AgentDashboard    = lazy(() => import('../../agent/AgentDashboard'));
 const LandlordDashboard = lazy(() => import('../../owner/LandlordDashboard'));
 const FunderDashboard   = lazy(() => import('../../funder/FunderDashboard'));
+const AdminDashboard    = lazy(() => import('../../admin/AdminDashboard'));
 
 export default function RootDashboard() {
   const { role } = useAuth();
@@ -21,6 +22,10 @@ export default function RootDashboard() {
         return <LandlordDashboard />;
       case 'FUNDER':
         return <FunderDashboard />;
+      case 'SUPER_ADMIN':
+        return <AdminDashboard />;
+      case 'CHIEF_OPERATING_OFFICER':
+        return <div className="p-10 text-center"><h2 className="text-xl font-bold">Please navigate to /coo/overview</h2></div>;
       default:
         return (
           <div className="flex items-center justify-center min-h-[50vh]">

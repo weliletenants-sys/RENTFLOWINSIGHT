@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { ShieldAlert, Users, Database } from 'lucide-react';
+import RoleSwitcher from '../components/RoleSwitcher';
 
 export default function AdminDashboard() {
   const { profile, logout } = useAuth();
@@ -33,8 +34,13 @@ export default function AdminDashboard() {
           </button>
         </div>
       </header>
+      
+      {/* Role Switcher Bar embedded in Admin Dashboard */}
+      <div className="bg-[#1e293b] px-10 py-3 border-b border-slate-700">
+         <RoleSwitcher />
+      </div>
 
-      <main className="max-w-screen-xl mx-auto p-10 mt-10">
+      <main className="max-w-screen-xl mx-auto p-10 mt-6">
         <div className="mb-12">
           <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Root Terminal</h1>
           <p className="text-slate-500 mt-2 font-medium">Global system configuration and master data management.</p>

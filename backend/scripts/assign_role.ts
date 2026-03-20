@@ -53,6 +53,28 @@ async function assignRole() {
       });
     }
 
+    // Critical: Login controller reads from UserPersonas
+    const existingPersona = await prisma.userPersonas.findFirst({
+      where: { user_id: profile.id, is_default: true }
+    });
+
+    if (existingPersona) {
+      await prisma.userPersonas.update({
+        where: { id: existingPersona.id },
+        data: { persona: role.toLowerCase() }
+      });
+    } else {
+      await prisma.userPersonas.create({
+        data: {
+          user_id: profile.id,
+          persona: role.toLowerCase(),
+          is_default: true,
+          created_at: new Date(),
+          updated_at: new Date()
+        }
+      });
+    }
+
     console.log(`✅ Successfully assigned role '${role}' to user ${email} (ID: ${profile.id})`);
   } catch (error) {
     console.error('❌ Failed to assign role:', error);

@@ -1,4 +1,4 @@
-﻿import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth, type Role } from '../contexts/AuthContext';
 import RoleSwitcher from '../components/RoleSwitcher';
 import { 
@@ -28,7 +28,7 @@ export default function DesktopSidebar({ onClose }: DesktopSidebarProps) {
     navigate('/');
   };
 
-  const menuItems: Record<NonNullable<Role>, Array<{icon: any, label: string, path: string}>> = {
+  const menuItems: Partial<Record<NonNullable<Role>, Array<{icon: any, label: string, path: string}>>> = {
     TENANT: [
       { icon: Home, label: 'Dashboard', path: '/dashboard' },
       { icon: Wallet, label: 'Wallet', path: '/dashboard/wallet' },
@@ -52,6 +52,12 @@ export default function DesktopSidebar({ onClose }: DesktopSidebarProps) {
       { icon: Briefcase, label: 'Portfolio', path: '/dashboard/portfolio' },
       { icon: Wallet, label: 'Wallet', path: '/dashboard/wallet' },
       { icon: User, label: 'Profile', path: '/dashboard/profile' },
+    ],
+    SUPER_ADMIN: [
+      { icon: Grid, label: 'Admin Hub', path: '/admin/dashboard' },
+      { icon: Home, label: 'CEO View', path: '/ceo/dashboard' },
+      { icon: Settings, label: 'COO View', path: '/coo/overview' },
+      { icon: Wallet, label: 'CFO View', path: '/cfo/dashboard' },
     ],
   };
 
