@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { LayoutDashboard, Rocket, FileText, Settings, LogOut, Building2, Wallet } from 'lucide-react';
+import { LayoutDashboard, Rocket, FileText, Settings, LogOut, Building2, Wallet, Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface FunderSidebarProps {
@@ -18,8 +19,10 @@ const navItems = [
 
 export default function FunderSidebar({ activePage = 'Dashboard', onNavigate }: FunderSidebarProps) {
   const { logout } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
+    setIsLoggingOut(true);
     await logout();
   };
 
@@ -88,10 +91,11 @@ export default function FunderSidebar({ activePage = 'Dashboard', onNavigate }: 
         <div className="p-4">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+            disabled={isLoggingOut}
+            className={`w-full flex items-center gap-3 px-3 py-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors ${isLoggingOut ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
           >
-            <LogOut className="w-5 h-5" />
-            <span>Log Out</span>
+            {isLoggingOut ? <Loader2 className="w-5 h-5 animate-spin" /> : <LogOut className="w-5 h-5" />}
+            <span>{isLoggingOut ? 'Logging out...' : 'Log Out'}</span>
           </button>
         </div>
       </div>
