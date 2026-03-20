@@ -125,7 +125,7 @@ export const register = async (req: Request, res: Response) => {
       data: {
         access_token,
         onboarding_url,
-        user: { id: result.id, email: result.email, firstName, lastName, role }
+        user: { id: result.id, email: result.email, firstName, lastName, role, isVerified: result.verified }
       }
     });
 
@@ -201,6 +201,7 @@ export const login = async (req: Request, res: Response) => {
           firstName: profile.full_name.split(' ')[0],
           lastName: profile.full_name.split(' ').slice(1).join(' '),
           role,
+          isVerified: profile.verified,
         }
       }
     });
@@ -209,6 +210,93 @@ export const login = async (req: Request, res: Response) => {
     console.error('Login error:', error);
     await logSecurityEvent({ event: 'LOGIN_ERROR', ip_address: req.ip, user_agent: req.headers['user-agent'], details: { error: error.message } });
     return problemResponse(res, 500, 'Internal Server Error', 'An unexpected error occurred during login', 'internal-error');
+  }
+};
+
+export const ssoLogin = async (req: Request, res: Response) => {
+  try {
+    const { credential } = req.body;
+    if (!credential) {
+      return problemResponse(res, 400, 'Bad Request', 'Google credential missing', 'missing-credential');
+    }
+
+    // Hit Google's secure UserInfo endpoint using the raw access token
+    const googleRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${credential}` }
+    });
+
+    if (!googleRes.ok) {
+      return problemResponse(res, 400, 'Bad Request', 'Invalid Google token structure', 'invalid-credential');
+    }
+
+    const payload = await googleRes.json();
+    if (!payload || !payload.email) {
+      return problemResponse(res, 400, 'Bad Request', 'Invalid Google payload mapping', 'invalid-credential');
+    }
+
+    const email = payload.email.toLowerCase();
+
+    // The rigorous check mandated by the user constraint
+    const profile = await prisma.profiles.findFirst({ where: { email } });
+
+    if (!profile) {
+      return res.status(404).json({
+        detail: "Account doesn't exist, try again.",
+        message: "Account doesn't exist, try again."
+      });
+    }
+
+    const userPersona = await prisma.userPersonas.findFirst({ where: { user_id: profile.id, is_default: true } }) || await prisma.userPersonas.findFirst({ where: { user_id: profile.id }, orderBy: { created_at: 'desc' } });
+    const role = userPersona ? userPersona.persona.toUpperCase() : 'TENANT';
+
+    // We reached here? The email exists. We grant access.
+    const jwtPayload = { email: profile.email, sub: profile.id, role };
+    const access_token = jwt.sign(jwtPayload, process.env.JWT_SECRET || 'secret', { expiresIn: '24h' });
+
+    // Business Logic constraint: Single Device Policy execution
+    await prisma.sessions.updateMany({
+      where: { user_id: profile.id, is_revoked: false },
+      data: { is_revoked: true }
+    });
+
+    await prisma.sessions.create({
+      data: {
+        user_id: profile.id,
+        token: access_token,
+        device_info: req.headers['user-agent']?.substring(0, 255) || null,
+        ip_address: req.ip?.substring(0, 45) || null,
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000)
+      }
+    });
+
+    await logSecurityEvent({ event: 'SSO_LOGIN_SUCCESS', user_id: profile.id, email: profile.email, ip_address: req.ip, user_agent: req.headers['user-agent'] });
+
+    let onboarding_url = '/dashboard';
+    if (role === 'AGENT' && profile.verified === false) onboarding_url = '/agent-onboarding';
+    else if (role === 'AGENT') onboarding_url = '/dashboard';
+    if (role === 'TENANT') onboarding_url = '/tenant-agreement';
+    if (role === 'FUNDER') onboarding_url = '/funder';
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Logged in successfully',
+      data: {
+        access_token,
+        onboarding_url,
+        user: {
+          id: profile.id,
+          email: profile.email,
+          firstName: profile.full_name?.split(' ')[0] || 'User',
+          lastName: profile.full_name?.split(' ').slice(1).join(' ') || '',
+          role,
+          isVerified: profile.verified,
+        }
+      }
+    });
+
+  } catch (err: any) {
+    console.error('SSO Login Error:', err);
+    return problemResponse(res, 500, 'Internal Server Error', 'SSO Login failed', 'sso-error');
   }
 };
 

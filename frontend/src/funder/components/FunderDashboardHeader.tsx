@@ -1,9 +1,10 @@
-﻿import { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Bell, Search, User, CheckCircle, TrendingUp, Info, Settings, LogOut, LifeBuoy, Activity, BadgeCheck } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Bell, Search, User, CheckCircle, TrendingUp, Info, Settings, LogOut, LifeBuoy, Activity, BadgeCheck, Loader2 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface FunderDashboardHeaderProps {
-  user: { fullName: string; role: string; avatarUrl?: string };
+  user: { fullName: string; role: string; avatarUrl?: string; isVerified?: boolean };
   pageTitle?: string;
   onNotificationClick?: () => void;
   onAvatarClick?: () => void;
@@ -14,9 +15,10 @@ export default function FunderDashboardHeader({
 }: FunderDashboardHeaderProps) {
   const [showNotifs, setShowNotifs] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
+  const { logout, user: authUser } = useAuth();
   const currentDate = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
   // Close notifications on click outside
@@ -195,9 +197,11 @@ export default function FunderDashboardHeader({
                   <User className="w-5 h-5" style={{ color: 'var(--color-primary)' }} />
                 </div>
               )}
-              <div className="absolute -top-0 -right-1 bg-white rounded-full p-[1px]">
-                <BadgeCheck className="w-3.5 h-3.5 text-white" style={{ fill: 'var(--color-primary)' }} />
-              </div>
+              {authUser?.isVerified && (
+                <div className="absolute -top-0 -right-1 bg-white rounded-full p-[1px]">
+                  <BadgeCheck className="w-3.5 h-3.5 text-white" style={{ fill: 'var(--color-primary)' }} />
+                </div>
+              )}
             </div>
           </div>
 
@@ -206,11 +210,13 @@ export default function FunderDashboardHeader({
             <div className="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden z-50 transform origin-top-right transition-all animate-in zoom-in-95 duration-200">
               <div className="p-4 border-b border-slate-50 bg-slate-50/50">
                 <p className="font-bold text-slate-900 truncate">{user.fullName}</p>
-                <p className="text-xs text-slate-500 truncate mb-2">grace@rentflowinsight.com</p>
-                <div className="flex items-center gap-1 text-[var(--color-primary)] bg-[var(--color-primary-faint)] w-fit px-2 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase">
-                  <CheckCircle className="w-3 h-3" />
-                  Grade-A Verified
-                </div>
+                <p className="text-xs text-slate-500 truncate mb-2">{authUser?.email || 'user@rentflowinsight.com'}</p>
+                {authUser?.isVerified && (
+                  <div className="flex items-center gap-1 text-[var(--color-primary)] bg-[var(--color-primary-faint)] w-fit px-2 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase">
+                    <CheckCircle className="w-3 h-3" />
+                    Grade-A Verified
+                  </div>
+                )}
               </div>
               
               <div className="p-2 space-y-0.5 border-b border-slate-50">
@@ -230,11 +236,15 @@ export default function FunderDashboardHeader({
 
               <div className="p-2">
                 <button 
-                  onClick={() => navigate('/')} 
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-red-600 hover:bg-red-50 transition-colors"
+                  onClick={async () => {
+                    setIsLoggingOut(true);
+                    await logout();
+                  }}
+                  disabled={isLoggingOut} 
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-red-600 hover:bg-red-50 transition-colors ${isLoggingOut ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
-                  <LogOut className="w-4 h-4" />
-                  Sign out
+                  {isLoggingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
+                  {isLoggingOut ? 'Logging out...' : 'Sign out'}
                 </button>
               </div>
             </div>

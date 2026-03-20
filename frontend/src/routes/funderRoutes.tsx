@@ -1,6 +1,7 @@
 import { lazy } from 'react';
 import { Route } from 'react-router-dom';
 import FunderLayout from '../funder/components/FunderLayout';
+import ProtectedRoute from '../components/ProtectedRoute';
 
 const FunderOnboarding = lazy(() => import('../funder/FunderOnboarding'));
 const FunderKYCOnboarding = lazy(() => import('../funder/FunderKYCOnboarding'));
@@ -27,12 +28,12 @@ export const funderRoutes = [
   <Route key="funder-kyc" path="/funder/kyc" element={<FunderKYCOnboarding />} />,
   <Route key="funder-activate"   path="/funder/activate"   element={<ActivateFunder />} />,
   // Pages with their own layout
-  <Route key="funder-dashboard"  path="/funder"             element={<FunderDashboard />} />,
-  <Route key="funder-account"    path="/funder/account"     element={<FunderSettings />} />,
-  <Route key="funder-reports"    path="/funder/reports"     element={<FunderReports />} />,
-  <Route key="funder-wallet"     path="/funder/wallet"      element={<FunderWallet />} />,
+  <Route key="funder-dashboard"  path="/funder"             element={<ProtectedRoute><FunderDashboard /></ProtectedRoute>} />,
+  <Route key="funder-account"    path="/funder/account"     element={<ProtectedRoute><FunderSettings /></ProtectedRoute>} />,
+  <Route key="funder-reports"    path="/funder/reports"     element={<ProtectedRoute><FunderReports /></ProtectedRoute>} />,
+  <Route key="funder-wallet"     path="/funder/wallet"      element={<ProtectedRoute><FunderWallet /></ProtectedRoute>} />,
   // Pages needing FunderLayout wrapper
-  <Route key="funder-portfolio"      path="/funder/portfolio"      element={<FunderLayout activePage="Portfolio" pageTitle="My Portfolio"><FunderPortfolioPage /></FunderLayout>} />,
-  <Route key="funder-portfolio-details" path="/funder/portfolio/:id" element={<FunderLayout activePage="Portfolio" pageTitle="Portfolio Details"><FunderPortfolioDetailsPage /></FunderLayout>} />,
-  <Route key="funder-opportunities"  path="/funder/opportunities"  element={<FunderLayout activePage="Opportunities" pageTitle="Opportunities"><FunderOpportunitiesPage /></FunderLayout>} />,
+  <Route key="funder-portfolio"      path="/funder/portfolio"      element={<ProtectedRoute><FunderLayout activePage="Portfolio" pageTitle="My Portfolio"><FunderPortfolioPage /></FunderLayout></ProtectedRoute>} />,
+  <Route key="funder-portfolio-details" path="/funder/portfolio/:id" element={<ProtectedRoute><FunderLayout activePage="Portfolio" pageTitle="Portfolio Details"><FunderPortfolioDetailsPage /></FunderLayout></ProtectedRoute>} />,
+  <Route key="funder-opportunities"  path="/funder/opportunities"  element={<ProtectedRoute><FunderLayout activePage="Opportunities" pageTitle="Opportunities"><FunderOpportunitiesPage /></FunderLayout></ProtectedRoute>} />,
 ];
