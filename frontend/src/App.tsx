@@ -12,8 +12,17 @@ import SubAgents from './agent/SubAgents';
 import AgentEarnings from './agent/AgentEarnings';
 import AgentClients from './agent/AgentClients';
 import AgentSettings from './agent/AgentSettings';
+import CfoDashboard from './admin/cfo/CfoDashboard';
+import CeoDashboard from './admin/ceo/CeoDashboard';
+import CeoPerformance from './admin/ceo/CeoPerformance';
+import CeoRevenue from './admin/ceo/CeoRevenue';
+import CeoUsers from './admin/ceo/CeoUsers';
+import CeoFinancials from './admin/ceo/CeoFinancials';
 import TenantPayments from './tenant/TenantPayments';
 import TenantProfile from './tenant/TenantProfile';
+
+import AdminLogin from './pages/auth/AdminLogin';
+import AdminDashboard from './admin/AdminDashboard';
 
 // --- Role-based route groups ---
 import { publicRoutes } from './routes/publicRoutes';
@@ -88,6 +97,19 @@ function App() {
                 {funderRoutes}
                 {cooRoutes}
 
+                {/* Admin Routes */}
+                <Route path="/admin/login" element={<AdminLogin />} />
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                </Route>
+
+                {/* CEO Public Routes */}
+                <Route path="/ceo/dashboard" element={<CeoDashboard />} />
+                <Route path="/ceo/revenue" element={<CeoRevenue />} />
+                <Route path="/ceo/users" element={<CeoUsers />} />
+                <Route path="/ceo/financials" element={<CeoFinancials />} />
+                <Route path="/ceo/performance" element={<CeoPerformance />} />
+
                 {/* Protected: authenticated users only */}
                 <Route element={<ProtectedRoute />}>
                   <Route path="/dashboard/*" element={<RootDashboard />} />
@@ -95,6 +117,7 @@ function App() {
                   <Route path="/dashboard/agent/earnings" element={<AgentEarnings />} />
                   <Route path="/dashboard/agent/clients" element={<AgentClients />} />
                   <Route path="/dashboard/agent/settings" element={<AgentSettings />} />
+                  <Route path="/cfo/dashboard" element={<CfoDashboard />} />
                   <Route path="/dashboard/tenant/payments" element={<TenantPayments />} />
                   <Route path="/dashboard/tenant/profile" element={<TenantProfile />} />
                   

@@ -1,5 +1,6 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../contexts/AuthContext';
 import { 
   Home, Users, CreditCard, Wallet, 
   BarChart2, FileText, AlertTriangle, Briefcase, Activity, 
@@ -7,6 +8,9 @@ import {
 } from 'lucide-react';
 
 const COOSidebar: React.FC = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
   const financialLinks = [
     { name: 'Dashboard', icon: <Home size={20} />, path: '/coo/overview' },
     { name: 'Transactions', icon: <List size={20} />, path: '/coo/transactions' },
@@ -79,12 +83,28 @@ const COOSidebar: React.FC = () => {
         </div>
 
         <div className="pt-4 border-t border-slate-100 mx-6">
-           <nav className="space-y-1 font-inter -mx-3">
-              <button className="w-full flex items-center space-x-3 px-4 py-3 rounded-full text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-semibold transition-all">
+           <nav className="space-y-2 font-inter -mx-3">
+              {user?.role === 'CEO' && (
+                <div className="px-3 pb-2">
+                  <select 
+                    className="w-full bg-[#6c11d4] text-white py-2 px-3 rounded-lg text-sm font-bold hover:bg-[#5b21b6] transition-all shadow-sm appearance-none cursor-pointer text-center outline-none"
+                    onChange={(e) => {
+                      if (e.target.value) navigate(e.target.value);
+                    }}
+                    defaultValue=""
+                  >
+                    <option value="" disabled>Switch Dashboard</option>
+                    <option value="/ceo/dashboard">CEO Dashboard</option>
+                    <option value="/coo/dashboard">COO Dashboard (View Only)</option>
+                    <option value="/cfo/dashboard">CFO Dashboard (View Only)</option>
+                  </select>
+                </div>
+              )}
+              <button className="w-full flex items-center space-x-3 px-4 py-2.5 rounded-full text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-semibold transition-all">
                 <div className="flex-shrink-0"><HelpCircle size={20} /></div>
                 <span className="text-sm">Help</span>
               </button>
-              <button className="w-full flex items-center space-x-3 px-4 py-3 rounded-full text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-semibold transition-all">
+              <button className="w-full flex items-center space-x-3 px-4 py-2.5 rounded-full text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-semibold transition-all">
                 <div className="flex-shrink-0"><LogOut size={20} /></div>
                 <span className="text-sm">Log out</span>
               </button>

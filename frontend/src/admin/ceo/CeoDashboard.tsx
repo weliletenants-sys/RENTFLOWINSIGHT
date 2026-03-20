@@ -1,4 +1,5 @@
 import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { 
   Users, Home, Briefcase, Building2, Handshake, 
   Wallet, CheckCircle2, UserCheck, Search, Bell, 
@@ -8,7 +9,21 @@ import {
 } from 'lucide-react';
 
 export default function CeoDashboard() {
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { profile, user } = useAuth();
+  const location = useLocation();
+
+  const isActive = (path: string) => location.pathname === path || (location.pathname === '/dashboard' && path === '/ceo/dashboard');
+
+  const NavLink = ({ to, icon: Icon, label }: { to: string, icon: any, label: string }) => (
+    <Link 
+      to={to} 
+      className={`flex items-center gap-3 py-2.5 px-3 rounded-xl transition-all duration-300 ${isActive(to) ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)] font-bold' : 'text-slate-500 hover:bg-[var(--color-primary-light)] hover:text-[var(--color-primary)] font-medium'}`}
+    >
+      <Icon size={18} />
+      <span className="text-sm">{label}</span>
+    </Link>
+  );
 
   return (
     <div className="bg-[var(--color-primary-faint)] min-h-screen font-inter text-slate-900 pb-12">
@@ -16,37 +31,30 @@ export default function CeoDashboard() {
       {/* SideNavBar */}
       <aside className="h-screen w-64 fixed left-0 top-0 overflow-y-auto bg-white border-r border-[var(--color-primary-light)] flex flex-col py-8 px-6 z-50">
         <div className="mb-10">
-          <h1 className="text-xl font-bold tracking-tight text-[var(--color-primary-darker)] font-outfit">Sovereign</h1>
-          <p className="text-[0.6875rem] font-bold uppercase tracking-widest text-slate-400 mt-1">CEO Terminal</p>
+          <img src="/welile-colored.png" alt="Welile Logo" className="h-[40px] w-auto mb-1" />
         </div>
         
         <nav className="flex-1 space-y-2">
-          <a className="flex items-center gap-3 py-2.5 px-3 rounded-xl bg-[var(--color-primary-light)] text-[var(--color-primary)] font-bold transition-all duration-300" href="#">
-            <PieChart size={18} />
-            <span className="text-sm">Overview</span>
-          </a>
-          <a className="flex items-center gap-3 py-2.5 px-3 rounded-xl text-slate-500 hover:bg-[var(--color-primary-light)] hover:text-[var(--color-primary)] transition-colors duration-200" href="#">
-            <Wallet size={18} />
-            <span className="text-sm font-medium">Revenue</span>
-          </a>
-          <a className="flex items-center gap-3 py-2.5 px-3 rounded-xl text-slate-500 hover:bg-[var(--color-primary-light)] hover:text-[var(--color-primary)] transition-colors duration-200" href="#">
-            <Users size={18} />
-            <span className="text-sm font-medium">Users</span>
-          </a>
-          <a className="flex items-center gap-3 py-2.5 px-3 rounded-xl text-slate-500 hover:bg-[var(--color-primary-light)] hover:text-[var(--color-primary)] transition-colors duration-200" href="#">
-            <Activity size={18} />
-            <span className="text-sm font-medium">Financials</span>
-          </a>
-          <a className="flex items-center gap-3 py-2.5 px-3 rounded-xl text-slate-500 hover:bg-[var(--color-primary-light)] hover:text-[var(--color-primary)] transition-colors duration-200" href="#">
-            <TrendingUp size={18} />
-            <span className="text-sm font-medium">Performance</span>
-          </a>
+          <NavLink to="/ceo/dashboard" icon={PieChart} label="Overview" />
+          <NavLink to="/ceo/revenue" icon={Wallet} label="Revenue" />
+          <NavLink to="/ceo/users" icon={Users} label="Users" />
+          <NavLink to="/ceo/financials" icon={Activity} label="Financials" />
+          <NavLink to="/ceo/performance" icon={TrendingUp} label="Performance" />
         </nav>
         
         <div className="mt-auto pt-8 space-y-2">
-          <button className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] py-3 rounded-xl text-sm font-bold hover:bg-[var(--color-primary-dark)] active:bg-[var(--color-primary-darker)] transition-all shadow-sm mb-6 flex justify-center items-center gap-2">
-            Quick Action
-          </button>
+          <select 
+            className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] py-3 px-4 rounded-xl text-sm font-bold hover:bg-[var(--color-primary-dark)] active:bg-[var(--color-primary-darker)] transition-all shadow-sm mb-6 appearance-none cursor-pointer text-center outline-none"
+            onChange={(e) => {
+              if (e.target.value) navigate(e.target.value);
+            }}
+            defaultValue=""
+          >
+            <option value="" disabled>Switch Dashboard</option>
+            <option value="/ceo/dashboard">CEO Dashboard</option>
+            <option value="/coo/dashboard">COO Dashboard (View Only)</option>
+            <option value="/cfo/dashboard">CFO Dashboard (View Only)</option>
+          </select>
           <a className="flex items-center gap-3 py-2 px-3 text-slate-500 hover:bg-slate-50 hover:text-slate-900 rounded-xl transition-colors" href="#">
             <Settings size={18} />
             <span className="text-sm font-medium">Settings</span>
@@ -60,9 +68,8 @@ export default function CeoDashboard() {
 
       {/* TopNavBar */}
       <header className="fixed top-0 right-0 w-[calc(100%-16rem)] h-20 bg-white/80 backdrop-blur-xl flex justify-between items-center px-10 z-40 border-b border-[var(--color-primary-light)]">
-        <div className="flex items-center gap-8 flex-1">
-          <span className="text-xl font-bold tracking-tight text-slate-900 font-outfit">Sovereign Intelligence</span>
-          <div className="relative max-w-md w-full ml-4">
+        <div className="flex items-center w-full max-w-md">
+          <div className="relative w-full">
             <Search size={18} className="text-[var(--color-primary)] absolute left-4 top-1/2 -translate-y-1/2" />
             <input className="bg-[var(--color-primary-faint)] border border-[var(--color-primary-light)] rounded-full pl-11 pr-4 py-2.5 text-sm w-full focus:ring-2 focus:ring-[var(--color-primary-light)] focus:bg-white transition-all outline-none" placeholder="Intelligence search..." type="text" />
           </div>
@@ -249,7 +256,7 @@ export default function CeoDashboard() {
               <div className="flex justify-between items-center group">
                 <div>
                   <p className="text-sm font-bold text-slate-500 mb-1">Active Users</p>
-                  <p className="text-2xl font-bold font-outfit text-slate-900">942.5K</p>
+                  <p className="text-2xl font-bold font-outfit text-slate-900">120,000</p>
                 </div>
                 <div className="h-10 w-24 relative overflow-hidden">
                   <svg className="absolute bottom-0 left-0 w-full h-8" viewBox="0 0 100 40">
@@ -260,8 +267,8 @@ export default function CeoDashboard() {
               
               <div className="flex justify-between items-center group">
                 <div>
-                  <p className="text-sm font-bold text-slate-500 mb-1">New Users</p>
-                  <p className="text-2xl font-bold font-outfit text-slate-900">12.1K</p>
+                  <p className="text-sm font-bold text-slate-500 mb-1">New Users today</p>
+                  <p className="text-2xl font-bold font-outfit text-slate-900">3,500</p>
                 </div>
                 <div className="h-10 w-24 relative overflow-hidden">
                   <svg className="absolute bottom-0 left-0 w-full h-8" viewBox="0 0 100 40">
@@ -273,17 +280,17 @@ export default function CeoDashboard() {
               <div className="flex justify-between items-center group">
                 <div>
                   <p className="text-sm font-bold text-slate-500 mb-1">Retention</p>
-                  <p className="text-2xl font-bold font-outfit text-slate-900">88.4%</p>
+                  <p className="text-2xl font-bold font-outfit text-slate-900">48%</p>
                 </div>
                 <div className="h-2 w-24 bg-slate-100 rounded-full overflow-hidden self-center">
-                  <div className="bg-[var(--color-success)] h-full w-[88%] rounded-full"></div>
+                  <div className="bg-[var(--color-success)] h-full w-[48%] rounded-full"></div>
                 </div>
               </div>
 
               <div className="flex justify-between items-center group">
                 <div>
                   <p className="text-sm font-bold text-slate-500 mb-1">Referral</p>
-                  <p className="text-2xl font-bold font-outfit text-slate-900">4.2x</p>
+                  <p className="text-xl font-bold font-outfit text-slate-900">1.3 per user</p>
                 </div>
                 <div className="h-10 w-24 relative overflow-hidden">
                   <svg className="absolute bottom-0 left-0 w-full h-8" viewBox="0 0 100 40">
@@ -295,7 +302,7 @@ export default function CeoDashboard() {
               <div className="flex justify-between items-center group">
                 <div>
                   <p className="text-sm font-bold text-slate-500 mb-1">Daily Trans.</p>
-                  <p className="text-2xl font-bold font-outfit text-slate-900">42.8K</p>
+                  <p className="text-xl font-bold font-outfit text-slate-900">UGX 450M</p>
                 </div>
                 <div className="h-2 w-24 bg-slate-100 rounded-full overflow-hidden self-center">
                   <div className="bg-[var(--color-primary)] h-full w-[65%] rounded-full"></div>

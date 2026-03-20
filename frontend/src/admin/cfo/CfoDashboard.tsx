@@ -7,11 +7,13 @@ import {
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 type TabType = 'overview' | 'statements' | 'solvency' | 'reconciliation' | 'ledger' | 'commissions' | 'withdrawals';
 
 export default function CfoDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [dateFilter, setDateFilter] = useState('30d');
 
@@ -117,6 +119,23 @@ export default function CfoDashboard() {
             )
           })}
         </nav>
+
+        {user?.role === 'CEO' && (
+          <div className="p-4 border-t border-slate-100">
+            <select 
+              className="w-full bg-[#6c11d4] text-[var(--color-on-primary)] py-2.5 px-3 rounded-xl text-sm font-bold hover:bg-[#5b21b6] transition-all shadow-sm appearance-none cursor-pointer text-center outline-none text-white"
+              onChange={(e) => {
+                if (e.target.value) navigate(e.target.value);
+              }}
+              defaultValue=""
+            >
+              <option value="" disabled>Switch Dashboard</option>
+              <option value="/ceo/dashboard">CEO Dashboard</option>
+              <option value="/coo/dashboard">COO Dashboard (View Only)</option>
+              <option value="/cfo/dashboard">CFO Dashboard (View Only)</option>
+            </select>
+          </div>
+        )}
       </aside>
 
       {/* MAIN CONTENT */}
@@ -152,11 +171,15 @@ export default function CfoDashboard() {
               </button>
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 bg-slate-800 text-white rounded-full flex items-center justify-center font-bold text-sm">
-                  {user?.firstName?.charAt(0) || 'C'}
+                  {user?.role === 'CEO' ? user.firstName?.charAt(0) || 'C' : 'C'}
                 </div>
                 <div className="hidden md:block">
-                  <p className="text-sm font-bold text-slate-900 leading-tight">{user?.firstName || 'Chief'} {user?.lastName || 'Financial Officer'}</p>
-                  <p className="text-xs text-slate-500 font-medium tracking-wide">Executive</p>
+                  <p className="text-sm font-bold text-slate-900 leading-tight">
+                    {user?.role === 'CEO' ? `${user.firstName || 'Chief'} ${user.lastName || 'Executive'}` : 'Chief Financial Officer'}
+                  </p>
+                  <p className="text-xs text-slate-500 font-medium tracking-wide">
+                    {user?.role === 'CEO' ? 'Executive Terminal' : 'Executive'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -173,11 +196,11 @@ export default function CfoDashboard() {
                 {/* Metrics Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {[
-                    { label: 'Total Wallet Balances', value: `UGX ${(overviewMetrics.metrics.totalWalletBalance / 1000000).toFixed(1)}M`, color: 'bg-indigo-50 text-indigo-700' },
-                    { label: 'Total Deposits', value: `UGX ${(overviewMetrics.metrics.deposits / 1000000).toFixed(1)}M`, color: 'bg-green-50 text-green-700' },
-                    { label: 'Total Withdrawals', value: `UGX ${(overviewMetrics.metrics.withdrawals / 1000000).toFixed(1)}M`, color: 'bg-orange-50 text-orange-700' },
-                    { label: 'Platform Fees', value: `UGX ${(overviewMetrics.metrics.platformFees / 1000).toFixed(1)}K`, color: 'bg-purple-50 text-purple-700' },
-                    { label: 'Pending Repayments', value: `UGX ${(overviewMetrics.metrics.pendingRepayments / 1000000).toFixed(1)}M`, color: 'bg-rose-50 text-rose-700' },
+                    { label: 'Total Wallet Balances', value: `UGX ${((overviewMetrics.metrics?.totalWalletBalance || 0) / 1000000).toFixed(1)}M`, color: 'bg-indigo-50 text-indigo-700' },
+                    { label: 'Total Deposits', value: `UGX ${((overviewMetrics.metrics?.deposits || 0) / 1000000).toFixed(1)}M`, color: 'bg-green-50 text-green-700' },
+                    { label: 'Total Withdrawals', value: `UGX ${((overviewMetrics.metrics?.withdrawals || 0) / 1000000).toFixed(1)}M`, color: 'bg-orange-50 text-orange-700' },
+                    { label: 'Platform Fees', value: `UGX ${((overviewMetrics.metrics?.platformFees || 0) / 1000).toFixed(1)}K`, color: 'bg-purple-50 text-purple-700' },
+                    { label: 'Pending Repayments', value: `UGX ${((overviewMetrics.metrics?.pendingRepayments || 0) / 1000000).toFixed(1)}M`, color: 'bg-rose-50 text-rose-700' },
                     { label: 'Transfers', value: 'UGX 8.2M', color: 'bg-blue-50 text-blue-700' }, // mock
                     { label: 'Agent Earnings', value: 'UGX 1.4M', color: 'bg-slate-50 text-slate-700' }, // mock
                     { label: 'Commissions', value: 'UGX 450K', color: 'bg-amber-50 text-amber-700' } // mock
@@ -191,10 +214,10 @@ export default function CfoDashboard() {
 
                 <div className="grid grid-cols-4 gap-4">
                   {[
-                    { label: 'Total Users', val: overviewMetrics.counts.totalUsers, icon: User },
-                    { label: 'Agents', val: overviewMetrics.counts.totalAgents, icon: ShieldAlert },
-                    { label: 'Tenants', val: overviewMetrics.counts.totalTenants, icon: Home },
-                    { label: 'Supporters', val: overviewMetrics.counts.totalSupporters, icon: Download }
+                    { label: 'Total Users', val: overviewMetrics.counts?.totalUsers || 0, icon: User },
+                    { label: 'Agents', val: overviewMetrics.counts?.totalAgents || 0, icon: ShieldAlert },
+                    { label: 'Tenants', val: overviewMetrics.counts?.totalTenants || 0, icon: Home },
+                    { label: 'Supporters', val: overviewMetrics.counts?.totalSupporters || 0, icon: Download }
                   ].map((c, i) => {
                     const Icon = c.icon;
                     return (
@@ -219,7 +242,7 @@ export default function CfoDashboard() {
                   </div>
                   <div className="flex-1 border-t border-l border-slate-100 relative w-full flex items-end justify-between px-4 pb-4">
                     {/* Very simplistic mock chart render using css bars */}
-                    {overviewMetrics.trends.map((t: any, i: number) => (
+                    {overviewMetrics.trends?.map((t: any, i: number) => (
                       <div key={i} className="flex flex-col items-center gap-2 group w-1/4">
                         <div className="relative w-8 bg-indigo-100 rounded-t-sm" style={{ height: `${t.inflow / 1000}px` }}>
                           <div className="absolute bottom-0 w-full bg-[#6c11d4] rounded-t-sm" style={{ height: `${t.outflow / 1000}px` }}></div>
@@ -278,7 +301,7 @@ export default function CfoDashboard() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-50">
-                        {reconciliation.results.map((r: any, idx: number) => {
+                        {reconciliation.results?.map((r: any, idx: number) => {
                           const isMatched = r.status === 'Matched';
                           return (
                             <tr key={idx} className={`hover:bg-slate-50 transition-colors ${!isMatched ? 'bg-red-50/30' : ''}`}>
@@ -318,11 +341,11 @@ export default function CfoDashboard() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {withdrawals.length === 0 ? (
+                  {!withdrawals || withdrawals.length === 0 ? (
                     <div className="col-span-full py-12 text-center text-slate-400 font-bold bg-white border border-dashed border-slate-200 rounded-2xl">
                       No pending withdrawals requiring CFO approval.
                     </div>
-                  ) : withdrawals.map(w => (
+                  ) : withdrawals?.map(w => (
                     <div key={w.id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
                       <div className="flex justify-between items-start mb-4">
                         <div className="flex items-center gap-3">

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { 
   PieChart, Wallet, Users, Activity, TrendingUp, 
   Settings, HelpCircle, Search, Bell, PlusCircle, 
@@ -11,6 +11,19 @@ import {
 export default function CeoPerformance() {
   const { profile } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isActive = (path: string) => location.pathname === path;
+
+  const NavLink = ({ to, icon: Icon, label }: { to: string, icon: any, label: string }) => (
+    <Link 
+      to={to} 
+      className={`flex items-center gap-3 py-2.5 px-3 rounded-xl transition-all duration-300 ${isActive(to) ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)] font-bold' : 'text-slate-500 hover:bg-[var(--color-primary-light)] hover:text-[var(--color-primary)] font-medium'}`}
+    >
+      <Icon size={18} />
+      <span className="text-sm">{label}</span>
+    </Link>
+  );
 
   return (
     <div className="bg-[var(--color-primary-faint)] font-inter text-slate-900 min-h-screen pb-12">
@@ -18,39 +31,30 @@ export default function CeoPerformance() {
       {/* SideNavBar */}
       <aside className="bg-white border-r border-[var(--color-primary-light)] h-screen w-64 fixed left-0 top-0 overflow-y-auto flex flex-col py-8 px-6 z-50">
         <div className="mb-10">
-          <h1 className="text-xl font-bold tracking-tight text-[var(--color-primary-darker)] font-outfit uppercase">Sovereign</h1>
-          <p className="text-[0.6875rem] font-bold tracking-widest text-[var(--color-primary)] uppercase mt-1">CEO Terminal</p>
+          <img src="/welile-colored.png" alt="Welile Logo" className="h-[40px] w-auto mb-1" />
         </div>
         
         <nav className="flex-1 space-y-2">
-          <a onClick={() => navigate('/ceo/dashboard')} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-[var(--color-primary-light)] hover:text-[var(--color-primary)] transition-colors duration-200 cursor-pointer">
-            <PieChart size={18} />
-            <span className="text-sm font-medium">Overview</span>
-          </a>
-          <a className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-[var(--color-primary-light)] hover:text-[var(--color-primary)] transition-colors duration-200 cursor-pointer">
-            <Wallet size={18} />
-            <span className="text-sm font-medium">Revenue</span>
-          </a>
-          <a className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-[var(--color-primary-light)] hover:text-[var(--color-primary)] transition-colors duration-200 cursor-pointer">
-            <Users size={18} />
-            <span className="text-sm font-medium">Users</span>
-          </a>
-          <a className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-[var(--color-primary-light)] hover:text-[var(--color-primary)] transition-colors duration-200 cursor-pointer">
-            <Activity size={18} />
-            <span className="text-sm font-medium">Financials</span>
-          </a>
-          {/* Active Tab: Performance */}
-          <a className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[var(--color-primary-light)] text-[var(--color-primary)] font-bold transition-colors duration-200 cursor-default">
-            <TrendingUp size={18} />
-            <span className="text-sm">Performance</span>
-          </a>
+          <NavLink to="/ceo/dashboard" icon={PieChart} label="Overview" />
+          <NavLink to="/ceo/revenue" icon={Wallet} label="Revenue" />
+          <NavLink to="/ceo/users" icon={Users} label="Users" />
+          <NavLink to="/ceo/financials" icon={Activity} label="Financials" />
+          <NavLink to="/ceo/performance" icon={TrendingUp} label="Performance" />
         </nav>
         
         <div className="mt-auto space-y-2">
-          <button className="w-full flex justify-center items-center gap-2 px-3 py-3 rounded-xl bg-[var(--color-primary)] text-[var(--color-on-primary)] hover:bg-[var(--color-primary-dark)] transition-all mb-6 cursor-pointer font-bold text-sm shadow-sm">
-            <PlusCircle size={18} />
-            Quick Action
-          </button>
+          <select 
+            className="w-full bg-[var(--color-primary)] text-[var(--color-on-primary)] py-3 px-4 rounded-xl text-sm font-bold hover:bg-[var(--color-primary-dark)] active:bg-[var(--color-primary-darker)] transition-all mb-6 appearance-none cursor-pointer text-center outline-none shadow-sm"
+            onChange={(e) => {
+              if (e.target.value) navigate(e.target.value);
+            }}
+            defaultValue=""
+          >
+            <option value="" disabled>Switch Dashboard</option>
+            <option value="/ceo/dashboard">CEO Dashboard</option>
+            <option value="/coo/dashboard">COO Dashboard (View Only)</option>
+            <option value="/cfo/dashboard">CFO Dashboard (View Only)</option>
+          </select>
           <a className="flex items-center gap-3 px-3 py-2 rounded-xl text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer">
             <Settings size={18} />
             <span className="text-sm font-medium">Settings</span>
@@ -72,8 +76,8 @@ export default function CeoPerformance() {
 
       {/* TopNavBar */}
       <header className="fixed top-0 right-0 w-[calc(100%-16rem)] h-20 z-40 bg-white/80 backdrop-blur-xl flex justify-between items-center px-10 border-b border-[var(--color-primary-light)]">
-        <div className="flex items-center gap-4 flex-1">
-          <div className="relative w-full max-w-md">
+        <div className="flex items-center w-full max-w-md">
+          <div className="relative w-full">
             <Search size={18} className="text-[var(--color-primary)] absolute left-4 top-1/2 -translate-y-1/2" />
             <input className="w-full bg-[var(--color-primary-faint)] border border-[var(--color-primary-light)] rounded-full py-2.5 pl-11 pr-4 text-sm focus:ring-2 focus:ring-[var(--color-primary-light)] focus:bg-white transition-all outline-none" placeholder="Search operational intelligence..." type="text" />
           </div>
@@ -91,7 +95,7 @@ export default function CeoPerformance() {
           </div>
           <div className="h-8 w-px bg-[var(--color-primary-light)] mx-2"></div>
           <div className="flex items-center gap-3">
-            <span className="text-xs font-bold tracking-tighter text-[var(--color-primary-darker)] uppercase">Sovereign Intelligence</span>
+            <span className="text-xs font-bold tracking-tighter text-[var(--color-primary-darker)] uppercase"></span>
           </div>
         </div>
       </header>

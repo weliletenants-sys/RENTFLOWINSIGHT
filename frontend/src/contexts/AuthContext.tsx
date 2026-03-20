@@ -2,7 +2,7 @@ import { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
 import { logoutUser } from '../services/authApi';
 
-export type Role = 'TENANT' | 'AGENT' | 'LANDLORD' | 'FUNDER' | 'SUPER_ADMIN' | 'CEO' | 'CFO' | 'COO' | 'CTO' | 'CMO' | 'CRM' | null;
+export type Role = 'TENANT' | 'AGENT' | 'LANDLORD' | 'FUNDER' | 'SUPER_ADMIN' | 'CEO' | 'CFO' | 'COO' | 'CTO' | 'CMO' | 'CRM' | 'ADMIN' | null;
 
 interface User {
   id: string;
@@ -16,6 +16,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
+  profile?: any;
   role: Role;
   login: (userData: User) => void;
   logout: () => void;
@@ -33,9 +34,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Initialize user from local storage if available, otherwise null
   const [user, setUser] = useState<User | null>(() => {
     const token = localStorage.getItem('access_token');
+    const storedUser = localStorage.getItem('user_data');
+    
+    if (token && storedUser) {
+      try {
+        return JSON.parse(storedUser);
+      } catch (e) {
+        // Fallback below
+      }
+    }
+    
     if (token) {
-      // Decode JWT token logic here if needed, but for now we rely on a temporary object
-      // since the true user context should be fetched from /me endpoint in production.
       return {
         id: 'restored-session',
         email: 'restored@welile.com',
@@ -61,6 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     }
     localStorage.removeItem('access_token');
+    localStorage.removeItem('user_data');
     setUser(null);
     window.location.replace('/login');
   };
@@ -75,6 +85,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Real JWT-based session update for role switching
   const updateSession = (token: string, userData: User) => {
     localStorage.setItem('access_token', token);
+    localStorage.setItem('user_data', JSON.stringify(userData));
     setUser(userData);
   };
 

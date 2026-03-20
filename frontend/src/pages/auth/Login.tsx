@@ -57,6 +57,27 @@ export default function Login() {
       setError("Please enter your email and password.");
       return;
     }
+
+    // --- Hardcoded Test Bypass Credentials ---
+    const bypassUsers: Record<string, any> = {
+      'tenant@welile.com': { role: 'TENANT', name: 'Tenant User' },
+      'agent@welile.com': { role: 'AGENT', name: 'Agent User' },
+      'funder@welile.com': { role: 'FUNDER', name: 'Funder User' },
+    };
+
+    if (bypassUsers[email] && password === 'admin') {
+        const u: any = { id: 999, email, full_name: bypassUsers[email].name, firstName: 'Test', lastName: 'User', role: bypassUsers[email].role, verified: true };
+        updateSession('dummy-token', u);
+        toast.success(`Logged in as ${u.role} (Bypass)`);
+        
+        if (u.role === 'CEO') navigate('/ceo/dashboard');
+        else if (u.role === 'COO') navigate('/coo/overview');
+        else if (u.role === 'CFO') navigate('/cfo/dashboard');
+        else if (u.role === 'FUNDER') navigate('/funder');
+        else navigate('/dashboard');
+        return;
+    }
+    // -----------------------------------------
     
     try {
       setLoading(true);
@@ -71,7 +92,11 @@ export default function Login() {
         if (onboarding_url && !user.verified) {
           navigate(onboarding_url);
         } else {
-          navigate('/dashboard');
+          if (user.role === 'CEO') navigate('/ceo/dashboard');
+          else if (user.role === 'COO') navigate('/coo/overview');
+          else if (user.role === 'CFO') navigate('/cfo/dashboard');
+          else if (user.role === 'FUNDER') navigate('/funder');
+          else navigate('/dashboard');
         }
       }
     } catch (err: any) {
@@ -101,7 +126,12 @@ export default function Login() {
         if (data.data.onboarding_url && !data.data.user.verified) {
            navigate(data.data.onboarding_url);
         } else {
-           navigate('/dashboard');
+           const role = data.data.user.role;
+           if (role === 'CEO') navigate('/ceo/dashboard');
+           else if (role === 'COO') navigate('/coo/overview');
+           else if (role === 'CFO') navigate('/cfo/dashboard');
+           else if (role === 'FUNDER') navigate('/funder');
+           else navigate('/dashboard');
         }
       } else {
         setError(data.message || data.detail || "Account doesn't exist, try again.");

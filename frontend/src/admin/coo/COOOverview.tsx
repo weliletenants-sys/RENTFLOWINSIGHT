@@ -48,6 +48,7 @@ const COOOverview: React.FC = () => {
   // Formatting helpers
   const formatMoney = (amount: number | undefined | null) => {
     if (amount === undefined || amount === null) return '0';
+    if (typeof amount !== 'number') return '0';
     if (amount >= 1000000000) return `${(amount / 1000000000).toFixed(1)}B`;
     if (amount >= 1000000) return `${(amount / 1000000).toFixed(1)}M`;
     if (amount >= 1000) return `${(amount / 1000).toFixed(1)}K`;
@@ -180,7 +181,7 @@ const COOOverview: React.FC = () => {
                 <div>
                   <div className="flex justify-between items-center text-sm mb-2">
                     <span className="font-bold text-slate-600">Main Operating Float</span>
-                    <span className="font-bold text-green-600 px-2 py-0.5 bg-green-50 rounded-md">{formatMoney(metrics.walletMonitoring.mainFloat)}</span>
+                    <span className="font-bold text-green-600 px-2 py-0.5 bg-green-50 rounded-md">{formatMoney(metrics.walletMonitoring?.mainFloat)}</span>
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-2">
                     <div className="bg-green-500 h-2 rounded-full" style={{ width: '85%' }}></div>
@@ -189,7 +190,7 @@ const COOOverview: React.FC = () => {
                 <div>
                   <div className="flex justify-between items-center text-sm mb-2">
                     <span className="font-bold text-slate-600">Agent Float Escrow</span>
-                    <span className="font-bold text-orange-500 px-2 py-0.5 bg-orange-50 rounded-md">{formatMoney(metrics.walletMonitoring.agentEscrow)}</span>
+                    <span className="font-bold text-orange-500 px-2 py-0.5 bg-orange-50 rounded-md">{formatMoney(metrics.walletMonitoring?.agentEscrow)}</span>
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-2">
                     <div className="bg-orange-400 h-2 rounded-full" style={{ width: '12%' }}></div>

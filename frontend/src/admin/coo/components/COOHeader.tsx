@@ -1,5 +1,6 @@
 import React from 'react';
 import { Bell, Search } from 'lucide-react';
+import { useAuth } from '../../../contexts/AuthContext';
 
 interface COOHeaderProps {
   pageTitle: string;
@@ -7,6 +8,8 @@ interface COOHeaderProps {
 }
 
 const COOHeader: React.FC<COOHeaderProps> = ({ pageTitle, pageSubtitle }) => {
+  const { user } = useAuth();
+  
   return (
     <header className="pt-8 pb-4 bg-transparent flex items-center justify-between px-4 sm:px-6 md:px-8 z-10">
       <div>
@@ -29,11 +32,15 @@ const COOHeader: React.FC<COOHeaderProps> = ({ pageTitle, pageSubtitle }) => {
         {/* Profile Pill */}
         <div className="hidden md:flex items-center space-x-3 bg-white border border-slate-200 rounded-full pl-2 pr-4 py-1.5 shadow-sm">
           <div className="w-8 h-8 rounded-full bg-[#EAE5FF] overflow-hidden flex items-center justify-center text-[#6c11d4] font-bold">
-            C
+            {user?.role === 'CEO' ? user?.firstName?.charAt(0) || 'C' : 'C'}
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-bold text-slate-800 leading-tight">Chief Officer</span>
-            <span className="text-[10px] text-slate-400 font-medium">Operations</span>
+            <span className="text-sm font-bold text-slate-800 leading-tight">
+              {user?.role === 'CEO' ? `${user.firstName || 'Chief'} ${user.lastName || 'Executive'}` : 'Chief Officer'}
+            </span>
+            <span className="text-[10px] text-slate-400 font-medium">
+              {user?.role === 'CEO' ? 'Executive Terminal' : 'Operations'}
+            </span>
           </div>
         </div>
 
