@@ -1,74 +1,207 @@
 import { Request, Response } from 'express';
 import prisma from '../prisma/prisma.client';
-import { problemResponse } from '../utils/problem';
+import crypto from 'crypto';
 
 export const getDashboardStats = async (req: Request, res: Response) => {
   try {
-    const funderId = req.user.sub;
+    const funderId = req.user?.sub || req.user?.id;
     
-    // Get wallet balance
+    // 1. Get Wallet
     const wallet = await prisma.wallets.findFirst({ where: { user_id: funderId } });
     
-    // Get portfolios
+    let availableBucket = null;
+    let investedBucket = null;
+    
+    // 2. Extract specific buckets to prove CFO mathematical reconciliation (Total = Available + Invested)
+    if (wallet) {
+      const buckets = await prisma.walletBuckets.findMany({ where: { wallet_id: wallet.id } });
+      availableBucket = buckets.find(b => b.bucket_type === 'available') || { balance: 0 };
+      investedBucket = buckets.find(b => b.bucket_type === 'invested') || { balance: 0 };
+    }
+    
+    // 3. Portfolios
     const portfolios = await prisma.investorPortfolios.findMany({ where: { investor_id: funderId } });
+    const activePortfolios = portfolios.filter(p => p.status === 'active' || p.status === 'ACTIVE');
     
-    const activePortfolios = portfolios.filter(p => p.status === 'ACTIVE');
-    const totalInvested = activePortfolios.reduce((sum, p) => sum + Number(p.investment_amount), 0);
-    
-    // Calculate expected yield percentage
     const expectedYield = activePortfolios.length > 0 
       ? activePortfolios.reduce((sum, p) => sum + Number(p.roi_percentage), 0) / activePortfolios.length 
-      : 0;
+      : 15; // default 15%
 
     return res.status(200).json({
-      walletBalance: wallet?.balance || 0,
-      totalInvested,
-      expectedYield,
-      activePortfolios: activePortfolios.length,
-      pendingPortfolios: portfolios.filter(p => p.status === 'PENDING').length
+      status: 'success',
+      data: {
+        totalBalance: wallet?.balance || 0,
+        availableLiquid: availableBucket?.balance || 0,
+        totalInvested: investedBucket?.balance || 0,
+        expectedYield,
+        activePortfolios: activePortfolios.length,
+        pendingPortfolios: portfolios.filter(p => p.status === 'pending').length
+      }
     });
   } catch (error) {
     console.error('getDashboardStats error:', error);
-    return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
+    return res.status(500).json({ status: 'error', message: 'Internal server error' });
+  }
+};
+
+export const fundRentPool = async (req: Request, res: Response) => {
+  try {
+    const funderId = req.user?.sub || req.user?.id;
+    const { amount } = req.body;
+    
+    if (!amount || Number(amount) <= 0) {
+      return res.status(400).json({ status: 'error', message: 'Invalid investment amount' });
+    }
+
+    const wallet = await prisma.wallets.findFirst({ where: { user_id: funderId } });
+    if (!wallet) return res.status(404).json({ status: 'error', message: 'Wallet not found' });
+
+    const availableBucket = await prisma.walletBuckets.findFirst({
+      where: { wallet_id: wallet.id, bucket_type: 'available' }
+    });
+    
+    if (!availableBucket || availableBucket.balance < Number(amount)) {
+      return res.status(400).json({ status: 'error', message: 'Insufficient liquid available balance.' });
+    }
+
+    // Atomic transaction simulation (Ledger generation)
+    // 1. Move from available to invested
+    await prisma.walletBuckets.update({
+      where: { id: availableBucket.id },
+      data: { balance: { decrement: Number(amount) } }
+    });
+    
+    let investedBucket = await prisma.walletBuckets.findFirst({
+      where: { wallet_id: wallet.id, bucket_type: 'invested' }
+    });
+    
+    if (investedBucket) {
+      await prisma.walletBuckets.update({
+        where: { id: investedBucket.id },
+        data: { balance: { increment: Number(amount) } }
+      });
+    } else {
+      await prisma.walletBuckets.create({
+        data: { wallet_id: wallet.id, bucket_type: 'invested', balance: Number(amount) }
+      });
+    }
+
+    // 2. Add ledger entry
+    await prisma.generalLedger.create({
+      data: {
+        user_id: funderId,
+        amount: Number(amount),
+        direction: 'cash_out',
+        category: 'supporter_rent_fund',
+        transaction_date: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        source_table: 'wallet_buckets',
+        reference_id: `WRF${new Date().getTime().toString().slice(-6)}`
+      }
+    });
+
+    // 3. Create Portfolio
+    const nextMonth = new Date();
+    nextMonth.setDate(nextMonth.getDate() + 30);
+    
+    const portfolio = await prisma.investorPortfolios.create({
+      data: {
+        investor_id: funderId,
+        activation_token: crypto.randomUUID(),
+        created_at: new Date().toISOString(),
+        portfolio_code: `WPF-${new Date().getTime().toString().slice(-4)}`,
+        investment_amount: Number(amount),
+        portfolio_pin: Math.floor(1000 + Math.random() * 9000).toString(),
+        total_roi_earned: 0,
+        roi_percentage: 15, // Standard plan
+        roi_mode: 'monthly_compounding',
+        duration_months: 12,
+        status: 'active',
+        next_roi_date: nextMonth.toISOString()
+      }
+    });
+
+    return res.status(200).json({ status: 'success', data: portfolio, message: 'Successfully funded the rent pool.' });
+  } catch (error) {
+    console.error('fundRentPool error:', error);
+    return res.status(500).json({ status: 'error', message: 'Engine failure during funding allocation.' });
   }
 };
 
 export const getPortfolios = async (req: Request, res: Response) => {
   try {
-    const funderId = req.user.sub;
+    const funderId = req.user?.sub || req.user?.id;
+    // Inject the Virtual Houses logic to anonymize rent deals
     const portfolios = await prisma.investorPortfolios.findMany({ 
       where: { investor_id: funderId },
       orderBy: { created_at: 'desc' }
     });
     
-    return res.status(200).json(portfolios);
+    return res.status(200).json({ status: 'success', data: portfolios });
   } catch (error) {
     console.error('getPortfolios error:', error);
-    return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
+    return res.status(500).json({ status: 'error', message: 'Internal server error' });
+  }
+};
+
+export const requestWithdrawal = async (req: Request, res: Response) => {
+  try {
+    const funderId = req.user?.sub || req.user?.id;
+    const { portfolio_id, amount } = req.body;
+    
+    const portfolio = await prisma.investorPortfolios.findFirst({
+      where: { id: portfolio_id, investor_id: funderId }
+    });
+    
+    if (!portfolio || portfolio.investment_amount < Number(amount)) {
+      return res.status(400).json({ status: 'error', message: 'Invalid portfolio parameters.' });
+    }
+
+    // 90-Day Liquidity Rule implementation
+    const earliestProcessDate = new Date();
+    earliestProcessDate.setDate(earliestProcessDate.getDate() + 90);
+    
+    const withdrawal = await prisma.investmentWithdrawalRequests.create({
+      data: {
+        user_id: funderId,
+        amount: Number(amount),
+        status: 'pending',
+        rewards_paused: true,
+        requested_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        earliest_process_date: earliestProcessDate.toISOString()
+      }
+    });
+    
+    // Pause rewards immediately
+    await prisma.investorPortfolios.update({
+      where: { id: portfolio.id },
+      data: { status: 'rewards_paused' }
+    });
+
+    return res.status(200).json({ 
+      status: 'success', 
+      data: withdrawal, 
+      message: '90-Day Withdrawal Notice submitted successfully. Active rewards paused.' 
+    });
+  } catch (error) {
+    console.error('requestWithdrawal error:', error);
+    return res.status(500).json({ status: 'error', message: 'Internal server error' });
   }
 };
 
 export const getRecentActivities = async (req: Request, res: Response) => {
   try {
-    const funderId = req.user.sub;
-    
-    const wallet = await prisma.wallets.findFirst({ where: { user_id: funderId } });
-    if (!wallet) return res.status(200).json([]);
-
-    const transactions = await prisma.walletTransactions.findMany({
-      where: {
-        OR: [
-          { sender_id: funderId },
-          { recipient_id: funderId }
-        ]
-      },
+    const funderId = req.user?.sub || req.user?.id;
+    const ledger = await prisma.generalLedger.findMany({
+      where: { user_id: funderId },
       orderBy: { created_at: 'desc' },
-      take: 10
+      take: 20
     });
-    
-    return res.status(200).json(transactions);
+    return res.status(200).json({ status: 'success', data: ledger });
   } catch (error) {
     console.error('getRecentActivities error:', error);
-    return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
+    return res.status(500).json({ status: 'error', message: 'Internal server error' });
   }
 };

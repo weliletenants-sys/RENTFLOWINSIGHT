@@ -15,24 +15,12 @@ import FunderInvestModal from './FunderInvestModal';
 import FunderActionButtons from './components/FunderActionButtons';
 import FunderPortfolioPage from './FunderPortfolioPage';
 import FunderOpportunitiesPage from './FunderOpportunitiesPage';
+import { getFunderDashboardStats } from '../services/funderApi';
+import type { DashboardStatsResponse } from '../services/funderApi';
 
 // ─────────────────────────── types ───────────────────────────
 
-interface DashboardStats {
-  walletBalance: number;
-  principalInvested: number;
-  monthlyReturn: number;
-  roiPercent: number;
-}
-
 // ─────────────────────────── MOCK DATA ───────────────────────
-
-const MOCK_STATS: DashboardStats = {
-  walletBalance: 2_500_000,
-  principalInvested: 45_000_000,
-  monthlyReturn: 6_750_000,
-  roiPercent: 15,
-};
 
 const MOCK_PORTFOLIOS: PortfolioItem[] = [
   {
@@ -118,7 +106,7 @@ export default function FunderDashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [stats, setStats] = useState<DashboardStats>(MOCK_STATS);
+  const [stats, setStats] = useState<DashboardStatsResponse | null>(null);
   const [portfolios, setPortfolios] = useState<PortfolioItem[]>(MOCK_PORTFOLIOS);
   const [activities, setActivities] = useState<ActivityItem[]>(MOCK_ACTIVITIES);
   const [isLoading, setIsLoading] = useState(true);
@@ -126,19 +114,23 @@ export default function FunderDashboard() {
   const [activePage, setActivePage] = useState<string>('Dashboard');
 
   useEffect(() => {
-    // Pure frontend UI mode: Load mock data instantly
-    setStats(MOCK_STATS);
-    setPortfolios(MOCK_PORTFOLIOS);
-    setActivities(MOCK_ACTIVITIES);
-    setIsLoading(false);
+    const fetchDashboard = async () => {
+      try {
+        const liveStats = await getFunderDashboardStats();
+        setStats(liveStats);
+      } catch (error) {
+        console.error("Failed to load dashboard stats", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchDashboard();
   }, [user, navigate]);
 
   const handleInvestSuccess = (amount: number) => {
-    setStats((prev) => ({
-      ...prev,
-      principalInvested: prev.principalInvested + amount,
-      monthlyReturn: prev.monthlyReturn + amount * 0.15,
-    }));
+    // Refresh fully
+    getFunderDashboardStats().then(setStats);
   };
 
   const handleVerificationCheck = (actionFn: () => void) => {
@@ -219,7 +211,7 @@ export default function FunderDashboard() {
 
           {/* ──────────── PAGE BODY ──────────── */}
           {activePage === 'Portfolio' ? (
-            <FunderPortfolioPage onAddPortfolio={() => handleVerificationCheck(() => setIsModalOpen(true))} walletBalance={stats.walletBalance} />
+            <FunderPortfolioPage onAddPortfolio={() => handleVerificationCheck(() => setIsModalOpen(true))} walletBalance={stats?.availableLiquid || 0} />
           ) : activePage === 'Opportunities' ? (
             <FunderOpportunitiesPage />
           ) : (
@@ -229,9 +221,11 @@ export default function FunderDashboard() {
               {/* ── LEFT / MAIN COLUMN ── */}
               <div className="lg:col-span-8 flex flex-col gap-8">
 
-                {/* Wealth Performance Card */}
+                 {/* Wealth Performance Card */}
                 <FunderWalletCard
-                  walletBalance={stats.walletBalance}
+                  totalBalance={stats?.totalBalance || 0}
+                  availableLiquid={stats?.availableLiquid || 0}
+                  totalInvested={stats?.totalInvested || 0}
                   cardId="WL-99201"
                   onAddFunds={() => navigate('/funder/wallet')}
                   onWithdraw={() => navigate('/funder/wallet')}
@@ -242,8 +236,8 @@ export default function FunderDashboard() {
                 {/* Quick Actions — mobile only */}
                 <div className="lg:hidden relative">
                   <FunderActionButtons
-                    portfolioValue={stats.principalInvested}
-                    roiPercent={stats.roiPercent}
+                    portfolioValue={stats?.totalInvested || 0}
+                    roiPercent={stats?.expectedYield || 15}
                   />
                 </div>
 {/* Portfolio list */}
@@ -271,8 +265,8 @@ export default function FunderDashboard() {
                                 {/* Wallet Quick Actions */}
                 <div className="relative">
                   <FunderActionButtons
-                    portfolioValue={stats.principalInvested}
-                    roiPercent={stats.roiPercent}
+                    portfolioValue={stats?.totalInvested || 0}
+                    roiPercent={stats?.expectedYield || 15}
                   />
                 </div>
                 
@@ -313,7 +307,7 @@ export default function FunderDashboard() {
       <FunderInvestModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        walletBalance={stats.walletBalance}
+        walletBalance={stats?.availableLiquid || 0}
         onSuccess={handleInvestSuccess}
       />
     </div>

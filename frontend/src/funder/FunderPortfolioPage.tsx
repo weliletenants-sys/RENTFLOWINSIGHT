@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Plus,
@@ -12,7 +12,9 @@ import {
   ShieldCheck,
   X,
   CheckCircle2,
+  Loader2
 } from 'lucide-react';
+import { getFunderPortfolios } from '../services/funderApi';
 
 /* ═══════════ TYPES ═══════════ */
 
@@ -171,13 +173,28 @@ interface FunderPortfolioPageProps {
 /* ═══════════════════════════════════════════════════════ */
 /*               MAIN COMPONENT                           */
 /* ═══════════════════════════════════════════════════════ */
-export default function FunderPortfolioPage({ onAddPortfolio, walletBalance = 2_500_000 }: FunderPortfolioPageProps) {
+export default function FunderPortfolioPage({ onAddPortfolio, walletBalance = 0 }: FunderPortfolioPageProps) {
   const navigate = useNavigate();
   const [filter, setFilter] = useState<FilterStatus>('all');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [portfolios, setPortfolios] = useState<PortfolioAccount[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const portfolios = MOCK_PORTFOLIOS;
-  const filtered = filter === 'all' ? portfolios : portfolios.filter((p) => p.status === filter);
+  useEffect(() => {
+    const fetchPortfolios = async () => {
+      try {
+        const data = await getFunderPortfolios();
+        setPortfolios(data);
+      } catch (error) {
+        console.error("Failed to load portfolios", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchPortfolios();
+  }, []);
+
+  const filtered = filter === 'all' ? portfolios : portfolios.filter((p) => p.status === filter || p.status.toLowerCase() === filter);
 
   /* ── summary stats ── */
   const totalInvested = portfolios.reduce((s, p) => s + p.investmentAmount, 0);
@@ -193,9 +210,14 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance = 2_
     <>
     <div className="flex-1 p-6 lg:p-8 pb-32 lg:pb-8">
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-black text-slate-900 tracking-tight">My Portfolio</h1>
-        <p className="text-sm text-slate-500 mt-1">Track and manage your investment accounts in the Rent Management Pool</p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+            My Portfolio
+            {isLoading && <Loader2 className="w-5 h-5 animate-spin text-slate-400" />}
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">Track and manage your investment accounts in the Rent Management Pool</p>
+        </div>
       </div>
 
       {/* Summary Stats */}
