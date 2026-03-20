@@ -38,8 +38,9 @@ export const getDashboardStats = async (req: Request, res: Response) => {
         pendingPortfolios: portfolios.filter(p => p.status === 'pending').length
       }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('getDashboardStats error:', error);
+    require('fs').appendFileSync('funder.error.log', '\n[getDashboardStats] ' + (error?.stack || error?.message || error));
     return res.status(500).json({ status: 'error', message: 'Internal server error' });
   }
 };
@@ -200,8 +201,9 @@ export const getRecentActivities = async (req: Request, res: Response) => {
       take: 20
     });
     return res.status(200).json({ status: 'success', data: ledger });
-  } catch (error) {
+  } catch (error: any) {
     console.error('getRecentActivities error:', error);
+    require('fs').appendFileSync('funder.error.log', '\n[getRecentActivities] ' + (error?.stack || error?.message || error));
     return res.status(500).json({ status: 'error', message: 'Internal server error' });
   }
 };
