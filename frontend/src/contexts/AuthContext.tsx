@@ -2,7 +2,7 @@ import { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
 import { logoutUser } from '../services/authApi';
 
-export type Role = 'TENANT' | 'AGENT' | 'LANDLORD' | 'FUNDER' | null;
+export type Role = 'TENANT' | 'AGENT' | 'LANDLORD' | 'FUNDER' | 'SUPER_ADMIN' | 'CEO' | 'CFO' | 'COO' | 'CTO' | 'CMO' | 'CRM' | null;
 
 interface User {
   id: string;
