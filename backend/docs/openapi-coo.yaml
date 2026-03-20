@@ -1,0 +1,76 @@
+openapi: "3.1.0"
+info:
+  title: RentFlow Insight - COO API
+  version: "1.0.0"
+  description: Operations and metrics endpoints for the Chief Operating Officer.
+servers:
+  - url: /api/v1
+paths:
+  /coo/metrics/overview:
+    get:
+      summary: Get platform operational overview metrics 
+      operationId: getCooOverviewMetrics
+      tags: [COO, Metrics]
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Aggregated metrics for the COO dashboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CooOverviewMetrics"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+components:
+  schemas:
+    CooOverviewMetrics:
+      type: object
+      required: [totalInvestors, totalInvestments, dailyCollections, activeAgents, activeAccounts, todaysVisits, missedPaymentsCount, pendingWithdrawalsAmount, pendingWithdrawalsCount, walletMonitoring]
+      properties:
+        totalInvestors: { type: integer, example: 120 }
+        totalInvestments: { type: number, example: 5000000 }
+        dailyCollections: { type: number, example: 150000 }
+        activeAgents: { type: integer, example: 45 }
+        activeAccounts: { type: integer, example: 850 }
+        todaysVisits: { type: integer, example: 32 }
+        missedPaymentsCount: { type: integer, example: 12 }
+        pendingWithdrawalsAmount: { type: number, example: 450000 }
+        pendingWithdrawalsCount: { type: integer, example: 3 }
+        walletMonitoring:
+          type: object
+          required: [mainFloat, agentEscrow]
+          properties:
+            mainFloat: { type: number, example: 12000000 }
+            agentEscrow: { type: number, example: 1440000 }
+
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri, example: "https://api.rentflow.com/errors/internal-error" }
+        title: { type: string, example: "Internal Server Error" }
+        status: { type: integer, example: 500 }
+        detail: { type: string, example: "Database connection failed." }
+        instance: { type: string, format: uri }
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid authentication
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    InternalServerError:
+      description: Server encountered an unexpected condition
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

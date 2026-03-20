@@ -9,6 +9,7 @@ import supporterRoutes from './supporter/supporter.routes';
 import tenantRoutes from './tenant/tenant.routes';
 import agentRoutes from './agent/agent.routes';
 import cfoRoutes from './cfo/cfo.routes';
+import cooRoutes from './coo/coo.routes';
 import funderRoutes from './funder/funder.routes';
 import rolesRoutes from './roles/roles.routes';
 
@@ -23,6 +24,7 @@ api.use('/supporter', supporterRoutes);
 api.use('/tenant', tenantRoutes);
 api.use('/agent', agentRoutes);
 api.use('/cfo', cfoRoutes);
+api.use('/v1/coo', cooRoutes);
 api.use('/funder', funderRoutes);
 api.use('/roles', rolesRoutes);
 
