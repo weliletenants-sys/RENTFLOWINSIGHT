@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import prisma from '../prisma/prisma.client';
+import { problemResponse } from '../utils/problem';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
 
@@ -27,7 +28,7 @@ export const getDashboardStats = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Dashboard Stats Error:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    problemResponse(res, 500, 'Internal Server Error', `Internal Server Error`, 'internal-server-error');
   }
 };
 
@@ -71,7 +72,7 @@ export const getVirtualHouses = async (req: Request, res: Response) => {
     return res.status(200).json(virtualHouses);
   } catch (error) {
     console.error('Virtual Houses Error:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    problemResponse(res, 500, 'Internal Server Error', `Internal Server Error`, 'internal-server-error');
   }
 };
 
@@ -81,12 +82,12 @@ export const fundPool = async (req: Request, res: Response) => {
     const { amount, duration_months, roi_mode } = req.body;
 
     if (!amount || amount < 50000) {
-      return res.status(400).json({ message: 'Invalid amount or below minimum (50,000)' });
+      return problemResponse(res, 400, 'Validation Error', `Invalid amount or below minimum (50,000)`, 'validation-error');
     }
 
     const wallet = await prisma.wallets.findFirst({ where: { user_id: userId } });
     if (!wallet || wallet.balance < amount) {
-      return res.status(400).json({ message: 'Insufficient funds' });
+      return problemResponse(res, 400, 'Validation Error', `Insufficient funds`, 'validation-error');
     }
 
     // Atomic transaction logic simplified for migration placeholder
@@ -127,7 +128,7 @@ export const fundPool = async (req: Request, res: Response) => {
     return res.status(201).json({ message: 'Funded successfully', portfolio });
   } catch (error) {
     console.error('Fund Pool Error:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    problemResponse(res, 500, 'Internal Server Error', `Internal Server Error`, 'internal-server-error');
   }
 };
 
@@ -137,12 +138,12 @@ export const proxyInvest = async (req: Request, res: Response) => {
     const { partnerId, amount } = req.body;
 
     if (!partnerId || !amount || amount < 50000) {
-      return res.status(400).json({ message: 'Invalid payload or amount too low' });
+      return problemResponse(res, 400, 'Validation Error', `Invalid payload or amount too low`, 'validation-error');
     }
 
     const agentWallet = await prisma.wallets.findFirst({ where: { user_id: agentId } });
     if (!agentWallet || agentWallet.balance < amount) {
-      return res.status(400).json({ message: 'Insufficient agent funds' });
+      return problemResponse(res, 400, 'Validation Error', `Insufficient agent funds`, 'validation-error');
     }
 
     // Deduct from Agent mapping
@@ -214,7 +215,7 @@ export const proxyInvest = async (req: Request, res: Response) => {
     return res.status(201).json({ message: 'Proxy investment queued for approval', portfolio });
   } catch (error) {
     console.error('Proxy Invest Error:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    problemResponse(res, 500, 'Internal Server Error', `Internal Server Error`, 'internal-server-error');
   }
 };
 
@@ -227,7 +228,7 @@ export const getInvestmentOptions = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Investment Options Error:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    problemResponse(res, 500, 'Internal Server Error', `Internal Server Error`, 'internal-server-error');
   }
 };
 
@@ -235,10 +236,10 @@ export const funderSignup = async (req: Request, res: Response) => {
   try {
     const { email, password, firstName, lastName, phone } = req.body;
     if (!email || !password || !firstName || !lastName || !phone) {
-      return res.status(400).json({ message: 'Missing required fields' });
+      return problemResponse(res, 400, 'Validation Error', `Missing required fields`, 'validation-error');
     }
     const existingUser = await prisma.profiles.findFirst({ where: { email } });
-    if (existingUser) return res.status(409).json({ message: 'Email already exists' });
+    if (existingUser) return problemResponse(res, 409, 'Conflict', `Email already exists`, 'conflict');
     
     const password_hash = await bcrypt.hash(password, 10);
     const now = new Date().toISOString();
@@ -275,7 +276,7 @@ export const funderSignup = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Funder Signup Error:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    problemResponse(res, 500, 'Internal Server Error', `Internal Server Error`, 'internal-server-error');
   }
 };
 
@@ -286,10 +287,10 @@ export const funderOnboard = async (req: Request, res: Response) => {
       nationalId, nextOfKinName, nextOfKinPhone, accountName, accountNumber, bankName 
     } = req.body;
     
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    if (!userId) return problemResponse(res, 401, 'Unauthorized', `Unauthorized`, 'unauthorized');
     
     const profile = await prisma.profiles.findUnique({ where: { id: userId } });
-    if (!profile) return res.status(404).json({ message: 'User not found' });
+    if (!profile) return problemResponse(res, 404, 'Not Found', `User not found`, 'not-found');
     
     // Create SupporterInvites document acting as KYC record
     const kycRecord = await prisma.supporterInvites.create({
@@ -322,7 +323,7 @@ export const funderOnboard = async (req: Request, res: Response) => {
     return res.status(201).json({ message: 'Onboarding complete', kycRecord });
   } catch (error) {
     console.error('Funder Onboard Error:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    problemResponse(res, 500, 'Internal Server Error', `Internal Server Error`, 'internal-server-error');
   }
 };
 
@@ -331,12 +332,12 @@ export const cooProxyInvest = async (req: Request, res: Response) => {
     const { partnerId, amount } = req.body;
 
     if (!partnerId || !amount || amount < 50000) {
-      return res.status(400).json({ message: 'Invalid payload or amount too low' });
+      return problemResponse(res, 400, 'Validation Error', `Invalid payload or amount too low`, 'validation-error');
     }
 
     const partnerWallet = await prisma.wallets.findFirst({ where: { user_id: partnerId } });
     if (!partnerWallet || partnerWallet.balance < amount) {
-      return res.status(400).json({ message: 'Insufficient partner funds' });
+      return problemResponse(res, 400, 'Validation Error', `Insufficient partner funds`, 'validation-error');
     }
 
     // Deduct from Partner Wallet
@@ -377,7 +378,7 @@ export const cooProxyInvest = async (req: Request, res: Response) => {
     return res.status(201).json({ message: 'COO Proxy investment activated', portfolio });
   } catch (error) {
     console.error('COO Proxy Invest Error:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    problemResponse(res, 500, 'Internal Server Error', `Internal Server Error`, 'internal-server-error');
   }
 };
 
@@ -386,8 +387,8 @@ export const requestWithdrawal = async (req: Request, res: Response) => {
     const userId = req.user?.sub;
     const { amount, reason } = req.body;
 
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
-    if (!amount || amount <= 0) return res.status(400).json({ message: 'Invalid amount' });
+    if (!userId) return problemResponse(res, 401, 'Unauthorized', `Unauthorized`, 'unauthorized');
+    if (!amount || amount <= 0) return problemResponse(res, 400, 'Validation Error', `Invalid amount`, 'validation-error');
 
     const now = new Date();
     const earliestProcessDate = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
@@ -409,7 +410,7 @@ export const requestWithdrawal = async (req: Request, res: Response) => {
     return res.status(201).json({ message: 'Withdrawal request submitted. 90-day notice active.', withdrawal });
   } catch (error) {
     console.error('Request Withdrawal Error:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    problemResponse(res, 500, 'Internal Server Error', `Internal Server Error`, 'internal-server-error');
   }
 };
 
@@ -481,10 +482,10 @@ export const processRoi = async (req: Request, res: Response) => {
       processedCount++;
     }
 
-    return res.status(200).json({ message: `ROI processed successfully for ${processedCount} portfolios.` });
+    return problemResponse(res, 200, 'Error', `ROI processed successfully for ${processedCount} portfolios.`, 'error');
   } catch (error) {
     console.error('Process ROI Error:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    problemResponse(res, 500, 'Internal Server Error', `Internal Server Error`, 'internal-server-error');
   }
 };
 
@@ -519,7 +520,7 @@ export const getPortfolios = async (req: Request, res: Response) => {
     return res.status(200).json(formattedPortfolios);
   } catch (error) {
     console.error('Get Portfolios Error:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    problemResponse(res, 500, 'Internal Server Error', `Internal Server Error`, 'internal-server-error');
   }
 };
 
@@ -550,7 +551,7 @@ export const getActivities = async (req: Request, res: Response) => {
     return res.status(200).json(formattedActivities);
   } catch (error) {
     console.error('Get Activities Error:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    problemResponse(res, 500, 'Internal Server Error', `Internal Server Error`, 'internal-server-error');
   }
 };
 
@@ -576,10 +577,10 @@ export const dispatchActivations = async (req: Request, res: Response) => {
       console.log(`[LINK] ${magicLink}\n`);
     }
     
-    return res.status(200).json({ message: `Successfully generated ${funders.length} 24-hour Activation Links.` });
+    return problemResponse(res, 200, 'Error', `Successfully generated ${funders.length} 24-hour Activation Links.`, 'error');
   } catch (error) {
     console.error('Dispatch Error:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    problemResponse(res, 500, 'Internal Server Error', `Internal Server Error`, 'internal-server-error');
   }
 };
 
@@ -588,24 +589,24 @@ export const activateAccount = async (req: Request, res: Response) => {
     const { token, password } = req.body;
     
     if (!token || !password) {
-      return res.status(400).json({ message: 'Token and new password are required' });
+      return problemResponse(res, 400, 'Validation Error', `Token and new password are required`, 'validation-error');
     }
 
     const decoded = jwt.decode(token) as any;
     if (!decoded || !decoded.id) {
-      return res.status(400).json({ message: 'Invalid token structure' });
+      return problemResponse(res, 400, 'Validation Error', `Invalid token structure`, 'validation-error');
     }
 
     const user = await prisma.profiles.findUnique({ where: { id: decoded.id } });
     if (!user || !user.password_hash) {
-      return res.status(404).json({ message: 'User not found or inaccessible' });
+      return problemResponse(res, 404, 'Not Found', `User not found or inaccessible`, 'not-found');
     }
 
     // Verify token using the user's current password hash + secret!
     try {
       jwt.verify(token, JWT_SECRET + user.password_hash);
     } catch (e) {
-      return res.status(403).json({ message: 'Token is invalid, expired, or has already been used.' });
+      return problemResponse(res, 403, 'Forbidden', `Token is invalid, expired, or has already been used.`, 'forbidden');
     }
 
     // Digest the new password securely
@@ -629,6 +630,6 @@ export const activateAccount = async (req: Request, res: Response) => {
 
   } catch (error) {
     console.error('Activation Error:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    problemResponse(res, 500, 'Internal Server Error', `Internal Server Error`, 'internal-server-error');
   }
 };

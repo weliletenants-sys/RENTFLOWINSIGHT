@@ -35,11 +35,11 @@ export async function getMyRoles(): Promise<MyRolesResponse> {
 }
 
 export async function requestRole(role: string): Promise<{ message: string }> {
-  const res = await axios.post(`${API}/roles/request`, { role }, { headers: authHeaders() });
+  const res = await axios.post(`${API}/roles/requests`, { role }, { headers: authHeaders() });
   return res.data;
 }
 
 export async function switchRole(role: string): Promise<SwitchRoleResponse> {
-  const res = await axios.post(`${API}/roles/switch`, { role }, { headers: authHeaders() });
+  const res = await axios.post(`${API}/roles/sessions/active`, { role }, { headers: authHeaders() });
   return res.data;
 }

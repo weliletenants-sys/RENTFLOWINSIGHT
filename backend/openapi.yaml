@@ -92,8 +92,707 @@ paths:
         "401": { $ref: "#/components/responses/Unauthorized" }
         "500": { $ref: "#/components/responses/InternalError" }
 
+  /api/auth/registrations:
+    post:
+      summary: Register a generic user account
+      tags: [Auth]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/auth/sessions:
+    post:
+      summary: Authenticate user and fetch tokens
+      tags: [Auth]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/auth/otp:
+    post:
+      summary: Dispatch SMS OTP securely
+      tags: [Auth]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/auth/otp/verifications:
+    post:
+      summary: Verify SMS OTP code securely
+      tags: [Auth]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/wallets/my-wallet:
+    get:
+      summary: Fetch local current wallet state
+      tags: [Wallets]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/wallets/deposits:
+    post:
+      summary: Initiate a direct external deposit
+      tags: [Wallets]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/wallets/deposits/requests:
+    post:
+      summary: Initiate an external deposit request query
+      tags: [Wallets]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/wallets/withdrawals:
+    post:
+      summary: Process localized internal withdrawal request
+      tags: [Wallets]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/wallets/transfers:
+    post:
+      summary: Forward fluid funds universally across accounts
+      tags: [Wallets]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/tenant/rent-progress:
+    get:
+      summary: Fetch tracking data for rental status
+      tags: [Tenant]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/tenant/activities:
+    get:
+      summary: Fetch recent actions associated with the profile
+      tags: [Tenant]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/supporter/accounts:
+    post:
+      summary: Initialize supporter identity
+      tags: [Internal Admin]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/supporter/activations:
+    post:
+      summary: Dispatch generalized network activation statuses
+      tags: [Internal Admin]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/supporter/account-activations:
+    post:
+      summary: Manually execute activation flags
+      tags: [Internal Admin]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/supporter/onboarding:
+    post:
+      summary: Onboard raw entity data payloads
+      tags: [Internal Admin]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/supporter/investment-options:
+    get:
+      summary: Retrieve available system options
+      tags: [Internal Admin]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/supporter/dashboard:
+    get:
+      summary: Retrieve statistical dashboard context
+      tags: [Internal Admin]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/supporter/virtual-houses:
+    get:
+      summary: Fetch generated models structure
+      tags: [Internal Admin]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/supporter/portfolios:
+    get:
+      summary: Pull portfolio metadata sets
+      tags: [Internal Admin]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/supporter/activities:
+    get:
+      summary: Query admin global actions log
+      tags: [Internal Admin]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/supporter/funding-pools:
+    post:
+      summary: Route internal localized capital segments
+      tags: [Internal Admin]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/supporter/proxy-investments:
+    post:
+      summary: Apply universal agent-investor mapping layer
+      tags: [Internal Admin]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/supporter/proxy-investments/coo:
+    post:
+      summary: Execute COO-tier generalized proxying logic
+      tags: [Internal Admin]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/supporter/withdrawals:
+    post:
+      summary: Inject request queries into core withdraw buffer
+      tags: [Internal Admin]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/supporter/roi-processing:
+    post:
+      summary: Run global macro ROI computations manually
+      tags: [Internal Admin]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/roles/my-roles:
+    get:
+      summary: Provide network permission matrices
+      tags: [Session Identity]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/roles/requests:
+    post:
+      summary: Elevate external access parameters securely
+      tags: [Session Identity]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/roles/sessions/active:
+    post:
+      summary: Pivot localized scope logic actively
+      tags: [Session Identity]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/funder/statistics/dashboard:
+    get:
+      summary: Export universal macro statistics view
+      tags: [Funder Ecosystem]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/funder/portfolios:
+    get:
+      summary: Export isolated portfolio vectors
+      tags: [Funder Ecosystem]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/funder/activities:
+    get:
+      summary: Export historical node log sets
+      tags: [Funder Ecosystem]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/cfo/statistics/overview:
+    get:
+      summary: Monitor general system health status logic
+      tags: [Global Controls]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/cfo/reconciliations:
+    get:
+      summary: Load discrepancy checking logs manually
+      tags: [Global Controls]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/cfo/withdrawals/pending:
+    get:
+      summary: Identify frozen outgoing fund instances
+      tags: [Global Controls]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/cfo/withdrawals/{id}/approvals:
+    post:
+      summary: Authorize requested capital outflow parameters
+      tags: [Global Controls]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/cfo/withdrawals/{id}/rejections:
+    post:
+      summary: Deny requested capital outflow dynamically
+      tags: [Global Controls]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/cfo/ledger:
+    get:
+      summary: Stream core immutable financial state
+      tags: [Global Controls]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/cfo/statements:
+    get:
+      summary: Export synthesized operational sheets globally
+      tags: [Global Controls]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/rent-requests:
+    post:
+      summary: Construct universal payment proxy context
+      tags: [Rent Requests]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+    get:
+      summary: Pull universally cached rental vectors globally
+      tags: [Rent Requests]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/rent-requests/me:
+    get:
+      summary: Extract specific linked rental constraints
+      tags: [Rent Requests]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/rent-requests/{id}/status:
+    patch:
+      summary: Modify structural state tracking bounds
+      tags: [Rent Requests]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/applications:
+    post:
+      summary: Initiate empty registration logic wrapper
+      tags: [Applications]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/applications/{id}/steps/1:
+    put:
+      summary: Overwrite segment one boundaries manually
+      tags: [Applications]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/applications/{id}/steps/2:
+    put:
+      summary: Overwrite segment two boundaries manually
+      tags: [Applications]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/applications/{id}/steps/3:
+    put:
+      summary: Overwrite segment three boundaries manually
+      tags: [Applications]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/applications/{id}/steps/4:
+    put:
+      summary: Overwrite segment four boundaries manually
+      tags: [Applications]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/applications/{id}:
+    get:
+      summary: Expose structural data points strictly
+      tags: [Applications]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/applications/agent:
+    post:
+      summary: Initialize structured background registration vectors
+      tags: [Applications]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/upload:
+    post:
+      summary: Stream byte arrays into remote buckets safely
+      tags: [Asset Processing]
+      responses:
+        "200":
+          description: Successful Operation
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+
 components:
   schemas:
+    ProblemDetails:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string, format: uri }
+
     Problem:
       type: object
       required: [type, title, status]
@@ -129,3 +828,4 @@ components:
 
 security:
   - BearerAuth: []
+

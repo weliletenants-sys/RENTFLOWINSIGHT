@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { problemResponse } from '../utils/problem';
 
 const prisma = new PrismaClient();
 
@@ -190,13 +191,13 @@ export const approveWithdrawal = async (req: Request, res: Response) => {
     const { id } = req.params;
     
     const request = await prisma.withdrawalRequests.findUnique({ where: { id } });
-    if (!request) return res.status(404).json({ message: 'Request not found' });
-    if (request.status !== 'manager_approved') return res.status(400).json({ message: 'Request is not ready for CFO approval' });
+    if (!request) return problemResponse(res, 404, 'Not Found', `Request not found`, 'not-found');
+    if (request.status !== 'manager_approved') return problemResponse(res, 400, 'Validation Error', `Request is not ready for CFO approval`, 'validation-error');
 
     // Validate Balance Check
     const wallet = await prisma.wallets.findFirst({ where: { user_id: request.user_id || undefined } });
     if (!wallet || wallet.balance < request.amount) {
-      return res.status(400).json({ message: 'Insufficient wallet balance' });
+      return problemResponse(res, 400, 'Validation Error', `Insufficient wallet balance`, 'validation-error');
     }
 
     // Validate Ledger Consistency (Gap detection)
@@ -205,7 +206,7 @@ export const approveWithdrawal = async (req: Request, res: Response) => {
     const ledgerBalance = (credits._sum.amount || 0) - (debits._sum.amount || 0);
     
     if (wallet.balance !== ledgerBalance) {
-      return res.status(400).json({ message: 'Reconciliation Error: Ledger gap detected. Approval blocked.' });
+      return problemResponse(res, 400, 'Validation Error', `Reconciliation Error: Ledger gap detected. Approval blocked.`, 'validation-error');
     }
 
     const updated = await prisma.withdrawalRequests.update({
@@ -229,7 +230,7 @@ export const rejectWithdrawal = async (req: Request, res: Response) => {
     const { reason } = req.body;
 
     if (!reason || reason.trim() === '') {
-      return res.status(400).json({ message: 'Rejection reason is required' });
+      return problemResponse(res, 400, 'Validation Error', `Rejection reason is required`, 'validation-error');
     }
 
     const updated = await prisma.withdrawalRequests.update({

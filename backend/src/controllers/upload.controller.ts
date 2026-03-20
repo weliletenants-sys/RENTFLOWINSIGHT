@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
+import { problemResponse } from '../utils/problem';
 
 export const uploadFile = (req: Request, res: Response) => {
   if (!req.file) {
-    return res.status(400).json({ message: 'No file uploaded' });
+    return problemResponse(res, 400, 'Validation Error', `No file uploaded`, 'validation-error');
   }
 
   const fileUrl = `http://localhost:3000/uploads/${req.file.filename}`;

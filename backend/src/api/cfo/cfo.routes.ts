@@ -7,20 +7,20 @@ import {
   rejectWithdrawal,
   getLedger,
   getStatements
-} from '../controllers/cfo.controller';
+} from '../../controllers/cfo.controller';
 
 const router = express.Router();
 
 // Dashboard Overview
-router.get('/overview', getOverview);
+router.get('/statistics/overview', getOverview);
 
 // Reconciliation Engine
-router.get('/reconciliation', getReconciliation);
+router.get('/reconciliations', getReconciliation);
 
 // Approvals Gate
-router.get('/approvals/withdrawals', getPendingWithdrawals);
-router.post('/approvals/withdrawals/:id/approve', approveWithdrawal);
-router.post('/approvals/withdrawals/:id/reject', rejectWithdrawal);
+router.get('/withdrawals/pending', getPendingWithdrawals);
+router.post('/withdrawals/:id/approvals', approveWithdrawal);
+router.post('/withdrawals/:id/rejections', rejectWithdrawal);
 
 // Accounting
 router.get('/ledger', getLedger);

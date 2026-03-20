@@ -130,7 +130,7 @@ export const requestDeposit = async (payload: { amount: number; method: string; 
 
 export const requestTransfer = async (payload: { amount: number; recipientId: string }) => {
   // Global transfer endpoint but mapped through proxy/agent context
-  const { data } = await agentClient.post('/wallets/transfer', payload);
+  const { data } = await agentClient.post('/wallets/transfers', payload);
   return data;
 };
 

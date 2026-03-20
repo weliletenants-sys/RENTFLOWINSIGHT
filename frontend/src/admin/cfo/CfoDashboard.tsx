@@ -22,7 +22,7 @@ export default function CfoDashboard() {
 
   const fetchOverview = async () => {
     try {
-      const { data } = await axios.get('/api/cfo/overview');
+      const { data } = await axios.get('/api/cfo/statistics/overview');
       setOverviewMetrics(data);
     } catch (err) {
       console.error(err);
@@ -31,7 +31,7 @@ export default function CfoDashboard() {
 
   const fetchReconciliation = async () => {
     try {
-      const { data } = await axios.get('/api/cfo/reconciliation');
+      const { data } = await axios.get('/api/cfo/reconciliations');
       setReconciliation(data);
     } catch (err) {
       console.error(err);
@@ -40,7 +40,7 @@ export default function CfoDashboard() {
 
   const fetchWithdrawals = async () => {
     try {
-      const { data } = await axios.get('/api/cfo/approvals/withdrawals');
+      const { data } = await axios.get('/api/cfo/withdrawals/pending');
       setWithdrawals(data.withdrawals || []);
     } catch (err) {
       console.error(err);
@@ -55,7 +55,7 @@ export default function CfoDashboard() {
 
   const handleApprove = async (id: string) => {
     try {
-      await axios.post(`/api/cfo/approvals/withdrawals/${id}/approve`);
+      await axios.post(`/api/cfo/withdrawals/${id}/approvals`);
       toast.success('Approved successfully');
       fetchWithdrawals();
     } catch (err: any) {
@@ -70,7 +70,7 @@ export default function CfoDashboard() {
       return;
     }
     try {
-      await axios.post(`/api/cfo/approvals/withdrawals/${id}/reject`, { reason });
+      await axios.post(`/api/cfo/withdrawals/${id}/rejections`, { reason });
       toast.success('Rejected with reason');
       fetchWithdrawals();
     } catch (err: any) {
