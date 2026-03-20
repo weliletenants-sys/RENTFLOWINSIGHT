@@ -12,9 +12,6 @@ import SubAgents from './agent/SubAgents';
 import AgentEarnings from './agent/AgentEarnings';
 import AgentClients from './agent/AgentClients';
 import AgentSettings from './agent/AgentSettings';
-import CfoDashboard from './admin/cfo/CfoDashboard';
-import CeoDashboard from './admin/ceo/CeoDashboard';
-import CeoPerformance from './admin/ceo/CeoPerformance';
 import TenantPayments from './tenant/TenantPayments';
 import TenantProfile from './tenant/TenantProfile';
 
@@ -24,6 +21,7 @@ import { agentRoutes } from './routes/agentRoutes';
 import { tenantRoutes } from './routes/tenantRoutes';
 import { funderRoutes } from './routes/funderRoutes';
 import { cooRoutes } from './routes/cooRoutes';
+import { executiveRoutes } from './routes/executiveRoutes';
 
 const queryClient = new QueryClient();
 
@@ -97,11 +95,11 @@ function App() {
                   <Route path="/dashboard/agent/earnings" element={<AgentEarnings />} />
                   <Route path="/dashboard/agent/clients" element={<AgentClients />} />
                   <Route path="/dashboard/agent/settings" element={<AgentSettings />} />
-                  <Route path="/dashboard/cfo" element={<CfoDashboard />} />
-                  <Route path="/ceo/dashboard" element={<CeoDashboard />} />
-                  <Route path="/ceo/performance" element={<CeoPerformance />} />
                   <Route path="/dashboard/tenant/payments" element={<TenantPayments />} />
                   <Route path="/dashboard/tenant/profile" element={<TenantProfile />} />
+                  
+                  {/* Executive Hub (CEO, CTO, CMO, CRM, CFO...) */}
+                  {executiveRoutes}
                 </Route>
 
                 {/* Fallback */}
