@@ -12,7 +12,7 @@ async function main() {
   // 1. investment_withdrawal_requests
   const withdrawalsCsv = fs.readFileSync(path.join(FUNDERS_DIR, 'public.investment_withdrawal_requests.csv'), 'utf8');
   const withdrawalsRecords = parse(withdrawalsCsv, { columns: true, skip_empty_lines: true, delimiter: ';' });
-  
+
   console.log(`Read ${withdrawalsRecords.length} withdrawal requests. Syncing...`);
   for (const record of withdrawalsRecords) {
     await prisma.investmentWithdrawalRequests.upsert({
@@ -48,7 +48,7 @@ async function main() {
   // 2. investor_portfolios
   const portfoliosCsv = fs.readFileSync(path.join(FUNDERS_DIR, 'public.investor_portfolios.csv'), 'utf8');
   const portfoliosRecords = parse(portfoliosCsv, { columns: true, skip_empty_lines: true, delimiter: ';' });
-  
+
   console.log(`Read ${portfoliosRecords.length} portfolios. Syncing...`);
   for (const record of portfoliosRecords) {
     if (!record.id) continue;
@@ -91,7 +91,7 @@ async function main() {
   // 3. partner_escalations
   const escalationsCsv = fs.readFileSync(path.join(FUNDERS_DIR, 'public.partner_escalations.csv'), 'utf8');
   const escalationsRecords = parse(escalationsCsv, { columns: true, skip_empty_lines: true, delimiter: ';' });
-  
+
   console.log(`Read ${escalationsRecords.length} partner escalations. Syncing...`);
   for (const record of escalationsRecords) {
     if (!record.id) continue;
@@ -119,7 +119,7 @@ async function main() {
   // 4. supporter_invites
   const invitesCsv = fs.readFileSync(path.join(FUNDERS_DIR, 'public.supporter_invites.csv'), 'utf8');
   const invitesRecords = parse(invitesCsv, { columns: true, skip_empty_lines: true, delimiter: ';' });
-  
+
   console.log(`Read ${invitesRecords.length} supporter invites. Syncing...`);
   let inviteCount = 0;
   for (const record of invitesRecords) {
@@ -170,7 +170,7 @@ async function main() {
   // 5. supporter_roi_payments
   const roiCsv = fs.readFileSync(path.join(FUNDERS_DIR, 'public.supporter_roi_payments.csv'), 'utf8');
   const roiRecords = parse(roiCsv, { columns: true, skip_empty_lines: true, delimiter: ';' });
-  
+
   console.log(`Read ${roiRecords.length} ROI payments. Syncing...`);
   for (const record of roiRecords) {
     if (!record.id) continue;

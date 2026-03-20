@@ -761,14 +761,8 @@ export default function FunderOnboarding() {
           firstName: form.firstName,
           lastName: form.lastName,
           phone: form.phone,
-<<<<<<< HEAD
           role: definedRole || 'FUNDER' // dynamically pulled from URL (/funder)
         });
-=======
-          investPath: form.investPath
-        };
-        const response = await axios.post('http://localhost:3000/api/supporter/accounts', payload);
->>>>>>> 942c4dc498c794cb720d994f28f827e99bf0c934
         
         if (response.status === 'success') {
           updateSession(response.data.access_token, response.data.user);

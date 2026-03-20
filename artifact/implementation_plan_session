@@ -1,0 +1,30 @@
+# Stateful Sessions Implementation
+
+Responding directly to your updated [backend.md](file:///c:/Users/USER/Documents/WELILE/RENTFLOWINSIGHT/skills/backend.md) rules: *"ensure token are regenerated and validated on every login and logout and also ensure that the token is stored in the database and can be revoked at any time"*.
+
+Currently, the backend utilizes purely stateless mathematical JWTs. They cannot be revoked on a whim. We must pivot to an active **Stateful Reference Token** architecture while keeping JWT speeds.
+
+## Proposed Changes
+---
+### Database Schema
+#### [MODIFY] backend/prisma/schema.prisma
+- Introduce a new `Sessions` table mapping `{ id, user_id, token (unique), device_info, is_revoked (boolean), expires_at }`.
+- Execute a `prisma db push` and `prisma generate` to construct these tables live.
+
+---
+### Authentication Controllers
+#### [MODIFY] backend/src/controllers/auth.controller.ts
+- **One Device Policy**: Upon [login](file:///c:/Users/USER/Documents/WELILE/RENTFLOWINSIGHT/backend/src/controllers/auth.controller.ts#114-174) or [register](file:///c:/Users/USER/Documents/WELILE/RENTFLOWINSIGHT/backend/src/controllers/auth.controller.ts#10-113), we must query the `Sessions` table and flip `is_revoked = true` for ANY existing active generic sessions attached to that `user_id`.
+- **Token Injection**: Insert the newly signed JWT directly into `Sessions` mapped to `req.headers['user-agent']` and `req.ip` for accurate tracking.
+- **Revocation**: The [logout](file:///c:/Users/USER/Documents/WELILE/RENTFLOWINSIGHT/backend/src/controllers/auth.controller.ts#226-249) controller must extract the token from the Bearer header and execute an active `UPDATE sessions SET is_revoked = true WHERE token = ?`, permanently killing the session across all grids.
+
+### Middleware Validation
+#### [MODIFY] backend/src/middlewares/auth.middleware.ts
+- Alongside standard `jwt.verify`, inject an asynchronous database lookup ensuring `const activeSession = prisma.sessions.findUnique(token)`. 
+- If the token is missing from the DB or bears the `is_revoked: true` stamp (due to admin ban, logout, or logging in on another device), we must instantly return `401 Unauthorized` and kill the request.
+
+---
+## Verification Plan
+1. We will log into an account on the client and verify a Database Session row appears.
+2. We will duplicate the tab and attempt to fire an authenticated request from a cached token after executing a logout. It must return a `401 Unauthorized`.
+3. If we login from a *second* browser, the first browser's token must instantly be revoked according to the Single Device logic.

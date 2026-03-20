@@ -89,6 +89,21 @@ export const register = async (req: Request, res: Response) => {
     const payload = { email: result.email, sub: result.id, role: role };
     const access_token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
 
+    await prisma.sessions.updateMany({
+      where: { user_id: result.id, is_revoked: false },
+      data: { is_revoked: true }
+    });
+
+    await prisma.sessions.create({
+      data: {
+        user_id: result.id,
+        token: access_token,
+        device_info: req.headers['user-agent']?.substring(0, 255) || null,
+        ip_address: req.ip?.substring(0, 45) || null,
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000)
+      }
+    });
+
     let onboarding_url = '/dashboard';
     if (role === 'AGENT') onboarding_url = '/agent-onboarding';
     if (role === 'TENANT') onboarding_url = '/tenant-agreement';
@@ -141,6 +156,21 @@ export const login = async (req: Request, res: Response) => {
 
     const payload = { email: profile.email, sub: profile.id, role };
     const access_token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
+
+    await prisma.sessions.updateMany({
+      where: { user_id: profile.id, is_revoked: false },
+      data: { is_revoked: true }
+    });
+
+    await prisma.sessions.create({
+      data: {
+        user_id: profile.id,
+        token: access_token,
+        device_info: req.headers['user-agent']?.substring(0, 255) || null,
+        ip_address: req.ip?.substring(0, 45) || null,
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000)
+      }
+    });
 
     await logSecurityEvent({ event: 'LOGIN_SUCCESS', user_id: profile.id, email: profile.email, ip_address: req.ip, user_agent: req.headers['user-agent'] });
 
@@ -220,5 +250,42 @@ export const verifyOTP = async (req: Request, res: Response) => {
     return res.status(200).json({ status: 'success', message: 'OTP verified successfully', data: {} });
   } catch (error) {
     return problemResponse(res, 500, 'Internal Server Error', 'Could not verify OTP', 'internal-error');
+  }
+};
+
+export const logout = async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      try {
+        await prisma.sessions.update({
+          where: { token },
+          data: { is_revoked: true }
+        });
+      } catch (e) {
+        // Token might not exist if already revoked, ignore safely
+      }
+    }
+
+    if (user && user.sub) {
+      await logSecurityEvent({
+        event: 'LOGOUT_SUCCESS',
+        user_id: user.sub,
+        email: user.email,
+        ip_address: req.ip,
+        user_agent: req.headers['user-agent']
+      });
+    }
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Logged out successfully',
+      data: {}
+    });
+  } catch (error: any) {
+    console.error('Logout error:', error);
+    return problemResponse(res, 500, 'Internal Server Error', 'An unexpected error occurred during logout', 'internal-error');
   }
 };
