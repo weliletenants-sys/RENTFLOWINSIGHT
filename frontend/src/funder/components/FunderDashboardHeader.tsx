@@ -39,22 +39,59 @@ export default function FunderDashboardHeader({
     };
   }, [showNotifs]);
 
-  // Demo Notifications State
-  const [notifications, setNotifications] = useState([
-    { id: 1, title: 'New Payout Received', desc: 'You received UGX 462,500 from Kampala Heights.', time: '2 hours ago', unread: true, type: 'success' },
-    { id: 2, title: 'Portfolio Update', desc: 'Entebbe Views property valuation increased by 4%.', time: '1 day ago', unread: true, type: 'update' },
-    { id: 3, title: 'System Alert', desc: 'Your monthly tax statement is ready for download.', time: '3 days ago', unread: false, type: 'info' },
-  ]);
+  // Async Notifications State
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchNotifs = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) return;
+        const res = await fetch('http://localhost:3000/api/notifications', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          const mapped = data.data.map((n: any) => ({
+            id: n.id,
+            title: n.title,
+            desc: n.message,
+            time: new Date(n.created_at).toLocaleDateString(),
+            unread: !n.is_read,
+            type: n.type
+          }));
+          setNotifications(mapped);
+        }
+      } catch (e) {
+        console.error('Silent background notification fetch failed', e);
+      }
+    };
+    fetchNotifs();
+  }, []);
 
   const unreadCount = notifications.filter((n: any) => n.unread).length;
 
-  const handleMarkAllRead = (e: React.MouseEvent) => {
+  const handleMarkAllRead = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    setNotifications(notifications.map((n: any) => ({ ...n, unread: false })));
+    try {
+      const token = localStorage.getItem('access_token');
+      await fetch('http://localhost:3000/api/notifications/read-all', {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNotifications(notifications.map((n: any) => ({ ...n, unread: false })));
+    } catch (err) {}
   };
 
-  const handleReadSingle = (id: number) => {
-    setNotifications(notifications.map((n: any) => n.id === id ? { ...n, unread: false } : n));
+  const handleReadSingle = async (id: string | number) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      await fetch(`http://localhost:3000/api/notifications/${id}/read`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNotifications(notifications.map((n: any) => n.id === id ? { ...n, unread: false } : n));
+    } catch (err) {}
   };
 
   const IconMap: any = {
