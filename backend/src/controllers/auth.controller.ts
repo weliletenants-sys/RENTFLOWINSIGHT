@@ -56,16 +56,15 @@ export const register = async (req: Request, res: Response) => {
         },
       });
 
-      await tx.userRoles.create({
+      await tx.userPersonas.create({
         data: {
-          role: role,
           user_id: profile.id,
-          enabled: true,
-          created_at: now
+          persona: role.toLowerCase(),
+          is_default: true,
         }
       });
 
-      await tx.wallets.create({
+      const wallet = await tx.wallets.create({
         data: {
           balance: 0.00,
           user_id: profile.id,
@@ -73,6 +72,17 @@ export const register = async (req: Request, res: Response) => {
           updated_at: now
         }
       });
+
+      const bucketTypes = ['available', 'invested', 'commission', 'reserved', 'savings'];
+      for (const bucket of bucketTypes) {
+        await tx.walletBuckets.create({
+          data: {
+            wallet_id: wallet.id,
+            bucket_type: bucket,
+            balance: 0.00,
+          }
+        });
+      }
 
       return profile;
     });
@@ -151,8 +161,8 @@ export const login = async (req: Request, res: Response) => {
       return problemResponse(res, 401, 'Unauthorized', 'Invalid email or password', 'invalid-credentials');
     }
     
-    const userRole = await prisma.userRoles.findFirst({ where: { user_id: profile.id, enabled: true }, orderBy: { created_at: 'desc' } });
-    const role = userRole ? userRole.role : 'TENANT';
+    const userPersona = await prisma.userPersonas.findFirst({ where: { user_id: profile.id, is_default: true } }) || await prisma.userPersonas.findFirst({ where: { user_id: profile.id }, orderBy: { created_at: 'desc' } });
+    const role = userPersona ? userPersona.persona.toUpperCase() : 'TENANT';
 
     const payload = { email: profile.email, sub: profile.id, role };
     const access_token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
