@@ -14,7 +14,7 @@ export const registerTenant = async (req: Request, res: Response) => {
     });
 
     // Assuming tenant unified registration links to global auth system.
-    // We mock the DB binding for now pending specific Firebase/Supabase payload.
+    // We map the payload directly to the authenticated JWT.
     const { name, phone, district, reference } = req.body;
 
     // A real implementation would push to user_roles

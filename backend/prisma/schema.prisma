@@ -316,6 +316,8 @@ model GeneralLedger {
   transaction_date     String
   transaction_group_id String?
   user_id              String?
+  from_bucket          String?
+  to_bucket            String?
 
   @@map("general_ledger")
 }
@@ -1415,19 +1417,19 @@ model AgentNextOfKin {
 }
 
 model AgentRentRequests {
-  id                   String  @id @default(uuid())
-  agent_id             String
-  tenant_id            String? 
-  tenant_name          String? 
-  phone                String?
-  amount               Float
-  payback_plan_daily   Float?
-  status               String  
-  rejection_reason     String?
-  created_at           String
-  updated_at           String
-  approved_at          String?
-  processed_at         String?
+  id                 String  @id @default(uuid())
+  agent_id           String
+  tenant_id          String?
+  tenant_name        String?
+  phone              String?
+  amount             Float
+  payback_plan_daily Float?
+  status             String
+  rejection_reason   String?
+  created_at         String
+  updated_at         String
+  approved_at        String?
+  processed_at       String?
 
   @@map("agent_rent_requests")
 }
@@ -1444,13 +1446,49 @@ model AgentApplications {
 
 model SecurityLogs {
   id         String   @id @default(uuid())
-  event      String   // e.g "LOGIN_SUCCESS", "LOGIN_FAILED", "REGISTER"
-  user_id    String?  // nullable in case of failed login with unknown email
+  event      String // e.g "LOGIN_SUCCESS", "LOGIN_FAILED", "REGISTER"
+  user_id    String? // nullable in case of failed login with unknown email
   email      String?
   ip_address String?
   user_agent String?
-  details    String?  // JSON stringified additional info
+  details    String? // JSON stringified additional info
   created_at DateTime @default(now())
 
   @@map("security_logs")
+}
+
+model WalletBuckets {
+  id          String   @id @default(uuid())
+  wallet_id   String
+  bucket_type String
+  balance     Float    @default(0)
+  updated_at  DateTime @default(now())
+
+  @@unique([wallet_id, bucket_type])
+  @@map("wallet_buckets")
+}
+
+model UserPersonas {
+  id         String   @id @default(uuid())
+  user_id    String
+  persona    String
+  is_default Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  @@unique([user_id, persona])
+  @@map("user_personas")
+}
+
+model PersonaRequisitions {
+  id                String   @id @default(uuid())
+  user_id           String
+  requested_persona String
+  justification     String?
+  status            String   @default("pending")
+  reviewed_by       String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @default(now())
+
+  @@map("persona_requisitions")
 }

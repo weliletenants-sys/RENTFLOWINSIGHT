@@ -12,6 +12,8 @@ import cfoRoutes from './cfo/cfo.routes';
 import cooRoutes from './coo/coo.routes';
 import funderRoutes from './funder/funder.routes';
 import rolesRoutes from './roles/roles.routes';
+import personasRoutes from './personas/personas.routes';
+import adminRoutes from './admin/admin.routes';
 
 const api = Router();
 
@@ -27,5 +29,7 @@ api.use('/cfo', cfoRoutes);
 api.use('/v1/coo', cooRoutes);
 api.use('/funder', funderRoutes);
 api.use('/roles', rolesRoutes);
+api.use('/v1/personas', personasRoutes);
+api.use('/v1/admin', adminRoutes);
 
 export default api;
