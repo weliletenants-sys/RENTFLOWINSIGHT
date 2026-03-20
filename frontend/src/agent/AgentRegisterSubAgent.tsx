@@ -1,9 +1,9 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Phone, MapPin, CheckCircle2 } from 'lucide-react';
 import PurpleBubbles from '../components/PurpleBubbles';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
+import { registerSubAgent } from '../services/agentApi';
 import toast from 'react-hot-toast';
 
 export default function AgentRegisterSubAgent() {
@@ -24,14 +24,14 @@ export default function AgentRegisterSubAgent() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await axios.post('/api/agent/users/subagent', {
+      await registerSubAgent({
         sub_agent_name: formData.fullName,
         phone: formData.phoneNumber
       });
       setIsSuccess(true);
       toast.success('Sub-agent registered successfully!');
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to register sub-agent.');
+      toast.error(err.isProblemDetail ? err.detail : 'Failed to register sub-agent.');
     } finally {
       setIsSubmitting(false);
     }

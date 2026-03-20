@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, FileText } from 'lucide-react';
 
@@ -69,7 +69,7 @@ export default function AgentAgreement() {
               disabled={!agreed}
               className={`w-full py-4 rounded-[1.2rem] font-bold text-[16px] shadow-lg flex items-center justify-center gap-2 transition ${agreed ? 'bg-[#4A3AFF] hover:bg-[#3427AC] text-white active:scale-[0.98]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
             >
-              Create Account <ArrowRight size={20} strokeWidth={2} />
+              Continue to Dashboard <ArrowRight size={20} strokeWidth={2} />
             </button>
           </div>
         </div>

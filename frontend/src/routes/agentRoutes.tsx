@@ -1,4 +1,4 @@
-﻿import { lazy } from 'react';
+import { lazy } from 'react';
 import { Route } from 'react-router-dom';
 
 const AgentWelcome        = lazy(() => import('../agent/AgentWelcome'));
@@ -43,6 +43,7 @@ export const agentRoutes = [
   <Route key="agent-welcome"         path="/agent-welcome"         element={<AgentWelcome />} />,
   <Route key="agent-signup"          path="/agent-signup"          element={<AgentSignup />} />,
   <Route key="agent-agreement"       path="/agent-agreement"       element={<AgentAgreement />} />,
+  <Route key="agent-onboarding"      path="/agent-onboarding"      element={<AgentAgreement />} />,
   <Route key="agent-kyc"             path="/agent-kyc"             element={<AgentKYC />} />,
   <Route key="agent-kyc-review"      path="/agent-kyc-review"      element={<AgentKYCReview />} />,
   <Route key="agent-withdraw"        path="/agent-withdraw"        element={<AgentWithdraw />} />,

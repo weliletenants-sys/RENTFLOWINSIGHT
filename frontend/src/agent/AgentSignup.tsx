@@ -1,7 +1,9 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Lock, Mail, Phone, ArrowRight, ShieldCheck, UserCircle, CheckCircle2 } from 'lucide-react';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
 export default function AgentSignup() {
   const [fullName, setFullName] = useState('');
@@ -13,6 +15,7 @@ export default function AgentSignup() {
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [isVerified, setIsVerified] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -31,26 +34,46 @@ export default function AgentSignup() {
     }
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isVerified) return; // double check
 
     if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+      toast.error("Passwords do not match!");
       return;
     }
 
-    // Register user locally 
-    login({
-      id: 'mock-agent-' + Date.now(),
-      email: email || `${phone}@welile.com`,
-      firstName: fullName.split(' ')[0] || 'Agent',
-      lastName: fullName.split(' ')[1] || '',
-      role: 'AGENT', 
-    });
-    
-    // Strict navigation to Agent Agreement
-    navigate('/agent-agreement');
+    setIsLoading(true);
+    try {
+      const response = await axios.post('/api/auth/register', {
+        name: fullName,
+        email: email || undefined,
+        phone: phone,
+        password: password,
+        role: 'AGENT'
+      });
+      
+      const { token, user } = response.data;
+      localStorage.setItem('token', token);
+
+      // Register user locally 
+      login({
+        id: user.id || 'resolved-uuid-' + Date.now(),
+        email: user.email || email || `${phone}@welile.com`,
+        firstName: fullName.split(' ')[0] || 'Agent',
+        lastName: fullName.split(' ')[1] || '',
+        role: 'AGENT', 
+      });
+      
+      toast.success('Registration successful!');
+      // Strict navigation to Agent Agreement
+      navigate('/agent-agreement');
+    } catch (err: any) {
+      const errMsg = err.response?.data?.detail || err.response?.data?.message || 'Failed to register agent account.';
+      toast.error(errMsg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -185,14 +208,14 @@ export default function AgentSignup() {
 
             <button 
               type="submit" 
-              disabled={!isVerified}
+              disabled={!isVerified || isLoading}
               className={`w-full py-4 rounded-2xl font-bold text-[15px] shadow-lg flex items-center justify-center gap-2 transition active:scale-[0.98] mt-2 ${
                 isVerified 
-                  ? 'bg-[#4A3AFF] hover:bg-[#3427AC] text-white shadow-blue-500/25' 
+                  ? 'bg-[#4A3AFF] hover:bg-[#3427AC] disabled:opacity-50 text-white shadow-blue-500/25' 
                   : 'bg-gray-200 text-gray-400 shadow-none cursor-not-allowed'
               }`}
             >
-              Continue <ArrowRight size={18} />
+              {isLoading ? 'Creating Account...' : 'Continue'} {!isLoading && <ArrowRight size={18} />}
             </button>
             
             <p className="text-center text-gray-500 font-medium mt-4 text-[13px]">

@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, CheckCircle2, User, Phone, Mail, FileText, 
@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import PurpleBubbles from '../components/PurpleBubbles';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
+import { registerLandlord } from '../services/agentApi';
 import toast from 'react-hot-toast';
 
 export default function AgentRegisterLandlord() {
@@ -123,7 +123,7 @@ export default function AgentRegisterLandlord() {
     e.preventDefault();
     setIsValidating(true);
     try {
-      await axios.post('/api/agent/users/landlord', {
+      await registerLandlord({
         name: formData.fullName,
         phone: formData.phoneNumber,
         property_address: `${formData.villageCell}, ${formData.parishWard}, ${formData.subcounty}`,
@@ -135,7 +135,7 @@ export default function AgentRegisterLandlord() {
       });
       setIsSuccess(true);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to register landlord.');
+      toast.error(err.isProblemDetail ? err.detail : 'Failed to register landlord.');
     } finally {
       setIsValidating(false);
     }

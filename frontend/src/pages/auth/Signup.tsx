@@ -70,12 +70,14 @@ export default function Signup() {
       });
 
       if (res.status === 'success') {
-        updateSession(res.data.access_token, res.data.user);
-        toast.success(`Welcome, ${res.data.user.firstName}! Your account has been created.`);
-        if (intendedRole === 'TENANT') {
-          navigate('/tenant-agreement');
+        const { access_token, user, onboarding_url } = res.data;
+        updateSession(access_token, user);
+        toast.success(`Welcome, ${user.firstName}! Your account has been created.`);
+        
+        if (onboarding_url) {
+          navigate(onboarding_url);
         } else {
-          navigate('/dashboard');
+          navigate(intendedRole === 'TENANT' ? '/tenant-agreement' : '/dashboard');
         }
       }
     } catch (err: any) {

@@ -7,7 +7,7 @@ import applicationsRoutes from '../routes/applications.routes';
 import uploadRoutes from '../routes/upload.routes';
 import supporterRoutes from '../routes/supporter.routes';
 import tenantRoutes from '../routes/tenant.routes';
-import agentRoutes from '../routes/agent.routes';
+import agentRoutes from './agent/agent.routes';
 import cfoRoutes from '../routes/cfo.routes';
 import funderRoutes from '../routes/funder.routes';
 import rolesRoutes from '../routes/roles.routes';

@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { 
-  BarChart3, FileText, ShieldAlert, Scale, BookOpen, 
-  Coins, ArrowDownToLine, Bell, Calendar, Search, 
+import {
+  BarChart3, FileText, ShieldAlert, Scale, BookOpen,
+  Coins, ArrowDownToLine, Bell, Calendar, Search,
   Download, CheckCircle2, AlertTriangle, Home, User
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 type TabType = 'overview' | 'statements' | 'solvency' | 'reconciliation' | 'ledger' | 'commissions' | 'withdrawals';
 
@@ -14,7 +14,7 @@ export default function CfoDashboard() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [dateFilter, setDateFilter] = useState('30d');
-  
+
   // Data States
   const [overviewMetrics, setOverviewMetrics] = useState<any>(null);
   const [reconciliation, setReconciliation] = useState<any>(null);
@@ -90,14 +90,14 @@ export default function CfoDashboard() {
 
   return (
     <div className="flex h-screen w-full bg-[#f8f6f6] text-slate-900 font-['Public_Sans'] overflow-hidden">
-      
+
       {/* LEFT SIDEBAR */}
       <aside className="w-64 bg-white border-r border-slate-200 flex flex-col shadow-sm z-10 shrink-0">
         <div className="p-6 border-b border-slate-100 flex items-center gap-3">
-           <div className="w-8 h-8 bg-[#6c11d4] rounded-lg flex items-center justify-center font-black text-white">W</div>
-           <span className="font-black text-lg tracking-tight">CFO Console</span>
+          <div className="w-8 h-8 bg-[#6c11d4] rounded-lg flex items-center justify-center font-black text-white">W</div>
+          <span className="font-black text-lg tracking-tight">CFO Console</span>
         </div>
-        
+
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {tabs.map(tab => {
             const Icon = tab.icon;
@@ -106,11 +106,10 @@ export default function CfoDashboard() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as TabType)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-bold ${
-                  isActive 
-                    ? 'bg-[#6c11d4]/10 text-[#6c11d4]' 
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-bold ${isActive
+                    ? 'bg-[#6c11d4]/10 text-[#6c11d4]'
                     : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 <Icon size={18} className={isActive ? 'text-[#6c11d4]' : 'text-slate-400'} />
                 {tab.label}
@@ -122,31 +121,30 @@ export default function CfoDashboard() {
 
       {/* MAIN CONTENT */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        
+
         {/* HEADER */}
         <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
           <h1 className="text-2xl font-bold tracking-tight text-slate-800 capitalize">
             {activeTab.replace('_', ' ')}
           </h1>
-          
+
           <div className="flex items-center gap-6">
             <div className="flex items-center bg-slate-100 p-1 rounded-lg">
               {['Today', '7d', '30d', 'Month', 'Year'].map(filter => (
-                <button 
+                <button
                   key={filter}
                   onClick={() => setDateFilter(filter)}
-                  className={`px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${
-                    dateFilter === filter ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-                  }`}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${dateFilter === filter ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                    }`}
                 >
                   {filter}
                 </button>
               ))}
               <button className="px-3 py-1.5 text-xs font-bold text-slate-500 hover:text-slate-700 flex flex-row items-center gap-1 border-l border-slate-200 ml-1 pl-3">
-                <Calendar size={14}/> Custom
+                <Calendar size={14} /> Custom
               </button>
             </div>
-            
+
             <div className="flex items-center gap-4 border-l border-slate-200 pl-6">
               <button className="text-slate-400 hover:text-[#6c11d4] transition-colors relative">
                 <Bell size={20} />
@@ -175,11 +173,11 @@ export default function CfoDashboard() {
                 {/* Metrics Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {[
-                    { label: 'Total Wallet Balances', value: `UGX ${(overviewMetrics.metrics.totalWalletBalance/1000000).toFixed(1)}M`, color: 'bg-indigo-50 text-indigo-700' },
-                    { label: 'Total Deposits', value: `UGX ${(overviewMetrics.metrics.deposits/1000000).toFixed(1)}M`, color: 'bg-green-50 text-green-700' },
-                    { label: 'Total Withdrawals', value: `UGX ${(overviewMetrics.metrics.withdrawals/1000000).toFixed(1)}M`, color: 'bg-orange-50 text-orange-700' },
-                    { label: 'Platform Fees', value: `UGX ${(overviewMetrics.metrics.platformFees/1000).toFixed(1)}K`, color: 'bg-purple-50 text-purple-700' },
-                    { label: 'Pending Repayments', value: `UGX ${(overviewMetrics.metrics.pendingRepayments/1000000).toFixed(1)}M`, color: 'bg-rose-50 text-rose-700' },
+                    { label: 'Total Wallet Balances', value: `UGX ${(overviewMetrics.metrics.totalWalletBalance / 1000000).toFixed(1)}M`, color: 'bg-indigo-50 text-indigo-700' },
+                    { label: 'Total Deposits', value: `UGX ${(overviewMetrics.metrics.deposits / 1000000).toFixed(1)}M`, color: 'bg-green-50 text-green-700' },
+                    { label: 'Total Withdrawals', value: `UGX ${(overviewMetrics.metrics.withdrawals / 1000000).toFixed(1)}M`, color: 'bg-orange-50 text-orange-700' },
+                    { label: 'Platform Fees', value: `UGX ${(overviewMetrics.metrics.platformFees / 1000).toFixed(1)}K`, color: 'bg-purple-50 text-purple-700' },
+                    { label: 'Pending Repayments', value: `UGX ${(overviewMetrics.metrics.pendingRepayments / 1000000).toFixed(1)}M`, color: 'bg-rose-50 text-rose-700' },
                     { label: 'Transfers', value: 'UGX 8.2M', color: 'bg-blue-50 text-blue-700' }, // mock
                     { label: 'Agent Earnings', value: 'UGX 1.4M', color: 'bg-slate-50 text-slate-700' }, // mock
                     { label: 'Commissions', value: 'UGX 450K', color: 'bg-amber-50 text-amber-700' } // mock
@@ -190,47 +188,47 @@ export default function CfoDashboard() {
                     </div>
                   ))}
                 </div>
-                
+
                 <div className="grid grid-cols-4 gap-4">
-                   {[
-                     { label: 'Total Users', val: overviewMetrics.counts.totalUsers, icon: User },
-                     { label: 'Agents', val: overviewMetrics.counts.totalAgents, icon: ShieldAlert },
-                     { label: 'Tenants', val: overviewMetrics.counts.totalTenants, icon: Home },
-                     { label: 'Supporters', val: overviewMetrics.counts.totalSupporters, icon: Download }
-                   ].map((c, i) => {
-                     const Icon = c.icon;
-                     return (
+                  {[
+                    { label: 'Total Users', val: overviewMetrics.counts.totalUsers, icon: User },
+                    { label: 'Agents', val: overviewMetrics.counts.totalAgents, icon: ShieldAlert },
+                    { label: 'Tenants', val: overviewMetrics.counts.totalTenants, icon: Home },
+                    { label: 'Supporters', val: overviewMetrics.counts.totalSupporters, icon: Download }
+                  ].map((c, i) => {
+                    const Icon = c.icon;
+                    return (
                       <div key={i} className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
-                         <div>
-                            <p className="text-xs font-bold text-slate-500 uppercase">{c.label}</p>
-                            <p className="text-xl font-black text-slate-900">{c.val}</p>
-                         </div>
-                         <div className="p-2 bg-slate-50 rounded-lg text-slate-400">
-                           <Icon size={18} />
-                         </div>
+                        <div>
+                          <p className="text-xs font-bold text-slate-500 uppercase">{c.label}</p>
+                          <p className="text-xl font-black text-slate-900">{c.val}</p>
+                        </div>
+                        <div className="p-2 bg-slate-50 rounded-lg text-slate-400">
+                          <Icon size={18} />
+                        </div>
                       </div>
-                     )
-                   })}
+                    )
+                  })}
                 </div>
 
                 {/* Charts Area */}
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 h-96 flex flex-col">
-                   <div className="flex justify-between items-center mb-6">
-                      <h3 className="text-lg font-bold text-slate-800">Financial Trends</h3>
-                      <button className="text-xs font-bold text-[#6c11d4] bg-[#6c11d4]/10 px-3 py-1.5 rounded-lg">Export CSV</button>
-                   </div>
-                   <div className="flex-1 border-t border-l border-slate-100 relative w-full flex items-end justify-between px-4 pb-4">
-                      {/* Very simplistic mock chart render using css bars */}
-                      {overviewMetrics.trends.map((t: any, i: number) => (
-                         <div key={i} className="flex flex-col items-center gap-2 group w-1/4">
-                            <div className="relative w-8 bg-indigo-100 rounded-t-sm" style={{height: `${t.inflow / 1000}px`}}>
-                               <div className="absolute bottom-0 w-full bg-[#6c11d4] rounded-t-sm" style={{height: `${t.outflow / 1000}px`}}></div>
-                            </div>
-                            <span className="text-xs font-bold text-slate-400">{t.date}</span>
-                         </div>
-                      ))}
-                      <div className="absolute top-1/2 left-0 w-full border-t border-dashed border-slate-200"></div>
-                   </div>
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-lg font-bold text-slate-800">Financial Trends</h3>
+                    <button className="text-xs font-bold text-[#6c11d4] bg-[#6c11d4]/10 px-3 py-1.5 rounded-lg">Export CSV</button>
+                  </div>
+                  <div className="flex-1 border-t border-l border-slate-100 relative w-full flex items-end justify-between px-4 pb-4">
+                    {/* Very simplistic mock chart render using css bars */}
+                    {overviewMetrics.trends.map((t: any, i: number) => (
+                      <div key={i} className="flex flex-col items-center gap-2 group w-1/4">
+                        <div className="relative w-8 bg-indigo-100 rounded-t-sm" style={{ height: `${t.inflow / 1000}px` }}>
+                          <div className="absolute bottom-0 w-full bg-[#6c11d4] rounded-t-sm" style={{ height: `${t.outflow / 1000}px` }}></div>
+                        </div>
+                        <span className="text-xs font-bold text-slate-400">{t.date}</span>
+                      </div>
+                    ))}
+                    <div className="absolute top-1/2 left-0 w-full border-t border-dashed border-slate-200"></div>
+                  </div>
                 </div>
               </div>
             )}
@@ -267,7 +265,7 @@ export default function CfoDashboard() {
                       <Download size={16} /> Export
                     </button>
                   </div>
-                  
+
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm whitespace-nowrap">
                       <thead className="bg-slate-50/50 text-slate-500 font-bold uppercase text-xs border-b border-slate-100">
@@ -342,7 +340,7 @@ export default function CfoDashboard() {
                           <span className="text-[10px] font-black uppercase px-2 py-1 bg-red-100 text-red-800 rounded">Airtel</span>
                         )}
                       </div>
-                      
+
                       <div className="my-6">
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Requested Amount</p>
                         <h2 className="text-3xl font-black text-slate-900 tracking-tighter">UGX {w.amount.toLocaleString()}</h2>

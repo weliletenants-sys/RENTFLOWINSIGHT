@@ -4,7 +4,13 @@ import prisma from '../prisma/prisma.client';
 export const recordVisit = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.sub;
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    if (!userId) return res.status(401).json({
+      type: 'https://api.welile.com/errors/unauthorized',
+      title: 'Unauthorized',
+      status: 401,
+      detail: 'Missing or invalid authentication token',
+      instance: req.originalUrl
+    });
 
     const { latitude, longitude, accuracy, location_name, tenant_id } = req.body;
     const now = new Date().toISOString();
@@ -25,19 +31,37 @@ export const recordVisit = async (req: Request, res: Response) => {
     return res.status(201).json({ message: 'GPS Visit successfully tracked', visit });
   } catch (error) {
     console.error('recordVisit error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({
+      type: 'https://api.welile.com/errors/internal-error',
+      title: 'Internal Server Error',
+      status: 500,
+      detail: 'An unexpected error occurred while processing the request',
+      instance: req.originalUrl
+    });
   }
 };
 
 export const recordCollection = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.sub;
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    if (!userId) return res.status(401).json({
+      type: 'https://api.welile.com/errors/unauthorized',
+      title: 'Unauthorized',
+      status: 401,
+      detail: 'Missing or invalid authentication token',
+      instance: req.originalUrl
+    });
 
     const { amount, payment_method, notes, tracking_id, momo_transaction_id, tenant_id } = req.body;
     const numAmount = Number(amount);
 
-    if (numAmount <= 0) return res.status(400).json({ message: 'Invalid amount' });
+    if (numAmount <= 0) return res.status(400).json({
+      type: 'https://api.welile.com/errors/bad-request',
+      title: 'Bad Request',
+      status: 400,
+      detail: 'Invalid amount. Minimum amount is 1.',
+      instance: req.originalUrl
+    });
 
     // Validate against Float Limit securely without allowing frontend spoofing
     const floatRecord = await prisma.agentFloatLimits.findFirst({
@@ -48,7 +72,13 @@ export const recordCollection = async (req: Request, res: Response) => {
     let limit = floatRecord?.float_limit || 1000000; // Mock default
 
     if (numAmount + currentCollected > limit) {
-       return res.status(400).json({ message: 'Transaction exceeds your daily collection float limit.' });
+       return res.status(400).json({
+         type: 'https://api.welile.com/errors/bad-request',
+         title: 'Float Limit Exceeded',
+         status: 400,
+         detail: 'Transaction exceeds your daily collection float limit.',
+         instance: req.originalUrl
+       });
     }
 
     const now = new Date().toISOString();
@@ -79,14 +109,26 @@ export const recordCollection = async (req: Request, res: Response) => {
     return res.status(201).json({ message: 'Collection Recorded successfully', collection });
   } catch (error) {
     console.error('recordCollection error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({
+      type: 'https://api.welile.com/errors/internal-error',
+      title: 'Internal Server Error',
+      status: 500,
+      detail: 'An unexpected error occurred while processing the request',
+      instance: req.originalUrl
+    });
   }
 };
 
 export const issueReceipt = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.sub;
-    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+    if (!userId) return res.status(401).json({
+      type: 'https://api.welile.com/errors/unauthorized',
+      title: 'Unauthorized',
+      status: 401,
+      detail: 'Missing or invalid authentication token',
+      instance: req.originalUrl
+    });
 
     const { amount, payer_name, payer_phone, payment_method, notes, transaction_id } = req.body;
     
@@ -106,6 +148,12 @@ export const issueReceipt = async (req: Request, res: Response) => {
     return res.status(201).json({ message: 'Official Receipt Generated', receipt });
   } catch (error) {
     console.error('issueReceipt error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({
+      type: 'https://api.welile.com/errors/internal-error',
+      title: 'Internal Server Error',
+      status: 500,
+      detail: 'An unexpected error occurred while processing the request',
+      instance: req.originalUrl
+    });
   }
 };

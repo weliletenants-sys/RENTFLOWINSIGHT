@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import PurpleBubbles from '../components/PurpleBubbles';
 import { motion } from 'framer-motion';
-import axios from 'axios';
+import { registerTenant } from '../services/agentApi';
 import toast from 'react-hot-toast';
 
 export default function AgentRegisterTenant() {
@@ -53,7 +53,7 @@ export default function AgentRegisterTenant() {
     } else {
       setIsSubmitting(true);
       try {
-        await axios.post('/api/agent/users/tenant', {
+        await registerTenant({
           name: formData.fullName,
           phone: formData.phoneNumber,
           district: formData.district,
@@ -62,7 +62,7 @@ export default function AgentRegisterTenant() {
         toast.success('Tenant onboarded successfully!');
         navigate(-1);
       } catch (err: any) {
-        toast.error(err.response?.data?.message || 'Failed to register tenant.');
+        toast.error(err.isProblemDetail ? err.detail : 'Failed to register tenant.');
       } finally {
         setIsSubmitting(false);
       }

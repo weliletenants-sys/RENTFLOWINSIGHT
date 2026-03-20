@@ -14,7 +14,7 @@ import {
   CheckCircle,
   X,
 } from 'lucide-react';
-import axios from 'axios';
+import { getWalletBalance, requestDeposit } from '../services/agentApi';
 import toast from 'react-hot-toast';
 
 const QUICK_AMOUNTS = [10_000, 50_000, 100_000];
@@ -31,10 +31,10 @@ export default function AgentDeposit() {
   useEffect(() => {
     const fetchBalance = async () => {
       try {
-        const { data } = await axios.get('/api/wallets/my-wallet');
+        const data = await getWalletBalance();
         setCurrentBalance(data.balance || 0);
-      } catch (err) {
-        console.error('Failed to fetch wallet:', err);
+      } catch (err: any) {
+        toast.error(err.isProblemDetail ? err.detail : 'Failed to fetch wallet');
       }
     };
     fetchBalance();
@@ -47,14 +47,14 @@ export default function AgentDeposit() {
   const handleDeposit = async () => {
     setIsLoading(true);
     try {
-      await axios.post('/api/agent/financials/deposit', {
+      await requestDeposit({
         amount: numericAmount,
         method: method,
         reference: txRef
       });
       setShowSuccess(true);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to process deposit.');
+      toast.error(err.isProblemDetail ? err.detail : 'Failed to process deposit.');
     } finally {
       setIsLoading(false);
     }

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home, Wallet, Users, Settings, PlusCircle, ArrowDown, Send, FileText, Download, Upload } from 'lucide-react';
 import { motion } from 'framer-motion';
-import axios from 'axios';
+import { getWalletBalance, getTransactions } from '../services/agentApi';
 import AgentDepositSheet from './components/AgentDepositSheet';
 import AgentWithdrawSheet from './components/AgentWithdrawSheet';
 
@@ -14,14 +14,14 @@ export default function AgentWallet() {
 
   const fetchWalletData = async () => {
     try {
-      const [{ data: walletData }, { data: txData }] = await Promise.all([
-        axios.get('/api/wallets/my-wallet'),
-        axios.get('/api/agent/financials/transactions')
+      const [walletData, txData] = await Promise.all([
+        getWalletBalance(),
+        getTransactions()
       ]);
       setBalance(walletData.balance || 0);
       setTransactions(txData.transactions || []);
-    } catch (err) {
-      console.error('Failed to load wallet data:', err);
+    } catch (err: any) {
+      console.error(err.isProblemDetail ? err.detail : 'Failed to load wallet data');
     }
   };
 

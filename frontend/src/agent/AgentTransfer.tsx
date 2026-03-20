@@ -1,7 +1,7 @@
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { getWalletBalance, requestTransfer } from '../services/agentApi';
 import toast from 'react-hot-toast';
 
 export default function AgentTransfer() {
@@ -20,10 +20,10 @@ export default function AgentTransfer() {
   useEffect(() => {
     const fetchBalance = async () => {
       try {
-        const { data } = await axios.get('/api/wallets/my-wallet');
+        const data = await getWalletBalance();
         setInitialBalance(data.balance || 0);
-      } catch (err) {
-        console.error('Failed to load wallet balance', err);
+      } catch (err: any) {
+        toast.error(err.isProblemDetail ? err.detail : 'Failed to load wallet balance');
       }
     };
     fetchBalance();
@@ -42,14 +42,14 @@ export default function AgentTransfer() {
     
     setIsLoading(true);
     try {
-      await axios.post('/api/wallets/transfer', {
+      await requestTransfer({
         amount: amountValue,
         recipientId: recipient
       });
       toast.success("Transfer successful!");
       navigate(-1);
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to complete transfer. Please check recipient ID.');
+      toast.error(err.isProblemDetail ? err.detail : 'Failed to complete transfer.');
     } finally {
       setIsLoading(false);
     }

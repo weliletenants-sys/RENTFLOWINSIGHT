@@ -1,4 +1,4 @@
-﻿import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import type { Role } from '../../contexts/AuthContext';
 import PurpleBubbles from '../../components/PurpleBubbles';
@@ -12,13 +12,7 @@ export default function RoleSelection() {
     if (role) {
       setIntendedRole(role);
     }
-    if (role === 'AGENT') {
-      navigate('/login');
-    } else if (role === 'TENANT') {
-      navigate('/signup');
-    } else {
-      navigate('/signup');
-    }
+    navigate('/signup');
   };
 
   return (

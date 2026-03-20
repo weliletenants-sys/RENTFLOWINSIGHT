@@ -12,7 +12,7 @@ import SubAgents from './agent/SubAgents';
 import AgentEarnings from './agent/AgentEarnings';
 import AgentClients from './agent/AgentClients';
 import AgentSettings from './agent/AgentSettings';
-import CfoDashboard from './cfo/CfoDashboard';
+import CfoDashboard from './admin/cfo/CfoDashboard';
 import TenantPayments from './tenant/TenantPayments';
 import TenantProfile from './tenant/TenantProfile';
 
@@ -48,7 +48,7 @@ function PageLoader() {
   );
 }
 
-class GlobalErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: any}> {
+class GlobalErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: any }> {
   constructor(props: any) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -103,9 +103,9 @@ function App() {
                 {/* Fallback */}
                 <Route path="*" element={
                   <div style={{ padding: '40px', background: '#000', color: '#ff4444', height: '100vh', width: '100vw' }}>
-                    <h1 style={{fontSize: '40px'}}>404 - ROUTER CRASH TRAP</h1>
-                    <p style={{fontSize: '20px'}}>
-                      React Router explicitly failed to match the URL you requested. <br/><br/>
+                    <h1 style={{ fontSize: '40px' }}>404 - ROUTER CRASH TRAP</h1>
+                    <p style={{ fontSize: '20px' }}>
+                      React Router explicitly failed to match the URL you requested. <br /><br />
                       If you arrived here, the Route mapping tree could not locate your path. Please take a screenshot of your URL bar so we know exactly what path was rejected!
                     </p>
                   </div>
