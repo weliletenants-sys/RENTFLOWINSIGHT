@@ -2,7 +2,7 @@
 
 > **Last Updated:** March 11, 2026  
 > **Platform:** Rent-guarantee and rent-facilitation fintech  
-> **Stack:** React + Vite + Tailwind CSS + TypeScript | Lovable Cloud (Supabase)  
+> **Stack:** React + Vite + Tailwind CSS + TypeScript | Node.js + Express (AWS RDS)  
 > **Target Scale:** 40M+ users across Africa and globally
 
 ---
@@ -61,12 +61,12 @@ Agent → Collects Repayments (field) → Platform → Supporter ROI
 
 | Layer | Technology |
 |-------|-----------|
-| Database | PostgreSQL (via Lovable Cloud) |
-| Auth | Supabase Auth (email + password, OTP) |
-| API | Supabase Client SDK (auto-generated types) |
-| Edge Functions | Deno (41 functions) |
-| Storage | Supabase Storage |
-| Realtime | Supabase Realtime (postgres_changes) |
+| Database | PostgreSQL (via AWS RDS) |
+| Auth | Standard JWT + Bcrypt (email + password, OTP via AfricasTalking) |
+| API | Express.js REST API |
+| Edge Functions | Node.js Express Controllers (Migrated from Deno) |
+| Storage | AWS S3 / Local Express Uploads |
+| Realtime | WebSockets Sandbox (Pending AWS API Gateway WebSockets) |
 | Cron | pg_cron (auto-charge wallets daily at 06:00 UTC) |
 
 ### 2.3 Financial Architecture
