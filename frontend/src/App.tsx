@@ -13,6 +13,8 @@ import AgentEarnings from './agent/AgentEarnings';
 import AgentClients from './agent/AgentClients';
 import AgentSettings from './agent/AgentSettings';
 import CfoDashboard from './admin/cfo/CfoDashboard';
+import CeoDashboard from './admin/ceo/CeoDashboard';
+import CeoPerformance from './admin/ceo/CeoPerformance';
 import TenantPayments from './tenant/TenantPayments';
 import TenantProfile from './tenant/TenantProfile';
 
@@ -96,6 +98,8 @@ function App() {
                   <Route path="/dashboard/agent/clients" element={<AgentClients />} />
                   <Route path="/dashboard/agent/settings" element={<AgentSettings />} />
                   <Route path="/dashboard/cfo" element={<CfoDashboard />} />
+                  <Route path="/ceo/dashboard" element={<CeoDashboard />} />
+                  <Route path="/ceo/performance" element={<CeoPerformance />} />
                   <Route path="/dashboard/tenant/payments" element={<TenantPayments />} />
                   <Route path="/dashboard/tenant/profile" element={<TenantProfile />} />
                 </Route>

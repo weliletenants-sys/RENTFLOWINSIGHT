@@ -1492,3 +1492,48 @@ model PersonaRequisitions {
 
   @@map("persona_requisitions")
 }
+
+model DailyPlatformStats {
+  date               String  @id
+  total_users        Float
+  new_users          Float
+  active_users       Float
+  revenue            Float
+  rent_financed      Float
+  rent_repaid        Float
+  transactions_count Float
+  retention_rate     Float
+  referral_rate      Float
+
+  @@map("daily_platform_stats")
+}
+
+model MonthlyFinancialStats {
+  month          String @id
+  capital_raised Float
+  repayments     Float
+  revenue        Float
+
+  @@map("monthly_financial_stats")
+}
+
+model StaffPerformanceSummary {
+  staff_id          String @id
+  tasks_completed   Float
+  sla_score         Float
+  avg_response_time Float
+  idle_time         Float
+  approvals_count   Float
+
+  @@map("staff_performance_summary")
+}
+
+model StaffAuditLogs {
+  id            String  @id @default(uuid())
+  staff_id      String
+  action        String
+  created_at    String
+  time_taken_ms Float?
+
+  @@map("staff_audit_logs")
+}

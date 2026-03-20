@@ -14,6 +14,7 @@ import funderRoutes from './funder/funder.routes';
 import rolesRoutes from './roles/roles.routes';
 import personasRoutes from './personas/personas.routes';
 import adminRoutes from './admin/admin.routes';
+import executiveRoutes from './executive/executive.routes';
 
 const api = Router();
 
@@ -31,5 +32,8 @@ api.use('/funder', funderRoutes);
 api.use('/roles', rolesRoutes);
 api.use('/v1/personas', personasRoutes);
 api.use('/v1/admin', adminRoutes);
+
+// Executive Hub
+api.use('/v1/executive', executiveRoutes);
 
 export default api;
