@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, UploadCloud, PlusCircle, Lock, Unlock, Check, X, FileText, User, CreditCard, Hash, Calendar, File, Download, Loader2, AlertTriangle } from 'lucide-react';
+import { Search, Check, Loader2, AlertTriangle } from 'lucide-react';
 import { fetchPartners } from '../../services/cooApi';
 
 const mockInvestors = [
@@ -11,7 +11,6 @@ const mockInvestors = [
 
 const COOPartnersPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'active' | 'pending'>('active');
-  const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
 
   const [partners, setPartners] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

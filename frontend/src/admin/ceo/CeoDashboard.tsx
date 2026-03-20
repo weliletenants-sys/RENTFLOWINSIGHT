@@ -1,6 +1,4 @@
-import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import { 
   Users, Home, Briefcase, Building2, Handshake, 
   Wallet, CheckCircle2, UserCheck, Search, Bell, 
@@ -10,7 +8,7 @@ import {
 } from 'lucide-react';
 
 export default function CeoDashboard() {
-  const { profile } = useAuth();
+  const { user } = useAuth();
 
   return (
     <div className="bg-[var(--color-primary-faint)] min-h-screen font-inter text-slate-900 pb-12">
@@ -82,10 +80,12 @@ export default function CeoDashboard() {
           
           <div className="flex items-center gap-3 cursor-pointer group">
             <div className="text-right">
-              <p className="text-xs font-bold uppercase tracking-tight text-[var(--color-primary-darker)]">{profile?.full_name || 'Chief Executive'}</p>
+              <p className="text-xs font-bold uppercase tracking-tight text-[var(--color-primary-darker)]">
+                {user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'Chief Executive'}
+              </p>
               <p className="text-[10px] text-slate-500 font-bold uppercase">CEO</p>
             </div>
-            <img alt="CEO Profile" className="w-10 h-10 rounded-full object-cover border-2 border-[var(--color-primary-light)]" src={profile?.avatar_url || "https://lh3.googleusercontent.com/aida-public/AB6AXuDcIs4T8mIzNJqdWqABuqQuwVvr6_XXPjvrXNnQ-E3F3SeNfVMsgbO1lRsFHkoED8JI2CM1TBQtMdOmsFvGFTCvy8rt_o29mtoW6ocC-3W_Ri37A-U1gel2j1NdzjQnKThBr7IGCFtdrjxgO_JE0eHk29I0gYfda40aV4oeNWYoHazo_aLFDd_gAhjVSmSQjZAZWU1270VCAx8A9diNJ7S6xzzIZ3ICb43Ae9YKXBcE-suvbD8ScbypTWYhzVgw1-RKsgsZpoj5rPZk"} />
+            <img alt="CEO Profile" className="w-10 h-10 rounded-full object-cover border-2 border-[var(--color-primary-light)]" src={"https://lh3.googleusercontent.com/aida-public/AB6AXuDcIs4T8mIzNJqdWqABuqQuwVvr6_XXPjvrXNnQ-E3F3SeNfVMsgbO1lRsFHkoED8JI2CM1TBQtMdOmsFvGFTCvy8rt_o29mtoW6ocC-3W_Ri37A-U1gel2j1NdzjQnKThBr7IGCFtdrjxgO_JE0eHk29I0gYfda40aV4oeNWYoHazo_aLFDd_gAhjVSmSQjZAZWU1270VCAx8A9diNJ7S6xzzIZ3ICb43Ae9YKXBcE-suvbD8ScbypTWYhzVgw1-RKsgsZpoj5rPZk"} />
           </div>
         </div>
       </header>
