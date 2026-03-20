@@ -50,8 +50,8 @@ export const fundRentPool = async (req: Request, res: Response) => {
     const funderId = req.user?.sub || req.user?.id;
     const { amount } = req.body;
     
-    if (!amount || Number(amount) <= 0) {
-      return res.status(400).json({ status: 'error', message: 'Invalid investment amount' });
+    if (!amount || Number(amount) < 100000) {
+      return res.status(400).json({ status: 'error', message: 'Minimum investment amount is 100,000 UGX' });
     }
 
     const wallet = await prisma.wallets.findFirst({ where: { user_id: funderId } });

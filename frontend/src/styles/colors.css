@@ -27,6 +27,9 @@
   --color-warning-border:   #FDE68A;
 }
 
-button:active {
-  outline: 2px solid var(--color-primary-darker);
+/* button:active {
+  outline: 2px solid var(--color-primary-darker); */
+/* } */
+button{
+  cursor: pointer;
 }
