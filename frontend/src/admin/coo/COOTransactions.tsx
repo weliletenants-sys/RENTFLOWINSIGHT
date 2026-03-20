@@ -1,18 +1,60 @@
-import React, { useState } from 'react';
-import { Search, Filter, ArrowUpRight, ArrowDownRight, Download } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Filter, ArrowUpRight, ArrowDownRight, Download, Loader2, AlertTriangle } from 'lucide-react';
+import { fetchTransactions } from '../../services/cooApi';
 
-const mockLedger = [
-  { id: 'TXN-001', amount: '120,000', direction: 'IN', category: 'Rent Collection', sourceTable: 'payments', linkedParty: 'John Doe (Tenant)', date: '2026-03-19 10:30 AM' },
-  { id: 'TXN-002', amount: '5,000,000', direction: 'OUT', category: 'Investor ROI', sourceTable: 'roi_payouts', linkedParty: 'Mbabazi K. (Investor)', date: '2026-03-18 14:15 PM' },
-  { id: 'TXN-003', amount: '45,000', direction: 'OUT', category: 'Agent Commission', sourceTable: 'commissions', linkedParty: 'Peter O. (Agent)', date: '2026-03-18 09:00 AM' },
-  { id: 'TXN-004', amount: '2,500,000', direction: 'IN', category: 'Capital Deposit', sourceTable: 'deposits', linkedParty: 'Kagimu D. (Investor)', date: '2026-03-17 11:45 AM' },
-  { id: 'TXN-005', amount: '15,000', direction: 'OUT', category: 'System Fee', sourceTable: 'fees', linkedParty: 'MTN Mobile Money', date: '2026-03-17 10:32 AM' },
-];
+interface Transaction {
+  id: string;
+  amount: number;
+  direction: string;
+  category: string;
+  source_table: string;
+  description: string;
+  transaction_date: string;
+  status: string;
+}
 
 const COOTransactions: React.FC = () => {
   const [filter, setFilter] = useState('All');
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredData = mockLedger.filter(txn => filter === 'All' || txn.direction === filter);
+  useEffect(() => {
+    const loadTransactions = async () => {
+      try {
+        const data = await fetchTransactions();
+        setTransactions(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadTransactions();
+  }, []);
+
+  const filteredData = transactions.filter(txn => filter === 'All' || txn.direction === filter);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96">
+        <Loader2 className="w-10 h-10 text-[#6c11d4] animate-spin mb-4" />
+        <p className="text-slate-500 font-medium">Loading ledger transactions...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 bg-red-50 text-red-600 rounded-3xl border border-red-100 flex items-center shadow-sm">
+        <AlertTriangle className="w-8 h-8 mr-4" />
+        <div>
+          <h3 className="font-bold text-lg mb-1">Failed to Load Transactions</h3>
+          <p className="text-sm">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -50,7 +92,7 @@ const COOTransactions: React.FC = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
               type="text"
-              placeholder="Search by ID, party or category..."
+              placeholder="Search by ID or category..."
               className="w-full pl-10 pr-4 py-2 border border-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6c11d4] focus:border-transparent text-sm"
             />
           </div>
@@ -67,16 +109,20 @@ const COOTransactions: React.FC = () => {
                 <th className="p-4 font-semibold">Transaction ID & Date</th>
                 <th className="p-4 font-semibold">Direction & Amount</th>
                 <th className="p-4 font-semibold">Category</th>
-                <th className="p-4 font-semibold">Linked Party</th>
+                <th className="p-4 font-semibold">Description</th>
                 <th className="p-4 font-semibold">Source Table</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E8DBFC]">
-              {filteredData.map((txn) => (
+              {filteredData.length === 0 ? (
+                <tr>
+                   <td colSpan={5} className="p-8 text-center text-slate-500 font-medium">No transactions found matching the filter.</td>
+                </tr>
+              ) : filteredData.map((txn) => (
                 <tr key={txn.id} className="hover:bg-slate-50 transition-colors">
                   <td className="p-4">
                     <p className="font-bold text-slate-800">{txn.id}</p>
-                    <p className="text-xs text-slate-500">{txn.date}</p>
+                    <p className="text-xs text-slate-500">{new Date(txn.transaction_date).toLocaleString()}</p>
                   </td>
                   <td className="p-4">
                     <div className="flex items-center space-x-2">
@@ -85,7 +131,7 @@ const COOTransactions: React.FC = () => {
                        </div>
                        <div>
                          <p className={`font-bold ${txn.direction === 'IN' ? 'text-green-700' : 'text-slate-800'}`}>
-                           {txn.direction === 'IN' ? '+' : '-'} UGX {txn.amount}
+                           {txn.direction === 'IN' ? '+' : '-'} UGX {txn.amount.toLocaleString()}
                          </p>
                        </div>
                     </div>
@@ -96,10 +142,10 @@ const COOTransactions: React.FC = () => {
                     </span>
                   </td>
                   <td className="p-4">
-                    <p className="text-sm font-bold text-slate-800">{txn.linkedParty}</p>
+                    <p className="text-sm text-slate-600 truncate max-w-[200px]">{txn.description || 'N/A'}</p>
                   </td>
                   <td className="p-4 text-sm text-slate-500 font-mono">
-                    {txn.sourceTable}
+                    {txn.source_table}
                   </td>
                 </tr>
               ))}

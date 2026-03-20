@@ -1,7 +1,54 @@
-import React from 'react';
-import { PieChart, BarChart2, TrendingUp, Calendar, Filter } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { PieChart, BarChart2, TrendingUp, Calendar, Filter, Loader2, AlertTriangle } from 'lucide-react';
+import { fetchAnalytics } from '../../services/cooApi';
 
 const COOAnalytics: React.FC = () => {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadAnalytics = async () => {
+      try {
+        const result = await fetchAnalytics();
+        setData(result);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadAnalytics();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96">
+        <Loader2 className="w-10 h-10 text-[#6c11d4] animate-spin mb-4" />
+        <p className="text-slate-500 font-medium">Aggregating analytical trends...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 bg-red-50 text-red-600 rounded-3xl border border-red-100 flex items-center shadow-sm">
+        <AlertTriangle className="w-8 h-8 mr-4" />
+        <div>
+          <h3 className="font-bold text-lg mb-1">Failed to Load Analytics</h3>
+          <p className="text-sm">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Use the mocked data from the backend or fallback
+  const paymentMethods = data?.paymentMethods || [
+    { name: 'Mobile Money', value: 65 },
+    { name: 'Bank Transfer', value: 28 },
+    { name: 'Cash', value: 7 }
+  ];
+
   return (
     <div className="space-y-6">
       <div className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -29,19 +76,13 @@ const COOAnalytics: React.FC = () => {
           </div>
           <div className="flex-1 flex flex-col justify-center space-y-6 relative">
              <div className="flex justify-between items-end h-40">
-                {/* Mock Bar Chart */}
-                <div className="flex flex-col items-center justify-end w-1/3 h-full">
-                  <div className="w-16 bg-yellow-400 rounded-t-md" style={{ height: '65%' }}></div>
-                  <span className="text-xs font-bold text-slate-600 mt-2 whitespace-nowrap">Mobile (65%)</span>
-                </div>
-                <div className="flex flex-col items-center justify-end w-1/3 h-full">
-                  <div className="w-16 bg-blue-500 rounded-t-md" style={{ height: '28%' }}></div>
-                  <span className="text-xs font-bold text-slate-600 mt-2 whitespace-nowrap">Bank (28%)</span>
-                </div>
-                <div className="flex flex-col items-center justify-end w-1/3 h-full">
-                  <div className="w-16 bg-green-500 rounded-t-md" style={{ height: '7%' }}></div>
-                  <span className="text-xs font-bold text-slate-600 mt-2 whitespace-nowrap">Cash (7%)</span>
-                </div>
+                {/* Dynamically mapped mock chart */}
+                {paymentMethods.map((method: any, i: number) => (
+                  <div key={method.name} className="flex flex-col items-center justify-end w-1/3 h-full">
+                    <div className={`w-16 rounded-t-md ${i===0 ? 'bg-yellow-400' : i===1 ? 'bg-blue-500' : 'bg-green-500'}`} style={{ height: `${method.value}%` }}></div>
+                    <span className="text-xs font-bold text-slate-600 mt-2 whitespace-nowrap">{method.name} ({method.value}%)</span>
+                  </div>
+                ))}
              </div>
              
              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
@@ -65,7 +106,7 @@ const COOAnalytics: React.FC = () => {
             </h3>
           </div>
           <div className="flex-1 space-y-4">
-             {/* Mock Line Chart Concept (Using flex rows for visual) */}
+             {/* Abstracted Trend Bar Chart */}
              <div className="space-y-3">
                <div className="flex items-center">
                   <span className="w-12 text-xs font-bold text-slate-500">Week 4</span>
