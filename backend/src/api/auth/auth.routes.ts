@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
-import { register, login, sendOTP, verifyOTP } from '../../controllers/auth.controller';
+import { register, login, sendOTP, verifyOTP, logout } from '../../controllers/auth.controller';
+import { authGuard } from '../../middlewares/auth.middleware';
 
 const router = Router();
 
@@ -20,6 +21,7 @@ const authLimiter = rateLimit({
 
 router.post('/registrations', authLimiter, register);
 router.post('/sessions', loginLimiter, login);
+router.delete('/sessions', authGuard, logout);
 router.post('/otp', authLimiter, sendOTP);
 router.post('/otp/verifications', authLimiter, verifyOTP);
 

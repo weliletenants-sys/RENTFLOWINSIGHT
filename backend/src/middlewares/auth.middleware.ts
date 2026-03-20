@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import prisma from '../prisma/prisma.client';
 
 // Extend express Request to include the user
 declare global {
@@ -12,7 +13,7 @@ declare global {
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
 
-export const authGuard = (req: Request, res: Response, next: NextFunction) => {
+export const authGuard = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -23,6 +24,12 @@ export const authGuard = (req: Request, res: Response, next: NextFunction) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+
+    const session = await prisma.sessions.findUnique({ where: { token } });
+    if (!session || session.is_revoked) {
+      return res.status(401).json({ message: 'Unauthorized: Session ended or revoked' });
+    }
+
     req.user = decoded;
     next();
   } catch (error) {

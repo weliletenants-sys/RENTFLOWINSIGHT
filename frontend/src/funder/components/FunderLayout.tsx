@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -15,6 +16,12 @@ interface FunderLayoutProps {
 export default function FunderLayout({ children, activePage = 'Dashboard', pageTitle = 'Dashboard' }: FunderLayoutProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]);
 
   const displayName =
     user?.firstName && user?.lastName

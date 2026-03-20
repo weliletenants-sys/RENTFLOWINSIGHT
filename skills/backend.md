@@ -142,13 +142,13 @@ STRICT RULE:
 * ALWAYS use:
 
   * Prepared statements
-  * ORM (Eloquent if Laravel)
+  * ORM
 
 ---
 
 ## Authentication & Authorization
 
-* Use **token-based authentication** (JWT or Laravel Sanctum)
+* Use **token-based authentication** (JWT)
 
 * Enforce:
 
@@ -326,5 +326,6 @@ The backend must:
 
 ---
 
-If you want next step:
-We can convert this into a **Laravel-specific structure (Controllers, Services, Models)** aligned with your current stack.
+# SECURITY
+
+ensure token are regenerated and validated on every login and logout and also ensure that the token is stored in the database and can be revoked at any time

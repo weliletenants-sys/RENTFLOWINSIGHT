@@ -23,3 +23,10 @@ export const registerUser = async (userData: {
   const response = await api.post('/registrations', userData);
   return response.data;
 };
+
+export const logoutUser = async (token: string) => {
+  const response = await api.delete('/sessions', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};

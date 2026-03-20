@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   console.log('Starting Phase 3: CFO Reconciliation Matrix...');
-  
+
   const wallets = await prisma.wallets.findMany();
 
   let mismatches = 0;

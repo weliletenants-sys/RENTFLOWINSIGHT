@@ -1,0 +1,31 @@
+# Secure Logout Implementation Plan
+
+The user requested a dedicated logout mechanism for the Funder system adhering precisely to the guidelines within [skills/backend.md](file:///c:/Users/USER/Documents/WELILE/RENTFLOWINSIGHT/skills/backend.md). The backend specification demands RESTful API mapping and strict immutable logging for all authorization state alterations.
+
+## Proposed Changes
+---
+### Backend API
+#### [MODIFY] backend/src/controllers/auth.controller.ts
+- **Functionality**: Append a [logout](file:///c:/Users/USER/Documents/WELILE/RENTFLOWINSIGHT/frontend/src/contexts/AuthContext.tsx#52-56) controller explicitly designed to revoke sessions and register audit trails.
+- **Auditing**: Mandate execution of [logSecurityEvent({ event: 'LOGOUT_SUCCESS', user_id: req.user.id })](file:///c:/Users/USER/Documents/WELILE/RENTFLOWINSIGHT/backend/src/utils/logger.ts#25-57) to satisfy the "Logging & Auditing (CRITICAL)" section.
+- **REST Conformance**: Return a sanitized `{ status: 'success', message: 'Logged out successfully' }` response payload.
+
+#### [MODIFY] backend/src/api/auth/auth.routes.ts
+- **Routing**: Introduce `router.delete('/sessions', authenticate, logout);` honoring the REST convention that deleting a session equals logging out, ensuring the endpoint requires a verified JWT token via `authenticate`.
+
+---
+### Frontend Integration
+#### [MODIFY] frontend/src/services/authApi.ts
+- **Hook**: Create an async `logoutUser()` axios connector pointing to the newly generated `DELETE /sessions` route with HTTP Authorization headers encapsulating the `access_token`.
+
+#### [MODIFY] frontend/src/contexts/AuthContext.tsx
+- **State Cleanup**: Enhance the existing UI [logout()](file:///c:/Users/USER/Documents/WELILE/RENTFLOWINSIGHT/frontend/src/contexts/AuthContext.tsx#52-56) placeholder to fire the `await logoutUser()` hook prior to scraping local storage JWT arrays to prevent hanging orphan server sessions.
+
+#### [MODIFY] frontend/src/funder/components/FunderLayout.tsx
+- **Trigger**: Connect the sidebar interactive "Log out" button directly to the revised [logout()](file:///c:/Users/USER/Documents/WELILE/RENTFLOWINSIGHT/frontend/src/contexts/AuthContext.tsx#52-56) sequence and trigger an immediate hard loop back to the `/login` view.
+
+## Verification Plan
+### Manual Verification
+- We will login via an active Funder account bridging the dev server `/login`.
+- We will click the UI "Log Out" button spanning the active Layout block.
+- **Assertion**: We will assert that the `SecurityLogs` generated locally inside [logger.ts](file:///c:/Users/USER/Documents/WELILE/RENTFLOWINSIGHT/backend/src/utils/logger.ts) registers a pristine `LOGOUT_SUCCESS` flag matching the original user sub token.

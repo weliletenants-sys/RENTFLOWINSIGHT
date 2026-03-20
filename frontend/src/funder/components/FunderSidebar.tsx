@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { LayoutDashboard, Rocket, FileText, Settings, LogOut, Building2, Wallet } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface FunderSidebarProps {
   activePage?: string;
@@ -16,6 +17,12 @@ const navItems = [
 ];
 
 export default function FunderSidebar({ activePage = 'Dashboard', onNavigate }: FunderSidebarProps) {
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+  };
+
   return (
     <aside className="hidden lg:flex w-72 bg-white border-r border-[var(--color-primary-border)] flex-col sticky top-0 h-screen z-40">
       {/* Logo */}
@@ -79,13 +86,13 @@ export default function FunderSidebar({ activePage = 'Dashboard', onNavigate }: 
       <div className="w-full mt-auto">
         <div className="border-t border-[var(--color-primary-border)]" />
         <div className="p-4">
-          <Link
-            to="/"
-            className="flex items-center gap-3 px-3 py-2 text-sm font-bold text-red-500 hover:text-red-600 transition-colors cursor-pointer"
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
           >
             <LogOut className="w-5 h-5" />
             <span>Log Out</span>
-          </Link>
+          </button>
         </div>
       </div>
       

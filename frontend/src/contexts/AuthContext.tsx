@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
+import { logoutUser } from '../services/authApi';
 
 export type Role = 'TENANT' | 'AGENT' | 'LANDLORD' | 'FUNDER' | null;
 
@@ -49,9 +50,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [rentAmount, setRentAmount] = useState<string>('');
 
   const login = (userData: User) => setUser(userData);
-  const logout = () => {
+  
+  const logout = async () => {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      try {
+        await logoutUser(token);
+      } catch (err: any) {
+        console.error('Network logout tracking failed:', err);
+      }
+    }
     localStorage.removeItem('access_token');
     setUser(null);
+    window.location.replace('/login');
   };
   
   // The magic mock method to switch dashboards quickly

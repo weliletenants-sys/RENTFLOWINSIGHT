@@ -1492,3 +1492,18 @@ model PersonaRequisitions {
 
   @@map("persona_requisitions")
 }
+
+model Sessions {
+  id          String   @id @default(uuid())
+  user_id     String
+  token       String   @unique
+  device_info String?
+  ip_address  String?
+  is_revoked  Boolean  @default(false)
+  expires_at  DateTime
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@index([user_id])
+  @@map("sessions")
+}

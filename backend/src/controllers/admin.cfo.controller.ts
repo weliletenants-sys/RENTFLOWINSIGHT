@@ -12,7 +12,7 @@ export const getGlobalReconciliation = async (req: Request, res: Response) => {
 
     const results = [];
     let mathErrors = 0;
-    
+
     // In a massive production system, this could be offset/paginated, 
     // but the CFO query expects a synchronous sweeping check for the dashboard.
     for (const wallet of wallets) {
