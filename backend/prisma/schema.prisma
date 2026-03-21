@@ -1284,11 +1284,15 @@ model WithdrawalRequests {
 
 model AuditLogs {
   id          String  @id @default(uuid())
-  user_id     String?
+  user_id     String?  // Map this conceptually to actor_id
+  actor_role  String?  // New field
   action_type String?
   table_name  String?
-  record_id   String?
+  record_id   String?  // Map this conceptually to target_id
+  target_id   String?  // New field for specific user targets
   metadata    Json?
+  ip_address  String?  // New field
+  user_agent  String?  // New field
   created_at  String?
 
   @@map("audit_logs")
@@ -1551,4 +1555,25 @@ model Sessions {
 
   @@index([user_id])
   @@map("sessions")
+}
+
+model SystemConfigs {
+  id          String   @id @default(uuid())
+  version     Int      @default(1)
+  config_data Json
+  changed_by  String
+  created_at  DateTime @default(now())
+
+  @@map("system_configs")
+}
+
+model ImpersonationLogs {
+  id             String   @id @default(uuid())
+  super_admin_id String
+  target_role    String
+  mode           String
+  reason         String?
+  created_at     DateTime @default(now())
+
+  @@map("impersonation_logs")
 }

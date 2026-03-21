@@ -16,6 +16,7 @@ import personasRoutes from './personas/personas.routes';
 import adminRoutes from './admin/admin.routes';
 import executiveRoutes from './executive/executive.routes';
 import notificationsRoutes from './notifications/notifications.routes';
+import superadminRoutes from './superadmin/superadmin.routes';
 
 const api = Router();
 
@@ -33,6 +34,7 @@ api.use('/funder', funderRoutes);
 api.use('/roles', rolesRoutes);
 api.use('/v1/personas', personasRoutes);
 api.use('/v1/admin', adminRoutes);
+api.use('/superadmin', superadminRoutes);
 
 api.use('/notifications', notificationsRoutes);
 

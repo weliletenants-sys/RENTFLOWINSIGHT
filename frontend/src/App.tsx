@@ -22,7 +22,6 @@ import TenantPayments from './tenant/TenantPayments';
 import TenantProfile from './tenant/TenantProfile';
 
 import AdminLogin from './pages/auth/AdminLogin';
-import AdminDashboard from './admin/AdminDashboard';
 
 // --- Role-based route groups ---
 import { publicRoutes } from './routes/publicRoutes';
@@ -31,6 +30,7 @@ import { tenantRoutes } from './routes/tenantRoutes';
 import { funderRoutes } from './routes/funderRoutes';
 import { cooRoutes } from './routes/cooRoutes';
 import { executiveRoutes } from './routes/executiveRoutes';
+import { superAdminRoutes } from './routes/superAdminRoutes';
 
 const queryClient = new QueryClient();
 
@@ -99,9 +99,9 @@ function App() {
 
                 {/* Admin Routes */}
                 <Route path="/admin/login" element={<AdminLogin />} />
-                <Route element={<ProtectedRoute />}>
-                  <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                </Route>
+                
+                {/* Super Admin Control Panel */}
+                {superAdminRoutes}
 
                 {/* CEO Public Routes */}
                 <Route path="/ceo/dashboard" element={<CeoDashboard />} />
