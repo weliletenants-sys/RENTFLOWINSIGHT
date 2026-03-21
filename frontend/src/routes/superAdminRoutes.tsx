@@ -8,6 +8,8 @@ const SuperAdminOverview = lazy(() => import('../admin/superadmin/SuperAdminOver
 const SuperAdminUsers = lazy(() => import('../admin/superadmin/SuperAdminUserManagement'));
 const SuperAdminAudit = lazy(() => import('../admin/superadmin/SuperAdminAuditLogs'));
 const SuperAdminConfig = lazy(() => import('../admin/superadmin/SuperAdminSystemConfig'));
+const SuperAdminLedger = lazy(() => import('../admin/superadmin/SuperAdminLedger'));
+const SuperAdminSecurity = lazy(() => import('../admin/superadmin/SuperAdminSecurity'));
 
 const CentralLoader = () => (
   <div className="flex h-[50vh] items-center justify-center">
@@ -45,5 +47,7 @@ export const superAdminRoutes = (
     <Route path="users" element={<Suspense fallback={<CentralLoader />}><SuperAdminUsers /></Suspense>} />
     <Route path="audit" element={<Suspense fallback={<CentralLoader />}><SuperAdminAudit /></Suspense>} />
     <Route path="config" element={<Suspense fallback={<CentralLoader />}><SuperAdminConfig /></Suspense>} />
+    <Route path="ledger" element={<Suspense fallback={<CentralLoader />}><SuperAdminLedger /></Suspense>} />
+    <Route path="security" element={<Suspense fallback={<CentralLoader />}><SuperAdminSecurity /></Suspense>} />
   </Route>
 );

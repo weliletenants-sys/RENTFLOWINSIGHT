@@ -28,13 +28,13 @@ export default function SuperAdminLayout() {
   const pageTitle = navItems.find((vi) => location.pathname === vi.path)?.name || 'Executive Portals Hub';
 
   return (
-    <div className="font-body text-on-surface min-h-[max(884px,100dvh)] bg-surface flex selection:bg-primary/20">
+    <div className="font-body text-on-surface min-h-[max(884px,100dvh)] bg-surface flex selection:bg-primary/20 relative">
       
-      {/* Global Security Banner */}
-      <div className={`fixed top-0 left-0 right-0 z-[60] h-1 w-full ${isImpersonating ? 'bg-error' : 'bg-secondary-container'}`} />
+      {/* Global Security Banner - Z-Index 60 */}
+      <div className={`fixed top-0 left-0 right-0 z-[60] h-1 w-full pointer-events-none ${isImpersonating ? 'bg-error' : 'bg-secondary-container'}`} />
 
-      {/* Navigation Drawer */}
-      <aside className={`h-screen w-64 fixed left-0 top-0 bg-[#0B0F19] font-headline antialiased tracking-tight shadow-[4px_0px_24px_rgba(0,0,0,0.3)] z-50 flex flex-col py-8 px-4 transition-transform duration-300 lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      {/* Navigation Drawer - Z-Index 40 (As Requested) */}
+      <aside className={`h-screen w-64 fixed left-0 top-0 bg-[#0B0F19] font-headline antialiased tracking-tight shadow-[4px_0px_24px_rgba(0,0,0,0.3)] z-40 flex flex-col py-8 px-4 transition-transform duration-300 pointer-events-auto ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
         <div className="mb-10 px-4">
           <span className="text-2xl font-bold text-white tracking-tighter">Sovereign</span>
         </div>
@@ -62,7 +62,7 @@ export default function SuperAdminLayout() {
         <div className="mt-auto px-4">
           <button 
             onClick={() => navigate('/dashboard')}
-            className="w-full flex items-center justify-between py-4 border-t border-white/10 group cursor-pointer"
+            className="w-full flex items-center justify-between py-4 border-t border-white/10 group cursor-pointer pointer-events-auto"
           >
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-xs font-bold text-white">
@@ -78,15 +78,15 @@ export default function SuperAdminLayout() {
         </div>
       </aside>
 
-      {/* Main Content Wrapper */}
-      <main className="flex-1 lg:ml-64 min-h-screen bg-surface relative z-0 flex flex-col">
+      {/* Main Content Wrapper - Content Z-Index 10 */}
+      <main className="flex-1 lg:ml-64 min-h-screen bg-surface relative z-10 flex flex-col pt-20"> {/* PT-20 for absolute header space */}
         
-        {/* TopAppBar */}
-        <header className="sticky top-0 z-40 w-full bg-[#faf8ff]/80 backdrop-blur-xl flex justify-between items-center px-6 lg:px-10 h-20">
+        {/* TopAppBar - Z-Index 30 (As Requested) */}
+        <header className="fixed top-0 left-0 right-0 lg:left-64 z-30 bg-[#faf8ff]/90 backdrop-blur-xl flex justify-between items-center px-6 lg:px-10 h-20 pointer-events-auto border-b border-outline-variant/5">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="lg:hidden p-2 rounded-full hover:bg-slate-100/50 transition-colors duration-300 text-primary-container"
+              className="lg:hidden p-2 rounded-full hover:bg-slate-100/50 transition-colors duration-300 text-primary-container cursor-pointer pointer-events-auto"
             >
               <span className="material-symbols-outlined" data-icon="menu">menu</span>
             </button>
@@ -109,7 +109,7 @@ export default function SuperAdminLayout() {
             </div>
 
             <div className="flex items-center gap-4">
-              <button className="relative p-2 rounded-full hover:bg-slate-100/50 transition-colors duration-300 text-slate-500">
+              <button className="relative p-2 rounded-full hover:bg-slate-100/50 transition-colors duration-300 text-slate-500 cursor-pointer pointer-events-auto">
                 <span className="material-symbols-outlined" data-icon="notifications">notifications</span>
                 <span className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
               </button>
@@ -124,25 +124,20 @@ export default function SuperAdminLayout() {
         </header>
 
         {isImpersonating && (
-          <div className="w-full bg-error text-on-error py-1.5 px-4 text-center text-xs font-bold tracking-widest uppercase z-30 shadow-md">
+          <div className="w-full bg-error text-on-error py-1.5 px-4 text-center text-xs font-bold tracking-widest uppercase z-30 shadow-md pointer-events-auto">
             Warning: Actions performed here will be permanently logged under the target user's identity.
           </div>
         )}
 
-        {/* Page Canvas */}
-        <div className="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full z-10">
+        {/* Page Canvas Container - Ensures content is exactly where it needs to be */}
+        <div className="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full relative z-10 pointer-events-auto">
           <Outlet />
         </div>
 
-        {/* Visual Layering Element (Tonal Background Shift) */}
-        <div className="fixed inset-0 pointer-events-none z-[-1] bg-surface flex items-start justify-end">
-          <div className="w-[40%] h-[100%] bg-surface-container-low opacity-50 blur-[100px] -mr-[10%]"></div>
-        </div>
-
-        {/* Mobile Drawer Overlay */}
+        {/* Mobile Drawer Overlay - Conditionally Rendered Modal Overlay (Z-Index 35) */}
         {isSidebarOpen && (
           <div 
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[35] lg:hidden pointer-events-auto"
             onClick={() => setIsSidebarOpen(false)}
           />
         )}

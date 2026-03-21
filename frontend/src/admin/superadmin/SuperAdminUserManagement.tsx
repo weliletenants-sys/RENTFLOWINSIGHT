@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, MoreVertical, ShieldAlert, AlertTriangle, UserMinus } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function SuperAdminUserManagement() {
@@ -50,74 +49,84 @@ export default function SuperAdminUserManagement() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
       
+      {/* Page Header */}
+      <div className="mb-8">
+        <h2 className="text-3xl font-headline font-extrabold text-on-surface tracking-tight mb-2">User Matrix</h2>
+        <p className="text-on-surface-variant font-body text-sm">Manage global authorization, override roles, and audit access logs across all tiers.</p>
+      </div>
+
       {/* Top Bar: Search */}
-      <div className="relative w-full shadow-sm rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800">
+      <div className="relative w-full shadow-sm rounded-xl overflow-hidden border border-outline-variant/20 bg-surface-container-low transition-shadow focus-within:shadow-md focus-within:border-primary/30">
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-          <Search className="h-5 w-5 text-gray-400" />
+          <span className="material-symbols-outlined text-on-surface-variant">search</span>
         </div>
         <input
           type="text"
-          className="block w-full pl-11 pr-4 py-3.5 bg-white dark:bg-[#111827] border-none text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 sm:text-sm transition-shadow outline-none"
-          placeholder="Search by name, email, or user ID..."
+          className="block w-full pl-12 pr-4 py-4 bg-transparent border-none text-on-surface placeholder-on-surface-variant focus:ring-0 sm:text-sm outline-none font-medium"
+          placeholder="Search identity by name, email, or system ID..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
 
       {/* Data Table */}
-      <div className="bg-white dark:bg-[#111827] shadow-sm rounded-xl border border-gray-200 dark:border-gray-800 overflow-visible">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
-          <thead className="bg-gray-50/50 dark:bg-gray-800/30">
+      <div className="bg-surface-container-lowest shadow-[0_4px_24px_rgba(0,0,0,0.02)] rounded-xl border border-outline-variant/10 overflow-visible">
+        <table className="min-w-full divide-y divide-outline-variant/10">
+          <thead className="bg-surface-container-low">
             <tr>
-              <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">User</th>
-              <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Role</th>
-              <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-              <th scope="col" className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+              <th scope="col" className="px-6 py-4 text-left font-bold text-on-surface-variant uppercase tracking-widest text-[10px]">Identity</th>
+              <th scope="col" className="px-6 py-4 text-left font-bold text-on-surface-variant uppercase tracking-widest text-[10px]">Access Level</th>
+              <th scope="col" className="px-6 py-4 text-left font-bold text-on-surface-variant uppercase tracking-widest text-[10px]">System Status</th>
+              <th scope="col" className="px-6 py-4 text-right font-bold text-on-surface-variant uppercase tracking-widest text-[10px]">Governance</th>
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-[#111827] divide-y divide-gray-100 dark:divide-gray-800/50">
+          <tbody className="bg-surface-container-lowest divide-y divide-outline-variant/10">
             {dummyUsers.map((user) => (
-              <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/20 transition-colors group">
+              <tr key={user.id} className="hover:bg-surface-container-low/50 transition-colors group">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex flex-col">
-                    <span className="font-medium text-gray-900 dark:text-white">{user.name}</span>
-                    <span className="text-sm text-gray-500">{user.email}</span>
+                    <span className="font-headline font-bold text-on-surface">{user.name}</span>
+                    <span className="text-xs font-semibold text-on-surface-variant mt-0.5">{user.email}</span>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-primary-container/20 text-on-secondary-container">
                     {user.role}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex flex-row items-center gap-1.5 text-sm font-medium ${user.status === 'Active' ? 'text-green-600' : 'text-orange-500'}`}>
-                    {user.status === 'Frozen' && <AlertTriangle size={14} />}
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest ${user.status === 'Active' ? 'bg-emerald-50 text-emerald-700' : 'bg-error-container text-on-error-container'}`}>
+                    {user.status === 'Frozen' && <span className="material-symbols-outlined text-[14px]">ac_unit</span>}
                     {user.status}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium relative">
                   <button 
                     onClick={() => setActionMenuOpen(actionMenuOpen === user.id ? null : user.id)}
-                    className="text-gray-400 hover:text-gray-900 dark:hover:text-white p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    className="text-on-surface-variant hover:text-primary hover:bg-surface-container p-2 rounded-lg transition-colors focus:outline-none"
                   >
-                    <MoreVertical size={18} />
+                    <span className="material-symbols-outlined">more_vert</span>
                   </button>
 
                   {/* Dropdown Menu */}
                   {actionMenuOpen === user.id && (
-                    <div ref={menuRef} className="absolute right-8 top-10 mt-2 w-48 rounded-xl shadow-lg bg-white dark:bg-[#1f2937] ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-800 z-50 overflow-hidden outline-none animate-in fade-in zoom-in-95 duration-200">
+                    <div ref={menuRef} className="absolute right-8 top-10 mt-2 w-56 rounded-xl shadow-lg bg-surface-container-lowest border border-outline-variant/20 z-50 overflow-hidden outline-none animate-in fade-in zoom-in-95 duration-200">
                       <div className="py-1">
-                        <button onClick={() => { setSelectedUser(user); setShowRoleModal(true); setActionMenuOpen(null); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <button onClick={() => { setSelectedUser(user); setShowRoleModal(true); setActionMenuOpen(null); }} className="w-full text-left px-4 py-3 text-sm font-semibold text-on-surface hover:bg-surface-container-low flex items-center gap-3 transition-colors">
+                          <span className="material-symbols-outlined text-lg text-primary">admin_panel_settings</span>
                           Assign Role
                         </button>
-                        <button onClick={() => handleImpersonate(user)} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <button onClick={() => handleImpersonate(user)} className="w-full text-left px-4 py-3 text-sm font-semibold text-on-surface hover:bg-surface-container-low flex items-center gap-3 transition-colors">
+                          <span className="material-symbols-outlined text-lg text-primary">gpp_bad</span>
                           Impersonate User
                         </button>
                       </div>
-                      <div className="py-1">
-                        <button onClick={() => { setSelectedUser(user); setShowDeleteModal(true); setActionMenuOpen(null); }} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 font-medium">
+                      <div className="h-px bg-outline-variant/10 w-full" />
+                      <div className="py-1 bg-error-container/5">
+                        <button onClick={() => { setSelectedUser(user); setShowDeleteModal(true); setActionMenuOpen(null); }} className="w-full text-left px-4 py-3 text-sm font-bold text-error hover:bg-error-container/40 flex items-center gap-3 transition-colors">
+                          <span className="material-symbols-outlined text-lg">dangerous</span>
                           Delete / Freeze
                         </button>
                       </div>
@@ -132,42 +141,52 @@ export default function SuperAdminUserManagement() {
 
       {/* Role Assignment Modal */}
       {showRoleModal && selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 dark:bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#111827] rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-200 dark:border-gray-800 animate-in zoom-in-95 duration-200">
-            <div className="flex items-center gap-3 mb-2">
-              <ShieldAlert className="w-6 h-6 text-purple-600" />
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Assign Role</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-surface-container-lowest rounded-2xl max-w-md w-full p-8 shadow-2xl border border-outline-variant/20 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <span className="material-symbols-outlined">admin_panel_settings</span>
+              </div>
+              <h3 className="text-2xl font-headline font-bold text-on-surface">Assign Role</h3>
             </div>
-            <p className="text-sm text-gray-500 mb-6">
-              Modifying access for <strong>{selectedUser.name}</strong>. Provide MFA token to confirm.
+            <p className="text-sm font-medium text-on-surface-variant mb-8 leading-relaxed">
+              Modifying root access for <strong className="text-on-surface">{selectedUser.name}</strong>. Provide your MFA token to confirm identity escalation.
             </p>
             
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">New Access Level</label>
-                <select className="w-full p-2.5 bg-gray-50 dark:bg-[#1e2937] border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 text-sm">
-                  <option>CEO</option>
-                  <option>COO</option>
-                  <option>CFO</option>
-                </select>
+                <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">New Access Level</label>
+                <div className="relative cursor-pointer">
+                  <select className="appearance-none w-full p-4 bg-surface-container-low border border-outline-variant/20 rounded-xl text-on-surface font-semibold focus:ring-2 focus:ring-primary outline-none transition-all cursor-pointer">
+                    <option>CEO</option>
+                    <option>COO</option>
+                    <option>CFO</option>
+                    <option>CTO</option>
+                    <option>MANAGER</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-on-surface-variant">
+                    <span className="material-symbols-outlined">expand_more</span>
+                  </div>
+                </div>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Admin PIN / MFA</label>
+                <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Admin PIN / MFA</label>
                 <input 
                   type="password" 
                   value={mfaToken}
                   onChange={(e) => setMfaToken(e.target.value)}
-                  className="w-full p-2.5 bg-gray-50 dark:bg-[#1e2937] border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 font-mono tracking-widest text-lg text-center"
-                  placeholder="• • • • • •"
+                  className="w-full p-4 bg-surface-container-low border border-outline-variant/20 rounded-xl outline-none focus:ring-2 focus:ring-primary font-mono tracking-widest text-xl text-center text-on-surface transition-all placeholder:font-sans placeholder:text-sm placeholder:tracking-normal"
+                  placeholder="Enter 6-digit MFA"
                 />
               </div>
 
-              <div className="flex gap-3 pt-4">
-                <button onClick={() => setShowRoleModal(false)} className="flex-1 py-2.5 px-4 bg-white dark:bg-transparent border border-gray-300 dark:border-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <div className="flex gap-4 pt-4">
+                <button onClick={() => setShowRoleModal(false)} className="flex-1 py-4 px-4 bg-surface-container-low hover:bg-surface-container text-on-surface font-bold rounded-xl text-sm transition-colors active:scale-95">
                   Cancel
                 </button>
-                <button onClick={executeRoleAssign} disabled={!mfaToken} className="flex-1 py-2.5 px-4 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-xl text-sm font-medium transition-colors shadow-sm">
+                <button onClick={executeRoleAssign} disabled={!mfaToken} className="flex-1 py-4 px-4 bg-primary hover:bg-primary/90 disabled:opacity-50 text-on-primary font-bold rounded-xl text-sm transition-all shadow-md shadow-primary/20 active:scale-95 flex justify-center items-center gap-2">
+                  <span className="material-symbols-outlined text-sm">enhanced_encryption</span>
                   Confirm
                 </button>
               </div>
@@ -178,33 +197,38 @@ export default function SuperAdminUserManagement() {
 
       {/* Delete Modal */}
       {showDeleteModal && selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 dark:bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#111827] rounded-2xl max-w-md w-full p-8 shadow-2xl border border-red-500/20 animate-in zoom-in-95 duration-200">
-            <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                <UserMinus className="w-8 h-8 text-red-600 dark:text-red-500" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-error-container/10 rounded-2xl max-w-md w-full p-8 shadow-2xl border border-error/30 animate-in zoom-in-95 duration-200 backdrop-blur-xl">
+            <div className="flex flex-col items-center justify-center mb-6">
+              <div className="w-16 h-16 rounded-full bg-error/20 flex items-center justify-center mb-4">
+                <span className="material-symbols-outlined text-4xl text-error" style={{fontVariationSettings: "'FILL' 1"}}>person_remove</span>
               </div>
+              <h3 className="text-2xl font-headline font-extrabold text-error">Destroy Account</h3>
             </div>
             
-            <h3 className="text-xl font-bold text-center text-gray-900 dark:text-white mb-2">Destroy Account</h3>
-            <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-8">
-              This action cannot be undone. To definitively erase records for <strong>{selectedUser.name}</strong>, type <span className="font-mono bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400 px-1 py-0.5 rounded font-bold">DELETE</span> below.
+            <p className="text-center text-sm font-medium text-on-error-container leading-relaxed mb-8">
+              This action severs all database links. To definitively erase records for <strong className="text-white">{selectedUser.name}</strong>, type <span className="font-mono bg-error text-white px-2 py-1 rounded-md font-bold text-xs mx-1">DELETE</span> below.
             </p>
             
             <input 
               type="text" 
               value={deleteConfirm}
               onChange={(e) => setDeleteConfirm(e.target.value)}
-              className="w-full p-3 bg-red-50/50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/50 rounded-xl outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 font-mono text-center text-red-600 uppercase mb-6"
+              className="w-full p-4 bg-black/40 border border-error/50 rounded-xl outline-none focus:ring-2 focus:ring-error font-mono text-center text-error uppercase mb-8 tracking-widest font-bold placeholder:text-error/30"
               placeholder="TYPE DELETE"
             />
 
-            <div className="flex flex-col-reverse sm:flex-row gap-3">
-              <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-2.5 px-4 bg-white dark:bg-[#1e2937] border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+            <div className="flex flex-col-reverse sm:flex-row gap-4">
+              <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-4 px-4 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl text-sm transition-colors active:scale-95">
                 Cancel
               </button>
-              <button onClick={executeDelete} disabled={deleteConfirm !== 'DELETE'} className="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 disabled:opacity-40 text-white rounded-xl text-sm font-medium transition-colors shadow-sm">
-                Confirm Destruction
+              <button 
+                onClick={executeDelete} 
+                disabled={deleteConfirm !== 'DELETE'} 
+                className="flex-1 py-4 px-4 bg-error hover:bg-error/90 disabled:opacity-40 disabled:hover:bg-error text-white font-bold rounded-xl text-sm transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined text-sm">skull</span>
+                Destroy
               </button>
             </div>
           </div>
