@@ -228,16 +228,101 @@ export const getRecentActivities = async (req: Request, res: Response) => {
 export const getOpportunities = async (req: Request, res: Response) => {
   try {
     // Supplying live dynamic representation of properties seeking funding
-    // The Funder Platform abstracts real tenant data, presenting them as "Virtual Houses"
-    const mockDbResult = [
-      { id: 'op-1', name: 'Kampala Heights Apt 4B', location: 'Makindye, Kampala', image: '/property_1.png', rentRequired: 850000, bedrooms: 2, status: 'available', postedDate: new Date().toLocaleDateString() },
-      { id: 'op-2', name: 'Entebbe Lakeside Villa', location: 'Kitoro, Entebbe', image: '/property_2.png', rentRequired: 1200000, bedrooms: 3, status: 'urgent', postedDate: new Date(Date.now() - 1000 * 3600 * 24).toLocaleDateString() },
-      { id: 'op-3', name: 'Ntinda Townhouse Unit C', location: 'Ntinda, Kampala', image: '/property_3.png', rentRequired: 650000, bedrooms: 1, status: 'available', postedDate: new Date(Date.now() - 1000 * 3600 * 48).toLocaleDateString() },
-      { id: 'op-4', name: 'Kololo Luxury Flat 2A', location: 'Kololo, Kampala', image: '/property_1.png', rentRequired: 2500000, bedrooms: 3, status: 'taken', postedDate: new Date(Date.now() - 1000 * 3600 * 72).toLocaleDateString() }
-    ];
-    return res.status(200).json({ status: 'success', data: mockDbResult });
+    // The COO adds these to VirtualOpportunities to abstract real tenant data.
+    const opportunities = await prisma.virtualOpportunities.findMany({
+      orderBy: { created_at: 'desc' }
+    });
+
+    const formattedData = opportunities.map(opp => ({
+      id: opp.id,
+      name: opp.name,
+      location: opp.location,
+      image: opp.image_url || '/property_1.png', // Fallback image if none
+      rentRequired: Number(opp.rent_required),
+      bedrooms: opp.bedrooms,
+      status: opp.status,
+      postedDate: new Date(opp.created_at).toLocaleDateString()
+    }));
+
+    return res.status(200).json({ status: 'success', data: formattedData });
   } catch (error) {
     console.error('getOpportunities error:', error);
     return res.status(500).json({ status: 'error', message: 'Internal server error' });
+  }
+};
+
+export const updateProfileInfo = async (req: Request, res: Response) => {
+  try {
+    const funderId = req.user?.sub || req.user?.id;
+    const { firstName, lastName, email, phone } = req.body;
+
+    if (!firstName || !lastName || !email || !phone) {
+      return res.status(400).type('application/problem+json').json({
+        type: 'https://api.example.com/errors/validation-error',
+        title: 'Bad Request',
+        status: 400,
+        detail: 'First name, last name, email, and phone number are absolutely required.'
+      });
+    }
+
+    // Strict sanitization: Alpha characters, spaces, hyphens, and apostrophes ONLY
+    const nameRegex = /^[a-zA-Z\s\-']+$/;
+    
+    if (!nameRegex.test(firstName) || !nameRegex.test(lastName)) {
+      return res.status(422).type('application/problem+json').json({
+        type: 'https://api.example.com/errors/validation-error',
+        title: 'Validation Error',
+        status: 422,
+        detail: 'Names must contain only text characters, spaces, or hyphens. Emojis, numbers, and special symbols are strictly forbidden.',
+        instance: `/api/funder/profile`,
+        errors: [{ field: 'name', message: 'Invalid characters detected' }]
+      });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(422).type('application/problem+json').json({
+        type: 'https://api.example.com/errors/validation-error',
+        title: 'Validation Error',
+        status: 422,
+        detail: 'The provided email address is not structurally valid.',
+        instance: `/api/funder/profile`
+      });
+    }
+
+    const phoneRegex = /^\+?[0-9\s\-]{9,15}$/;
+    if (!phoneRegex.test(phone)) {
+      return res.status(422).type('application/problem+json').json({
+        type: 'https://api.example.com/errors/validation-error',
+        title: 'Validation Error',
+        status: 422,
+        detail: 'The provided phone number contains disallowed characters or is not of the correct length.',
+        instance: `/api/funder/profile`
+      });
+    }
+
+    const updatedProfile = await prisma.profiles.update({
+      where: { id: funderId },
+      data: {
+        full_name: `${firstName.trim()} ${lastName.trim()}`,
+        email: email.trim().toLowerCase(),
+        phone: phone.trim(),
+        updated_at: new Date().toISOString()
+      }
+    });
+
+    return res.status(200).json({
+      status: 'success',
+      data: updatedProfile,
+      message: 'Profile updated successfully'
+    });
+  } catch (error: any) {
+    console.error('updateProfileInfo error:', error);
+    return res.status(500).type('application/problem+json').json({
+      type: 'https://api.example.com/errors/internal-server-error',
+      title: 'Internal Server Error',
+      status: 500,
+      detail: 'An unexpected error occurred while updating the profile.'
+    });
   }
 };

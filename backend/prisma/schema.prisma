@@ -721,6 +721,11 @@ model Profiles {
   whatsapp_verified     Boolean?
   whatsapp_verified_at  String?
   role                  String?
+  // KYC lifecycle: NOT_SUBMITTED | UNDER_REVIEW | APPROVED | REJECTED
+  kyc_status            String   @default("NOT_SUBMITTED")
+  kyc_submitted_at      String?
+  kyc_approved_at       String?
+  kyc_rejected_reason   String?
 
   @@map("profiles")
 }
@@ -1578,6 +1583,7 @@ model ImpersonationLogs {
   @@map("impersonation_logs")
 }
 
+<<<<<<< HEAD
 model SystemConfig {
   key        String  @id
   value      String
@@ -1585,4 +1591,18 @@ model SystemConfig {
   updated_by String?
 
   @@map("system_config")
+=======
+model VirtualOpportunities {
+  id            String   @id @default(uuid())
+  name          String
+  location      String
+  image_url     String?
+  rent_required Float
+  bedrooms      Int
+  status        String   @default("available")
+  created_at    String
+  updated_at    String
+
+  @@map("virtual_opportunities")
+>>>>>>> efb2962c76c54fc5bbc6b5913845d1c851fb5c3e
 }

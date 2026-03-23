@@ -1,4 +1,4 @@
-﻿import { TrendingUp, Wallet } from 'lucide-react';
+import { TrendingUp, Wallet } from 'lucide-react';
 
 interface FunderActionButtonsProps {
   portfolioValue?: number;
@@ -25,10 +25,12 @@ export default function FunderActionButtons({ portfolioValue = 0, roiPercent = 0
             {(portfolioValue / 1_000_000).toFixed(2)}M
           </h2>
 
-          <div className="flex items-center gap-1 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm text-emerald-700">
-            <TrendingUp className="w-3.5 h-3.5 stroke-[3]" />
-            <span className="text-[10px] font-black tracking-tight">+{roiPercent}%</span>
-          </div>
+          {portfolioValue > 0 && (
+            <div className="flex items-center gap-1 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm text-emerald-700">
+              <TrendingUp className="w-3.5 h-3.5 stroke-[3]" />
+              <span className="text-[10px] font-black tracking-tight">+{roiPercent}%</span>
+            </div>
+          )}
         </div>
       </div>
 

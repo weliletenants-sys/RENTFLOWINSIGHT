@@ -1,5 +1,7 @@
 import { Router } from 'express';
-import { getDashboardStats, getPortfolios, getRecentActivities, fundRentPool, requestWithdrawal, getOpportunities } from '../../controllers/funder.controller';
+import { getDashboardStats, getPortfolios, getRecentActivities, fundRentPool, requestWithdrawal, getOpportunities, updateProfileInfo } from '../../controllers/funder.controller';
+import { uploadAvatar, uploadKycDocuments, getKycStatus } from '../../controllers/funder.kyc.controller';
+import { uploadS3 } from '../../services/s3.service';
 import { authGuard, rolesGuard } from '../../middlewares/auth.middleware';
 
 const router = Router();
@@ -16,5 +18,10 @@ router.get('/opportunities', getOpportunities);
 
 router.post('/fund', fundRentPool);
 router.post('/withdrawals', requestWithdrawal);
+
+// --- KYC File Storage ---
+router.post('/kyc/avatar', uploadS3.single('avatar'), uploadAvatar);
+router.post('/kyc/documents', uploadS3.fields([{ name: 'front_id', maxCount: 1 }, { name: 'back_id', maxCount: 1 }]), uploadKycDocuments);
+router.put('/kyc/profile', updateProfileInfo);
 
 export default router;

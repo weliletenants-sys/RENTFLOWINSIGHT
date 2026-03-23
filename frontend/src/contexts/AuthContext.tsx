@@ -12,6 +12,7 @@ interface User {
   role: Role;
   phone?: string;
   isVerified?: boolean;
+  avatar_url?: string;
 }
 
 interface AuthContextType {
@@ -27,6 +28,7 @@ interface AuthContextType {
   setIntendedRole: (role: Role) => void;
   rentAmount: string;
   setRentAmount: (amount: string) => void;
+  updateUserLocally: (updates: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -103,8 +105,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setOriginalRole(userData.role);
   };
 
+  const updateUserLocally = (updates: Partial<User>) => {
+    if (user) {
+      const newUser = { ...user, ...updates };
+      setUser(newUser);
+      localStorage.setItem('user_data', JSON.stringify(newUser));
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, role: user?.role || intendedRole, originalRole, login, logout, switchRoleMode, updateSession, intendedRole, setIntendedRole, rentAmount, setRentAmount }}>
+    <AuthContext.Provider value={{ user, role: user?.role || intendedRole, originalRole, login, logout, switchRoleMode, updateSession, intendedRole, setIntendedRole, rentAmount, setRentAmount, updateUserLocally }}>
       {children}
     </AuthContext.Provider>
   );

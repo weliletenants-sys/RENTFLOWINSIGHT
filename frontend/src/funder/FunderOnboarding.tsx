@@ -755,12 +755,13 @@ export default function FunderOnboarding() {
       setIsSubmitting(true);
       setApiError('');
       try {
+        const sanitizeInput = (val: string) => val.replace(/[<>]/g, '');
         const response = await registerUser({
-          email: form.email,
-          password: form.password,
-          firstName: form.firstName,
-          lastName: form.lastName,
-          phone: form.phone,
+          email: sanitizeInput(form.email),
+          password: form.password, // Passwords are fundamentally protected by hashing
+          firstName: sanitizeInput(form.firstName),
+          lastName: sanitizeInput(form.lastName),
+          phone: sanitizeInput(form.phone),
           role: definedRole || 'FUNDER' // dynamically pulled from URL (/funder)
         });
         

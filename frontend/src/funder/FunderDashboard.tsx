@@ -17,6 +17,7 @@ import FunderPortfolioPage from './FunderPortfolioPage';
 import FunderOpportunitiesPage from './FunderOpportunitiesPage';
 import { getFunderDashboardStats } from '../services/funderApi';
 import type { DashboardStatsResponse } from '../services/funderApi';
+import { useKycStatus } from './hooks/useKycStatus';
 
 // ─────────────────────────── types ───────────────────────────
 
@@ -105,6 +106,7 @@ const MOCK_ACTIVITIES: ActivityItem[] = [
 export default function FunderDashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { status: kycStatus } = useKycStatus();
 
   const [stats, setStats] = useState<DashboardStatsResponse | null>(null);
   const [portfolios, setPortfolios] = useState<PortfolioItem[]>(MOCK_PORTFOLIOS);
@@ -189,25 +191,40 @@ export default function FunderDashboard() {
           />
 
           {/* ──────────── VERIFICATION INTERCEPTOR ──────────── */}
-          {!user?.isVerified && activePage !== 'Portfolio' && activePage !== 'Opportunities' && (
-            <div className="bg-amber-50 border-b border-amber-200 p-4 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shrink-0">
-              <div className="flex items-start md:items-center gap-4">
-                <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
-                  <ShieldAlert className="w-6 h-6 text-amber-600" />
+          {!user?.isVerified && activePage !== 'Portfolio' && activePage !== 'Opportunities' && (() => {
+            if (kycStatus === 'UNDER_REVIEW') {
+              return (
+                <div className="bg-blue-50 border-b border-blue-200 p-4 sm:p-6 flex items-start md:items-center gap-4 shrink-0">
+                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
+                    <ShieldAlert className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-blue-900 font-bold text-base">KYC Under Review</h3>
+                    <p className="text-blue-700 text-sm mt-0.5">Your identity documents have been received and are being reviewed by our compliance team. This usually takes 24–48 hours.</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-amber-900 font-bold text-base">Profile Verification Required</h3>
-                  <p className="text-amber-700 text-sm mt-0.5">You must complete KYC onboarding before you can fund portfolios or withdraw earnings.</p>
+              );
+            }
+            return (
+              <div className="bg-amber-50 border-b border-amber-200 p-4 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shrink-0">
+                <div className="flex items-start md:items-center gap-4">
+                  <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
+                    <ShieldAlert className="w-6 h-6 text-amber-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-amber-900 font-bold text-base">Profile Verification Required</h3>
+                    <p className="text-amber-700 text-sm mt-0.5">You must complete KYC onboarding before you can fund portfolios or withdraw earnings.</p>
+                  </div>
                 </div>
+                <button 
+                  onClick={() => navigate('/funder/kyc')}
+                  className="w-full sm:w-auto px-6 py-2.5 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-700 transition-colors flex items-center justify-center gap-2 shrink-0"
+                >
+                  Complete Profile <ArrowRight className="w-4 h-4" />
+                </button>
               </div>
-              <button
-                onClick={() => navigate('/funder/kyc')}
-                className="w-full sm:w-auto px-6 py-2.5 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-700 transition-colors flex items-center justify-center gap-2 shrink-0"
-              >
-                Complete Profile <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
+            );
+          })()}
 
           {/* ──────────── PAGE BODY ──────────── */}
           {activePage === 'Portfolio' ? (
