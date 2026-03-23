@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, Phone, MapPin, Map as MapIcon, Calendar, Camera, 
@@ -8,33 +8,7 @@ import toast from 'react-hot-toast';
 import axios from 'axios';
 
 // Mock Data
-const MOCK_TENANTS = {
-  't-101': {
-    id: 't-101',
-    name: 'Samuel Ochieng',
-    phone: '+256 700 123 456',
-    location: 'Ntinda Complex, Apt 4B',
-    rentStatus: 'overdue',
-    outstandingBalance: 150000,
-    dailyAmount: 15000,
-    lastPaymentDate: '2023-10-20',
-    history: [
-      { date: '2023-10-20', amount: 15000, type: 'cash' },
-      { date: '2023-10-19', amount: 10000, type: 'partial' },
-    ]
-  },
-  't-102': {
-    id: 't-102',
-    name: 'Grace Nakato',
-    phone: '+256 772 987 654',
-    location: 'Bukoto Heights, Unit 12',
-    rentStatus: 'partial',
-    outstandingBalance: 50000,
-    dailyAmount: 20000,
-    lastPaymentDate: '2023-10-24',
-    history: []
-  }
-};
+const MOCK_TENANTS: Record<string, any> = {};
 
 type VisitStep = 'CONTEXT' | 'ACTION_SELECT' | 'RECORD_PAYMENT' | 'NO_PAYMENT' | 'SUMMARY';
 

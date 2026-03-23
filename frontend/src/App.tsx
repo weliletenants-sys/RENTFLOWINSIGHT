@@ -120,6 +120,7 @@ function App() {
                   <Route path="/dashboard/agent/earnings" element={<AgentEarnings />} />
                   <Route path="/dashboard/agent/clients" element={<AgentClients />} />
                   <Route path="/dashboard/agent/settings" element={<AgentSettings />} />
+                  <Route path="/cfo" element={<CfoDashboard />} />
                   <Route path="/cfo/dashboard" element={<CfoDashboard />} />
                   <Route path="/crm/dashboard" element={<CrmDashboard />} />
                   <Route path="/dashboard/tenant/payments" element={<TenantPayments />} />

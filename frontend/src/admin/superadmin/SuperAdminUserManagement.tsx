@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 
 export default function SuperAdminUserManagement() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,11 +24,13 @@ export default function SuperAdminUserManagement() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const dummyUsers = [
-    { id: 'usr_1', name: 'John Doe', email: 'john@example.com', role: 'TENANT', status: 'Active' },
-    { id: 'usr_2', name: 'Jane Smith', email: 'jane@example.com', role: 'MANAGER', status: 'Active' },
-    { id: 'usr_3', name: 'Mike Admin', email: 'mike@example.com', role: 'CEO', status: 'Frozen' },
-  ];
+  const [users, setUsers] = useState<any[]>([]);
+
+  useEffect(() => {
+    axios.get('/api/v1/superadmin/users')
+      .then(res => setUsers(res.data))
+      .catch(err => console.error("Identity lookup failed", err));
+  }, []);
 
   const handleImpersonate = (user: any) => {
     toast(`Impersonating ${user.name}...`, { icon: '🎭' });
@@ -83,7 +86,7 @@ export default function SuperAdminUserManagement() {
             </tr>
           </thead>
           <tbody className="bg-surface-container-lowest divide-y divide-outline-variant/10">
-            {dummyUsers.map((user) => (
+            {users.map((user: any) => (
               <tr key={user.id} className="hover:bg-surface-container-low/50 transition-colors group">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex flex-col">

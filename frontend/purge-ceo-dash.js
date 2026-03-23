@@ -1,4 +1,9 @@
-import { useState, useEffect } from 'react';
+const fs = require('fs');
+const path = require('path');
+
+const dashPath = path.join(__dirname, 'src/admin/ceo/CeoDashboard.tsx');
+
+const content = `import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
@@ -45,7 +50,7 @@ export default function CeoDashboard() {
   const NavLink = ({ to, icon: Icon, label }: { to: string, icon: any, label: string }) => (
     <Link 
       to={to} 
-      className={`flex items-center gap-3 py-2.5 px-3 rounded-xl transition-all duration-300 ${isActive(to) ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)] font-bold' : 'text-slate-500 hover:bg-[var(--color-primary-light)] hover:text-[var(--color-primary)] font-medium'}`}
+      className={\`flex items-center gap-3 py-2.5 px-3 rounded-xl transition-all duration-300 \${isActive(to) ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)] font-bold' : 'text-slate-500 hover:bg-[var(--color-primary-light)] hover:text-[var(--color-primary)] font-medium'}\`}
     >
       <Icon size={18} />
       <span className="text-sm">{label}</span>
@@ -110,7 +115,7 @@ export default function CeoDashboard() {
           <div className="flex items-center gap-3 cursor-pointer group">
             <div className="text-right">
               <p className="text-xs font-bold uppercase tracking-tight text-[var(--color-primary-darker)]">
-                {user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'Chief Executive'}
+                {user ? \`\${user.firstName || ''} \${user.lastName || ''}\`.trim() : 'Chief Executive'}
               </p>
               <p className="text-[10px] text-slate-500 font-bold uppercase">CEO</p>
             </div>
@@ -286,7 +291,7 @@ export default function CeoDashboard() {
                       <p className="text-2xl font-bold font-outfit text-slate-900">{growth?.retentionRate || 0}%</p>
                     </div>
                     <div className="h-2 w-24 bg-slate-100 rounded-full overflow-hidden self-center">
-                      <div className="bg-[var(--color-success)] h-full rounded-full" style={{ width: `${growth?.retentionRate || 0}%` }}></div>
+                      <div className="bg-[var(--color-success)] h-full rounded-full" style={{ width: \`\${growth?.retentionRate || 0}%\` }}></div>
                     </div>
                   </div>
 
@@ -336,7 +341,7 @@ export default function CeoDashboard() {
                         <span className="text-[var(--color-success)] bg-green-50 px-2 py-0.5 rounded-md">{kpis?.rentRepaidPercentage}%</span>
                       </div>
                       <div className="h-2 w-full bg-[var(--color-primary-faint)] rounded-full overflow-hidden border border-[var(--color-primary-light)]">
-                        <div className="bg-[var(--color-success)] h-full rounded-full" style={{ width: `${kpis?.rentRepaidPercentage || 0}%` }}></div>
+                        <div className="bg-[var(--color-success)] h-full rounded-full" style={{ width: \`\${kpis?.rentRepaidPercentage || 0}%\` }}></div>
                       </div>
                     </div>
                   </div>
@@ -400,3 +405,7 @@ export default function CeoDashboard() {
     </div>
   );
 }
+\`;
+
+fs.writeFileSync(dashPath, content, 'utf8');
+console.log('Successfully embedded dynamic Postgres state arrays into CeoDashboard.tsx');

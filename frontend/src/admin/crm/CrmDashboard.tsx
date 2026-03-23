@@ -4,11 +4,26 @@ import CRMHeader from './components/CRMHeader';
 import CrmKpiGrid from './components/CrmKpiGrid';
 import CrmDataTable from './components/CrmDataTable';
 import CrmSettings from './components/CrmSettings';
-import { mockNotifications } from './data/mockNotifications';
+import type { NotificationItem } from './types';
+import { useEffect } from 'react';
+import axios from 'axios';
 import { Filter } from 'lucide-react';
 
 export default function CrmDashboard() {
   const [activeTab, setActiveTab] = useState('triage');
+  const [liveNotifications, setLiveNotifications] = useState<NotificationItem[]>([]);
+
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const { data } = await axios.get('/api/crm/tickets');
+        setLiveNotifications(data.tickets || []);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchTickets();
+  }, []);
   
   // Dual Filters State
   const [filterType, setFilterType] = useState<string>('all'); // all, support, inquiry, alert, warning, info, security
@@ -16,7 +31,7 @@ export default function CrmDashboard() {
 
   // Memoized Filtered Data
   const filteredNotifications = useMemo(() => {
-    return mockNotifications.filter((notif) => {
+    return liveNotifications.filter((notif) => {
       const matchType = filterType === 'all' ? true : notif.type === filterType;
       
       let matchStatus = true;
@@ -48,7 +63,7 @@ export default function CrmDashboard() {
             <div className="space-y-6">
               
               {/* KPI Statistics */}
-              <CrmKpiGrid notifications={mockNotifications} />
+              <CrmKpiGrid notifications={liveNotifications} />
 
               {/* Data Table Area */}
               <div className="flex flex-col space-y-4">

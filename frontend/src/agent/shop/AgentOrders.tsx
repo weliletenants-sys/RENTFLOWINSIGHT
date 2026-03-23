@@ -1,36 +1,8 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Package, Clock, Truck, CheckCircle2 } from 'lucide-react';
 
-const MOCK_ORDERS = [
-  {
-    id: 'ORD-84729',
-    productName: 'Samsung 43" Smart TV',
-    date: 'Oct 24, 2024',
-    total: 865000,
-    status: 'DELIVERED', // PENDING, CONFIRMED, DELIVERED
-    seller: 'TechWorld UG',
-    imageUrl: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=400'
-  },
-  {
-    id: 'ORD-11234',
-    productName: 'Professional Plumbing Services',
-    date: 'Oct 22, 2024',
-    total: 50000,
-    status: 'CONFIRMED',
-    seller: 'Kateregga John',
-    imageUrl: 'https://images.unsplash.com/photo-1607472586893-edb57cb1474b?auto=format&fit=crop&q=80&w=400'
-  },
-  {
-    id: 'ORD-99821',
-    productName: 'Solar Panel 200W',
-    date: 'Oct 20, 2024',
-    total: 250000,
-    status: 'PENDING',
-    seller: 'GreenEnergy Ltd',
-    imageUrl: 'https://images.unsplash.com/photo-1509391366360-1282136eafbe?auto=format&fit=crop&q=80&w=400'
-  }
-];
+const MOCK_ORDERS: any[] = [];
 
 export default function AgentOrders() {
   const navigate = useNavigate();

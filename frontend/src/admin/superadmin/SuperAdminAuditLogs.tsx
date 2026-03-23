@@ -1,11 +1,14 @@
 import { Search, Filter, Download } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
 export default function SuperAdminAuditLogs() {
-  const dummyLogs = [
-    { id: '1', timestamp: 'Mar 20, 14:32:00', actor: 'Mike Admin', role: 'CEO', action: 'UPDATE_CONFIG', target: 'GLOBAL_SETTINGS', ip: '192.168.1.1' },
-    { id: '2', timestamp: 'Mar 20, 12:15:22', actor: 'Sarah Ops', role: 'COO', action: 'APPROVE_WITHDRAWAL', target: 'WR-8921', ip: '10.0.0.5' },
-    { id: '3', timestamp: 'Mar 19, 09:05:11', actor: 'Root Super', role: 'SUPER_ADMIN', action: 'ASSIGN_ROLE', target: 'USR-882', ip: 'VPN Gateway' },
-  ];
+  const [logs, setLogs] = useState<any[]>([]);
+  useEffect(() => {
+    axios.get('/api/v1/superadmin/audit-logs')
+      .then(res => setLogs(res.data.data || []))
+      .catch(err => console.error('Failed to resolve audit logs', err));
+  }, []);
 
   return (
     <div className="space-y-6 h-[calc(100vh-8rem)] flex flex-col">
@@ -55,24 +58,24 @@ export default function SuperAdminAuditLogs() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {dummyLogs.map(log => (
+              {logs.map((log: any) => (
                 <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/20 transition-colors text-sm group">
-                  <td className="px-6 py-3.5 text-gray-400 font-mono text-xs">{log.timestamp}</td>
+                  <td className="px-6 py-3.5 text-gray-400 font-mono text-xs">{new Date(log.created_at).toLocaleString()}</td>
                   <td className="px-6 py-3.5">
-                    <span className="font-medium text-gray-900 dark:text-gray-200 block">{log.actor}</span>
-                    <span className="text-[10px] font-bold tracking-widest uppercase text-purple-600 dark:text-purple-400">{log.role}</span>
+                    <span className="font-medium text-gray-900 dark:text-gray-200 block">{log.user_id}</span>
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-purple-600 dark:text-purple-400">{log.actor_role}</span>
                   </td>
                   <td className="px-6 py-3.5">
                     <span className={`inline-flex items-center font-mono text-xs font-semibold px-2 py-0.5 rounded border ${
-                      log.role === 'SUPER_ADMIN' 
+                      log.actor_role === 'SUPER_ADMIN' 
                       ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/10 dark:text-red-400 dark:border-red-900/30' 
                       : 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700'
                     }`}>
-                      {log.action}
+                      {log.action_type}
                     </span>
                   </td>
-                  <td className="px-6 py-3.5 font-mono text-xs text-gray-500">{log.target}</td>
-                  <td className="px-6 py-3.5 text-gray-400 text-xs font-mono text-right">{log.ip}</td>
+                  <td className="px-6 py-3.5 font-mono text-xs text-gray-500">{log.target_id}</td>
+                  <td className="px-6 py-3.5 text-gray-400 text-xs font-mono text-right">{log.ip_address}</td>
                 </tr>
               ))}
             </tbody>

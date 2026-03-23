@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, Search, SlidersHorizontal, ShoppingBag, 
@@ -13,56 +13,7 @@ const CATEGORIES = [
   { id: 'services', name: 'Services', icon: Wrench },
 ];
 
-export const MOCK_PRODUCTS = [
-  {
-    id: 'p1',
-    name: 'Samsung 43" Smart TV',
-    price: 850000,
-    category: 'electronics',
-    seller: 'TechWorld UG',
-    rating: 4.8,
-    reviews: 24,
-    location: 'Kampala CBD',
-    image: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=400',
-    featured: true
-  },
-  {
-    id: 'p2',
-    name: 'Professional Plumbing Services',
-    price: 50000,
-    category: 'services',
-    seller: 'Kateregga John',
-    rating: 4.9,
-    reviews: 112,
-    location: 'Makindye, 2km away',
-    image: 'https://images.unsplash.com/photo-1607472586893-edb57cb1474b?auto=format&fit=crop&q=80&w=400',
-    featured: true
-  },
-  {
-    id: 'p3',
-    name: 'Modern 3-Seater Sofa',
-    price: 1200000,
-    category: 'home',
-    seller: 'Furniture Hub',
-    rating: 4.5,
-    reviews: 8,
-    location: 'Ntinda',
-    image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=400',
-    featured: false
-  },
-  {
-    id: 'p4',
-    name: 'Solar Panel 200W',
-    price: 250000,
-    category: 'electronics',
-    seller: 'GreenEnergy Ltd',
-    rating: 4.7,
-    reviews: 45,
-    location: 'Industrial Area',
-    image: 'https://images.unsplash.com/photo-1509391366360-1282136eafbe?auto=format&fit=crop&q=80&w=400',
-    featured: false
-  }
-];
+export const MOCK_PRODUCTS: any[] = [];
 
 export default function AgentShop() {
   const navigate = useNavigate();

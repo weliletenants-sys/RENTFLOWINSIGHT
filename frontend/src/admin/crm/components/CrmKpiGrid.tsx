@@ -1,5 +1,5 @@
 import React from 'react';
-import type { NotificationItem } from '../data/mockNotifications';
+import type { NotificationItem } from '../types';
 
 interface CrmKpiGridProps {
   notifications: NotificationItem[];

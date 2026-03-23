@@ -1,5 +1,5 @@
 import React from 'react';
-import type { NotificationItem } from '../data/mockNotifications';
+import type { NotificationItem } from '../types';
 import { CheckCircle2, XCircle, AlertCircle, Info, ShieldAlert, MessageCircle, HelpCircle } from 'lucide-react';
 
 interface CrmDataTableProps {
