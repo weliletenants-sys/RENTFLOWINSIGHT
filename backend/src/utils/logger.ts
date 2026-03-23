@@ -7,7 +7,13 @@ export const logger = winston.createLogger({
     winston.format.json()
   ),
   transports: [
-    new winston.transports.File({ filename: 'security.log', level: 'info' }),
+    // Write all logs with importance level of `error` or less to `logs/error.log`
+    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
+    // Write all logs with importance level of `info` or less to `logs/combined.log`
+    new winston.transports.File({ filename: 'logs/combined.log' }),
+    // Write specific security events to a dedicated log
+    new winston.transports.File({ filename: 'logs/security.log', level: 'info' }),
+    // Also log to console for development
     new winston.transports.Console({
       format: winston.format.combine(
         winston.format.colorize(),

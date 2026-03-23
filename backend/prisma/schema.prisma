@@ -721,6 +721,11 @@ model Profiles {
   whatsapp_verified     Boolean?
   whatsapp_verified_at  String?
   role                  String?
+  // KYC lifecycle: NOT_SUBMITTED | UNDER_REVIEW | APPROVED | REJECTED
+  kyc_status            String   @default("NOT_SUBMITTED")
+  kyc_submitted_at      String?
+  kyc_approved_at       String?
+  kyc_rejected_reason   String?
 
   @@map("profiles")
 }

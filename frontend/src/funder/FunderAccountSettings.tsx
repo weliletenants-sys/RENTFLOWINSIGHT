@@ -32,10 +32,12 @@ import { getMyRoles, requestRole, switchRole, type RoleView } from '../services/
 import FunderSidebar from './components/FunderSidebar';
 import FunderBottomNav from './components/FunderBottomNav';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
+import { useKycStatus } from './hooks/useKycStatus';
 
 export default function FunderAccountSettings() {
   const navigate = useNavigate();
-  const { updateSession } = useAuth();
+  const { updateSession, user: authUser } = useAuth();
+  const { status: kycStatus } = useKycStatus();
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'financial' | 'proxy' | 'reporting' | 'roles'>('profile');
   const [newPassword, setNewPassword] = useState('');
   const [avatarPreview, setAvatarPreview] = useState<string>("https://api.dicebear.com/7.x/avataaars/svg?seed=Grace&backgroundColor=059669");
@@ -270,21 +272,66 @@ export default function FunderAccountSettings() {
                     </div>
 
                     <div className="space-y-6">
-                      <div className="bg-emerald-50 rounded-[24px] p-8 shadow-sm border border-emerald-100 relative overflow-hidden text-center cursor-pointer hover:bg-emerald-100/50 transition-colors">
-                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm text-emerald-600">
-                          <UserCheck className="w-8 h-8" />
-                        </div>
-                        <h3 className="text-xl font-black text-slate-800 tracking-tight mb-2">KYC Status</h3>
-                        <p className="text-emerald-700 text-sm font-bold mb-4">
-                          Grade-A Verified
-                        </p>
-                        <p className="text-slate-500 text-xs font-medium leading-relaxed mb-6">
-                          Your identity documents and proof of address have been fully verified by our compliance team. You have no pending requests.
-                        </p>
-                        <button className="w-full bg-white text-emerald-700 border border-emerald-200 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-100 transition-colors shadow-sm">
-                          View Documents
-                        </button>
-                      </div>
+                      {/* KYC STATUS CARD — 3 states */}
+                      {(() => {
+                        const isApproved = authUser?.isVerified || kycStatus === 'APPROVED';
+                        const isUnderReview = !isApproved && kycStatus === 'UNDER_REVIEW';
+
+                        if (isApproved) {
+                          return (
+                            <div className="bg-emerald-50 rounded-[24px] p-8 shadow-sm border border-emerald-100 relative overflow-hidden text-center hover:bg-emerald-100/50 transition-colors">
+                              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm text-emerald-600">
+                                <UserCheck className="w-8 h-8" />
+                              </div>
+                              <h3 className="text-xl font-black text-slate-800 tracking-tight mb-2">KYC Status</h3>
+                              <p className="text-emerald-700 text-sm font-bold mb-4">Grade-A Verified</p>
+                              <p className="text-slate-500 text-xs font-medium leading-relaxed mb-6">
+                                Your identity documents and proof of address have been fully verified by our compliance team. You have no pending requests.
+                              </p>
+                              <button className="w-full bg-white text-emerald-700 border border-emerald-200 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-emerald-100 transition-colors shadow-sm">
+                                View Documents
+                              </button>
+                            </div>
+                          );
+                        }
+
+                        if (isUnderReview) {
+                          return (
+                            <div className="bg-blue-50 rounded-[24px] p-8 shadow-sm border border-blue-100 relative overflow-hidden text-center">
+                              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm text-blue-600">
+                                <ShieldCheck className="w-8 h-8" />
+                              </div>
+                              <h3 className="text-xl font-black text-slate-800 tracking-tight mb-2">KYC Status</h3>
+                              <p className="text-blue-700 text-sm font-bold mb-4">Under Review</p>
+                              <p className="text-slate-500 text-xs font-medium leading-relaxed mb-6">
+                                Your identity documents have been received and are being reviewed by our compliance team. This usually takes 24–48 hours.
+                              </p>
+                              <div className="w-full bg-blue-100 text-blue-700 border border-blue-200 py-3 rounded-xl font-bold text-xs uppercase tracking-widest text-center">
+                                Awaiting Approval
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div className="bg-amber-50 rounded-[24px] p-8 shadow-sm border border-amber-100 relative overflow-hidden text-center hover:bg-amber-100/50 transition-colors">
+                            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm text-amber-600">
+                              <ShieldAlert className="w-8 h-8" />
+                            </div>
+                            <h3 className="text-xl font-black text-slate-800 tracking-tight mb-2">KYC Status</h3>
+                            <p className="text-amber-700 text-sm font-bold mb-4">Verification Required</p>
+                            <p className="text-slate-500 text-xs font-medium leading-relaxed mb-6">
+                              Your identity has not been verified yet. Complete KYC onboarding to unlock funding and withdrawal capabilities.
+                            </p>
+                            <button
+                              onClick={() => navigate('/funder/kyc')}
+                              className="w-full bg-amber-600 text-white border border-amber-500 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-amber-700 transition-colors shadow-sm"
+                            >
+                              Complete KYC →
+                            </button>
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 )}

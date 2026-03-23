@@ -387,3 +387,115 @@ export const logout = async (req: Request, res: Response) => {
     return problemResponse(res, 500, 'Internal Server Error', 'An unexpected error occurred during logout', 'internal-error');
   }
 };
+
+// ─── FORGOT PASSWORD ──────────────────────────────────────────────────────────
+
+/**
+ * Step 1: User submits their phone number → send OTP via Africa's Talking SMS
+ */
+export const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const { phone } = req.body;
+    if (!phone) return problemResponse(res, 400, 'Validation Error', 'Phone number is required', 'missing-phone');
+
+    // Confirm the phone belongs to a known account
+    const profile = await prisma.profiles.findFirst({ where: { phone: phone.trim() } });
+    if (!profile) {
+      // Return the same response to avoid account enumeration
+      return res.status(200).json({ status: 'success', message: 'If this number is registered, an OTP has been sent.', data: {} });
+    }
+
+    const otp_code = OTPService.generateCode(6);
+    const message = `Your RentFlowInsight password reset code is ${otp_code}. It expires in 10 minutes. Do not share it.`;
+
+    await OTPService.sendSMS(phone.trim(), message);
+
+    const now = new Date();
+    const expires_at = new Date(now.getTime() + 10 * 60000).toISOString();
+
+    await prisma.otpVerifications.create({
+      data: {
+        phone: phone.trim(),
+        otp_code,
+        attempts: 0,
+        verified: false,
+        created_at: now.toISOString(),
+        updated_at: now.toISOString(),
+        expires_at,
+      },
+    });
+
+    return res.status(200).json({ status: 'success', message: 'Password reset OTP sent via SMS.', data: {} });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    return problemResponse(res, 500, 'Internal Server Error', 'Could not initiate password reset', 'internal-error');
+  }
+};
+
+/**
+ * Step 2: User submits OTP → verify it and issue a short-lived reset token
+ */
+export const verifyResetCode = async (req: Request, res: Response) => {
+  try {
+    const { phone, otp_code } = req.body;
+    if (!phone || !otp_code) return problemResponse(res, 400, 'Validation Error', 'Phone and OTP are required', 'missing-fields');
+
+    const verification = await prisma.otpVerifications.findFirst({
+      where: { phone: phone.trim(), otp_code: String(otp_code), verified: false },
+      orderBy: { created_at: 'desc' },
+    });
+
+    if (!verification) return problemResponse(res, 400, 'Bad Request', 'Invalid or expired reset code', 'invalid-otp');
+    if (new Date(verification.expires_at) < new Date()) return problemResponse(res, 400, 'Bad Request', 'Reset code has expired', 'expired-otp');
+
+    await prisma.otpVerifications.update({
+      where: { id: verification.id },
+      data: { verified: true, verified_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+    });
+
+    // Issue a short-lived (15 min) reset token tied to the phone
+    const resetToken = jwt.sign({ phone: phone.trim(), purpose: 'password-reset' }, JWT_SECRET, { expiresIn: '15m' });
+
+    return res.status(200).json({ status: 'success', message: 'Code verified.', data: { reset_token: resetToken } });
+  } catch (error) {
+    console.error('Verify reset code error:', error);
+    return problemResponse(res, 500, 'Internal Server Error', 'Could not verify reset code', 'internal-error');
+  }
+};
+
+/**
+ * Step 3: User submits new password with the reset token
+ */
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { reset_token, new_password } = req.body;
+    if (!reset_token || !new_password) return problemResponse(res, 400, 'Validation Error', 'Reset token and new password are required', 'missing-fields');
+    if (new_password.length < 8) return problemResponse(res, 400, 'Validation Error', 'Password must be at least 8 characters', 'weak-password');
+
+    let payload: any;
+    try {
+      payload = jwt.verify(reset_token, JWT_SECRET);
+    } catch {
+      return problemResponse(res, 401, 'Unauthorized', 'Reset token is invalid or has expired', 'invalid-token');
+    }
+
+    if (payload.purpose !== 'password-reset') {
+      return problemResponse(res, 401, 'Unauthorized', 'Invalid reset token purpose', 'invalid-token');
+    }
+
+    const profile = await prisma.profiles.findFirst({ where: { phone: payload.phone } });
+    if (!profile) return problemResponse(res, 404, 'Not Found', 'Account not found', 'not-found');
+
+    const password_hash = await bcrypt.hash(new_password, 12);
+    await prisma.profiles.update({
+      where: { id: profile.id },
+      data: { password_hash, updated_at: new Date().toISOString() },
+    });
+
+    return res.status(200).json({ status: 'success', message: 'Password reset successfully. You can now log in.', data: {} });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    return problemResponse(res, 500, 'Internal Server Error', 'Could not reset password', 'internal-error');
+  }
+};
+

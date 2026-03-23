@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import axios from 'axios';
+import toast from 'react-hot-toast';
 import { CheckCircle2, ChevronRight, ShieldCheck, User, Briefcase, FileText, ChevronLeft, UploadCloud, ChevronDown, Search } from 'lucide-react';
 
 const COMMON_COUNTRIES = [
@@ -126,8 +128,11 @@ export default function FunderKYCOnboarding() {
     agreedToRisks: false,
   });
 
+  // Anti-XSS String Sanitizer: aggressively strip < and > to prevent basic injection payloads
+  const sanitizeInput = (val: string) => val.replace(/[<>]/g, '');
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    setFormData(prev => ({ ...prev, [e.target.name]: sanitizeInput(e.target.value) }));
   };
 
   const handleCheckbox = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,8 +157,19 @@ export default function FunderKYCOnboarding() {
 
   const canProceedToNextStep = () => {
     switch (currentStep) {
-      case 1:
-        return formData.legalName.trim() !== '' && formData.dateOfBirth !== '' && formData.gender !== '' && formData.country !== '';
+      case 1: {
+        if (formData.legalName.trim() === '' || formData.dateOfBirth === '' || formData.gender === '' || formData.country === '') return false;
+        
+        // Strict Age Limit Enforcement (Minimum 18 years)
+        const dob = new Date(formData.dateOfBirth);
+        const today = new Date();
+        let age = today.getFullYear() - dob.getFullYear();
+        const m = today.getMonth() - dob.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+            age--;
+        }
+        return age >= 18;
+      }
       case 2:
         return formData.idType !== '' && formData.idNumber.trim() !== '' && idFront !== null && idBack !== null;
       case 3:
@@ -172,14 +188,65 @@ export default function FunderKYCOnboarding() {
   };
   const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1) as Step);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!idFront || !idBack) {
+      toast.error('Both front and back ID documents are required.');
+      return;
+    }
+
     setIsSubmitting(true);
-    // Simulate API delay for KYC submission
-    setTimeout(() => {
-      setIsSubmitting(false);
+
+    try {
+      const uploadData = new FormData();
+      uploadData.append('front_id', idFront);
+      uploadData.append('back_id', idBack);
+
+      const token = localStorage.getItem('access_token');
+
+      if (!token) {
+        toast.error('Session expired. Please log in again.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Use relative /api path so Vite dev proxy routes correctly to the backend
+      await axios.post('/api/funder/kyc/documents', uploadData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+        timeout: 30000, // 30s — S3 stream can take a moment
+      });
+
+      // Persist KYC status so dashboard banner updates immediately
+      localStorage.setItem('kyc_status', 'UNDER_REVIEW');
+
       setIsSuccess(true);
-    }, 1500);
+      toast.success('KYC Documents submitted! Your review is underway.');
+    } catch (error: any) {
+      console.error('KYC Document S3 Stream Error:', error);
+
+      if (!error.response) {
+        // No response = backend is down or unreachable
+        toast.error('Cannot reach the server. Please check your connection and try again.');
+      } else {
+        const status = error.response.status;
+        const msg = error.response.data?.message || error.response.data?.error;
+
+        if (status === 401) {
+          toast.error('Your session has expired. Please log in again.');
+        } else if (status === 400) {
+          toast.error(msg || 'Invalid file. Please check format and size (max 5MB).');
+        } else if (status === 413) {
+          toast.error('File too large. Maximum allowed size is 5MB per document.');
+        } else {
+          toast.error(msg || 'Failed to upload documents to AWS. Please try again.');
+        }
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderStepIndicator = () => {
@@ -297,6 +364,14 @@ export default function FunderKYCOnboarding() {
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-light)] focus:border-[var(--color-primary)] transition-all font-medium text-slate-900"
                       required
                     />
+                    {formData.dateOfBirth && (() => {
+                      const dob = new Date(formData.dateOfBirth);
+                      const today = new Date();
+                      let age = today.getFullYear() - dob.getFullYear();
+                      const m = today.getMonth() - dob.getMonth();
+                      if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+                      return age < 18 ? <p className="text-xs text-red-500 font-bold mt-2 flex items-center gap-1"><ShieldCheck className="w-3 h-3" /> Minimum age requirement is 18 years.</p> : null;
+                    })()}
                   </div>
                   <div>
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">Gender</label>

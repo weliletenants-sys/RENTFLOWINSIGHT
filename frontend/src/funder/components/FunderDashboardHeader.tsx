@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, Search, User, CheckCircle, TrendingUp, Info, Settings, LogOut, LifeBuoy, Activity, BadgeCheck, Loader2 } from 'lucide-react';
+import { Bell, Search, User, CheckCircle, TrendingUp, Info, Settings, LogOut, LifeBuoy, Activity, BadgeCheck, Loader2, ShieldCheck, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface FunderDashboardHeaderProps {
@@ -47,7 +47,7 @@ export default function FunderDashboardHeader({
       try {
         const token = localStorage.getItem('access_token');
         if (!token) return;
-        const res = await fetch('http://localhost:3000/api/notifications', {
+        const res = await fetch('/api/notifications', {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -75,7 +75,7 @@ export default function FunderDashboardHeader({
     e.stopPropagation();
     try {
       const token = localStorage.getItem('access_token');
-      await fetch('http://localhost:3000/api/notifications/read-all', {
+      await fetch('/api/notifications/read-all', {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -86,7 +86,7 @@ export default function FunderDashboardHeader({
   const handleReadSingle = async (id: string | number) => {
     try {
       const token = localStorage.getItem('access_token');
-      await fetch(`http://localhost:3000/api/notifications/${id}/read`, {
+      await fetch(`/api/notifications/${id}/read`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -95,10 +95,14 @@ export default function FunderDashboardHeader({
   };
 
   const IconMap: any = {
-    success: <CheckCircle className="w-5 h-5 text-green-500" />,
-    update: <TrendingUp className="w-5 h-5 text-[var(--color-primary)]" />,
-    info: <Info className="w-5 h-5 text-blue-500" />
+    success:       <CheckCircle   className="w-5 h-5 text-green-500" />,
+    update:        <TrendingUp    className="w-5 h-5 text-[var(--color-primary)]" />,
+    info:          <Info          className="w-5 h-5 text-blue-500" />,
+    KYC_SUBMITTED: <ShieldCheck   className="w-5 h-5 text-blue-600" />,
+    INVESTMENT:    <ArrowDownLeft className="w-5 h-5 text-emerald-500" />,
+    WITHDRAWAL:    <ArrowUpRight  className="w-5 h-5 text-orange-500" />,
   };
+  const DefaultIcon = <Activity className="w-5 h-5 text-slate-400" />;
 
   return (
     <div
@@ -178,7 +182,7 @@ export default function FunderDashboardHeader({
 
                     {/* Icon */}
                     <div className="flex-shrink-0 mt-0.5 p-2 bg-white rounded-full shadow-sm border border-slate-100 group-hover:scale-110 transition-transform">
-                      {IconMap[notif.type]}
+                      {IconMap[notif.type] ?? DefaultIcon}
                     </div>
 
                     {/* Content */}

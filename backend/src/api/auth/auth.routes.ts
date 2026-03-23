@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
-import { register, login, ssoLogin, sendOTP, verifyOTP, logout } from '../../controllers/auth.controller';
+import { register, login, ssoLogin, sendOTP, verifyOTP, logout, forgotPassword, verifyResetCode, resetPassword } from '../../controllers/auth.controller';
 import { authGuard } from '../../middlewares/auth.middleware';
 
 const router = Router();
@@ -26,4 +26,10 @@ router.delete('/sessions', authGuard, logout);
 router.post('/otp', authLimiter, sendOTP);
 router.post('/otp/verifications', authLimiter, verifyOTP);
 
+// Forgot Password (3-step SMS OTP flow)
+router.post('/forgot-password', authLimiter, forgotPassword);
+router.post('/forgot-password/verify', authLimiter, verifyResetCode);
+router.post('/forgot-password/reset', authLimiter, resetPassword);
+
 export default router;
+

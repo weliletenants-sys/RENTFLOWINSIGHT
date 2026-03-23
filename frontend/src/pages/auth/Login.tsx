@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles, Loader2 } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles, Loader2, Phone, KeyRound, CheckCircle2, X } from 'lucide-react';
 import { loginUser } from '../../services/authApi';
 import toast from 'react-hot-toast';
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
@@ -39,7 +39,19 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  
+
+  // Forgot Password modal state
+  const [fpOpen, setFpOpen] = useState(false);
+  const [fpStep, setFpStep] = useState<1|2|3>(1);
+  const [fpPhone, setFpPhone] = useState('');
+  const [fpCode, setFpCode] = useState(['','','','','','']);
+  const [fpResetToken, setFpResetToken] = useState('');
+  const [fpNewPass, setFpNewPass] = useState('');
+  const [fpConfirmPass, setFpConfirmPass] = useState('');
+  const [fpLoading, setFpLoading] = useState(false);
+  const [fpResendTimer, setFpResendTimer] = useState(0);
+  const codeRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
+
   const { updateSession, user } = useAuth();
   const navigate = useNavigate();
 
@@ -48,6 +60,61 @@ export default function Login() {
       navigate(user.role === 'FUNDER' ? '/funder' : '/dashboard');
     }
   }, [user, navigate]);
+
+  // Resend timer countdown
+  useEffect(() => {
+    if (fpResendTimer <= 0) return;
+    const t = setTimeout(() => setFpResendTimer(s => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [fpResendTimer]);
+
+  const openForgotPassword = () => { setFpOpen(true); setFpStep(1); setFpPhone(''); setFpCode(['','','','','','']); setFpNewPass(''); setFpConfirmPass(''); setFpResetToken(''); };
+  const closeForgotPassword = () => setFpOpen(false);
+
+  const handleFpSendCode = async () => {
+    if (!fpPhone.trim()) { toast.error('Enter your registered phone number'); return; }
+    setFpLoading(true);
+    try {
+      const res = await fetch('/api/auth/forgot-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: fpPhone.trim() }) });
+      const data = await res.json();
+      if (res.ok) { toast.success('OTP sent to your phone!'); setFpStep(2); setFpResendTimer(60); }
+      else toast.error(data.detail || data.message || 'Failed to send OTP');
+    } catch { toast.error('Cannot reach server. Try again.'); }
+    finally { setFpLoading(false); }
+  };
+
+  const handleFpCodeInput = (index: number, value: string) => {
+    if (!/^\d?$/.test(value)) return;
+    const next = [...fpCode]; next[index] = value;
+    setFpCode(next);
+    if (value && index < 5) codeRefs[index + 1].current?.focus();
+  };
+
+  const handleFpVerify = async () => {
+    const code = fpCode.join('');
+    if (code.length !== 6) { toast.error('Enter the full 6-digit code'); return; }
+    setFpLoading(true);
+    try {
+      const res = await fetch('/api/auth/forgot-password/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: fpPhone.trim(), otp_code: code }) });
+      const data = await res.json();
+      if (res.ok) { setFpResetToken(data.data.reset_token); setFpStep(3); toast.success('Code verified!'); }
+      else toast.error(data.detail || data.message || 'Invalid code');
+    } catch { toast.error('Cannot reach server. Try again.'); }
+    finally { setFpLoading(false); }
+  };
+
+  const handleFpReset = async () => {
+    if (fpNewPass.length < 8) { toast.error('Password must be at least 8 characters'); return; }
+    if (fpNewPass !== fpConfirmPass) { toast.error('Passwords do not match'); return; }
+    setFpLoading(true);
+    try {
+      const res = await fetch('/api/auth/forgot-password/reset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reset_token: fpResetToken, new_password: fpNewPass }) });
+      const data = await res.json();
+      if (res.ok) { toast.success('Password reset! You can now log in.'); closeForgotPassword(); }
+      else toast.error(data.detail || data.message || 'Failed to reset password');
+    } catch { toast.error('Cannot reach server. Try again.'); }
+    finally { setFpLoading(false); }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,7 +154,8 @@ export default function Login() {
     
     try {
       setLoading(true);
-      const res = await loginUser({ email, password });
+      const sanitizeInput = (val: string) => val.replace(/[<>]/g, '');
+      const res = await loginUser({ email: sanitizeInput(email), password });
       
       // Update real JWT session via AuthContext
       if (res.status === 'success') {
@@ -267,7 +335,7 @@ export default function Login() {
             <div className="space-y-2 group">
               <div className="flex justify-between items-center px-1">
                 <label className="text-[11px] font-bold text-zinc-700 uppercase tracking-widest">Password</label>
-                <a className="text-[11px] font-bold text-[#6c11d4] hover:text-[#5b21b6] transition-colors" href="#">Forgot Password?</a>
+                <a className="text-[11px] font-bold text-[#6c11d4] hover:text-[#5b21b6] transition-colors cursor-pointer" onClick={openForgotPassword}>Forgot Password?</a>
               </div>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-zinc-400 group-focus-within:text-[#6c11d4] transition-colors">
@@ -350,6 +418,122 @@ export default function Login() {
           </form>
         </div>
       </div>
+
+      {/* ─── FORGOT PASSWORD MODAL ─── */}
+      {fpOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 relative animate-in zoom-in-95 duration-300">
+            {/* Close */}
+            <button onClick={closeForgotPassword} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors p-1 rounded-lg hover:bg-slate-100">
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Step indicators */}
+            <div className="flex items-center gap-2 mb-6">
+              {[1,2,3].map(s => (
+                <div key={s} className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${fpStep >= s ? 'bg-[#6c11d4]' : 'bg-slate-200'}`} />
+              ))}
+            </div>
+
+            {/* Step 1: Phone */}
+            {fpStep === 1 && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-2xl font-black text-slate-900 mb-1">Forgot Password?</h3>
+                  <p className="text-slate-500 text-sm font-medium">Enter the phone number linked to your account. We'll send a one-time code via SMS.</p>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Phone Number</label>
+                  <div className="relative">
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input
+                      type="tel" value={fpPhone} onChange={e => setFpPhone(e.target.value)}
+                      placeholder="+256 7XX XXX XXX"
+                      className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium text-slate-900 focus:outline-none focus:border-[#6c11d4]/50 focus:ring-4 focus:ring-[#6c11d4]/10 transition-all"
+                      onKeyDown={e => e.key === 'Enter' && handleFpSendCode()}
+                    />
+                  </div>
+                </div>
+                <button onClick={handleFpSendCode} disabled={fpLoading} className="w-full bg-[#6c11d4] hover:bg-[#5b21b6] disabled:opacity-60 text-white font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-200">
+                  {fpLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><span>Send Reset Code</span><ArrowRight className="w-4 h-4" /></>}
+                </button>
+              </div>
+            )}
+
+            {/* Step 2: OTP */}
+            {fpStep === 2 && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-2xl font-black text-slate-900 mb-1">Enter Code</h3>
+                  <p className="text-slate-500 text-sm font-medium">A 6-digit code was sent to <span className="font-bold text-slate-700">{fpPhone}</span>. It expires in 10 minutes.</p>
+                </div>
+                <div className="flex gap-2 justify-between">
+                  {fpCode.map((digit, i) => (
+                    <input
+                      key={i} ref={codeRefs[i]} type="text" inputMode="numeric"
+                      maxLength={1} value={digit}
+                      onChange={e => handleFpCodeInput(i, e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Backspace' && !fpCode[i] && i > 0) codeRefs[i-1].current?.focus(); }}
+                      className="w-12 h-14 text-center text-xl font-black rounded-2xl border-2 border-slate-200 focus:border-[#6c11d4] focus:ring-4 focus:ring-[#6c11d4]/10 outline-none transition-all bg-slate-50 text-slate-900"
+                    />
+                  ))}
+                </div>
+                <button onClick={handleFpVerify} disabled={fpLoading || fpCode.join('').length < 6} className="w-full bg-[#6c11d4] hover:bg-[#5b21b6] disabled:opacity-50 text-white font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-200">
+                  {fpLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><span>Verify Code</span><ArrowRight className="w-4 h-4" /></>}
+                </button>
+                <div className="text-center">
+                  {fpResendTimer > 0 ? (
+                    <p className="text-xs text-slate-400 font-medium">Resend in <span className="font-bold text-slate-600">{fpResendTimer}s</span></p>
+                  ) : (
+                    <button onClick={handleFpSendCode} disabled={fpLoading} className="text-xs font-bold text-[#6c11d4] hover:underline transition-colors">
+                      Resend Code
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: New Password */}
+            {fpStep === 3 && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-2xl font-black text-slate-900 mb-1">New Password</h3>
+                  <p className="text-slate-500 text-sm font-medium">Choose a strong new password for your account.</p>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">New Password</label>
+                    <div className="relative">
+                      <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input type="password" value={fpNewPass} onChange={e => setFpNewPass(e.target.value)} placeholder="Min 8 characters" className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium text-slate-900 focus:outline-none focus:border-[#6c11d4]/50 focus:ring-4 focus:ring-[#6c11d4]/10 transition-all" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Confirm Password</label>
+                    <div className="relative">
+                      <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input type="password" value={fpConfirmPass} onChange={e => setFpConfirmPass(e.target.value)} placeholder="Repeat password" className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium text-slate-900 focus:outline-none focus:border-[#6c11d4]/50 focus:ring-4 focus:ring-[#6c11d4]/10 transition-all" />
+                    </div>
+                  </div>
+                  {fpNewPass && (
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {[['8+ characters', fpNewPass.length >= 8],['Has number', /\d/.test(fpNewPass)],['Has uppercase', /[A-Z]/.test(fpNewPass)],['Passwords match', fpNewPass === fpConfirmPass && fpConfirmPass.length > 0]].map(([label, met]) => (
+                        <div key={String(label)} className={`flex items-center gap-1.5 text-[11px] font-bold ${met ? 'text-emerald-600' : 'text-slate-400'}`}>
+                          <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
+                          {label}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <button onClick={handleFpReset} disabled={fpLoading || fpNewPass.length < 8 || fpNewPass !== fpConfirmPass} className="w-full bg-[#6c11d4] hover:bg-[#5b21b6] disabled:opacity-50 text-white font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-200">
+                  {fpLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><span>Reset Password</span><ArrowRight className="w-4 h-4" /></>}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
