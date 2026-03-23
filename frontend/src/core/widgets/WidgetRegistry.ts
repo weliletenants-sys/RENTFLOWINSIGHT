@@ -6,9 +6,9 @@ const UserMatrix = lazy(() => import('../../components/widgets/UserMatrix'));
 const AuditLogs = lazy(() => import('../../components/widgets/AuditLogs'));
 
 // Consumer Widgets
-const TenantWallet = lazy(() => import('../../tenant/components/WalletCard'));
-const RentProgress = lazy(() => import('../../tenant/components/RentProgressCard'));
-const FunderPortfolio = lazy(() => import('../../funder/components/FunderPortfolioList'));
+const TenantWallet = lazy(() => import('../../components/widgets/TenantWalletWidget'));
+const RentProgress = lazy(() => import('../../components/widgets/RentProgressWidget'));
+const FunderPortfolio = lazy(() => import('../../components/widgets/FunderPortfolioWidget'));
 const AgentCollections = lazy(() => import('../../agent/components/AgentDailyOpsCard'));
 
 export const WIDGET_REGISTRY: Record<string, React.ComponentType<any>> = {

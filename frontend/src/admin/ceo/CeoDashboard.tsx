@@ -26,7 +26,7 @@ export default function CeoDashboard() {
   );
 
   return (
-    <div className="bg-[var(--color-primary-faint)] min-h-screen font-inter text-slate-900 pb-12">
+    <div className="bg-white min-h-screen font-inter text-slate-900 pb-12">
       
       {/* SideNavBar */}
       <aside className="h-screen w-64 fixed left-0 top-0 overflow-y-auto bg-white border-r border-[var(--color-primary-light)] flex flex-col py-8 px-6 z-50">
@@ -71,7 +71,7 @@ export default function CeoDashboard() {
         <div className="flex items-center w-full max-w-md">
           <div className="relative w-full">
             <Search size={18} className="text-[var(--color-primary)] absolute left-4 top-1/2 -translate-y-1/2" />
-            <input className="bg-[var(--color-primary-faint)] border border-[var(--color-primary-light)] rounded-full pl-11 pr-4 py-2.5 text-sm w-full focus:ring-2 focus:ring-[var(--color-primary-light)] focus:bg-white transition-all outline-none" placeholder="Intelligence search..." type="text" />
+            <input className="bg-white border-2 border-[var(--color-primary-faint)] rounded-full pl-11 pr-4 py-2.5 text-sm w-full focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all outline-none" placeholder="Intelligence search..." type="text" />
           </div>
         </div>
         <div className="flex items-center gap-6">

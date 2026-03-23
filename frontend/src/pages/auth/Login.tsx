@@ -70,11 +70,17 @@ export default function Login() {
         updateSession('dummy-token', u);
         toast.success(`Logged in as ${u.role} (Bypass)`);
         
-        if (u.role === 'CEO') navigate('/ceo/dashboard');
-        else if (u.role === 'COO') navigate('/coo/overview');
-        else if (u.role === 'CFO') navigate('/cfo/dashboard');
-        else if (u.role === 'FUNDER') navigate('/funder');
-        else navigate('/dashboard');
+        switch(u.role) {
+            case 'SUPER_ADMIN': navigate('/admin/dashboard'); break;
+            case 'CEO': navigate('/ceo/dashboard'); break;
+            case 'COO': navigate('/coo/overview'); break;
+            case 'CFO': navigate('/cfo/dashboard'); break;
+            case 'FUNDER': navigate('/funder'); break;
+            case 'TENANT': 
+            case 'AGENT':
+            case 'LANDLORD':
+            default: navigate('/dashboard'); break;
+        }
         return;
     }
     // -----------------------------------------
@@ -92,11 +98,17 @@ export default function Login() {
         if (onboarding_url && !user.verified) {
           navigate(onboarding_url);
         } else {
-          if (user.role === 'CEO') navigate('/ceo/dashboard');
-          else if (user.role === 'COO') navigate('/coo/overview');
-          else if (user.role === 'CFO') navigate('/cfo/dashboard');
-          else if (user.role === 'FUNDER') navigate('/funder');
-          else navigate('/dashboard');
+          switch(user.role) {
+            case 'SUPER_ADMIN': navigate('/admin/dashboard'); break;
+            case 'CEO': navigate('/ceo/dashboard'); break;
+            case 'COO': navigate('/coo/overview'); break;
+            case 'CFO': navigate('/cfo/dashboard'); break;
+            case 'FUNDER': navigate('/funder'); break;
+            case 'TENANT': 
+            case 'AGENT':
+            case 'LANDLORD':
+            default: navigate('/dashboard'); break;
+          }
         }
       }
     } catch (err: any) {
@@ -127,11 +139,17 @@ export default function Login() {
            navigate(data.data.onboarding_url);
         } else {
            const role = data.data.user.role;
-           if (role === 'CEO') navigate('/ceo/dashboard');
-           else if (role === 'COO') navigate('/coo/overview');
-           else if (role === 'CFO') navigate('/cfo/dashboard');
-           else if (role === 'FUNDER') navigate('/funder');
-           else navigate('/dashboard');
+           switch(role) {
+             case 'SUPER_ADMIN': navigate('/admin/dashboard'); break;
+             case 'CEO': navigate('/ceo/dashboard'); break;
+             case 'COO': navigate('/coo/overview'); break;
+             case 'CFO': navigate('/cfo/dashboard'); break;
+             case 'FUNDER': navigate('/funder'); break;
+             case 'TENANT': 
+             case 'AGENT':
+             case 'LANDLORD':
+             default: navigate('/dashboard'); break;
+           }
         }
       } else {
         setError(data.message || data.detail || "Account doesn't exist, try again.");
