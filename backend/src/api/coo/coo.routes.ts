@@ -9,7 +9,9 @@ import {
   getPartners,
   getTenants,
   getAlerts,
-  getStaff
+  getStaff,
+  createOpportunity,
+  getOpportunities
 } from '../../controllers/coo.controller';
 import { authGuard, rolesGuard } from '../../middlewares/auth.middleware';
 
@@ -17,7 +19,7 @@ const router = Router();
 
 // Apply auth and RBAC. COO needs basic auth, but since Super Admin can access, rolesGuard handles the array of allowed roles
 router.use(authGuard);
-router.use(rolesGuard(['SUPER_ADMIN', 'CHIEF_OPERATING_OFFICER']));
+router.use(rolesGuard(['SUPER_ADMIN', 'COO']));
 
 router.get('/metrics/overview', getOverviewMetrics);
 router.get('/metrics/transactions', getTransactions);
@@ -29,5 +31,9 @@ router.get('/metrics/partners', getPartners);
 router.get('/metrics/tenants', getTenants);
 router.get('/metrics/alerts', getAlerts);
 router.get('/metrics/staff', getStaff);
+
+// Funder Opportunities Integration
+router.post('/opportunities', createOpportunity);
+router.get('/opportunities', getOpportunities);
 
 export default router;

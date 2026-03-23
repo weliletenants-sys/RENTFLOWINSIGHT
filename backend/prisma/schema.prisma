@@ -1583,7 +1583,6 @@ model ImpersonationLogs {
   @@map("impersonation_logs")
 }
 
-<<<<<<< HEAD
 model SystemConfig {
   key        String  @id
   value      String
@@ -1591,7 +1590,8 @@ model SystemConfig {
   updated_by String?
 
   @@map("system_config")
-=======
+}
+
 model VirtualOpportunities {
   id            String   @id @default(uuid())
   name          String
@@ -1604,5 +1604,4 @@ model VirtualOpportunities {
   updated_at    String
 
   @@map("virtual_opportunities")
->>>>>>> efb2962c76c54fc5bbc6b5913845d1c851fb5c3e
 }

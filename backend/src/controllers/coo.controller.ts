@@ -253,3 +253,45 @@ export const getStaff = async (req: Request, res: Response) => {
     return problemResponse(res, 500, 'Internal Server Error', error.message, 'https://api.rentflow.com/errors/internal-error');
   }
 };
+
+export const createOpportunity = async (req: Request, res: Response) => {
+  try {
+    const { name, location, image_url, rent_required, bedrooms, status } = req.body;
+    
+    if (!name || !location || !rent_required || !bedrooms) {
+        return res.status(400).json({ error: "Missing required fields for Funder marketplace" });
+    }
+
+    const now = new Date().toISOString();
+
+    const newOpportunity = await prisma.virtualOpportunities.create({
+      data: {
+        name,
+        location,
+        image_url,
+        rent_required: Number(rent_required),
+        bedrooms: Number(bedrooms),
+        status: status || 'available',
+        created_at: now,
+        updated_at: now
+      }
+    });
+
+    return res.status(201).json({ status: 'success', data: newOpportunity });
+  } catch (error) {
+    console.error('Failed to create virtual opportunity', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+export const getOpportunities = async (req: Request, res: Response) => {
+  try {
+    const ops = await prisma.virtualOpportunities.findMany({
+      orderBy: { created_at: 'desc' }
+    });
+    res.json(ops);
+  } catch (error) {
+    console.error('Failed to fetch virtual opportunities', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+};

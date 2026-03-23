@@ -95,3 +95,13 @@ export const fetchStaff = async () => {
   const response = await axios.get(`${API}/v1/coo/metrics/staff`, getAuthHeaders());
   return response.data;
 };
+
+export const fetchOpportunities = async () => {
+  const response = await axios.get(`${API}/v1/coo/opportunities`, getAuthHeaders());
+  return response.data;
+};
+
+export const createOpportunity = async (data: any) => {
+  const response = await axios.post(`${API}/v1/coo/opportunities`, data, getAuthHeaders());
+  return response.data;
+};

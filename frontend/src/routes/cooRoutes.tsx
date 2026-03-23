@@ -13,6 +13,7 @@ const COOWithdrawals = lazy(() => import('../admin/coo/COOWithdrawals'));
 const COOPartnersPage = lazy(() => import('../admin/coo/COOPartnersPage'));
 const COOTenants = lazy(() => import('../admin/coo/COOTenants'));
 const COOStaffPerformance = lazy(() => import('../admin/coo/COOStaffPerformance'));
+const COOOpportunities = lazy(() => import('../admin/coo/COOOpportunities'));
 
 export const cooRoutes = [
   <Route key="coo-index" path="/coo" element={<Navigate to="/coo/dashboard" replace />} />,
@@ -28,4 +29,5 @@ export const cooRoutes = [
   <Route key="coo-partners" path="/coo/partners" element={<COOLayout pageTitle="Partners Governance"><COOPartnersPage /></COOLayout>} />,
   <Route key="coo-tenants" path="/coo/tenants" element={<COOLayout pageTitle="Tenants Management"><COOTenants /></COOLayout>} />,
   <Route key="coo-staff-performance" path="/coo/staff-performance" element={<COOLayout pageTitle="Staff Performance"><COOStaffPerformance /></COOLayout>} />,
+  <Route key="coo-opportunities" path="/coo/opportunities" element={<COOLayout pageTitle="Virtual Opportunities"><COOOpportunities /></COOLayout>} />,
 ];
