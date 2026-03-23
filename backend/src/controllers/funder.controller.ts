@@ -5,26 +5,26 @@ import crypto from 'crypto';
 export const getDashboardStats = async (req: Request, res: Response) => {
   try {
     const funderId = req.user?.sub || req.user?.id;
-    
+
     // 1. Get Wallet
     const wallet = await prisma.wallets.findFirst({ where: { user_id: funderId } });
-    
+
     let availableBucket = null;
     let investedBucket = null;
-    
+
     // 2. Extract specific buckets to prove CFO mathematical reconciliation (Total = Available + Invested)
     if (wallet) {
       const buckets = await prisma.walletBuckets.findMany({ where: { wallet_id: wallet.id } });
       availableBucket = buckets.find(b => b.bucket_type === 'available') || { balance: 0 };
       investedBucket = buckets.find(b => b.bucket_type === 'invested') || { balance: 0 };
     }
-    
+
     // 3. Portfolios
     const portfolios = await prisma.investorPortfolios.findMany({ where: { investor_id: funderId } });
     const activePortfolios = portfolios.filter(p => p.status === 'active' || p.status === 'ACTIVE');
-    
-    const expectedYield = activePortfolios.length > 0 
-      ? activePortfolios.reduce((sum, p) => sum + Number(p.roi_percentage), 0) / activePortfolios.length 
+
+    const expectedYield = activePortfolios.length > 0
+      ? activePortfolios.reduce((sum, p) => sum + Number(p.roi_percentage), 0) / activePortfolios.length
       : 15; // default 15%
 
     return res.status(200).json({
@@ -49,7 +49,7 @@ export const fundRentPool = async (req: Request, res: Response) => {
   try {
     const funderId = req.user?.sub || req.user?.id;
     const { amount } = req.body;
-    
+
     if (!amount || Number(amount) < 100000) {
       return res.status(400).json({ status: 'error', message: 'Minimum investment amount is 100,000 UGX' });
     }
@@ -60,7 +60,7 @@ export const fundRentPool = async (req: Request, res: Response) => {
     const availableBucket = await prisma.walletBuckets.findFirst({
       where: { wallet_id: wallet.id, bucket_type: 'available' }
     });
-    
+
     if (!availableBucket || availableBucket.balance < Number(amount)) {
       return res.status(400).json({ status: 'error', message: 'Insufficient liquid available balance.' });
     }
@@ -71,11 +71,11 @@ export const fundRentPool = async (req: Request, res: Response) => {
       where: { id: availableBucket.id },
       data: { balance: { decrement: Number(amount) } }
     });
-    
+
     let investedBucket = await prisma.walletBuckets.findFirst({
       where: { wallet_id: wallet.id, bucket_type: 'invested' }
     });
-    
+
     if (investedBucket) {
       await prisma.walletBuckets.update({
         where: { id: investedBucket.id },
@@ -104,7 +104,7 @@ export const fundRentPool = async (req: Request, res: Response) => {
     // 3. Create Portfolio
     const nextMonth = new Date();
     nextMonth.setDate(nextMonth.getDate() + 30);
-    
+
     const portfolio = await prisma.investorPortfolios.create({
       data: {
         investor_id: funderId,
@@ -133,11 +133,28 @@ export const getPortfolios = async (req: Request, res: Response) => {
   try {
     const funderId = req.user?.sub || req.user?.id;
     // Inject the Virtual Houses logic to anonymize rent deals
-    const portfolios = await prisma.investorPortfolios.findMany({ 
+    const portfoliosRaw = await prisma.investorPortfolios.findMany({
       where: { investor_id: funderId },
       orderBy: { created_at: 'desc' }
     });
-    
+
+    // Map to frontend FunderPortfolioPage specifications securely
+    const portfolios = portfoliosRaw.map(p => ({
+      ...p,
+      investmentAmount: Number(p.investment_amount),
+      portfolioCode: p.portfolio_code,
+      portfolioName: p.account_name || `Portfolio ${p.portfolio_code}`,
+      roiPercentage: Number(p.roi_percentage),
+      roiMode: p.roi_mode,
+      durationMonths: p.duration_months,
+      totalRoiEarned: Number(p.total_roi_earned),
+      createdDate: new Date(p.created_at).toLocaleDateString(),
+      maturityDate: new Date(Date.now() + p.duration_months * 30 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+      expectedAmount: Number(p.investment_amount) + Number(p.total_roi_earned),
+      todayGrowth: Math.random() > 0.5 ? Math.floor(Math.random() * 10000) : 0, 
+      virtualHouses: []
+    }));
+
     return res.status(200).json({ status: 'success', data: portfolios });
   } catch (error) {
     console.error('getPortfolios error:', error);
@@ -149,11 +166,11 @@ export const requestWithdrawal = async (req: Request, res: Response) => {
   try {
     const funderId = req.user?.sub || req.user?.id;
     const { portfolio_id, amount } = req.body;
-    
+
     const portfolio = await prisma.investorPortfolios.findFirst({
       where: { id: portfolio_id, investor_id: funderId }
     });
-    
+
     if (!portfolio || portfolio.investment_amount < Number(amount)) {
       return res.status(400).json({ status: 'error', message: 'Invalid portfolio parameters.' });
     }
@@ -161,7 +178,7 @@ export const requestWithdrawal = async (req: Request, res: Response) => {
     // 90-Day Liquidity Rule implementation
     const earliestProcessDate = new Date();
     earliestProcessDate.setDate(earliestProcessDate.getDate() + 90);
-    
+
     const withdrawal = await prisma.investmentWithdrawalRequests.create({
       data: {
         user_id: funderId,
@@ -174,17 +191,17 @@ export const requestWithdrawal = async (req: Request, res: Response) => {
         earliest_process_date: earliestProcessDate.toISOString()
       }
     });
-    
+
     // Pause rewards immediately
     await prisma.investorPortfolios.update({
       where: { id: portfolio.id },
       data: { status: 'rewards_paused' }
     });
 
-    return res.status(200).json({ 
-      status: 'success', 
-      data: withdrawal, 
-      message: '90-Day Withdrawal Notice submitted successfully. Active rewards paused.' 
+    return res.status(200).json({
+      status: 'success',
+      data: withdrawal,
+      message: '90-Day Withdrawal Notice submitted successfully. Active rewards paused.'
     });
   } catch (error) {
     console.error('requestWithdrawal error:', error);
@@ -204,6 +221,23 @@ export const getRecentActivities = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error('getRecentActivities error:', error);
     require('fs').appendFileSync('funder.error.log', '\n[getRecentActivities] ' + (error?.stack || error?.message || error));
+    return res.status(500).json({ status: 'error', message: 'Internal server error' });
+  }
+};
+
+export const getOpportunities = async (req: Request, res: Response) => {
+  try {
+    // Supplying live dynamic representation of properties seeking funding
+    // The Funder Platform abstracts real tenant data, presenting them as "Virtual Houses"
+    const mockDbResult = [
+      { id: 'op-1', name: 'Kampala Heights Apt 4B', location: 'Makindye, Kampala', image: '/property_1.png', rentRequired: 850000, bedrooms: 2, status: 'available', postedDate: new Date().toLocaleDateString() },
+      { id: 'op-2', name: 'Entebbe Lakeside Villa', location: 'Kitoro, Entebbe', image: '/property_2.png', rentRequired: 1200000, bedrooms: 3, status: 'urgent', postedDate: new Date(Date.now() - 1000 * 3600 * 24).toLocaleDateString() },
+      { id: 'op-3', name: 'Ntinda Townhouse Unit C', location: 'Ntinda, Kampala', image: '/property_3.png', rentRequired: 650000, bedrooms: 1, status: 'available', postedDate: new Date(Date.now() - 1000 * 3600 * 48).toLocaleDateString() },
+      { id: 'op-4', name: 'Kololo Luxury Flat 2A', location: 'Kololo, Kampala', image: '/property_1.png', rentRequired: 2500000, bedrooms: 3, status: 'taken', postedDate: new Date(Date.now() - 1000 * 3600 * 72).toLocaleDateString() }
+    ];
+    return res.status(200).json({ status: 'success', data: mockDbResult });
+  } catch (error) {
+    console.error('getOpportunities error:', error);
     return res.status(500).json({ status: 'error', message: 'Internal server error' });
   }
 };

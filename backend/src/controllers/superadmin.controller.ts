@@ -27,6 +27,36 @@ const logAudit = async (actor_id: string, actor_role: string, action_type: strin
   }
 };
 
+export const getAllUsers = async (req: Request, res: Response) => {
+  try {
+    const users = await prisma.profiles.findMany({
+      orderBy: { created_at: 'desc' },
+      select: {
+        id: true,
+        full_name: true,
+        email: true,
+        phone: true,
+        role: true,
+        is_frozen: true
+      }
+    });
+
+    const mappedUsers = users.map(u => ({
+      id: u.id,
+      name: u.full_name,
+      email: u.email,
+      phone: u.phone,
+      role: u.role || 'TENANT',
+      status: u.is_frozen ? 'Frozen' : 'Active'
+    }));
+
+    return res.status(200).json(mappedUsers);
+  } catch (error) {
+    console.error('Failed to get users:', error);
+    return problemResponse(res, 500, 'Error', 'Failed to fetch users', 'urn:error:internal');
+  }
+};
+
 export const assignRole = async (req: Request, res: Response) => {
   try {
     const actorId = req.user?.sub;

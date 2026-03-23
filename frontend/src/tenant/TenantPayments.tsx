@@ -1,4 +1,4 @@
-﻿import { ChevronDown, CreditCard, History, User as UserIcon, Bell, Home as HomeIcon } from 'lucide-react';
+import { ChevronDown, CreditCard, History, User as UserIcon, Bell, Home as HomeIcon } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -10,12 +10,12 @@ export default function TenantPayments() {
   return (
     <div className="bg-background-light dark:bg-background-dark font-sans text-slate-900 dark:text-slate-100 min-h-screen">
       <div className="relative flex h-auto min-h-screen w-full max-w-md mx-auto flex-col bg-white dark:bg-background-dark overflow-x-hidden shadow-xl">
-        
+
         {/* Header */}
         <header className="flex items-center bg-white dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10 border-b border-primary/10">
           <div className="flex items-center gap-3 shrink-0">
-            <div 
-              className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20" 
+            <div
+              className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20"
               style={{ backgroundImage: `url("https://lh3.googleusercontent.com/aida-public/AB6AXuC6R5HPhJXZxRB0t26SKyTNV5tUjEB5ba_DKq-L_O39T1cdqIk7_VHMjJKMaXf8LhvJ54PyjOVWESWusSiqgRc_zQGWgOFh7GONkZ1r9MyG41JtG71_bUfTOhHL1QL47fH1yAHJAWZtroFTpz43fa6sb1XFKfLITqOkpApT1XtBs5x7f9ihCxIYP8RmS8zglODtpdBhdzmx25yw20hygTGWwrZy-XgNenRRGm0dScRb9SFL2jllxD1yars1yK0sn20W1g_R7XsW70k")` }}
             ></div>
             <div className="flex flex-col">
@@ -150,15 +150,15 @@ export default function TenantPayments() {
 
         {/* Bottom Navigation Bar */}
         <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md flex items-center justify-around border-t border-slate-100 dark:border-slate-800 bg-white/95 dark:bg-background-dark/95 backdrop-blur-md px-4 pb-6 pt-2 z-20">
-          <button 
+          <button
             onClick={() => navigate('/dashboard/tenant')}
             className={`flex flex-1 flex-col items-center justify-center gap-1 transition-colors \${location.pathname === '/dashboard/tenant' ? 'text-primary' : 'text-slate-400 dark:text-slate-500 hover:text-primary'}`}
           >
             <HomeIcon size={24} />
             <p className="text-[10px] font-bold leading-normal uppercase tracking-widest">Home</p>
           </button>
-          
-          <button 
+
+          <button
             onClick={() => navigate('/dashboard/tenant/payments')}
             className={`flex flex-1 flex-col items-center justify-center gap-1 transition-colors \${location.pathname.includes('/payments') ? 'text-primary' : 'text-slate-400 dark:text-slate-500 hover:text-primary'}`}
           >
@@ -170,12 +170,12 @@ export default function TenantPayments() {
             </div>
             <p className="text-[10px] font-bold leading-normal uppercase tracking-widest">Payments</p>
           </button>
-          
+
           <button className="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors">
             <History size={24} />
             <p className="text-[10px] font-bold leading-normal uppercase tracking-widest">History</p>
           </button>
-          
+
           <button className="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors">
             <UserIcon size={24} />
             <p className="text-[10px] font-bold leading-normal uppercase tracking-widest">Profile</p>

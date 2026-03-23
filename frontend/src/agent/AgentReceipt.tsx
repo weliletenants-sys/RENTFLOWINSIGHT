@@ -1,21 +1,31 @@
-﻿import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, Search, CheckCircle2, MapPin, Clock, User, Download, Share2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
-
-// Mock Data
-const MOCK_TENANTS = [
-  { id: 't-101', name: 'Johnathan Mulema', phone: '+256 702 344 123', status: 'Active Tenant', outstanding: 450000, daily: 15000 },
-  { id: 't-102', name: 'Grace Nakato', phone: '+256 772 987 654', status: 'Active Tenant', outstanding: 50000, daily: 20000 },
-];
+import { getAssignedTenants } from '../services/agentApi';
 
 export default function AgentReceipt() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTenant] = useState<typeof MOCK_TENANTS[0] | null>(MOCK_TENANTS[0]); // Default to first for UI demo
+  const [tenants, setTenants] = useState<any[]>([]);
+  const [selectedTenant, setSelectedTenant] = useState<any | null>(null);
+  
+  useEffect(() => {
+    getAssignedTenants().then(data => {
+      // Map properties to fit AgentReceipt's exact shape
+      const mapped = data.map((t: any) => ({
+        ...t,
+        status: t.rentStatus === 'paid' ? 'Up To Date' : 'Active Tenant',
+        outstanding: t.outstandingBalance,
+        daily: t.dailyAmount
+      }));
+      setTenants(mapped);
+      if (mapped.length > 0) setSelectedTenant(mapped[0]);
+    }).catch(console.error);
+  }, []);
   const [amountPaid, setAmountPaid] = useState('15000');
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'MOMO' | 'BANK'>('CASH');
   const [paymentType, setPaymentType] = useState('Daily Repayment');

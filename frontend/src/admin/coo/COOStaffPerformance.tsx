@@ -1,18 +1,49 @@
-import React, { useState } from 'react';
-import { Search, MapPin, Users, Briefcase, Award, Shield } from 'lucide-react';
-
-const mockStaff = [
-  { id: 'STF-01', name: 'Okwalinga Peter', role: 'Field Agent', dept: 'Central Region', metricTitle: 'MTD Collections', metricValue: 'UGX 45M', status: 'Active' },
-  { id: 'STF-02', name: 'Nassali Sarah', role: 'Support Rep', dept: 'Customer Service', metricTitle: 'Tickets Resolved', metricValue: '142', status: 'Active' },
-  { id: 'STF-03', name: 'Lule Francis', role: 'Field Agent', dept: 'Central Region', metricTitle: 'MTD Collections', metricValue: 'UGX 28M', status: 'Active' },
-  { id: 'STF-04', name: 'Kato Paul', role: 'Finance Analyst', dept: 'Accounting', metricTitle: 'Reconciliations', metricValue: '100% Match', status: 'Active' },
-  { id: 'STF-05', name: 'Nansubuga Mary', role: 'Field Manager', dept: 'Eastern Region', metricTitle: 'Region Yield', metricValue: 'UGX 105M', status: 'Inactive' },
-];
+import React, { useState, useEffect } from 'react';
+import { Search, MapPin, Users, Briefcase, Award, Shield, Loader2, AlertTriangle } from 'lucide-react';
+import { fetchStaff } from '../../services/cooApi';
 
 const COOStaffPerformance: React.FC = () => {
   const [filter, setFilter] = useState('All Roles');
+  const [staffList, setStaffList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredStaff = mockStaff.filter(s => filter === 'All Roles' || s.role.includes(filter) || (filter === 'Management' && s.role.includes('Manager')));
+  useEffect(() => {
+    const loadStaff = async () => {
+      try {
+        const result = await fetchStaff();
+        setStaffList(result.staff || []);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadStaff();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96">
+        <Loader2 className="w-10 h-10 text-[#6c11d4] animate-spin mb-4" />
+        <p className="text-slate-500 font-medium">Syncing organizational registry...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 bg-red-50 text-red-600 rounded-3xl border border-red-100 flex items-center shadow-sm">
+        <AlertTriangle className="w-8 h-8 mr-4" />
+        <div>
+          <h3 className="font-bold text-lg mb-1">Failed to Load Personnel</h3>
+          <p className="text-sm">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const filteredStaff = staffList.filter((s: any) => filter === 'All Roles' || s.role.includes(filter) || (filter === 'Management' && s.role.includes('Manager')));
 
   return (
     <div className="space-y-6">
@@ -24,11 +55,11 @@ const COOStaffPerformance: React.FC = () => {
         <div className="flex gap-4">
           <div className="bg-blue-50 p-3 rounded-lg text-center border border-blue-100">
             <p className="text-xs text-blue-700 font-semibold uppercase">Total Staff</p>
-            <p className="text-lg font-bold text-blue-700">145</p>
+            <p className="text-lg font-bold text-blue-700">{staffList.length}</p>
           </div>
           <div className="bg-[#EAE5FF] p-3 rounded-lg text-center border border-slate-100">
-            <p className="text-xs text-[#6c11d4] font-semibold uppercase">Top Performers</p>
-            <p className="text-lg font-bold text-[#6c11d4]">12</p>
+            <p className="text-xs text-[#6c11d4] font-semibold uppercase">Active Personnel</p>
+            <p className="text-lg font-bold text-[#6c11d4]">{staffList.filter(s => s.status === 'Active').length}</p>
           </div>
         </div>
       </div>

@@ -6,7 +6,8 @@ import {
   deleteAccount, 
   getAuditLogs, 
   getConfig, 
-  updateConfig 
+  updateConfig,
+  getAllUsers
 } from '../../controllers/superadmin.controller';
 
 const router = Router();
@@ -16,6 +17,7 @@ router.use(authGuard);
 router.use(rolesGuard(['SUPER_ADMIN']));
 
 // Role Governance
+router.get('/users', getAllUsers);
 router.post('/assign-role', assignRole);
 
 // Account Actions

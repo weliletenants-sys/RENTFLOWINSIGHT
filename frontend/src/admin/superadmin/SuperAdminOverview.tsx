@@ -19,49 +19,49 @@ export default function SuperAdminOverview() {
         <p className="text-slate-500 font-body text-sm">Global system configuration and master data management.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12 pointer-events-auto relative z-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12 relative z-50">
         
         {/* User Matrix */}
-        <div 
-          onClick={() => { console.log('CARD CLICKED: USER MATRIX'); navigate('/admin/users'); }}
-          className="relative z-20 cursor-pointer pointer-events-auto bg-white rounded-xl border border-slate-100 p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 active:bg-slate-50 active:scale-95 group"
+        <button 
+          onClick={() => { alert('DOM CLICK REGISTERED! Now attempting to push router path: /admin/users'); navigate('/admin/users'); }}
+          className="text-left w-full bg-white rounded-xl border border-slate-100 p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 active:bg-slate-50 cursor-pointer relative z-[100]"
         >
-          <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 mb-5 md:group-hover:scale-110 transition-transform">
+          <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 mb-5 md:hover:scale-110 transition-transform">
             <span className="material-symbols-outlined" style={{fontVariationSettings: "'wght' 500"}}>group</span>
           </div>
           <h3 className="font-headline font-bold text-slate-800 text-lg mb-2">User Matrix</h3>
           <p className="text-sm text-slate-500 leading-relaxed font-body">
             Manage global authorization, override roles, and audit access logs across all tiers.
           </p>
-        </div>
+        </button>
 
         {/* Ledger Config */}
-        <div 
-          onClick={() => { console.log('CARD CLICKED: LEDGER CONFIG'); navigate('/admin/ledger'); }}
-          className="relative z-20 cursor-pointer pointer-events-auto bg-white rounded-xl border border-slate-100 p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 active:bg-slate-50 active:scale-95 group"
+        <button 
+          onClick={() => { alert('DOM CLICK REGISTERED! Now attempting to push router path: /admin/ledger'); navigate('/admin/ledger'); }}
+          className="text-left w-full bg-white rounded-xl border border-slate-100 p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 active:bg-slate-50 cursor-pointer relative z-[100]"
         >
-          <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 mb-5 md:group-hover:scale-110 transition-transform">
+          <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 mb-5 md:hover:scale-110 transition-transform">
             <span className="material-symbols-outlined" style={{fontVariationSettings: "'wght' 500"}}>dns</span>
           </div>
           <h3 className="font-headline font-bold text-slate-800 text-lg mb-2">Ledger Config</h3>
           <p className="text-sm text-slate-500 leading-relaxed font-body">
             Force syncs, view master financial queries, and run raw data migrations.
           </p>
-        </div>
+        </button>
 
         {/* Security Rules */}
-        <div 
-          onClick={() => { console.log('CARD CLICKED: SECURITY RULES'); navigate('/admin/security'); }}
-          className="relative z-20 cursor-pointer pointer-events-auto bg-white rounded-xl border border-slate-100 p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 active:bg-slate-50 active:scale-95 group"
+        <button 
+          onClick={() => { alert('DOM CLICK REGISTERED! Now attempting to push router path: /admin/security'); navigate('/admin/security'); }}
+          className="text-left w-full bg-white rounded-xl border border-slate-100 p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 active:bg-slate-50 cursor-pointer relative z-[100]"
         >
-          <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-red-600 mb-5 md:group-hover:scale-110 transition-transform">
+          <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-red-600 mb-5 md:hover:scale-110 transition-transform">
             <span className="material-symbols-outlined" style={{fontVariationSettings: "'wght' 500"}}>error</span>
           </div>
           <h3 className="font-headline font-bold text-slate-800 text-lg mb-2">Security Rules</h3>
           <p className="text-sm text-slate-500 leading-relaxed font-body">
             Adjust system-wide rate limits, firewall IP blocks, and KYC global overrides.
           </p>
-        </div>
+        </button>
 
       </div>
 

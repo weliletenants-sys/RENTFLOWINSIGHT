@@ -225,3 +225,31 @@ export const getAlerts = async (req: Request, res: Response) => {
     return problemResponse(res, 500, 'Internal Server Error', error.message, 'https://api.rentflow.com/errors/internal-error');
   }
 };
+
+export const getStaff = async (req: Request, res: Response) => {
+  try {
+    const users = await prisma.profiles.findMany({
+      where: {
+        role: { in: ['AGENT', 'MANAGER', 'SUPPORT', 'COO', 'CFO', 'CEO'] },
+        is_frozen: false
+      },
+      select: {
+        id: true, full_name: true, role: true, territory: true
+      }
+    });
+
+    const mapped = users.map(u => ({
+      id: u.id,
+      name: u.full_name,
+      role: u.role || 'Staff',
+      dept: u.territory || 'HQ',
+      metricTitle: 'Activity Score',
+      metricValue: '98%',
+      status: 'Active'
+    }));
+
+    res.json({ staff: mapped });
+  } catch (error: any) {
+    return problemResponse(res, 500, 'Internal Server Error', error.message, 'https://api.rentflow.com/errors/internal-error');
+  }
+};

@@ -1,62 +1,24 @@
-﻿import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Search, MapPin, Navigation, Phone, Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
-
-// Mock Data
-const MOCK_TENANTS = [
-  {
-    id: 't-101',
-    name: 'Samuel Ochieng',
-    phone: '+256 700 123 456',
-    location: 'Ntinda Complex, Apt 4B',
-    distance: '0.2 km',
-    rentStatus: 'overdue',
-    outstandingBalance: 150000,
-    dailyAmount: 15000,
-    lastPaymentDate: '2023-10-20',
-  },
-  {
-    id: 't-102',
-    name: 'Grace Nakato',
-    phone: '+256 772 987 654',
-    location: 'Bukoto Heights, Unit 12',
-    distance: '1.5 km',
-    rentStatus: 'partial',
-    outstandingBalance: 50000,
-    dailyAmount: 20000,
-    lastPaymentDate: '2023-10-24',
-  },
-  {
-    id: 't-103',
-    name: 'David Musisi',
-    phone: '+256 755 333 222',
-    location: 'Kololo Ridge, Villa 3',
-    distance: '3.1 km',
-    rentStatus: 'paid',
-    outstandingBalance: 0,
-    dailyAmount: 30000,
-    lastPaymentDate: '2023-10-24',
-  },
-  {
-    id: 't-104',
-    name: 'Sarah Kintu',
-    phone: '+256 788 111 999',
-    location: 'Naguru Hills, Plot 45',
-    distance: '0.8 km',
-    rentStatus: 'overdue',
-    outstandingBalance: 300000,
-    dailyAmount: 25000,
-    lastPaymentDate: '2023-10-15',
-  }
-];
+import { ChevronLeft, Search, MapPin, Navigation, Phone, Clock, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { getAssignedTenants } from '../services/agentApi';
 
 export default function AgentVisit() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'assigned' | 'nearby'>('assigned');
+  const [tenants, setTenants] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    getAssignedTenants()
+      .then(setTenants)
+      .catch(console.error)
+      .finally(() => setIsLoading(false));
+  }, []);
 
   // Filter tenants based on search and tab
-  const filteredTenants = MOCK_TENANTS.filter(tenant => {
+  const filteredTenants = tenants.filter(tenant => {
     const matchesSearch = 
       tenant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       tenant.phone.includes(searchQuery) ||
@@ -137,7 +99,11 @@ export default function AgentVisit() {
 
         {/* List */}
         <div className="space-y-3">
-          {filteredTenants.length === 0 ? (
+          {isLoading ? (
+            <div className="flex justify-center py-10">
+              <Loader2 className="w-8 h-8 text-[#6c11d4] animate-spin" />
+            </div>
+          ) : filteredTenants.length === 0 ? (
             <div className="text-center py-10">
               <div className="inline-flex items-center justify-center size-16 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 mb-4">
                 <Search size={28} />

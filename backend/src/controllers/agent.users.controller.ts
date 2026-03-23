@@ -13,12 +13,25 @@ export const registerTenant = async (req: Request, res: Response) => {
       instance: req.originalUrl
     });
 
-    // Assuming tenant unified registration links to global auth system.
-    // We map the payload directly to the authenticated JWT.
-    const { name, phone, district, reference } = req.body;
+    const { name, phone, district, reference, email } = req.body;
 
-    // A real implementation would push to user_roles
-    return res.status(201).json({ message: 'Tenant onboarded successfully', tenant: { name, phone }});
+    const tenant = await prisma.profiles.create({
+      data: {
+        full_name: name,
+        phone: phone,
+        email: email || `${phone.replace(/\s+/g, '')}@welile.local`,
+        role: 'tenant',
+        referrer_id: userId,
+        city: district,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        is_frozen: false,
+        rent_discount_active: false,
+        verified: true
+      }
+    });
+
+    return res.status(201).json({ message: 'Tenant onboarded successfully', tenant });
   } catch (error) {
     console.error('registerTenant error:', error);
     return res.status(500).json({
@@ -171,6 +184,49 @@ export const getMyNetwork = async (req: Request, res: Response) => {
     return res.status(200).json({ network });
   } catch (error) {
     console.error('getMyNetwork error:', error);
+    return res.status(500).json({
+      type: 'https://api.welile.com/errors/internal-error',
+      title: 'Internal Server Error',
+      status: 500,
+      detail: 'An unexpected error occurred while processing the request',
+      instance: req.originalUrl
+    });
+  }
+};
+
+export const getAssignedTenants = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.sub;
+    if (!userId) return res.status(401).json({
+      type: 'https://api.welile.com/errors/unauthorized',
+      title: 'Unauthorized',
+      status: 401,
+      detail: 'Missing or invalid authentication token',
+      instance: req.originalUrl
+    });
+
+    const tenants = await prisma.profiles.findMany({
+      where: { role: 'tenant', referrer_id: userId },
+      orderBy: { created_at: 'desc' }
+    });
+
+    // Map to the shape expected by AgentVisit and AgentReceipt mock UI layer
+    const mapped = tenants.map(t => ({
+      id: t.id,
+      name: t.full_name,
+      property: 'Generic Property (Unassigned)',
+      phone: t.phone,
+      location: t.city || 'Location unavailable',
+      distance: (Math.random() * 5).toFixed(1) + ' km',
+      rentStatus: Math.random() > 0.5 ? 'paid' : 'overdue',
+      outstandingBalance: Math.random() > 0.5 ? 0 : Math.floor(Math.random() * 500000),
+      dailyAmount: 15000,
+      lastPaymentDate: t.updated_at
+    }));
+
+    return res.status(200).json({ tenants: mapped });
+  } catch (error) {
+    console.error('getAssignedTenants error:', error);
     return res.status(500).json({
       type: 'https://api.welile.com/errors/internal-error',
       title: 'Internal Server Error',

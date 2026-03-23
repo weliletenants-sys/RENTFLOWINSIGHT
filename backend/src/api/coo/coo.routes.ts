@@ -8,7 +8,8 @@ import {
   getWithdrawals,
   getPartners,
   getTenants,
-  getAlerts
+  getAlerts,
+  getStaff
 } from '../../controllers/coo.controller';
 import { authGuard, rolesGuard } from '../../middlewares/auth.middleware';
 
@@ -27,5 +28,6 @@ router.get('/metrics/withdrawals', getWithdrawals);
 router.get('/metrics/partners', getPartners);
 router.get('/metrics/tenants', getTenants);
 router.get('/metrics/alerts', getAlerts);
+router.get('/metrics/staff', getStaff);
 
 export default router;

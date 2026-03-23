@@ -90,3 +90,8 @@ export const fetchAlerts = async () => {
   const response = await axios.get(`${API}/v1/coo/metrics/alerts`, getAuthHeaders());
   return response.data;
 };
+
+export const fetchStaff = async () => {
+  const response = await axios.get(`${API}/v1/coo/metrics/staff`, getAuthHeaders());
+  return response.data;
+};

@@ -72,9 +72,9 @@ export default function FunderPortfolioDetailsPage() {
   return (
     <div className="bg-slate-50 min-h-screen p-4 sm:p-6 lg:p-8 font-sans pb-24 lg:pb-8">
       <div className="max-w-7xl mx-auto space-y-6">
-        
+
         {/* Header Navigation */}
-        <button 
+        <button
           onClick={() => navigate('/funder/portfolio')}
           className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-[var(--color-primary)] transition-colors mb-4"
         >
@@ -116,45 +116,45 @@ export default function FunderPortfolioDetailsPage() {
 
         {/* Analytics Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-           <div className="bg-white rounded-[20px] p-5 lg:p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-             <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-               <Target className="w-6 h-6" />
-             </div>
-             <div>
-               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">ROI Mode</p>
-               <p className="font-bold text-slate-900">{portfolioInfo.roiMode}</p>
-             </div>
-           </div>
-           
-           <div className="bg-white rounded-[20px] p-5 lg:p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-             <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-               <Clock className="w-6 h-6" />
-             </div>
-             <div>
-               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Duration Left</p>
-               <p className="font-bold text-slate-900">{portfolioInfo.durationLeft}</p>
-             </div>
-           </div>
+          <div className="bg-white rounded-[20px] p-5 lg:p-6 border border-slate-100 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+              <Target className="w-6 h-6" />
+            </div>
+            <div>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">ROI Mode</p>
+              <p className="font-bold text-slate-900">{portfolioInfo.roiMode}</p>
+            </div>
+          </div>
 
-           <div className="bg-white rounded-[20px] p-5 lg:p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-             <div className="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">
-               <Calendar className="w-6 h-6" />
-             </div>
-             <div>
-               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Next Payout</p>
-               <p className="font-bold text-slate-900">{portfolioInfo.nextPayout}</p>
-             </div>
-           </div>
+          <div className="bg-white rounded-[20px] p-5 lg:p-6 border border-slate-100 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+              <Clock className="w-6 h-6" />
+            </div>
+            <div>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Duration Left</p>
+              <p className="font-bold text-slate-900">{portfolioInfo.durationLeft}</p>
+            </div>
+          </div>
 
-           <div className="bg-white rounded-[20px] p-5 lg:p-6 border border-slate-100 shadow-sm flex items-center gap-4">
-             <div className="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center shrink-0">
-               <DollarSign className="w-6 h-6" />
-             </div>
-             <div>
-               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Profit</p>
-               <p className="font-bold text-slate-900">UGX {portfolioInfo.totalRoiEarned.toLocaleString()}</p>
-             </div>
-           </div>
+          <div className="bg-white rounded-[20px] p-5 lg:p-6 border border-slate-100 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">
+              <Calendar className="w-6 h-6" />
+            </div>
+            <div>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Next Payout</p>
+              <p className="font-bold text-slate-900">{portfolioInfo.nextPayout}</p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-[20px] p-5 lg:p-6 border border-slate-100 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center shrink-0">
+              <DollarSign className="w-6 h-6" />
+            </div>
+            <div>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Profit</p>
+              <p className="font-bold text-slate-900">UGX {portfolioInfo.totalRoiEarned.toLocaleString()}</p>
+            </div>
+          </div>
         </div>
 
         {/* Virtual Houses List */}
@@ -190,7 +190,7 @@ export default function FunderPortfolioDetailsPage() {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
                     <div>
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Assigned Value</p>
@@ -219,7 +219,7 @@ export default function FunderPortfolioDetailsPage() {
               <p className="text-sm text-slate-500 mt-1 font-medium">Record of returns generated by this portfolio.</p>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
@@ -239,7 +239,7 @@ export default function FunderPortfolioDetailsPage() {
                       </td>
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-50 text-[var(--color-primary)]">
-                           <TrendingUp className="w-3.5 h-3.5" /> {tx.type}
+                          <TrendingUp className="w-3.5 h-3.5" /> {tx.type}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -247,8 +247,8 @@ export default function FunderPortfolioDetailsPage() {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-700">
-                           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                           {tx.status}
+                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          {tx.status}
                         </span>
                       </td>
                     </tr>

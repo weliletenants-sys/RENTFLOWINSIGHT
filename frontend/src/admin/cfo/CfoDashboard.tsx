@@ -201,9 +201,9 @@ export default function CfoDashboard() {
                     { label: 'Total Withdrawals', value: `UGX ${((overviewMetrics.metrics?.withdrawals || 0) / 1000000).toFixed(1)}M`, color: 'bg-orange-50 text-orange-700' },
                     { label: 'Platform Fees', value: `UGX ${((overviewMetrics.metrics?.platformFees || 0) / 1000).toFixed(1)}K`, color: 'bg-purple-50 text-purple-700' },
                     { label: 'Pending Repayments', value: `UGX ${((overviewMetrics.metrics?.pendingRepayments || 0) / 1000000).toFixed(1)}M`, color: 'bg-rose-50 text-rose-700' },
-                    { label: 'Transfers', value: 'UGX 8.2M', color: 'bg-blue-50 text-blue-700' }, // mock
-                    { label: 'Agent Earnings', value: 'UGX 1.4M', color: 'bg-slate-50 text-slate-700' }, // mock
-                    { label: 'Commissions', value: 'UGX 450K', color: 'bg-amber-50 text-amber-700' } // mock
+                    { label: 'Transfers', value: `UGX ${((overviewMetrics.metrics?.transfers || 0) / 1000000).toFixed(1)}M`, color: 'bg-blue-50 text-blue-700' },
+                    { label: 'Agent Earnings', value: `UGX ${((overviewMetrics.metrics?.agentEarnings || 0) / 1000000).toFixed(1)}M`, color: 'bg-slate-50 text-slate-700' },
+                    { label: 'Commissions', value: `UGX ${((overviewMetrics.metrics?.commissions || 0) / 1000).toFixed(1)}K`, color: 'bg-amber-50 text-amber-700' }
                   ].map((stat, i) => (
                     <div key={i} className="bg-white p-5 rounded-2xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-slate-100/50 hover:shadow-md transition-shadow">
                       <p className="text-sm font-bold text-slate-500 tracking-tight mb-2">{stat.label}</p>

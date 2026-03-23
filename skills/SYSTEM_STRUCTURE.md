@@ -1,869 +1,928 @@
-# Welile Technologies Limited — System Architecture & Structure
+# Welile Platform — System Architecture
 
-> **Last Updated:** March 11, 2026  
-> **Platform:** Rent-guarantee and rent-facilitation fintech  
-> **Stack:** React + Vite + Tailwind CSS + TypeScript | Node.js + Express (AWS RDS)  
-> **Target Scale:** 40M+ users across Africa and globally
+> **Welile Technologies Limited** is a rent-guarantee and rent-facilitation platform designed to scale across Africa and globally. It connects tenants, landlords, agents, supporters (funders), and institutional partners — acting as the system operator and guarantor.
+
+**Last Updated:** March 2026  
+**Version:** Production  
+**Target Scale:** 40M+ users  
 
 ---
 
 ## Table of Contents
 
-1. [System Overview](#1-system-overview)
-2. [Core Architecture](#2-core-architecture)
-3. [Role Definitions & Access](#3-role-definitions--access)
-4. [Dashboard Breakdown by Role](#4-dashboard-breakdown-by-role)
-5. [Edge Functions (Backend)](#5-edge-functions-backend)
-6. [Financial Engine](#6-financial-engine)
-7. [Database Schema Highlights](#7-database-schema-highlights)
-8. [Security Architecture](#8-security-architecture)
-9. [Approval & Governance Flows](#9-approval--governance-flows)
+1. [Platform Overview](#1-platform-overview)
+2. [Technology Stack](#2-technology-stack)
+3. [Authentication & Role System](#3-authentication--role-system)
+4. [Dashboard Architecture](#4-dashboard-architecture)
+5. [Financial Engine & Ledger](#5-financial-engine--ledger)
+6. [Rent Request Pipeline](#6-rent-request-pipeline)
+7. [Edge Functions (Backend)](#7-edge-functions-backend)
+8. [Data Architecture & Scaling](#8-data-architecture--scaling)
+9. [Real-Time & Offline-First](#9-real-time--offline-first)
+10. [Email & Notifications](#10-email--notifications)
+11. [Security & RLS](#11-security--rls)
+12. [UI/UX Architecture](#12-uiux-architecture)
+13. [File & Component Map](#13-file--component-map)
+14. [Governance & Compliance](#14-governance--compliance)
+15. [Performance Targets](#15-performance-targets)
+16. [Forbidden Anti-Patterns](#16-forbidden-anti-patterns)
 
 ---
 
-## 1. System Overview
+## 1. Platform Overview
 
-Welile connects **tenants**, **landlords**, **agents**, and **supporters (funders/investors)** to facilitate rent payments across Africa. The platform acts as the **system operator and guarantor** — it facilitates rent, manages risk, and earns fees for infrastructure and guarantees. It does **not** sell loans.
+### 1.1 Business Model
 
-### Core Business Flow
+Welile facilitates rent by connecting:
 
-```
-Supporter → Contributes Capital → Rent Management Pool
-                                        ↓
-Manager → Approves Rent Request → Deploys Funds → Landlord Wallet
-                                        ↓
-Tenant → Receives Rent Facilitation → Repays via Installments
-                                        ↓
-Agent → Collects Repayments (field) → Platform → Supporter ROI
-```
+| Actor | Role |
+|---|---|
+| **Tenant** | Requests rent access; repays in daily instalments |
+| **Landlord** | Receives verified rent payments; lists houses |
+| **Agent** | Field operator — verifies tenants/landlords, collects payments, earns commissions |
+| **Supporter (Funder)** | Provides upfront rent capital; earns ROI via repayment streams |
+| **Manager / Executive** | Oversees operations, approvals, risk, and solvency |
+
+Welile earns fees for infrastructure and guarantees. It does **not** sell loans — it facilitates rent and manages risk.
+
+### 1.2 Core Product Flows
+
+1. **Tenant applies for rent** → Agent verifies → Manager approves → Supporter funds → Landlord receives rent
+2. **Tenant repays daily** → Agent collects → Platform distributes to supporter + fees
+3. **Supporter earns ROI** on funded rent through structured repayment streams
+4. **Agent earns commissions** on registrations, collections, and verifications
+
+### 1.3 Key Metrics (North Star)
+
+| Metric | Description |
+|---|---|
+| **Rent Secured (UGX/month)** | North Star metric |
+| Active Virtual Houses | Houses with active rent coverage |
+| Rent Success Rate | % of rent requests fully repaid |
+| Payment Health Distribution | Breakdown of on-time vs late vs default |
+| Capital Utilization | % of supporter capital actively deployed |
+| Liquidity Buffer | Platform reserve coverage ratio |
+| Default Rate | % of rent requests that defaulted |
+| Cache Hit Rate | Target ≥ 90% |
 
 ---
 
-## 2. Core Architecture
+## 2. Technology Stack
 
-### 2.1 Frontend Architecture
+### 2.1 Frontend
 
 | Layer | Technology |
-|-------|-----------|
+|---|---|
 | Framework | React 18 + TypeScript |
-| Build | Vite |
-| Styling | Tailwind CSS + shadcn/ui |
-| State | TanStack React Query |
+| Build | Vite 5 (SWC plugin) |
+| Styling | Tailwind CSS 3 + shadcn/ui components |
+| State | React Query (TanStack Query v5) |
 | Routing | React Router v6 |
 | Animations | Framer Motion |
-| PWA | vite-plugin-pwa |
-| Maps | Leaflet + React Leaflet |
 | Charts | Recharts |
-| PDF | jsPDF |
-| QR | html5-qrcode + qrcode.react |
+| Maps | Leaflet + React Leaflet + PostGIS |
+| PDF Generation | jsPDF |
+| QR Codes | html5-qrcode, qrcode.react |
+| PWA | vite-plugin-pwa (Service Worker) |
+| Offline Storage | IndexedDB + localStorage |
 
-### 2.2 Backend Architecture
+### 2.2 Backend (Lovable Cloud / Supabase)
 
 | Layer | Technology |
-|-------|-----------|
-| Database | PostgreSQL (via AWS RDS) |
-| Auth | Standard JWT + Bcrypt (email + password, OTP via AfricasTalking) |
-| API | Express.js REST API |
-| Edge Functions | Node.js Express Controllers (Migrated from Deno) |
-| Storage | AWS S3 / Local Express Uploads |
-| Realtime | WebSockets Sandbox (Pending AWS API Gateway WebSockets) |
-| Cron | pg_cron (auto-charge wallets daily at 06:00 UTC) |
+|---|---|
+| Database | PostgreSQL (Supabase-managed) |
+| Auth | Supabase Auth (email, OTP, password) |
+| Edge Functions | Deno (Supabase Edge Functions) |
+| Real-time | Supabase Realtime (PostgreSQL CDC) |
+| Storage | Supabase Storage (receipts, photos, documents) |
+| Email | Lovable Email Infrastructure (pgmq queue + auth-email-hook) |
+| SMS | Africa's Talking API |
+| AI | Lovable AI (Gemini / GPT models via edge functions) |
+| Cron Jobs | pg_cron + pg_net |
 
-### 2.3 Financial Architecture
+### 2.3 External Integrations
 
-- **Double-Entry Ledger**: Append-only `general_ledger` table with debit/credit entries
-- **Wallet Sync Trigger**: `sync_wallet_from_ledger` fires on ledger inserts with `transaction_group_id`
-- **No Direct Wallet Edits**: RLS policies deny client-side writes to wallets/ledger
-- **Approval Gates**: External transactions routed through `pending_wallet_operations`
-
-### 2.4 Role-Based Dashboard Isolation
-
-- **Isolated Roles** (dedicated environments): CEO, CTO, CFO, COO, CMO, CRM, Operations
-- **Sidebar Roles** (original dashboard): Manager, Super Admin
-- **Standard Roles** (main dashboard): Tenant, Agent, Landlord, Supporter
-- Access enforced via `RoleGuard` component + role-prefixed routes
+| Service | Purpose |
+|---|---|
+| Africa's Talking | SMS OTP, payment reminders, collection SMS |
+| Lovable Email | Auth emails, agreement copies, notifications |
+| PostGIS | Geospatial queries for nearby house discovery |
+| Web Push (VAPID) | Push notifications |
 
 ---
 
-## 3. Role Definitions & Access
+## 3. Authentication & Role System
 
-| # | Role | Route | Description |
-|---|------|-------|-------------|
-| 1 | `tenant` | `/dashboard` | End-user renting housing |
-| 2 | `agent` | `/dashboard` | Field operator: registrations, collections, facilitation |
-| 3 | `landlord` | `/dashboard` | Property owner receiving rent |
-| 4 | `supporter` | `/dashboard` | Investor/funder contributing capital to rent pool |
-| 5 | `manager` | `/dashboard` | Platform administrator: approvals, user management |
-| 6 | `super_admin` | `/admin/dashboard` | System-wide admin with full control |
-| 7 | `ceo` | `/ceo/dashboard` | Executive oversight: revenue, growth, health |
-| 8 | `coo` | `/coo/dashboard` | Financial operations: transactions, collections, wallets |
-| 9 | `cfo` | `/cfo/dashboard` | Financial governance: statements, solvency, reconciliation |
-| 10 | `cto` | `/cto/dashboard` | Engineering: infrastructure, API, security, dev tools |
-| 11 | `cmo` | `/cmo/dashboard` | Marketing: growth metrics, signups, campaigns |
-| 12 | `crm` | `/crm/dashboard` | Customer relations: profiles, tickets, disputes |
-| 13 | `employee` | `/dashboard` | General staff |
-| 14 | `operations` | `/operations` | Operational workflows |
+### 3.1 Auth Flow
 
----
+```
+User → Email/Phone + Password → Supabase Auth
+     → OTP Login (SMS via Africa's Talking)
+     → Password Reset (SMS-based)
+     → Session persisted in localStorage
+     → Auto-refresh tokens
+```
 
-## 4. Dashboard Breakdown by Role
+**Key files:**
+- `src/hooks/useAuth.tsx` — Auth context provider
+- `src/hooks/auth/roleManager.ts` — Role provisioning logic
+- `src/hooks/auth/authOperations.ts` — Sign-in/out operations
+- `src/lib/sessionCache.ts` — Session caching for instant boot
 
----
+### 3.2 Role Definitions (14 Roles)
 
-### 4.1 🏠 Tenant Dashboard
+| Category | Roles |
+|---|---|
+| **Consumer** | `tenant`, `landlord`, `supporter`, `agent` |
+| **Staff** | `manager`, `operations`, `employee` |
+| **Executive** | `ceo`, `coo`, `cfo`, `cto`, `cmo`, `crm` |
+| **System** | `super_admin` (God mode) |
 
-**Route:** `/dashboard` (role: tenant)
+Roles are stored in a **separate `user_roles` table** (never on the profile) with a `has_role()` security definer function to prevent recursive RLS.
 
-**Components:**
-| Feature | Component | Description |
-|---------|-----------|-------------|
-| Rent Request | `RentRequestButton` + `RentRequestForm` | Submit rent facilitation requests with landlord details, location, utility meters |
-| Repayment Schedule | `RepaymentScheduleView` | View installment plan and upcoming charges |
-| Repayment History | `RepaymentHistoryDrawer` | Full history of rent repayments |
-| Repayment Section | `RepaymentSection` | Active obligations and amounts due |
-| Credit Access | `RentAccessLimitCard` + `CreditAccessCard` | View credit limit (base + bonuses from receipts, ratings, rent history) |
-| Rent Calculator | `RentCalculator` + `WeeklyMonthlyCalculator` | Calculate weekly/monthly affordability |
-| Subscription Status | `SubscriptionStatusCard` | Auto-charge subscription status |
-| Rent Discount | `RentDiscountWidget` + `RentDiscountToggle` | Apply rent discounts |
-| My Landlords | `MyLandlordsSection` | View registered landlords |
-| Register Landlord | `RegisterLandlordDialog` | Add a new landlord |
-| Payment Streak | `PaymentStreakCalendar` | Gamified on-time payment tracking |
-| Achievement Badges | `AchievementBadges` + `ShareableAchievementCard` | Earn and share milestones |
-| Invite Friends | `InviteFriendsCard` | Referral program |
-| Quick Contribute | `QuickContributeDialog` | Quick payment actions |
-| Welile Homes | `WelileHomesButton` | Access Welile Homes savings program |
-| Menu | `TenantMenuDrawer` | Sliding navigation drawer |
+### 3.3 Role Provisioning
 
-**Key Pages:**
-- `/my-loans` — Loan management
-- `/my-receipts` — Receipt history
-- `/payment-schedule` — Payment schedule view
-- `/rent-discount-history` — Discount history
-- `/welile-homes` — Savings program
+- **Default roles:** New users receive `supporter`, `agent`, `tenant`, `landlord`
+- **Internal/executive roles:** Assigned manually by `super_admin`, `manager`, or `cto` (requires authorization code)
+- **Soft-delete:** Removing a role sets `enabled = false` instead of hard-deleting, preventing auto-reprovisioning on next login
+- **Role Access Requests:** Tenants/agents can request access to additional dashboards; managers approve/deny
+
+### 3.4 Dashboard Auto-Routing
+
+```
+Login → Check deployed capital
+      → If ≥ UGX 100,000 → Default to Supporter dashboard
+      → Otherwise → Check user's "Home Screen" preference
+      → If "Auto" → Route to first available role
+      → Staff roles → Auto-redirect to /staff portal
+```
+
+### 3.5 Staff Portal Isolation
+
+Internal staff access is isolated via `/staff` route — a dedicated entry point for administrative roles. It performs post-login role verification and auto-redirects to the appropriate dashboard while rejecting unauthorized users. Administrative UI elements are **completely hidden** from consumer-facing views.
 
 ---
 
-### 4.2 🤝 Agent Dashboard
+## 4. Dashboard Architecture
 
-**Route:** `/dashboard` (role: agent)
+### 4.1 Consumer Dashboards
 
-**Components:**
-| Feature | Component | Description |
-|---------|-----------|-------------|
-| Registration Hub | `UnifiedRegistrationDialog` | Register tenants, landlords, supporters in one flow |
-| Register Tenant | `RegisterTenantDialog` | Full tenant registration with location |
-| Register Landlord | `RegisterLandlordDialog` | Landlord onboarding with property details |
-| Register Sub-Agent | `RegisterSubAgentDialog` | Recruit sub-agents |
-| Rent Requests | `AgentRentRequestDialog` + `AgentMyRentRequestsSheet` | Submit and track rent facilitation requests |
-| Rent Request Manager | `AgentRentRequestsManager` | Manage all submitted requests |
-| Invest for Partner | `AgentInvestForPartnerDialog` | Proxy investment on behalf of supporters (approval-gated) |
-| Proxy Investment History | `ProxyInvestmentHistorySheet` | Track all proxy investments |
-| Deposit Cash | `AgentDepositCashDialog` + `AgentDepositDialog` | Process cash deposits |
-| Withdrawal | `AgentWithdrawalDialog` | Request fund withdrawals |
-| Record Collection | `RecordAgentCollectionDialog` | Log field rent collections with GPS, MoMo details |
-| Record Payment | `RecordTenantPaymentDialog` | Log tenant payments |
-| Visit & Payment Wizard | `AgentVisitDialog` + `AgentVisitPaymentWizard` | GPS check-in + payment collection flow |
-| Generate Payment Token | `GeneratePaymentTokenDialog` | Create payment tokens for tenants |
-| Tenants Sheet | `AgentTenantsSheet` | View assigned tenants |
-| Managed Properties | `AgentManagedPropertiesSheet` + `AgentManagedPropertyDialog` | View/manage properties |
-| Landlord Map | `AgentLandlordMapSheet` | Map view of registered landlords |
-| Landlord Payout | `AgentLandlordPayoutDialog` | Initiate landlord payments |
-| Top Up Tenant | `AgentTopUpTenantDialog` | Add funds to tenant wallet |
-| Daily Ops | `AgentDailyOpsCard` | Daily operational summary |
-| Goal Tracking | `AgentGoalCard` + `AgentGoalProgress` | Monthly registration/activation targets |
-| Team Goals | `TeamGoalProgress` + `SetTeamGoalDialog` | Sub-agent team targets |
-| Earnings Rank | `EarningsRankSystemSheet` | Commission ranking system |
-| Leaderboard | `AgentLeaderboard` | Performance leaderboard |
-| Commission Payouts | `MyCommissionPayouts` + `RequestCommissionPayoutDialog` | View/request commission cashouts |
-| Pending Deposits | `PendingDepositsSection` | Track deposit approvals |
-| Invites | `AgentInvitesList` + `CreateUserInviteDialog` | Manage user invitations |
-| Sub-Agents | `SubAgentsList` + `SubAgentInvitesList` | Manage recruited sub-agents |
-| Link Signups | `LinkSignupsList` + `CollapsibleLinkSignups` | Track referral link signups |
-| Share Referral | `ShareReferralLink` + `ShareSubAgentLink` | Share referral/recruit links |
-| Shareable Cards | `ShareablePerformanceCard` + `ShareableMilestoneCard` | Social media performance cards |
-| MoMo Settings | `MobileMoneySettings` | Configure mobile money details |
-| Credit Verification | `CreditVerificationButton` | Verify credit requests |
-| Verification Opportunities | `VerificationOpportunitiesButton` | Find earning opportunities |
-| Rental Finder | `RentalFinderSheet` | Find available rentals |
-| Loan Management | `LoanManagement` + `LoanPaymentCalculator` | Agent loan tools |
-| Rent Payment Guide | `AgentRentPaymentGuide` | Step-by-step payment guide |
-| Registration Analytics | `AgentRegistrationAnalytics` | Registration performance stats |
-| Menu | `AgentMenuDrawer` | Sliding navigation drawer |
+#### Tenant Dashboard (`src/components/dashboards/TenantDashboard.tsx`)
+- Offline-first with local-first data loading
+- Property discovery: "Find a House Nearby" hero CTA with live listing counts
+- Nearby houses carousel (PostGIS-powered)
+- Rent process tracker (lifecycle visualization)
+- Suggested houses matching previous rent range
+- Welile Homes housing fund (10% of rent payments)
+- WhatsApp deep-links to agents from property cards
+- Compact "Rent Access Limit" expandable strip
 
-**Key Pages:**
-- `/agent-registrations` — Registration history
-- `/agent-analytics` — Performance analytics
-- `/agent-earnings` — Earnings breakdown
-- `/sub-agent-analytics` — Sub-agent performance
-- `/agent-advances` — Capital advance management
+#### Supporter/Funder Dashboard (`src/components/dashboards/SupporterDashboard.tsx`)
+- Portfolio summary cards (houses funded, rent secured, wallet balance, ROI)
+- Virtual houses grid with funding status
+- Agreement acceptance gate (one-time, with email confirmation)
+- ROI calculator
+- Funding opportunities feed
+- Wallet integration (deposit/withdraw via Mobile Money)
 
----
+#### Agent Dashboard (`src/components/dashboards/AgentDashboard.tsx`)
+- Ultra-minimalist, wallet-centric interface
+- Primary view: Name, AI ID, high-visibility wallet balance
+- 6-button action grid: Pay Rent, Post Request, Tenants, List House, Credit, Agent Hub
+- Agent Hub contains all secondary features
+- Daily Rent Expected metric (aggregate portfolio repayment target)
+- Collection streaks and incentive bonuses
+- Float management and rebalancing
 
-### 4.3 🏘️ Landlord Dashboard
+#### Landlord Dashboard (`src/components/dashboards/LandlordDashboard.tsx`)
+- House listing management
+- Rent payment tracking
+- Tenant occupancy overview
+- Verification status
+- Registration/verification bonuses
 
-**Route:** `/dashboard` (role: landlord)
+### 4.2 Management Dashboards
 
-**Components:**
-| Feature | Component | Description |
-|---------|-----------|-------------|
-| My Tenants | `MyTenantsSection` | View all registered tenants |
-| Add Tenant | `LandlordAddTenantDialog` | Register a new tenant |
-| My Properties | `MyPropertiesSheet` | View/manage properties |
-| Register Property | `RegisterPropertyDialog` | Add a new property |
-| Tenant Rating | `TenantRating` | Rate tenant payment behavior |
-| Encouragement Message | `EncouragementMessageDialog` | Send motivational messages to tenants |
-| Welile Homes | `LandlordWelileHomesSection` | Welile Homes savings enrollment |
-| Enroll Tenant | `EnrollTenantWelileHomesDialog` | Enroll tenants in savings program |
-| Manage Subscription | `ManageTenantSubscriptionDialog` | Manage tenant auto-charge subscriptions |
-| Welile Homes Badge | `WelileHomesLandlordBadge` | Achievement badge |
-| Leaderboard | `WelileHomesLandlordLeaderboard` | Landlord performance ranking |
-| Menu | `LandlordMenuDrawer` | Sliding navigation drawer |
+#### Manager Dashboard (`src/components/dashboards/ManagerDashboard.tsx`)
+- Event-driven, snapshot-based (calm UI, highlights action needs in <10 seconds)
+- User management with server-side pagination (`search_users_paginated` RPC)
+- Quick user lookup via GIN trigram indexes on phone suffixes
+- Role and department assignment
+- Investment accounts management (portfolio naming, funding, renewal)
+- Audit logs and governance
 
----
+#### Operations Dashboard (`src/pages/admin/Dashboard.tsx`)
+- Single Role, Multi-Select Department architecture
+- Departments: Agent, Landlord, Tenant, Partner
+- Unified tabs for multi-department users
+- Single-department users auto-redirected to specific sub-route
 
-### 4.4 💰 Supporter (Funder/Investor) Dashboard
+### 4.3 Executive Dashboards
 
-**Route:** `/dashboard` (role: supporter)
+| Role | Dashboard | Key Focus |
+|---|---|---|
+| CEO | `/ceo/dashboard` | Strategic command center, growth, staff performance |
+| COO | `/coo/dashboard` | Financial ops authority, Stage 4 withdrawal sign-off |
+| CFO | `/cfo/dashboard` | Solvency monitoring, Stage 2 withdrawal approval |
+| CTO | `/cto/dashboard` | System health, DB latency monitoring (60s intervals) |
+| CMO | `/cmo/dashboard` | Marketing analytics, attribution |
+| CRM | `/crm/dashboard` | Customer support triage |
 
-**UI Isolation:** Supporters **NEVER** see tenants, landlords, agents, user lists, names, phone numbers, or IDs. They ONLY see Virtual Houses, rent amounts, payment health, and portfolio performance.
+All executive dashboards use 10-minute snapshot cache and unified sidebar layout.
 
-**Components:**
-| Feature | Component | Description |
-|---------|-----------|-------------|
-| Hero Balance | `HeroBalanceCard` | Wallet balance with fund/withdraw actions |
-| Portfolio Summary | `PortfolioSummaryCards` | Total invested, ROI earned, active portfolios |
-| Quick Stats | `QuickStatsRow` | Key metrics at a glance |
-| Quick Actions | `ModernQuickActions` + `ModernQuickLinks` | Fund account, invest, view history |
-| Investment Breakdown | `InvestmentBreakdownSheet` | Per-portfolio details with 30-day cycle / calendar-day payout logic |
-| Investment Calculator | `InvestmentCalculator` | ROI projection tool |
-| Investment Card | `SimpleInvestmentCard` | Summary investment card |
-| Investment Goals | `InvestmentGoals` + `SetGoalDialog` | Set and track investment targets |
-| Investment Packages | `InvestmentPackageSheet` | Available investment tiers |
-| Fund Account | `FundAccountDialog` | Deposit funds into wallet |
-| Fund Rent | `FundRentDialog` | Direct rent pool contribution |
-| Funding Pool | `FundingPoolCard` | Pool balance and health |
-| Withdrawal | `InvestmentWithdrawButton` + `WithdrawAccountDialog` | Request withdrawals (90-day notice) |
-| Account Details | `AccountDetailsDialog` | Banking/MoMo details for payouts |
-| Create Account | `CreateAccountDialog` | Set up payout account |
-| Virtual Houses | `VirtualHousesFeed` + `VirtualHouseCard` + `VirtualHouseDetailsSheet` | Anonymized view of funded houses |
-| House Opportunities | `HouseOpportunities` | Available funding opportunities |
-| Opportunity Summary | `OpportunitySummaryCard` + `OpportunityHeroButton` | Investment opportunity overview |
-| Opportunity Tabs | `ModernOpportunityTabs` | Browse by category |
-| Rent Categories | `RentCategoryFeed` | Rent requests by tier |
-| Credit Requests Feed | `CreditRequestsFeed` | Incoming credit requests |
-| Tenant Details | `TenantRequestDetailsDialog` | Anonymized tenant request details |
-| Tenants Needing Rent | `TenantsNeedingRent` + `SimpleTenantsList` | Anonymized tenants requiring support |
-| ROI Earnings | `ROIEarningsCard` | Monthly ROI earned |
-| Interest History | `InterestPaymentHistory` | Payout history |
-| Funded History | `FundedHistory` | Past funding records |
-| Funding Milestones | `FundingMilestones` | Achievement milestones |
-| My Investment Requests | `MyInvestmentRequests` | Track investment request status |
-| Request Manager Invest | `RequestManagerInvestDialog` | Request manager to invest on your behalf |
-| Pay Landlord | `PayLandlordDialog` | Direct landlord payment |
-| Merchant Codes | `MerchantCodePills` | Quick payment merchant codes |
-| Leaderboard | `SupporterLeaderboard` + `SupporterROILeaderboard` | Funding and ROI rankings |
-| Referral Stats | `SupporterReferralStats` | Referral performance |
-| Notifications | `NotificationBell` + `NotificationsModal` + `SupporterNotificationsFeed` | In-app notification system |
-| Share Links | `ShareSupporterLink` + `ShareCalculatorLink` | Social sharing |
-| Invite Card | `ModernInviteCard` | Invite new supporters |
-| Calculator Share | `CalculatorShareCard` | Share calculator results |
-| User Profile | `UserProfileDialog` | View profile |
-| Floating Portfolio | `FloatingPortfolioButton` | Quick portfolio access FAB |
-| Menu | `SupporterMenuDrawer` | Sliding navigation drawer |
+### 4.4 Financial Operations Command Center (`/admin/financial-ops`)
 
-**Key Pages:**
-- `/opportunities` — Full opportunity browser
-- `/supporter-earnings` — Detailed earnings view
-- `/investment-portfolio` — Full portfolio view
-- `/calculator` — Public investment calculator
+Designed for 1M+ daily transactions:
+
+- **Live Pulse Strip:** Real-time counters for pending deposits/withdrawals
+- **Priority Approval Queue:** Time-based urgency bands (Green <1h, Amber 1-4h, Red >4h)
+- **User Inspection (RequestDetailSheet):** Full identity verification, wallet balance, transaction history, deposit success rates
+- **High-Speed Transaction Search:** Multi-strategy lookup with batched profile resolution
+- **Reconciliation:** 7-day cash-flow waterfall charts
+- **Audit Feed:** Immutable operation log
 
 ---
 
-### 4.5 🛡️ Manager Dashboard
+## 5. Financial Engine & Ledger
 
-**Route:** `/dashboard` (role: manager)  
-**Layout:** Original sidebar-based dashboard
+### 5.1 Core Principle
 
-**Sidebar Sections:**
-| Section | Item | ID |
-|---------|------|----|
-| Administration | Dashboard Access | `access-panel` |
-| Administration | User Management | `users` |
-| Administration | Deposits | `deposits` |
-| Administration | Audit Log | `audit` |
+> **All money movement MUST go through an append-only, double-entry ledger. Balances must NEVER be stored or edited directly.**
 
-**Components:**
-| Feature | Component | Description |
-|---------|-----------|-------------|
-| **User Management** | | |
-| User Profiles Table | `UserProfilesTable` | Searchable, filterable user list |
-| User Details | `UserDetailsDialog` | Full user profile with ledger, wallet, roles |
-| User Count Summary | `UserCountsSummary` + `CompactUserStats` | Role-based user statistics |
-| Quick Role Editor | `QuickRoleEditor` + `MobileRoleEditor` + `InlineRoleToggle` | Rapid role assignment |
-| Bulk Role Assign | `BulkAssignRoleDialog` + `BulkRemoveRoleDialog` | Mass role operations |
-| Bulk WhatsApp | `BulkWhatsAppDialog` | Mass communication |
-| Inactive User Outreach | `InactiveUsersReachOutDialog` | Re-engagement |
-| Duplicate Phone Detection | `DuplicatePhoneUsersSheet` | Fraud detection |
-| Role History | `RoleHistoryViewer` | Audit trail of role changes |
-| Simple User Card | `SimpleUserCard` | Compact user summary |
-| Password Reset | `PasswordResetGuide` | Guide for resetting user passwords |
-| **Financial Operations** | | |
-| KPI Strip | `ManagerKPIStrip` + `ManagerKPIDetailDrawer` | Key financial metrics |
-| Financial Overview | `FinancialOverview` + `FinancialCharts` + `FinancialAlerts` | Platform financial health |
-| Ledger Summary | `ManagerLedgerSummary` | Aggregate ledger view |
-| General Ledger | `GeneralLedger` + `DayGroupedLedger` | Full ledger browser |
-| Banking Ledger | `ManagerBankingLedger` | Banking operations |
-| Financial Statements | `FinancialStatementsPanel` | Income, cash flow, balance sheet |
-| Fund Flow Tracker | `FundFlowTracker` | Capital movement visualization |
-| Period Comparison | `PeriodComparison` | Period-over-period analysis |
-| **Approval Workflows** | | |
-| Pending Rent Requests | `PendingRentRequestsWidget` | Approve/reject rent facilitations |
-| Approved Requests Funding | `ApprovedRequestsFundingWidget` | Deploy pool funds to approved requests |
-| Rent Request Manager | `RentRequestsManager` | Full rent request lifecycle |
-| Deposit Requests | `ManagerDepositsWidget` + `DepositRequestsManager` | Approve deposits |
-| Deposit Analytics | `DepositAnalytics` | Deposit trends |
-| Deposit/Rent Audit | `DepositRentAuditWidget` | Cross-reference deposits vs rent |
-| Pending Wallet Operations | `PendingWalletOperationsWidget` | Approve proxy investments, commissions |
-| Pending Investment Requests | `PendingInvestmentRequestsWidget` | Approve supporter investment requests |
-| Pending Invites | `PendingInvitesWidget` | Manage activation invites |
-| Loan Applications | `LoanApplicationsManager` | Approve/reject loans |
-| Withdrawal Requests | `WithdrawalRequestsManager` | Process withdrawal requests |
-| Commission Payouts | `AgentCommissionPayoutsManager` | Process agent commission cashouts |
-| Payment Confirmations | `PaymentConfirmationsManager` | Verify payments |
-| Payment Proofs | `PaymentProofsManager` | Review payment evidence |
-| **Agent Oversight** | | |
-| Agent Float Manager | `AgentFloatManager` | Manage agent capital limits |
-| Agent Earnings Overview | `AgentEarningsOverview` | System-wide agent earnings |
-| Agent Details | `AgentDetailsDialog` | Deep-dive into agent performance |
-| Agent Collections | `AgentCollectionsWidget` | Monitor field collections |
-| Issue Advance | `IssueAdvanceSheet` | Issue capital advances to agents |
-| Paid Agents History | `PaidAgentsHistory` | Commission payout history |
-| **Supporter Management** | | |
-| Supporter Pool Balance | `SupporterPoolBalanceCard` | Pool health: balance, deployed, reserve, deployable |
-| Create Supporter | `CreateSupporterDialog` + `CreateSupporterWithAccountDialog` | Onboard new supporters |
-| Supporter Invites | `SupporterInvitesList` | Track supporter invitations |
-| Supporter ROI Trigger | `SupporterROITrigger` | Manually trigger ROI processing |
-| Monthly Rewards Trigger | `MonthlyRewardsTrigger` | Manually trigger reward payouts |
-| Investment Accounts | `InvestmentAccountsManager` | Manage investment accounts |
-| Create/Edit/Fund Investment | `CreateInvestmentAccountDialog` + `EditInvestmentAccountDialog` + `FundInvestmentAccountDialog` | Investment account CRUD |
-| Investment Edit History | `InvestmentEditHistoryDialog` | Audit trail of investment changes |
-| Investment Requests | `ManagerInvestmentRequestsSection` | Manager-side investment requests |
-| Opportunity Summary | `OpportunitySummaryForm` | Create/edit opportunity summaries |
-| Reserve Allocation | `ReserveAllocationPanel` | Configure reserve percentages |
-| Buffer Account | `BufferAccountPanel` + `BufferTrendChart` | Monitor solvency buffers |
-| **Platform Tools** | | |
-| Hub Cards | `ManagerHubCards` | Quick navigation cards |
-| Quick Actions | `MobileQuickActions` + `QuickActionsDropdown` + `QuickUserActions` | Rapid action buttons |
-| Floating Actions | `FloatingUserActions` + `FloatingDepositsWidget` | Floating action buttons |
-| Activity Manager | `ActivityManager` | Platform activity feed |
-| Active Users | `ActiveUsersCard` | Online user tracking |
-| Receipt Management | `ReceiptManagement` | Receipt verification |
-| Printable Receipt | `PrintableReceiptSheet` | Generate printable receipts |
-| Orders | `OrdersManager` | Marketplace order management |
-| Vendor Analytics | `VendorAnalytics` | Marketplace vendor stats |
-| User Locations | `UserLocationsManager` | Geographic user distribution |
-| Welile Homes Subscriptions | `WelileHomesSubscriptionsManager` | Savings program management |
-| Welile Homes Withdrawals | `WelileHomesWithdrawalsManager` | Savings withdrawal processing |
-| Subscription Monitor | `SubscriptionMonitorWidget` | Auto-charge subscription status |
-| Record Merchant Payment | `RecordMerchantPayment` | Log merchant transactions |
-| AI Brain | `AIBrainDashboard` | AI-powered platform insights |
-| AI Recommendations | `AIRecommendationCard` | AI-suggested actions |
-| AI Session History | `AISessionHistory` | AI interaction logs |
-| AI User Report | `AIUserExperienceReport` | AI-generated user experience analysis |
-| Force Refresh | `ForceRefreshManager` | Clear caches/force data refresh |
-| Chromecast | `ChromecastButton` | Cast dashboard to TV |
-| Daily Report | `DailyReportMetrics` | End-of-day summary |
-| Tips | `ManagerTip` | Contextual management tips |
-| Audit Log | `AuditLogViewer` | Full audit trail |
+### 5.2 Ledger Tables
 
-**Key Pages:**
-- `/user-management` — Full user management
-- `/deposits-management` — Deposit approval with pagination
-- `/financial-statement` — Financial statements
-- `/audit-log` — Audit trail
-- `/transaction-history` — Transaction browser
+| Table | Purpose |
+|---|---|
+| `ledger_accounts` | Account registry (user wallets, system accounts, obligations) |
+| `ledger_transactions` | Transaction headers (metadata, approval status) |
+| `ledger_entries` | Individual debit/credit entries (append-only, immutable) |
+| `general_ledger` | Central view combining all entries |
+| `transaction_approvals` | Multi-stage approval records |
+
+### 5.3 Account Hierarchy
+
+| Group | Purpose | Negative Allowed |
+|---|---|---|
+| `USER_OWNED` | User wallets (supporter, tenant, agent, landlord) | ❌ Never |
+| `OBLIGATION` | Debts, rent obligations, commitments | ✅ Yes |
+| `SYSTEM_CONTROL` | Buffer accounts, escrow, rent pool | Depends |
+| `REVENUE` | Deferred revenue, recognized revenue | Depends |
+| `EXPENSE` | Costs, rewards, commissions | Depends |
+| `SETTLEMENT` | Banking, mobile money settlement | Depends |
+
+Standard templates: `SUPPORTER_WALLET`, `TENANT_RENT_OBLIGATION`, `BUFFER_ACCOUNT`
+
+### 5.4 Wallet Synchronization
+
+The `sync_wallet_from_ledger` database trigger automatically updates user wallet balances whenever a ledger entry with a `transaction_group_id` is inserted. This ensures wallets **always** reflect the ledger truth.
+
+### 5.5 Ledger Scoping
+
+Every ledger entry has a `ledger_scope`:
+
+| Scope | Visibility | Example |
+|---|---|---|
+| `wallet` | User-facing | Deposit, withdrawal, rent payment received |
+| `platform` | Internal only | Pool deployments, internal transfers |
+| `bridge` | Both | Capital inflows affecting both user and platform |
+
+User wallet history **explicitly excludes** `platform` scope entries and any transaction with description starting with "pool deployment".
+
+### 5.6 Financial Safety Controls
+
+- **Optimistic Locking:** Edge Functions verify wallet balance matches expected state before committing
+- **60-Second Cooldown:** Rapid-fire protection on financial operations
+- **Rollback Mechanism:** Restores balances if subsequent operations fail
+- **No Direct Balance Edits:** Managers cannot manually adjust balances; all changes via approved workflows
+- **Ledger UI is Read-Only:** RLS prevents direct table updates
+
+### 5.7 Risk & Solvency
+
+- Buffer/escrow accounts maintained with coverage ratios
+- Liquidity indicators monitored continuously
+- If coverage drops below safe levels → system flags, alerts managers, and halts risky operations
+- **Solvency > Growth** (non-negotiable)
 
 ---
 
-### 4.6 👑 Super Admin Dashboard
+## 6. Rent Request Pipeline
 
-**Route:** `/admin/dashboard`
+### 6.1 Six-Stage Approval Pipeline
 
-**Sidebar Sections:**
-| Section | Item | ID |
-|---------|------|----|
-| Administration | Dashboard Access | `access-panel` |
-| Administration | User Management | `users` |
-| Administration | Audit Log | `audit` |
-| Administration | System Config | `config` |
+```
+Stage 1: Tenant Ops      → Agent assignment (Haversine distance)
+Stage 2: Agent Ops        → Field verification (GPS, photos, signatures)
+Stage 3: Landlord Ops     → Landlord verification
+Stage 4: COO              → Operational sign-off
+Stage 5: CFO              → Financial authorization
+Stage 6: Disbursed        → Payout to landlord
+```
 
-**Capabilities:** Full access to all Manager features + system configuration + role assignment with authorization codes.
+This pipeline is the **primary operational priority** — positioned at the top of all executive dashboards.
 
----
+### 6.2 Key Supporting Tables
 
-### 4.7 📊 CEO Dashboard
+- `rent_requests` — Core request tracking
+- `credit_request_details` — Extended verification data (GPS, meter numbers, landlord info)
+- `disbursement_records` — Payment delivery tracking
+- `agent_delivery_confirmations` — Agent proof of delivery (photos, GPS, signatures)
 
-**Route:** `/ceo/dashboard`  
-**Layout:** `ExecutiveDashboardLayout`
+### 6.3 Repayment Structure
 
-**Sidebar Sections:**
-| Section | Item | ID |
-|---------|------|----|
-| Executive | Platform Overview | `overview` |
-| Executive | Revenue & Growth | `revenue` |
-| Executive | Users & Coverage | `users` |
-| Executive | Financial Health | `financial` |
-
-**Components:**
-| Feature | Component | Description |
-|---------|-----------|-------------|
-| CEO Dashboard | `CEODashboard` | North star metrics: Rent Secured, Active Houses, Coverage |
-| Tenant Ops | `TenantOpsDashboard` | Tenant funnel and health |
-| Agent Ops | `AgentOpsDashboard` | Agent performance and coverage |
-| Landlord Ops | `LandlordOpsDashboard` | Landlord engagement |
-| Partners Ops | `PartnersOpsDashboard` | Supporter capital and ROI |
-| KPI Cards | `KPICard` | Standardized metric display |
-| Data Table | `ExecutiveDataTable` | Sortable, searchable executive data |
-
-**COO Drilldown Pages:**
-- `/coo/active-users` — Active user details
-- `/coo/active-partners` — Active partner details
-- `/coo/active-landlords` — Active landlord details
-- `/coo/earning-agents` — Top earning agents
-- `/coo/new-partner-requests` — New partner requests
-- `/coo/new-rent-requests` — New rent requests
-- `/coo/pipeline-landlords` — Pipeline landlords
-- `/coo/rent-coverage` — Rent coverage analysis
-- `/coo/tenant-balances` — Tenant balance details
+- Daily instalments via approved payment channels (Mobile Money)
+- Agent-collected payments tracked via `agent_collections`
+- Collection streaks and incentive bonuses for agents
+- Payment tokens for secure transaction verification
 
 ---
 
-### 4.8 ⚙️ COO Dashboard
+## 7. Edge Functions (Backend)
 
-**Route:** `/coo/dashboard`  
-**Layout:** `ExecutiveDashboardLayout`
+### 7.1 Financial Operations (17 functions)
 
-**Sidebar Sections:**
-| Section | Item | ID |
-|---------|------|----|
-| Financial Operations | Overview | `overview` |
-| Financial Operations | Transactions | `transactions` |
-| Financial Operations | Agent Collections | `collections` |
-| Financial Operations | Wallets | `wallets` |
-| Financial Operations | Payment Analytics | `analytics` |
-| Governance | Reports | `reports` |
-| Governance | Alerts | `alerts` |
-| Governance | Withdrawal Approvals | `withdrawals` |
-| Governance | Partners | `partners` |
+| Function | Purpose |
+|---|---|
+| `approve-deposit` | Process deposit approvals |
+| `approve-wallet-operation` | General wallet operation approval |
+| `agent-deposit` | Agent-specific deposit handling |
+| `agent-withdrawal` | Agent withdrawal processing |
+| `wallet-transfer` | Inter-wallet transfers |
+| `fund-rent-pool` | Deploy capital to rent pool |
+| `fund-tenant-from-pool` | Allocate pool funds to tenant |
+| `fund-tenants` | Direct tenant funding |
+| `portfolio-topup` | Add funds to investor portfolio |
+| `manager-portfolio-topup` | Manager-initiated portfolio funding |
+| `create-investor-portfolio` | Initialize new investment portfolio |
+| `process-supporter-roi` | Calculate and distribute supporter returns |
+| `process-investment-interest` | Process interest accruals |
+| `process-monthly-rewards` | Monthly reward distribution |
+| `process-credit-daily-charges` | Daily credit access fee processing |
+| `process-credit-draw` | Credit draw execution |
+| `process-agent-advance-deductions` | Agent advance repayment deductions |
 
-**Components:**
-| Feature | Component | Description |
-|---------|-----------|-------------|
-| Financial Metrics | `FinancialMetricsCards` | Rent collected, payments today/month, wallet balances, pending approvals |
-| Transactions Table | `FinancialTransactionsTable` | Searchable ledger with CSV export, multi-criteria filters |
-| Agent Collections | `AgentCollectionsOverview` | Field activity: tracking IDs, GPS locations, MoMo verification, KPIs |
-| Wallet Monitoring | `WalletMonitoringPanel` | Master wallet, agent wallets, settlements |
-| Payment Analytics | `PaymentModeAnalytics` | MTN/Airtel/Cash/Wallet distribution charts |
-| Reports | `FinancialReportsPanel` | Downloadable revenue summaries |
-| Alerts | `FinancialAlertsPanel` | Anomaly detection (payments > 2M UGX) |
-| Withdrawal Approvals | `COOWithdrawalApprovals` | Multi-stage withdrawal processing |
-| Partners Management | `COOPartnersPage` | Full partner oversight with search, filters, CSV export |
-| Detail Layout | `COODetailLayout` | Consistent detail page layout |
-| Data Table | `COODataTable` | Reusable sortable/filterable table |
+### 7.2 Rent & Tenant Operations (8 functions)
 
-**Key Features:**
-- Transaction authorization (separate approval from disbursement)
-- Manual ROI and referral payout triggers (after liquidity verification)
-- Solvency governance (Coverage Ratio > 1.2x)
-- Identity & compliance verification
-- Invest for Partner (via `coo-invest-for-partner` edge function)
-- Payout day override for individual portfolios (1-28)
-- Account suspension via `frozen_at` field
-
----
-
-### 4.9 💼 CFO Dashboard
-
-**Route:** `/cfo/dashboard`  
-**Layout:** `ExecutiveDashboardLayout`
-
-**Sidebar Sections:**
-| Section | Item | ID |
-|---------|------|----|
-| Finance | Overview | `overview` |
-| Finance | Financial Statements | `statements` |
-| Finance | Solvency & Buffer | `solvency` |
-| Finance | Reconciliation | `reconciliation` |
-| Finance | General Ledger | `ledger` |
-| Finance | Commission Payouts | `commissions` |
-| Finance | Withdrawals | `withdrawals` |
-
-**Components:**
-| Feature | Component | Description |
-|---------|-----------|-------------|
-| Reconciliation Panel | `CFOReconciliationPanel` | Compare wallets vs ledger totals, detect gaps, batch-fetch profiles |
-| Withdrawal Approvals | `CFOWithdrawalApprovals` | CFO-stage withdrawal authorization |
-
-**Key Features:**
-- Income Statement, Balance Sheet, Cash Flow views
-- Compact currency display (3.5M, 120K) with tooltips
-- CSV export for offline auditing
-- Mandatory CFO sign-off for: ROI payouts, commissions, withdrawal requests
-- Buffer/escrow monitoring
-- Coverage ratio and liquidity indicators
-
----
-
-### 4.10 🔧 CTO Dashboard
-
-**Route:** `/cto/dashboard`  
-**Layout:** `ExecutiveDashboardLayout`
-
-**Sidebar Sections:**
-| Section | Item | ID |
-|---------|------|----|
-| Engineering | Overview | `overview` |
-| Engineering | System Infrastructure | `infrastructure` |
-| Engineering | API Management | `api` |
-| Engineering | Security Logs | `security` |
-| Engineering | Developer Tools | `tools` |
-
-**Component:** `CTODashboard`
-
----
-
-### 4.11 📢 CMO Dashboard
-
-**Route:** `/cmo/dashboard`  
-**Layout:** `ExecutiveDashboardLayout`
-
-**Sidebar Sections:**
-| Section | Item | ID |
-|---------|------|----|
-| Marketing | Overview | `overview` |
-| Marketing | Growth Metrics | `growth` |
-| Marketing | Signup Trends | `signups` |
-| Marketing | Referral Performance | `referrals` |
-| Marketing | Campaign Analytics | `campaigns` |
-
-**Component:** `CMODashboard`
-
----
-
-### 4.12 🎧 CRM Dashboard
-
-**Route:** `/crm/dashboard`  
-**Layout:** `ExecutiveDashboardLayout`
-
-**Sidebar Sections:**
-| Section | Item | ID |
-|---------|------|----|
-| Customer Relations | Overview | `overview` |
-| Customer Relations | Customer Profiles | `profiles` |
-| Customer Relations | Support Tickets | `tickets` |
-| Customer Relations | Disputes | `disputes` |
-| Customer Relations | Communications | `communications` |
-
-**Component:** `CRMDashboard`
-
----
-
-## 5. Edge Functions (Backend)
-
-### 5.1 Authentication & Onboarding
-| Function | Description |
-|----------|-------------|
-| `activate-supporter` | Activate invited supporter/agent/landlord accounts with rate limiting |
-| `create-supporter-invite` | Generate invite links with temp passwords |
-| `register-tenant` | Register new tenants |
-| `admin-reset-password` | Administrative password reset |
-| `password-reset-sms` | SMS-based password reset |
-| `sms-otp` | OTP verification |
-| `vendor-login` | Vendor portal authentication |
-
-### 5.2 Financial Operations
-| Function | Description |
-|----------|-------------|
-| `agent-deposit` | Process agent cash deposits |
-| `agent-withdrawal` | Process agent withdrawal requests |
-| `approve-deposit` | Manager/COO deposit approval |
-| `wallet-transfer` | Wallet-to-wallet transfer (currently suspended for security) |
-| `fund-rent-pool` | Supporter → rent management pool transfer (instant) |
-| `fund-tenant-from-pool` | Deploy pool funds to approved rent requests |
-| `fund-tenants` | Bulk tenant funding |
-| `auto-charge-wallets` | Daily pg_cron auto-charge for subscriptions |
-| `manual-collect-rent` | Manual rent collection recording |
-| `seed-test-funds` | Test environment fund seeding |
-
-### 5.3 Investment & Portfolio
-| Function | Description |
-|----------|-------------|
-| `agent-invest-for-partner` | Agent proxy investment (approval-gated, portfolio created as `pending_approval`) |
-| `coo-invest-for-partner` | COO proxy investment with neutral branding |
-| `create-investor-portfolio` | Direct portfolio creation |
-| `approve-wallet-operation` | Manager approval of pending credits (activates portfolios on approval, refunds agent on rejection) |
-| `process-investment-interest` | Process investment interest accrual |
-| `process-supporter-roi` | Process supporter ROI payouts |
-| `process-monthly-rewards` | Process monthly reward distributions |
-
-### 5.4 Rent Facilitation
-| Function | Description |
-|----------|-------------|
+| Function | Purpose |
+|---|---|
 | `approve-rent-request` | Multi-stage rent request approval |
-| `approve-loan-application` | Loan application approval |
-| `delete-rent-request` | Manager rent request deletion |
-| `check-repayment-status` | Check tenant repayment obligations |
+| `disburse-rent-to-landlord` | Landlord payout execution |
+| `register-tenant` | New tenant onboarding |
+| `transfer-tenant` | Tenant relocation management |
+| `manual-collect-rent` | Manual rent collection processing |
+| `auto-charge-wallets` | Automated daily wallet charges |
+| `check-repayment-status` | Repayment monitoring |
+| `delete-rent-request` | Request cancellation |
 
-### 5.5 Agent Operations
-| Function | Description |
-|----------|-------------|
-| `process-agent-advance-deductions` | Daily advance interest/deductions |
-| `send-collection-sms` | SMS notifications for collections |
+### 7.3 Agent Operations (4 functions)
 
-### 5.6 Notifications & Reminders
-| Function | Description |
-|----------|-------------|
-| `send-push-notification` | Push notification delivery |
-| `notify-watchers` | Notify opportunity watchers |
-| `payment-reminder` | Payment due reminders |
-| `rent-reminders` | Rent due reminders |
+| Function | Purpose |
+|---|---|
+| `agent-invest-for-partner` | Agent-initiated partner investment |
+| `send-collection-sms` | Post-collection SMS confirmations |
+| `activate-supporter` | Supporter account activation |
+| `create-supporter-invite` | Generate supporter invite links |
 
-### 5.7 Marketplace & Receipts
-| Function | Description |
-|----------|-------------|
-| `product-purchase` | Process marketplace purchases |
-| `vendor-mark-receipt` | Vendor receipt confirmation |
-| `scan-receipt` | AI receipt scanning |
+### 7.4 Communication (8 functions)
 
-### 5.8 AI & Analytics
-| Function | Description |
-|----------|-------------|
-| `welile-ai-chat` | AI chatbot for user support |
-| `user-snapshot` | Generate user data snapshots |
-| `validate-payload` | Server-side payload validation |
+| Function | Purpose |
+|---|---|
+| `sms-otp` | SMS OTP delivery via Africa's Talking |
+| `otp-login` | OTP verification and login |
+| `password-reset-sms` | SMS-based password reset |
+| `payment-reminder` | Payment reminder dispatch |
+| `rent-reminders` | Rent due date reminders |
+| `send-push-notification` | Web push notifications (VAPID) |
+| `vacancy-alerts` | Vacancy notification system |
+| `viewing-confirmation-sms` | Property viewing confirmations |
 
-### 5.9 User Management
-| Function | Description |
-|----------|-------------|
+### 7.5 Admin & Governance (8 functions)
+
+| Function | Purpose |
+|---|---|
+| `admin-reset-password` | Admin password reset |
+| `register-employee` | Staff onboarding |
 | `delete-user` | Account deletion |
+| `export-database` | Data export |
+| `import-partners` | Bulk partner import |
+| `refresh-daily-stats` | Daily statistics snapshot refresh |
+| `user-snapshot` | User data snapshot generation |
+| `batch-recalculate-credit-limits` | Bulk credit limit recalculation |
+
+### 7.6 AI & Special (6 functions)
+
+| Function | Purpose |
+|---|---|
+| `welile-ai-chat` | AI assistant (powered by Lovable AI models) |
+| `scan-receipt` | AI-powered receipt scanning |
+| `partner-ops-automation` | Partner operations automation |
+| `coo-invest-for-partner` | COO-level partner investment |
+| `supporter-account-action` | Supporter account management |
+| `send-supporter-agreement-email` | Agreement terms email delivery |
+
+### 7.7 Credit & Bonuses (5 functions)
+
+| Function | Purpose |
+|---|---|
+| `approve-loan-application` | Loan/credit approval |
+| `credit-landlord-registration-bonus` | Landlord registration incentive |
+| `credit-landlord-verification-bonus` | Landlord verification incentive |
+| `credit-listing-bonus` | House listing incentive |
+| `seed-test-funds` | Development/testing utility |
+
+### 7.8 Marketplace (3 functions)
+
+| Function | Purpose |
+|---|---|
+| `product-purchase` | Product purchase processing |
+| `vendor-login` | Vendor portal authentication |
+| `vendor-mark-receipt` | Vendor receipt confirmation |
+
+### 7.9 Email Infrastructure (1 function + shared templates)
+
+| Function | Purpose |
+|---|---|
+| `auth-email-hook` | Auth email rendering + pgmq queue enqueue |
+| `_shared/email-templates/` | React Email templates (signup, recovery, invite, magic-link, email-change, reauthentication) |
 
 ---
 
-## 6. Financial Engine
+## 8. Data Architecture & Scaling
 
-### 6.1 Revenue Categories
-| Category | Description |
-|----------|-------------|
-| `tenant_access_fee` | One-time tenant access fee |
-| `tenant_request_fee` | Per-request facilitation fee |
-| `platform_service_income` | General service income |
+### 8.1 Database Design Principles
 
-### 6.2 Expense Categories
-| Category | Description |
-|----------|-------------|
-| `supporter_platform_rewards` | Monthly ROI payouts to supporters |
-| `agent_commission_payout` | Agent commission payments |
-| `rent_facilitation_payout` | Rent deployment to landlords |
-| `transaction_platform_expenses` | Transaction processing costs |
-| `operational_expenses` | General operating costs |
+- **No foreign keys to `auth.users`** — User references go through `profiles` table
+- **Profiles table** in public schema stores accessible user data (name, phone, avatar, verification status)
+- **Nullable/default columns** considered on every table to prevent insert errors
+- **Append-only** for all financial tables (no updates, no deletes)
 
-### 6.3 Capital Movement Categories
-| Category | Description |
-|----------|-------------|
-| `supporter_facilitation_capital` | Supporter investment capital (approval-gated) |
-| `supporter_rent_fund` | Direct pool contributions (instant) |
-| `coo_proxy_investment` | COO proxy investments |
-| `agent_remittance` | Agent field remittances |
-| `rent_repayment` | Tenant rent repayments |
-| `pool_rent_deployment` | Pool → landlord deployments |
-| `proxy_investment_commission` | Agent 2% proxy commission |
+### 8.2 Scaling Strategies (40M+ Users)
 
-### 6.4 Approval Hierarchy
+| Strategy | Implementation |
+|---|---|
+| **GIN Trigram Indexes** | Phone suffix searches (`pg_trgm` extension) |
+| **PostGIS Spatial Indexes** | GIST indexes for nearby property discovery |
+| **Recursive Fetching** | `.range()` logic to bypass 1,000-row default limit |
+| **Batched IN Clauses** | Chunk ID sets into batches of 50 to prevent URL-too-long errors |
+| **Server-Side Pagination** | `search_users_paginated` RPC for large user tables |
+| **Approximate Counts** | `pg_class` for dashboard estimates |
+| **Snapshot Caching** | 4-hour snapshots via `daily_platform_stats` |
+| **Materialized Views** | Pre-computed aggregates with SELECT revoked from public/anon |
 
-```
-┌──────────────────────────────────────────────────────┐
-│                    APPROVAL GATES                     │
-├───────────────────┬──────────────────────────────────┤
-│ Instant           │ Internal wallet → pool transfers │
-│                   │ Agent wallet deductions          │
-├───────────────────┼──────────────────────────────────┤
-│ Manager Approval  │ Proxy investment credits         │
-│                   │ Agent commissions                │
-│                   │ Deposit requests                 │
-├───────────────────┼──────────────────────────────────┤
-│ 4-Stage Approval  │ External withdrawals             │
-│ (Request → Mgr    │   (cash-out from platform)       │
-│  → CFO → COO)     │                                  │
-└───────────────────┴──────────────────────────────────┘
-```
+**Utility:** `src/lib/supabaseBatchUtils.ts` — Centralized batch fetching utilities
 
-### 6.5 Investment Flow (Agent → Partner)
+### 8.3 Key Database Tables (Partial)
 
-```
-1. Agent submits proxy investment (min UGX 50,000)
-2. Agent wallet: DEBITED immediately (optimistic lock)
-3. Portfolio created: status = 'pending_approval'
-4. Pending operation created: partner credit queued
-5. Agent commission (2%): queued separately
-   ─── WAITING FOR APPROVAL ───
-6. COO/Manager approves pending operation
-7. General ledger entry created (with transaction_group_id)
-8. sync_wallet_from_ledger trigger fires → partner wallet CREDITED
-9. Portfolio status updated to 'active'
-10. Partner can now invest, fund tenants
-   ─── OR IF REJECTED ───
-6b. Portfolio status → 'cancelled'
-7b. Agent wallet: RESTORED (refund)
-8b. Agent notified with rejection reason
-```
+#### Core
+- `profiles` — User profiles (name, phone, avatar, verification)
+- `user_roles` — Role assignments (separate from profiles)
+- `wallets` — User wallet balances (synced from ledger)
+- `notifications` — In-app notification queue
 
----
+#### Financial
+- `ledger_accounts`, `ledger_transactions`, `ledger_entries`, `general_ledger`
+- `investor_portfolios` — Supporter investment portfolios
+- `deposit_requests`, `credit_access_draws`, `credit_access_limits`
+- `agent_float_limits`, `agent_collections`, `agent_earnings`
+- `agent_advances`, `agent_advance_ledger`, `agent_advance_topups`
 
-## 7. Database Schema Highlights
+#### Rent Operations
+- `rent_requests` — Core rent request lifecycle
+- `credit_request_details` — Extended verification data
+- `disbursement_records` — Payout tracking
+- `agent_delivery_confirmations` — Proof of delivery
+- `agent_visits` — GPS-verified field visits
 
-### 7.1 Core Tables
-| Table | Purpose |
-|-------|---------|
-| `profiles` | User profiles (name, phone, avatar) |
-| `user_roles` | Role assignments (separate from profiles for security) |
-| `wallets` | User wallet balances (read-only, updated by triggers) |
-| `general_ledger` | Immutable financial transaction log |
-| `pending_wallet_operations` | Approval queue for external transactions |
-| `notifications` | In-app notification delivery |
-| `audit_logs` | Administrative action audit trail |
+#### Agent Performance
+- `agent_collection_streaks` — Gamification and streak tracking
+- `agent_incentive_bonuses` — Bonus rewards
+- `agent_goals` — Monthly targets
+- `agent_tasks` — Task management
+- `agent_escalations` — Issue escalation tracking
+- `agent_receipts` — Collection receipts
+- `agent_rebalance_records` — Float rebalancing
+- `agent_commission_payouts` — Commission withdrawal tracking
+- `agent_subagents` — Sub-agent hierarchy
 
-### 7.2 Rent Facilitation Tables
-| Table | Purpose |
-|-------|---------|
-| `landlords` | Landlord registration with property details, GPS, utility meters |
-| `credit_request_details` | Full rent facilitation request details |
-| `credit_access_limits` | Tenant credit limits with bonus components |
+#### Marketplace
+- `products`, `cart_items` — E-commerce
+- `daily_platform_stats` — Platform-wide analytics snapshots
 
-### 7.3 Investment Tables
-| Table | Purpose |
-|-------|---------|
-| `investor_portfolios` | Portfolio records (amount, ROI%, status, payout schedule) |
-| `supporter_invites` | Invitation management with activation tokens |
-| `investment_withdrawal_requests` | Withdrawal requests with 90-day notice |
+#### Email
+- `email_send_log` — Email delivery audit trail
+- `supporter_agreement_acceptance` — Legal agreement records
 
-### 7.4 Agent Operations Tables
-| Table | Purpose |
-|-------|---------|
-| `agent_collections` | Field collection records with GPS, MoMo, payment method |
-| `agent_visits` | GPS check-in records |
-| `agent_earnings` | Commission and bonus tracking |
-| `agent_float_limits` | Float limits and daily transaction caps |
-| `agent_advances` | Capital advances with interest |
-| `agent_advance_ledger` | Daily advance deduction records |
-| `agent_subagents` | Sub-agent hierarchy |
-| `agent_goals` | Monthly performance targets |
-
-### 7.5 Accounting Tables
-| Table | Purpose |
-|-------|---------|
-| `ledger_accounts` | Chart of accounts |
-| `ledger_account_groups` | Account groupings |
-| `deposit_requests` | Deposit approval queue |
-| `earning_baselines` | Performance baseline calculations |
-| `earning_predictions` | AI earning predictions |
-
-### 7.6 Communication Tables
-| Table | Purpose |
-|-------|---------|
-| `conversations` | Chat conversations |
-| `conversation_participants` | Chat participants |
-| `ai_chat_messages` | AI chatbot history |
-
-### 7.7 Marketplace Tables
-| Table | Purpose |
-|-------|---------|
-| `products` | Marketplace product listings |
-| `cart_items` | Shopping cart |
+#### Governance
+- `audit_logs` — Centralized audit trail
+- `cfo_threshold_alerts` — Financial threshold monitoring
 
 ---
 
-## 8. Security Architecture
+## 9. Real-Time & Offline-First
 
-### 8.1 RLS (Row-Level Security)
-- System-only tables (ledger, earnings, repayments) deny direct client-side writes
-- Operations restricted to service-role Edge Functions or managers
-- OTP verifications have explicit deny-all for authenticated users
+### 9.1 Real-Time (Selective)
+
+To maintain stability at scale, real-time is limited to **5 mission-critical tables:**
+
+| Table | Purpose |
+|---|---|
+| `messages` | Chat |
+| `wallets` | Balance updates |
+| `force_refresh_signals` | Admin-triggered refreshes |
+| `rent_requests` | Rent lifecycle updates |
+| `profiles` | New user registrations |
+
+A **global realtime kill switch** (`src/lib/disableRealtime.ts`) can silence all subscriptions.
+
+### 9.2 Offline-First Architecture (WhatsApp-Style)
+
+**Pattern:** Read from localStorage instantly → show stale data → background-fetch → update cache silently
+
+| Component | Implementation |
+|---|---|
+| `useLocalFirstQuery` hook | Universal local-first data loading |
+| `offlineDataStorage.ts` | IndexedDB persistence layer |
+| `OfflineContext` | Global offline state management |
+| Service Worker | PWA caching, offline page shell |
+| `OfflineBanner` | Visual offline indicator |
+
+**Applied to:** All consumer dashboards (Tenant, Supporter, Agent, Landlord), Settings page, Profile data
+
+### 9.3 Performance Characteristics
+
+- Dashboards paint instantly from cache, even on 2G networks
+- Network fetch happens silently in background
+- 5-minute stale time before re-fetching
+- localStorage + in-memory cache dual layer
+- Cache eviction when storage is full (oldest entries first)
+
+---
+
+## 10. Email & Notifications
+
+### 10.1 Auth Emails
+
+- Powered by Lovable Email Infrastructure
+- React Email templates in `supabase/functions/_shared/email-templates/`
+- Templates: Signup confirmation, password recovery, magic link, invite, email change, reauthentication
+- Sender domain: `notify.welile.com` (from: `noreply@welile.com`)
+- Queued via pgmq (`auth_emails` queue) for retry safety
+
+### 10.2 Transactional Emails
+
+- Supporter Agreement copy sent automatically on acceptance
+- Queued via pgmq (`transactional_emails` queue)
+- Idempotency keys prevent duplicate sends
+- Dead-letter queue after 5 failed attempts
+
+### 10.3 SMS Notifications
+
+- Africa's Talking API for SMS delivery
+- OTP verification, payment reminders, collection confirmations, rent reminders
+- Viewing confirmation SMS for property viewings
+
+### 10.4 Push Notifications
+
+- Web Push via VAPID keys
+- `send-push-notification` edge function
+- Service Worker handles push events
+
+### 10.5 In-App Notifications
+
+- `notifications` table with real-time subscription
+- Notification bell component in dashboard headers
+- Types: welcome, agreement_email, payment, system alerts
+
+---
+
+## 11. Security & RLS
+
+### 11.1 Row-Level Security (RLS) Architecture
+
+- **All tables** have RLS enabled
+- `has_role()` security definer function prevents recursive RLS checks
+- System-only tables explicitly deny direct client-side writes
+- OTP verifications have deny-all policy for authenticated users
 - Materialized views have SELECT revoked from public/anon
 
-### 8.2 Authentication
-- Email + password with email verification (no auto-confirm by default)
-- SMS OTP for mobile users
-- Rate limiting on activation (5 attempts, 1-hour lockout)
-- Wallet-to-wallet transfers suspended for security review
+### 11.2 Edge Function Security Pattern
 
-### 8.3 Authorization
+```
+Anon Client    → Verifies caller identity (auth.getUser())
+Service Client → Performs data operations (bypasses RLS)
+```
+
+- UUID validation on all inputs
+- Character limits enforced
+- CORS headers include required Supabase client headers
+
+### 11.3 Administrative Permission Matrix
+
 | Action | Allowed Roles |
-|--------|--------------|
+|---|---|
 | Role assignment | `super_admin`, `manager`, `cto` |
+| Operations dept mapping | `super_admin`, `manager`, `cto` |
 | Account freeze/delete | `super_admin`, `manager`, `cto`, `coo` |
 | Deposit approval | `manager`, `coo` |
-| Withdrawal approval | 4-stage hierarchy |
-| Proxy investment | `agent`, `coo` |
+| Withdrawal Stage 2 | `cfo` |
+| Withdrawal Stage 4 | `coo` |
 
-### 8.4 Financial Safety
-- Optimistic locking on wallet updates
-- 60-second cooldown on rapid-fire investments
-- Cascading rollback on partial failures
-- Pre-payout liquidity gate (15% reserve)
-- Negative balance prevention
+### 11.4 Consumer Isolation
 
----
+- Supporters **never** see tenants, landlords, agents, user lists, names, phones, or IDs
+- Supporters only see: Virtual Houses, rent amount, payment health, portfolio performance
+- Tenants/landlords see only their own status and schedules
+- Agents see only their registrations, tasks, earnings, and zones
+- Admin UI elements completely hidden from consumer views
 
-## 9. Approval & Governance Flows
+### 11.5 Financial Security
 
-### 9.1 Rent Facilitation
-```
-Tenant/Agent submits request
-  → Agent verification (location, utility meters)
-  → Manager verification (approve/reject/edit)
-  → Landlord verification
-  → Manager deploys pool funds → Landlord wallet credited
-  → Tenant obligation created → Auto-charge subscription starts
-```
-
-### 9.2 Supporter Onboarding
-```
-Agent creates invite (temp password + activation token)
-  → Partner receives link
-  → Partner activates account (email, name, password)
-  → Portfolios linked (if pre-invested by agent)
-  → Pending wallet operations linked to new user_id
-  → Awaits manager/COO approval before wallet credit
-```
-
-### 9.3 Withdrawal Processing
-```
-User requests withdrawal
-  → Stage 1: Requested
-  → Stage 2: Manager review
-  → Stage 3: CFO sign-off
-  → Stage 4: COO final approval
-  → Funds disbursed
-```
-
-### 9.4 Monthly ROI Payout
-```
-COO verifies pool liquidity (Coverage Ratio > 1.2x)
-  → Triggers process-supporter-roi
-  → Each active portfolio with due next_roi_date processed
-  → 30-day cycle or calendar-day payout (based on payout_day)
-  → Ledger entries created → Wallet sync trigger fires
-  → Supporter notified
-```
+- No direct wallet/ledger updates via client
+- All financial operations go through service-role Edge Functions
+- Optimistic locking prevents race conditions
+- 60-second cooldown on financial operations
+- Append-only ledger (no updates, no deletes)
 
 ---
 
-> **Governing Principles:**
-> - Dignity before growth
-> - Systems over heroics
-> - Calm over urgency
-> - Trust over shortcuts
-> - Outcomes over optics
-> - Auditability over convenience
->
-> **North Star Metric:** Rent Secured (UGX / month)
+## 12. UI/UX Architecture
+
+### 12.1 Design System
+
+- **CSS Variables:** HSL-based semantic tokens in `index.css`
+- **Tailwind Config:** Extended theme with custom colors, fonts, animations
+- **shadcn/ui:** Customized component library (Button, Card, Dialog, Sheet, Tabs, etc.)
+- **Dark/Light Mode:** Full theme support via `next-themes`
+- **Logo Font:** Chewy
+- **Icons:** Lucide React (professional, consistent)
+
+### 12.2 Responsive Strategy
+
+- Mobile-first design (primary users on smartphones)
+- Tab-based Settings page (renders only active tab's DOM)
+- `PullToRefresh` component for mobile UX
+- Bottom navigation bar on mobile
+- Minimum 44px touch targets
+
+### 12.3 Key UI Components
+
+| Component | Purpose |
+|---|---|
+| `DashboardHeader` | Universal dashboard header with role switching |
+| `BottomRoleSwitcher` | Mobile role navigation |
+| `PullToRefresh` | Mobile-native refresh gesture |
+| `UserAvatar` | Consistent avatar display |
+| `MetricCard` | Standardized metric display |
+| `AnimatedCard` / `AnimatedList` | Motion-enhanced UI elements |
+| `ChunkErrorBoundary` | Graceful error handling per section |
+| `OfflineBanner` | Network status indicator |
+| `ConnectionStatus` | Real-time connection indicator |
+| `WelileLogo` | Brand mark component |
+
+### 12.4 PWA (Progressive Web App)
+
+- Full PWA support with Service Worker
+- Install prompts (iOS-specific guide included)
+- Offline page shell
+- Cache-first strategy for static assets
+- Background sync for pending operations
+
+### 12.5 Accessibility
+
+- High contrast mode (`useHighContrast`)
+- Font size adjustment (`useFontSize`)
+- Language switching (`useLanguage`)
+- Currency conversion (`useCurrency`)
+- Haptic feedback (`useHapticSettings`)
+- Biometric auth support (`useBiometricAuth`)
+- PIN auth support (`usePinAuth`)
+
+---
+
+## 13. File & Component Map
+
+### 13.1 Source Structure
+
+```
+src/
+├── assets/                    # Static images, logos
+├── components/
+│   ├── admin/                 # Admin-specific components
+│   ├── agent/                 # Agent dashboard components
+│   ├── ai-chat/               # AI assistant UI
+│   ├── ai-id/                 # AI ID system
+│   ├── auth/                  # Auth forms, guards
+│   ├── cfo/                   # CFO dashboard components
+│   ├── chat/                  # Messaging system
+│   ├── coo/                   # COO dashboard components
+│   ├── dashboards/            # 5 main dashboards (Tenant, Supporter, Agent, Landlord, Manager)
+│   ├── executive/             # Executive hub shared components
+│   ├── financial-ops/         # Financial operations command center
+│   ├── house/                 # House listing components
+│   ├── investment/            # Investment/portfolio components
+│   ├── landlord/              # Landlord-specific components
+│   ├── layout/                # Layout wrappers
+│   ├── loans/                 # Credit access components
+│   ├── manager/               # Manager tools and user management
+│   ├── map/                   # Leaflet map components
+│   ├── marketplace/           # E-commerce components
+│   ├── payments/              # Payment processing UI
+│   ├── profile/               # Profile management
+│   ├── receipts/              # Receipt scanning and display
+│   ├── rent/                  # Rent request and tracking
+│   ├── reviews/               # House review system
+│   ├── settings/              # Settings page sections
+│   ├── shared/                # Shared utility components
+│   ├── skeletons/             # Loading skeleton components
+│   ├── supporter/             # Supporter dashboard components + agreement
+│   ├── tenant/                # Tenant-specific components + agreement
+│   ├── ui/                    # shadcn/ui base components
+│   ├── verification/          # Verification checklist components
+│   ├── viewing/               # Property viewing components
+│   ├── wallet/                # Wallet UI components
+│   └── welile-homes/          # Welile Homes housing fund
+├── hooks/
+│   ├── auth/                  # Auth-related hooks (roleManager, types, operations)
+│   ├── useAuth.tsx            # Main auth context
+│   ├── useProfile.ts          # Profile data (local-first)
+│   ├── useWallet.ts           # Wallet state management
+│   ├── useLocalFirstQuery.ts  # Universal offline-first hook
+│   └── ... (60+ hooks)
+├── integrations/
+│   └── supabase/
+│       ├── client.ts          # Auto-generated Supabase client
+│       └── types.ts           # Auto-generated database types
+├── lib/
+│   ├── sessionCache.ts        # Session caching for instant boot
+│   ├── offlineDataStorage.ts  # IndexedDB persistence
+│   ├── supabaseBatchUtils.ts  # Batch fetching utilities
+│   ├── disableRealtime.ts     # Realtime kill switch
+│   ├── rentCalculations.ts    # Rent math utilities
+│   ├── creditFeeCalculations.ts # Credit fee math
+│   ├── haptics.ts             # Haptic feedback
+│   ├── phoneUtils.ts          # Phone number formatting
+│   └── ... (35+ utilities)
+├── pages/
+│   ├── admin/                 # Admin pages (Dashboard, FinancialOps, Users)
+│   ├── ceo/                   # CEO dashboard page
+│   ├── cfo/                   # CFO dashboard page
+│   ├── cmo/                   # CMO dashboard page
+│   ├── coo/                   # COO dashboard page
+│   ├── crm/                   # CRM dashboard page
+│   ├── cto/                   # CTO dashboard page
+│   ├── Auth.tsx               # Authentication page
+│   ├── Dashboard.tsx          # Main dashboard router
+│   ├── Settings.tsx           # Tab-based settings page
+│   ├── StaffPortal.tsx        # Staff-only entry point
+│   └── ... (50+ pages)
+└── main.tsx                   # App entry point
+
+supabase/
+├── functions/
+│   ├── _shared/
+│   │   └── email-templates/   # React Email templates
+│   └── ... (65+ edge functions)
+├── migrations/                # Database migrations (read-only)
+└── config.toml                # Supabase configuration
+```
+
+---
+
+## 14. Governance & Compliance
+
+### 14.1 Audit Trail
+
+- **`audit_logs` table** captures all sensitive actions
+- Fields: `user_id`, `action_type`, `table_name`, `record_id`, `metadata`, `timestamp`
+- Investment account changes require 10-character minimum audit reason
+- All manager actions logged with full context
+
+### 14.2 Legal Agreements
+
+| Agreement | Role | Behavior |
+|---|---|---|
+| Tenant Agreement | Tenant | Must accept before rent requests |
+| Agent Agreement | Agent | Must accept before field operations |
+| Supporter Agreement | Supporter | One-time acceptance; email copy auto-sent |
+| Landlord Agreement | Landlord | Must accept before listing |
+
+Agreement acceptance records stored with IP address, device info, timestamp, and version.
+
+### 14.3 Staff Performance Monitoring
+
+- CEO and COO access Staff Performance panel
+- Audit log heatmaps showing daily activity
+- SLA compliance tracking (idle time, response rates)
+- Per-staff operation metrics
+
+### 14.4 Governing Principles
+
+1. **Dignity before growth**
+2. **Systems over heroics**
+3. **Calm over urgency**
+4. **Trust over shortcuts**
+5. **Outcomes over optics**
+6. **Auditability over convenience**
+
+### 14.5 Conflict Resolution Rules
+
+| Conflict | Winner |
+|---|---|
+| Speed vs Correctness | Correctness |
+| Growth vs Solvency | Solvency |
+| Convenience vs Auditability | Auditability |
+| Emotion vs Principle | Principle |
+
+---
+
+## 15. Performance Targets
+
+| Metric | Target |
+|---|---|
+| DB reads per session | ≤ 3 |
+| Cache hit rate | ≥ 90% |
+| Edge function p95 latency | < 300ms |
+| DB latency (healthy) | < 300ms |
+| DB latency (degraded) | > 1000ms |
+| Dashboard initial paint | < 1s (from cache) |
+| Snapshots | Rebuildable at any time |
+| Import timeout | 25s (for slow networks) |
+| Realtime tables | Max 5 (whitelisted) |
+
+---
+
+## 16. Forbidden Anti-Patterns
+
+These patterns are **strictly prohibited** across the entire codebase:
+
+| Anti-Pattern | Why |
+|---|---|
+| Editable wallet balances | Balances are ledger-derived, never stored directly |
+| "Fix balance" buttons | All corrections via reversing ledger entries |
+| Manual balance adjustments | No manager can directly edit a balance |
+| User lists in supporter UI | Supporters see only anonymized virtual houses |
+| Revenue without fulfillment | Revenue recognized only when service obligation met |
+| Silent financial corrections | Every correction must be auditable |
+| Logic bypassing ledger | If money moves without ledger entries, it's invalid |
+| Direct `auth.users` queries | Use `profiles` table instead |
+| Hardcoded admin checks (localStorage) | Always server-side role verification |
+| `find /` or full filesystem scans | Scope all searches to project directory |
+| Anonymous signups | Always standard email/password auth |
+| Storing roles on profiles table | Roles in separate `user_roles` table only |
+
+---
+
+## Appendix A: Environment Variables
+
+| Variable | Source | Purpose |
+|---|---|---|
+| `VITE_SUPABASE_URL` | Auto-configured | Supabase project URL |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Auto-configured | Supabase anon key |
+| `VITE_SUPABASE_PROJECT_ID` | Auto-configured | Project identifier |
+| `SUPABASE_URL` | Edge function env | Server-side Supabase URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | Edge function env | Service role (bypasses RLS) |
+| `SUPABASE_ANON_KEY` | Edge function env | Anon key for auth verification |
+| `AFRICASTALKING_API_KEY` | Secret | SMS API key |
+| `AFRICASTALKING_USERNAME` | Secret | SMS API username |
+| `LOVABLE_API_KEY` | Auto-managed | Lovable platform integration |
+| `VAPID_PRIVATE_KEY` | Secret | Push notification signing |
+
+---
+
+## Appendix B: Route Map
+
+### Consumer Routes
+| Route | Page | Guard |
+|---|---|---|
+| `/` | Landing page | Public |
+| `/auth` | Authentication | Public |
+| `/dashboard` | Dashboard router | Auth required |
+| `/settings` | Settings (tab-based) | Auth required |
+| `/chat` | Messaging | Auth required |
+| `/find-house` | Property discovery | Auth required |
+| `/house/:id` | House detail | Auth required |
+| `/rent-money` | Rent request flow | Auth required |
+| `/my-loans` | Credit access | Auth required |
+| `/calculator` | Rent calculator | Auth required |
+| `/referrals` | Referral program | Auth required |
+| `/marketplace` | E-commerce | Auth required |
+| `/my-receipts` | Receipt history | Auth required |
+| `/welile-homes` | Housing fund | Auth required |
+
+### Staff Routes
+| Route | Page | Guard |
+|---|---|---|
+| `/staff` | Staff Portal | Role guard (staff roles only) |
+| `/admin/dashboard` | Admin dashboard | `manager`, `super_admin` |
+| `/admin/financial-ops` | Financial ops center | `manager`, `coo`, `cfo` |
+| `/admin/users` | User management | `manager`, `super_admin` |
+| `/ceo/dashboard` | CEO dashboard | `ceo` |
+| `/coo/dashboard` | COO dashboard | `coo` |
+| `/cfo/dashboard` | CFO dashboard | `cfo` |
+| `/cto/dashboard` | CTO dashboard | `cto` |
+| `/cmo/dashboard` | CMO dashboard | `cmo` |
+| `/crm/dashboard` | CRM dashboard | `crm` |
+| `/operations` | Operations hub | `operations` |
+
+---
+
+*This document is the single source of truth for the Welile platform architecture. All development must conform to these specifications.*

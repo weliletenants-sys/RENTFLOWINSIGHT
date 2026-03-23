@@ -1,18 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Check, Loader2, AlertTriangle } from 'lucide-react';
+import { Search, Check, Loader2, AlertTriangle, ShieldAlert } from 'lucide-react';
 import { fetchPartners } from '../../services/cooApi';
-
-const mockInvestors = [
-  { id: 1, name: 'Mbabazi K.', totalInvested: '120,000,000', returnsPaid: '18,000,000', activeDeals: 4, frozen: false },
-  { id: 2, name: 'Ssematimba R.', totalInvested: '90,000,000', returnsPaid: '13,500,000', activeDeals: 3, frozen: false },
-  { id: 3, name: 'Kagimu D.', totalInvested: '60,000,000', returnsPaid: '9,000,000', activeDeals: 2, frozen: true },
-  { id: 4, name: 'Namuli G.', totalInvested: '25,000,000', returnsPaid: '2,500,000', activeDeals: 1, frozen: false },
-];
 
 const COOPartnersPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'active' | 'pending'>('active');
 
-  const [partners, setPartners] = useState<any[]>([]);
+  const [escalations, setEscalations] = useState<any[]>([]);
+  const [investors, setInvestors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,7 +14,8 @@ const COOPartnersPage: React.FC = () => {
     const loadPartners = async () => {
       try {
         const data = await fetchPartners();
-        setPartners(data);
+        setEscalations(data.escalations || []);
+        setInvestors(data.investors || []);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -62,7 +57,7 @@ const COOPartnersPage: React.FC = () => {
         <div className="flex gap-4">
           <div className="bg-[#EAE5FF] p-3 rounded-lg text-center">
             <p className="text-xs text-[#6c11d4] font-semibold uppercase">Total Issues</p>
-            <p className="text-lg font-bold text-slate-800">{partners.length}</p>
+            <p className="text-lg font-bold text-slate-800">{escalations.length}</p>
           </div>
         </div>
       </div>
@@ -79,7 +74,7 @@ const COOPartnersPage: React.FC = () => {
           onClick={() => setActiveTab('pending')}
         >
           <span>System Escalations</span>
-          <span className="bg-orange-100 text-orange-600 text-[10px] px-2 py-0.5 rounded-full">{partners.length}</span>
+          <span className="bg-orange-100 text-orange-600 text-[10px] px-2 py-0.5 rounded-full">{escalations.length}</span>
         </button>
       </div>
 
@@ -107,11 +102,16 @@ const COOPartnersPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {mockInvestors.map((investor) => (
+                {investors.length === 0 ? (
+                   <tr><td colSpan={4} className="p-8 text-center text-slate-500 font-medium">No live organizational partners.</td></tr>
+                ) : investors.map((investor) => (
                   <tr key={investor.id} className="hover:bg-slate-50/50 transition-colors group">
-                    <td className="p-4 pl-6 font-bold text-slate-800">{investor.name}</td>
-                    <td className="p-4 font-bold text-[#6c11d4]">UGX {investor.totalInvested}</td>
-                    <td className="p-4 font-bold text-green-600 flex items-center"><Check size={14} className="mr-1" /> UGX {investor.returnsPaid}</td>
+                    <td className="p-4 pl-6 font-bold text-slate-800 flex items-center gap-2">
+                       {investor.name}
+                       {investor.frozen && <ShieldAlert size={14} className="text-red-500" />}
+                    </td>
+                    <td className="p-4 font-bold text-[#6c11d4]">UGX {investor.totalInvested.toLocaleString()}</td>
+                    <td className="p-4 font-bold text-green-600 flex items-center"><Check size={14} className="mr-1" /> UGX {investor.returnsPaid.toLocaleString()}</td>
                     <td className="p-4 font-bold text-slate-600">{investor.activeDeals} Deals</td>
                   </tr>
                 ))}
@@ -129,11 +129,11 @@ const COOPartnersPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {partners.length === 0 ? (
+                {escalations.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="p-8 text-center text-slate-500 font-medium">No partner escalations active.</td>
                   </tr>
-                ) : partners.map((req: any) => (
+                ) : escalations.map((req: any) => (
                   <tr key={req.id} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="p-4 pl-6 font-bold text-slate-800">{req.id}</td>
                     <td className="p-4 text-sm font-medium text-slate-500">{req.partner_id}</td>

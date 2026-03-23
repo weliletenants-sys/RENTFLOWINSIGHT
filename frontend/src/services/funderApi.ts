@@ -46,3 +46,8 @@ export const getFunderActivities = async () => {
   const response = await axios.get(`${API}/funder/activities`, getAuthHeaders());
   return response.data.data;
 };
+
+export const getFunderOpportunities = async () => {
+  const response = await axios.get(`${API}/funder/opportunities`, getAuthHeaders());
+  return response.data.data;
+};

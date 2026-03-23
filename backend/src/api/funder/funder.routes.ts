@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getDashboardStats, getPortfolios, getRecentActivities, fundRentPool, requestWithdrawal } from '../../controllers/funder.controller';
+import { getDashboardStats, getPortfolios, getRecentActivities, fundRentPool, requestWithdrawal, getOpportunities } from '../../controllers/funder.controller';
 import { authGuard, rolesGuard } from '../../middlewares/auth.middleware';
 
 const router = Router();
@@ -12,6 +12,7 @@ router.use(authGuard);
 router.get('/statistics/dashboard', getDashboardStats);
 router.get('/portfolios', getPortfolios);
 router.get('/activities', getRecentActivities);
+router.get('/opportunities', getOpportunities);
 
 router.post('/fund', fundRentPool);
 router.post('/withdrawals', requestWithdrawal);

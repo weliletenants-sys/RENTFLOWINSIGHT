@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Search,
   MapPin,
@@ -7,7 +7,9 @@ import {
   ChevronRight,
   Eye,
   Banknote,
+  Loader2
 } from 'lucide-react';
+import { getFunderOpportunities } from '../services/funderApi';
 
 /* ═══════════ TYPES ═══════════ */
 
@@ -28,94 +30,9 @@ interface RentOpportunity {
 
 const statusConfig: Record<OpportunityStatus, { label: string; bg: string; text: string }> = {
   available: { label: 'Available', bg: 'bg-green-50', text: 'text-green-700' },
-  urgent:    { label: 'Urgent',    bg: 'bg-red-50',   text: 'text-red-600' },
-  taken:     { label: 'Taken',     bg: 'bg-slate-100', text: 'text-slate-400' },
+  urgent: { label: 'Urgent', bg: 'bg-red-50', text: 'text-red-600' },
+  taken: { label: 'Taken', bg: 'bg-slate-100', text: 'text-slate-400' },
 };
-
-/* ═══════════ MOCK DATA ═══════════ */
-
-const MOCK_OPPORTUNITIES: RentOpportunity[] = [
-  {
-    id: '1',
-    name: 'Kampala Heights Apt 4B',
-    location: 'Makindye, Kampala',
-    image: '/property_1.png',
-    rentRequired: 850_000,
-    bedrooms: 2,
-    status: 'available',
-    postedDate: 'Mar 15, 2026',
-  },
-  {
-    id: '2',
-    name: 'Entebbe Lakeside Villa',
-    location: 'Kitoro, Entebbe',
-    image: '/property_2.png',
-    rentRequired: 1_200_000,
-    bedrooms: 3,
-    status: 'urgent',
-    postedDate: 'Mar 10, 2026',
-  },
-  {
-    id: '3',
-    name: 'Ntinda Townhouse Unit C',
-    location: 'Ntinda, Kampala',
-    image: '/property_3.png',
-    rentRequired: 650_000,
-    bedrooms: 1,
-    status: 'available',
-    postedDate: 'Mar 12, 2026',
-  },
-  {
-    id: '4',
-    name: 'Kololo Luxury Flat 2A',
-    location: 'Kololo, Kampala',
-    image: '/property_1.png',
-    rentRequired: 2_500_000,
-    bedrooms: 3,
-    status: 'available',
-    postedDate: 'Mar 08, 2026',
-  },
-  {
-    id: '5',
-    name: 'Nansana Residence R5',
-    location: 'Nansana, Wakiso',
-    image: '/property_2.png',
-    rentRequired: 450_000,
-    bedrooms: 1,
-    status: 'urgent',
-    postedDate: 'Mar 16, 2026',
-  },
-  {
-    id: '6',
-    name: 'Naguru Hill House 12',
-    location: 'Naguru, Kampala',
-    image: '/property_3.png',
-    rentRequired: 1_800_000,
-    bedrooms: 2,
-    status: 'taken',
-    postedDate: 'Mar 05, 2026',
-  },
-  {
-    id: '7',
-    name: 'Bugolobi Apartment 3F',
-    location: 'Bugolobi, Kampala',
-    image: '/property_1.png',
-    rentRequired: 950_000,
-    bedrooms: 2,
-    status: 'available',
-    postedDate: 'Mar 17, 2026',
-  },
-  {
-    id: '8',
-    name: 'Mukono Family Home',
-    location: 'Mukono Town',
-    image: '/property_2.png',
-    rentRequired: 380_000,
-    bedrooms: 2,
-    status: 'urgent',
-    postedDate: 'Mar 18, 2026',
-  },
-];
 
 /* ═══════════ FILTER TYPE ═══════════ */
 type FilterStatus = 'all' | OpportunityStatus;
@@ -132,8 +49,15 @@ export default function FunderOpportunitiesPage({ onSupport }: FunderOpportuniti
   const [filter, setFilter] = useState<FilterStatus>('all');
   const [search, setSearch] = useState('');
   const [selectedProperty, setSelectedProperty] = useState<RentOpportunity | null>(null);
+  const [opportunities, setOpportunities] = useState<RentOpportunity[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const opportunities = MOCK_OPPORTUNITIES;
+  useEffect(() => {
+    getFunderOpportunities()
+      .then(setOpportunities)
+      .catch(console.error)
+      .finally(() => setIsLoading(false));
+  }, []);
 
   const filtered = opportunities.filter((p) => {
     const matchesFilter = filter === 'all' || p.status === filter;
@@ -210,9 +134,8 @@ export default function FunderOpportunitiesPage({ onSupport }: FunderOpportuniti
             <button
               onClick={() => onSupport?.(selectedProperty.id)}
               disabled={selectedProperty.status === 'taken'}
-              className={`w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition hover:shadow-lg active:scale-[0.98] ${
-                selectedProperty.status === 'taken' ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'text-white'
-              }`}
+              className={`w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition hover:shadow-lg active:scale-[0.98] ${selectedProperty.status === 'taken' ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'text-white'
+                }`}
               style={selectedProperty.status !== 'taken' ? { background: 'var(--color-primary)' } : undefined}
             >
               <Banknote className="w-4 h-4" />
@@ -229,7 +152,10 @@ export default function FunderOpportunitiesPage({ onSupport }: FunderOpportuniti
     <div className="flex-1 p-6 lg:p-8 pb-32 lg:pb-8">
       {/* Page Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-black text-slate-900 tracking-tight">Opportunities</h1>
+        <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+          Opportunities
+          {isLoading && <Loader2 className="w-5 h-5 animate-spin text-slate-400" />}
+        </h1>
         <p className="text-sm text-slate-400 mt-0.5">
           {totalAvailable} houses need rent support · UGX {totalRentNeeded.toLocaleString()} total
         </p>
@@ -253,11 +179,10 @@ export default function FunderOpportunitiesPage({ onSupport }: FunderOpportuniti
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ${
-                filter === f
+              className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ${filter === f
                   ? 'text-white'
                   : 'bg-white text-slate-500 border border-slate-200 hover:border-slate-300'
-              }`}
+                }`}
               style={filter === f ? { background: 'var(--color-primary)' } : undefined}
             >
               {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
@@ -281,9 +206,8 @@ export default function FunderOpportunitiesPage({ onSupport }: FunderOpportuniti
             return (
               <div
                 key={p.id}
-                className={`bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-all group overflow-hidden cursor-pointer ${
-                  p.status === 'taken' ? 'opacity-60' : ''
-                }`}
+                className={`bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-all group overflow-hidden cursor-pointer ${p.status === 'taken' ? 'opacity-60' : ''
+                  }`}
                 onClick={() => setSelectedProperty(p)}
               >
                 {/* Image */}

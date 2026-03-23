@@ -108,34 +108,18 @@ const COOAnalytics: React.FC = () => {
           <div className="flex-1 space-y-4">
              {/* Abstracted Trend Bar Chart */}
              <div className="space-y-3">
-               <div className="flex items-center">
-                  <span className="w-12 text-xs font-bold text-slate-500">Week 4</span>
-                  <div className="flex-1 ml-2 bg-slate-100 rounded-full h-3">
-                    <div className="bg-[#6c11d4] h-3 rounded-full" style={{ width: '85%' }}></div>
-                  </div>
-                  <span className="w-20 text-right text-xs font-bold text-slate-700 ml-2">UGX 4.2M</span>
-               </div>
-               <div className="flex items-center">
-                  <span className="w-12 text-xs font-bold text-slate-500">Week 3</span>
-                  <div className="flex-1 ml-2 bg-slate-100 rounded-full h-3">
-                    <div className="bg-[#6c11d4] h-3 rounded-full opacity-80" style={{ width: '65%' }}></div>
-                  </div>
-                  <span className="w-20 text-right text-xs font-bold text-slate-700 ml-2">UGX 3.1M</span>
-               </div>
-               <div className="flex items-center">
-                  <span className="w-12 text-xs font-bold text-slate-500">Week 2</span>
-                  <div className="flex-1 ml-2 bg-slate-100 rounded-full h-3">
-                    <div className="bg-[#6c11d4] h-3 rounded-full opacity-60" style={{ width: '75%' }}></div>
-                  </div>
-                  <span className="w-20 text-right text-xs font-bold text-slate-700 ml-2">UGX 3.8M</span>
-               </div>
-               <div className="flex items-center">
-                  <span className="w-12 text-xs font-bold text-slate-500">Week 1</span>
-                  <div className="flex-1 ml-2 bg-slate-100 rounded-full h-3">
-                    <div className="bg-[#6c11d4] h-3 rounded-full opacity-40" style={{ width: '45%' }}></div>
-                  </div>
-                  <span className="w-20 text-right text-xs font-bold text-slate-700 ml-2">UGX 2.1M</span>
-               </div>
+               {data?.revenueTrends?.map((trend: any, i: number) => (
+                 <div key={i} className="flex items-center">
+                    <span className="w-24 text-xs font-bold text-slate-500">{trend.month}</span>
+                    <div className="flex-1 ml-2 bg-slate-100 rounded-full h-3">
+                      <div className="bg-[#6c11d4] h-3 rounded-full" style={{ width: `${Math.min(100, (trend.value / 10000000) * 100)}%` }}></div>
+                    </div>
+                    <span className="w-24 text-right text-xs font-bold text-slate-700 ml-2">UGX {(trend.value / 1000000).toFixed(1)}M</span>
+                 </div>
+               ))}
+               {!data?.revenueTrends?.length && (
+                  <p className="text-sm font-medium text-slate-400 py-4 text-center">Awaiting incoming telemetry data...</p>
+               )}
              </div>
              
              <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-3 mt-4">

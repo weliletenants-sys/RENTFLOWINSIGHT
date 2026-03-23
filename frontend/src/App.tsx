@@ -5,12 +5,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 
 import ProtectedRoute from './components/ProtectedRoute';
-import RootDashboard from './pages/dashboard/RootDashboard';
+import AdaptiveConsumerDashboard from './portals/consumer/AdaptiveConsumerDashboard';
 
 // Dashboard sub-routes from HEAD
 import SubAgents from './agent/SubAgents';
 import AgentEarnings from './agent/AgentEarnings';
 import AgentClients from './agent/AgentClients';
+import StaffPortal from './portals/staff/StaffPortal';
 import AgentSettings from './agent/AgentSettings';
 import CfoDashboard from './admin/cfo/CfoDashboard';
 import CeoDashboard from './admin/ceo/CeoDashboard';
@@ -112,7 +113,8 @@ function App() {
 
                 {/* Protected: authenticated users only */}
                 <Route element={<ProtectedRoute />}>
-                  <Route path="/dashboard/*" element={<RootDashboard />} />
+                  <Route path="/staff/*" element={<StaffPortal />} />
+                  <Route path="/dashboard/*" element={<AdaptiveConsumerDashboard />} />
                   <Route path="/dashboard/agent/sub-agents" element={<SubAgents />} />
                   <Route path="/dashboard/agent/earnings" element={<AgentEarnings />} />
                   <Route path="/dashboard/agent/clients" element={<AgentClients />} />

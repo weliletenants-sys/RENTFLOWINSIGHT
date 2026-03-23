@@ -1,4 +1,4 @@
-﻿import { X, ArrowDownRight, ArrowUpRight, History } from 'lucide-react';
+import { X, ArrowDownRight, ArrowUpRight, History } from 'lucide-react';
 
 interface FullScreenWalletSheetProps {
   isOpen: boolean;
@@ -8,7 +8,7 @@ interface FullScreenWalletSheetProps {
 
 export default function FullScreenWalletSheet({ isOpen, onClose, balance }: FullScreenWalletSheetProps) {
   return (
-    <div 
+    <div
       className={`fixed inset-0 bg-white z-[60] flex flex-col transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isOpen ? 'translate-y-0' : 'translate-y-full'}`}
     >
       {/* Header */}
@@ -20,11 +20,11 @@ export default function FullScreenWalletSheet({ isOpen, onClose, balance }: Full
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-8">
-        
+
         {/* Balance Card */}
         <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-[2rem] p-8 text-white shadow-xl shadow-emerald-500/20 text-center relative overflow-hidden">
           <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
-          
+
           <p className="text-emerald-100 font-medium mb-2 relative z-10">Available Balance</p>
           <div className="flex items-baseline justify-center gap-2 relative z-10">
             <span className="text-2xl font-bold opacity-80">UGX</span>
@@ -40,7 +40,7 @@ export default function FullScreenWalletSheet({ isOpen, onClose, balance }: Full
             </div>
             <span className="font-bold text-sm text-gray-900">Deposit</span>
           </button>
-          
+
           <button className="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex flex-col items-center justify-center gap-3 active:scale-95 transition">
             <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm text-blue-600">
               <ArrowUpRight size={20} strokeWidth={2.5} />
@@ -57,7 +57,7 @@ export default function FullScreenWalletSheet({ isOpen, onClose, balance }: Full
               View All <History size={16} />
             </button>
           </div>
-          
+
           <div className="space-y-4">
             {/* Mock TX 1 */}
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">

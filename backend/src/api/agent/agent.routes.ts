@@ -31,7 +31,8 @@ router.post('/collections', authGuard, recordCollection);
 router.post('/receipts', authGuard, issueReceipt);
 
 // Module 3: Identity & Network Registrations
-import { registerTenant, registerLandlord, registerSubAgent, registerInvestor, getMyNetwork } from '../../controllers/agent.users.controller';
+import { registerTenant, registerLandlord, registerSubAgent, registerInvestor, getMyNetwork, getAssignedTenants } from '../../controllers/agent.users.controller';
+router.get('/tenants', authGuard, getAssignedTenants);
 router.post('/tenants', authGuard, registerTenant);
 router.post('/landlords', authGuard, registerLandlord);
 router.post('/subagents', authGuard, registerSubAgent);

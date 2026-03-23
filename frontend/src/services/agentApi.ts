@@ -140,6 +140,11 @@ export const registerTenant = async (payload: any) => {
   return data;
 };
 
+export const getAssignedTenants = async () => {
+  const { data } = await agentClient.get('/agent/tenants');
+  return data.tenants; // Returns the exactly mapped array
+};
+
 export const registerLandlord = async (payload: any) => {
   const { data } = await agentClient.post('/agent/landlords', payload);
   return data;

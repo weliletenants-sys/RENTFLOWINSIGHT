@@ -124,7 +124,7 @@ export default function FunderDashboard() {
         setIsLoading(false);
       }
     };
-    
+
     fetchDashboard();
   }, [user, navigate]);
 
@@ -200,7 +200,7 @@ export default function FunderDashboard() {
                   <p className="text-amber-700 text-sm mt-0.5">You must complete KYC onboarding before you can fund portfolios or withdraw earnings.</p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => navigate('/funder/kyc')}
                 className="w-full sm:w-auto px-6 py-2.5 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-700 transition-colors flex items-center justify-center gap-2 shrink-0"
               >
@@ -215,87 +215,87 @@ export default function FunderDashboard() {
           ) : activePage === 'Opportunities' ? (
             <FunderOpportunitiesPage />
           ) : (
-          <div className="flex-1 p-6 lg:p-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="flex-1 p-6 lg:p-8">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-              {/* ── LEFT / MAIN COLUMN ── */}
-              <div className="lg:col-span-8 flex flex-col gap-8">
+                {/* ── LEFT / MAIN COLUMN ── */}
+                <div className="lg:col-span-8 flex flex-col gap-8">
 
-                 {/* Wealth Performance Card */}
-                <FunderWalletCard
-                  totalBalance={stats?.totalBalance || 0}
-                  availableLiquid={stats?.availableLiquid || 0}
-                  totalInvested={stats?.totalInvested || 0}
-                  cardId="WL-99201"
-                  onAddFunds={() => navigate('/funder/wallet')}
-                  onWithdraw={() => navigate('/funder/wallet')}
-                  onPortfolio={() => navigate('/funder/portfolio')}
-                />
-
-                                
-                {/* Quick Actions — mobile only */}
-                <div className="lg:hidden relative">
-                  <FunderActionButtons
-                    portfolioValue={stats?.totalInvested || 0}
-                    roiPercent={stats?.expectedYield || 15}
+                  {/* Wealth Performance Card */}
+                  <FunderWalletCard
+                    totalBalance={stats?.totalBalance || 0}
+                    availableLiquid={stats?.availableLiquid || 0}
+                    totalInvested={stats?.totalInvested || 0}
+                    cardId="WL-99201"
+                    onAddFunds={() => navigate('/funder/wallet')}
+                    onWithdraw={() => navigate('/funder/wallet')}
+                    onPortfolio={() => navigate('/funder/portfolio')}
                   />
-                </div>
-{/* Portfolio list */}
-                <FunderPortfolioList
-                  portfolios={portfolios}
-                  onViewAll={() => navigate('/funder/portfolio')}
-                  onCashOut={(id) => handleVerificationCheck(() => console.log('Cash out', id))}
-                  onAddAsset={() => handleVerificationCheck(() => setIsModalOpen(true))}
-                />
 
-                {/* Grow Your Wealth CTA */}
-                <FunderInvestCTA onStartsupporting={() => handleVerificationCheck(() => setIsModalOpen(true))} />
 
-                {/* Recent Activity — mobile only */}
-                <div className="lg:hidden pb-32">
-                  <FunderRecentActivity
-                    activities={activities}
-                    onViewAll={() => console.log('View all activity')}
+                  {/* Quick Actions — mobile only */}
+                  <div className="lg:hidden relative">
+                    <FunderActionButtons
+                      portfolioValue={stats?.totalInvested || 0}
+                      roiPercent={stats?.expectedYield || 15}
+                    />
+                  </div>
+                  {/* Portfolio list */}
+                  <FunderPortfolioList
+                    portfolios={portfolios}
+                    onViewAll={() => navigate('/funder/portfolio')}
+                    onCashOut={(id) => handleVerificationCheck(() => console.log('Cash out', id))}
+                    onAddAsset={() => handleVerificationCheck(() => setIsModalOpen(true))}
                   />
+
+                  {/* Grow Your Wealth CTA */}
+                  <FunderInvestCTA onStartsupporting={() => handleVerificationCheck(() => setIsModalOpen(true))} />
+
+                  {/* Recent Activity — mobile only */}
+                  <div className="lg:hidden pb-32">
+                    <FunderRecentActivity
+                      activities={activities}
+                      onViewAll={() => console.log('View all activity')}
+                    />
+                  </div>
                 </div>
+
+                {/* ── RIGHT PANEL (desktop only) ── */}
+                <aside className="hidden lg:flex lg:col-span-4 flex-col gap-8">
+                  {/* Wallet Quick Actions */}
+                  <div className="relative">
+                    <FunderActionButtons
+                      portfolioValue={stats?.totalInvested || 0}
+                      roiPercent={stats?.expectedYield || 15}
+                    />
+                  </div>
+
+                  {/* Recent Activity */}
+                  <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
+                    <FunderRecentActivity
+                      activities={activities}
+                      onViewAll={() => console.log('View all activity')}
+                    />
+                  </div>
+
+                  {/* Investor Insights */}
+                  <div
+                    className="bg-white rounded-xl border p-6 flex items-start gap-4 shadow-sm"
+                    style={{ borderColor: 'var(--color-primary-border)', borderLeft: '4px solid var(--color-primary)' }}
+                  >
+                    <div className="p-2 rounded-full" style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}>
+                      <Lightbulb className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-sm mb-1">Smart Insight</h3>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        You have <strong>UGX 2,500,000</strong> idle in your wallet. Consider putting it into one of the recommended opportunities below to start compounding your earnings.
+                      </p>
+                    </div>
+                  </div>
+                </aside>
               </div>
-
-              {/* ── RIGHT PANEL (desktop only) ── */}
-              <aside className="hidden lg:flex lg:col-span-4 flex-col gap-8">
-                                {/* Wallet Quick Actions */}
-                <div className="relative">
-                  <FunderActionButtons
-                    portfolioValue={stats?.totalInvested || 0}
-                    roiPercent={stats?.expectedYield || 15}
-                  />
-                </div>
-                
-                {/* Recent Activity */}
-                <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
-                  <FunderRecentActivity
-                    activities={activities}
-                    onViewAll={() => console.log('View all activity')}
-                  />
-                </div>
-
-                {/* Investor Insights */}
-                <div
-                  className="bg-white rounded-xl border p-6 flex items-start gap-4 shadow-sm"
-                  style={{ borderColor: 'var(--color-primary-border)', borderLeft: '4px solid var(--color-primary)' }}
-                >
-                  <div className="p-2 rounded-full" style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}>
-                    <Lightbulb className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-900 text-sm mb-1">Smart Insight</h3>
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      You have <strong>UGX 2,500,000</strong> idle in your wallet. Consider putting it into one of the recommended opportunities below to start compounding your earnings.
-                    </p>
-                  </div>
-                </div>
-              </aside>
             </div>
-          </div>
           )}
         </div>
       </div>
