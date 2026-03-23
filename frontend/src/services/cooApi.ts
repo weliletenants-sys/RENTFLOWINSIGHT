@@ -4,7 +4,7 @@ const API = '/api'; // Proxied to localhost:3000 by vite
 
 // Attach headers correctly based on localStorage auth mechanisms
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('access_token') || localStorage.getItem('token');
   return {
     headers: {
       Authorization: token ? `Bearer ${token}` : '',
@@ -93,5 +93,15 @@ export const fetchAlerts = async () => {
 
 export const fetchStaff = async () => {
   const response = await axios.get(`${API}/v1/coo/metrics/staff`, getAuthHeaders());
+  return response.data;
+};
+
+export const fetchOpportunities = async () => {
+  const response = await axios.get(`${API}/v1/coo/opportunities`, getAuthHeaders());
+  return response.data;
+};
+
+export const createOpportunity = async (data: any) => {
+  const response = await axios.post(`${API}/v1/coo/opportunities`, data, getAuthHeaders());
   return response.data;
 };

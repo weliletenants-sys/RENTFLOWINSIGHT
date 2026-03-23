@@ -96,7 +96,7 @@ export const register = async (req: Request, res: Response) => {
       user_agent: req.headers['user-agent']
     });
 
-    const payload = { email: result.email, sub: result.id, role: role };
+    const payload = { email: result.email, sub: result.id, role: role, firstName: firstName.trim() };
     const access_token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
 
     await prisma.sessions.updateMany({
@@ -163,8 +163,9 @@ export const login = async (req: Request, res: Response) => {
     
     const userPersona = await prisma.userPersonas.findFirst({ where: { user_id: profile.id, is_default: true } }) || await prisma.userPersonas.findFirst({ where: { user_id: profile.id }, orderBy: { created_at: 'desc' } });
     const role = userPersona ? userPersona.persona.toUpperCase() : 'TENANT';
+    const firstName = profile.full_name?.split(' ')[0] || 'User';
 
-    const payload = { email: profile.email, sub: profile.id, role };
+    const payload = { email: profile.email, sub: profile.id, role, firstName };
     const access_token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
 
     await prisma.sessions.updateMany({

@@ -22,6 +22,7 @@ const COOSidebar: React.FC = () => {
     { name: 'Withdrawals', icon: <CreditCard size={20} />, path: '/coo/withdrawals' },
     { name: 'Partners', icon: <Users size={20} />, path: '/coo/partners' },
     { name: 'Tenants', icon: <User size={20} />, path: '/coo/tenants' },
+    { name: 'Opportunities', icon: <Home size={20} />, path: '/coo/opportunities' },
     { name: 'Staff Performance', icon: <Activity size={20} />, path: '/coo/staff-performance' },
   ];
 

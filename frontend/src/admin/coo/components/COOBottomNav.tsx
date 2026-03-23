@@ -8,7 +8,7 @@ const COOBottomNav: React.FC = () => {
     { name: 'Ledger', icon: <List size={22} />, path: '/coo/transactions' },
     { name: 'Partners', icon: <Users size={22} />, path: '/coo/partners' },
     { name: 'Withdrawals', icon: <CreditCard size={22} />, path: '/coo/withdrawals' },
-    { name: 'Alerts', icon: <AlertTriangle size={22} />, path: '/coo/alerts' },
+    { name: 'Opportunities', icon: <Home size={22} />, path: '/coo/opportunities' },
   ];
 
   return (

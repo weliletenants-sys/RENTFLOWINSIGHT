@@ -7,7 +7,8 @@ import {
   getAuditLogs, 
   getConfig, 
   updateConfig,
-  getAllUsers
+  getAllUsers,
+  getSystemStats
 } from '../../controllers/superadmin.controller';
 
 const router = Router();
@@ -19,6 +20,9 @@ router.use(rolesGuard(['SUPER_ADMIN']));
 // Role Governance
 router.get('/users', getAllUsers);
 router.post('/assign-role', assignRole);
+
+// Analytics & Stats
+router.get('/system-stats', getSystemStats);
 
 // Account Actions
 router.post('/freeze-account', freezeAccount);

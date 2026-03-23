@@ -33,33 +33,83 @@ import FunderSidebar from './components/FunderSidebar';
 import FunderBottomNav from './components/FunderBottomNav';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
 import { useKycStatus } from './hooks/useKycStatus';
+import { getFunderDashboardStats, updateFunderProfile, uploadFunderAvatar, type DashboardStatsResponse } from '../services/funderApi';
 
 export default function FunderAccountSettings() {
   const navigate = useNavigate();
-  const { updateSession, user: authUser } = useAuth();
+  const { updateSession, user: authUser, updateUserLocally } = useAuth();
   const { status: kycStatus } = useKycStatus();
+  const [stats, setStats] = useState<DashboardStatsResponse | null>(null);
+
+  useEffect(() => {
+    getFunderDashboardStats().then(setStats).catch(console.error);
+  }, []);
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'financial' | 'proxy' | 'reporting' | 'roles'>('profile');
   const [newPassword, setNewPassword] = useState('');
-  const [avatarPreview, setAvatarPreview] = useState<string>("https://api.dicebear.com/7.x/avataaars/svg?seed=Grace&backgroundColor=059669");
+  
+  // Real user data fallback
+  const userFirst = authUser?.firstName || '';
+  const userLast = authUser?.lastName || '';
+  
+  const [firstName, setFirstName] = useState(userFirst);
+  const [lastName, setLastName] = useState(userLast);
+  const [email, setEmail] = useState(authUser?.email || '');
+  const [phone, setPhone] = useState(authUser?.phone || '');
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+
+  // Avatar states - frontend AuthContext type does not currently type avatar_url so we use any casting safely or default string
+  const [avatarPreview, setAvatarPreview] = useState<string>((authUser as any)?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userFirst}&backgroundColor=059669`);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [rewardMode, setRewardMode] = useState<'compound' | 'payout'>('compound');
   const [platformRoles, setPlatformRoles] = useState<RoleView[]>([]);
   const [rolesLoading, setRolesLoading] = useState(false);
   const [activeRole, setActiveRole] = useState<string>('');
 
-  const handleAvatarSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setIsUploadingAvatar(true);
+      // Optimistic preview
       const reader = new FileReader();
-      reader.onload = (e) => { 
-        setTimeout(() => {
-          setAvatarPreview(e.target?.result as string); 
-          setIsUploadingAvatar(false);
-          toast.success('Profile photo updated successfully!'); 
-        }, 1500);
-      };
+      reader.onload = (e) => setAvatarPreview(e.target?.result as string);
       reader.readAsDataURL(file);
+
+      setIsUploadingAvatar(true);
+      const toastId = toast.loading('Uploading profile picture to secure vault...');
+      try {
+        const formData = new FormData();
+        formData.append('avatar', file);
+        const res = await uploadFunderAvatar(formData);
+        toast.success('Profile photo updated successfully!', { id: toastId });
+        if (res?.data?.avatarUrl) {
+          updateUserLocally({ avatar_url: res.data.avatarUrl });
+        }
+      } catch (error: any) {
+        console.error('Avatar upload failed', error);
+        toast.error('Failed to upload profile picture.', { id: toastId });
+        setAvatarPreview((authUser as any)?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userFirst}&backgroundColor=059669`);
+      } finally {
+        setIsUploadingAvatar(false);
+      }
+    }
+  };
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsUpdatingProfile(true);
+    try {
+      await updateFunderProfile(firstName, lastName, email, phone);
+      updateUserLocally({ firstName, lastName, email, phone });
+      toast.success('Personal profile saved securely!');
+    } catch (error: any) {
+      // Decode the RFC 7807 problem+json response specified by the API architecture
+      const problem = error.response?.data;
+      if (problem && problem.detail) {
+        toast.error(problem.detail, { duration: 6000 });
+      } else {
+        toast.error('System rejected profile update. Ensure inputs are valid text.');
+      }
+    } finally {
+      setIsUpdatingProfile(false);
     }
   };
 
@@ -164,7 +214,7 @@ export default function FunderAccountSettings() {
                   </div>
                   <div className="text-center md:text-left">
                     <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight drop-shadow-sm mb-1">
-                      Grace N.
+                      {firstName} {lastName ? lastName.charAt(0) + '.' : ''}
                     </h1>
                     <div className="flex items-center justify-center md:justify-start gap-3">
                       <span className="bg-white/20 text-white border border-white/30 px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase backdrop-blur-md">
@@ -182,7 +232,7 @@ export default function FunderAccountSettings() {
                 <div className="hidden md:flex gap-4">
                   <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-6 py-4 text-white text-center shadow-lg">
                     <p className="text-white/60 text-xs font-bold tracking-widest uppercase mb-1">Active Capital</p>
-                    <p className="text-2xl font-black">UGX 5.0M</p>
+                    <p className="text-2xl font-black">UGX {((stats?.totalInvested || 0) / 1_000_000).toFixed(1)}M</p>
                   </div>
                   <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-6 py-4 text-white text-center shadow-lg">
                     <p className="text-white/60 text-xs font-bold tracking-widest uppercase mb-1">Status</p>
@@ -239,35 +289,35 @@ export default function FunderAccountSettings() {
                           Update your contact details and basic real-world compliance information. Your email serves as your primary login identifier.
                         </p>
                         
-                        <div className="space-y-4">
+                        <form onSubmit={handleUpdateProfile} className="space-y-4">
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                               <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">First Name</label>
-                              <input defaultValue="Grace" type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all placeholder:text-slate-400" />
+                              <input required value={firstName} onChange={e => setFirstName(e.target.value)} type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all placeholder:text-slate-400" />
                             </div>
                             <div>
                               <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Last Name</label>
-                              <input defaultValue="Nsubuga" type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all placeholder:text-slate-400" />
+                              <input required value={lastName} onChange={e => setLastName(e.target.value)} type="text" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all placeholder:text-slate-400" />
                             </div>
                           </div>
                           <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Email Address</label>
-                            <input defaultValue="grace.nsubuga@example.com" type="email" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all placeholder:text-slate-400" />
+                            <input value={email} onChange={e => setEmail(e.target.value)} type="email" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all placeholder:text-slate-400" />
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                               <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Phone Number</label>
-                              <input defaultValue="+256 700 000 000" type="tel" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all placeholder:text-slate-400" />
+                              <input value={phone} onChange={e => setPhone(e.target.value)} type="tel" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all placeholder:text-slate-400" />
                             </div>
                             <div>
                               <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Date of Birth</label>
                               <input defaultValue="1985-04-12" type="date" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all placeholder:text-slate-400" />
                             </div>
                           </div>
-                          <button onClick={() => toast.success("Personal profile saved successfully!")} className="w-full mt-4 cursor-pointer bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-slate-800 transition-colors shadow-md text-sm">
-                            Save Profile Changes
+                          <button disabled={isUpdatingProfile} type="submit" className="w-full mt-4 cursor-pointer bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-slate-800 transition-colors shadow-md text-sm disabled:opacity-50">
+                            {isUpdatingProfile ? 'Saving Protocol...' : 'Save Profile Changes'}
                           </button>
-                        </div>
+                        </form>
                       </div>
                     </div>
 
