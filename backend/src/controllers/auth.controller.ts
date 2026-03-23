@@ -123,7 +123,7 @@ export const register = async (req: Request, res: Response) => {
       data: {
         access_token,
         onboarding_url,
-        user: { id: result.id, email: result.email, firstName, lastName, role, isVerified: result.verified }
+        user: { id: result.id, email: result.email, firstName, lastName, role, isVerified: result.verified, phone: result.phone }
       }
     });
 
@@ -199,6 +199,7 @@ export const login = async (req: Request, res: Response) => {
           role,
           isVerified: profile.verified,
           avatar_url: profile.avatar_url,
+          phone: profile.phone
         }
       }
     });
@@ -284,6 +285,7 @@ export const ssoLogin = async (req: Request, res: Response) => {
           lastName: profile.full_name?.split(' ').slice(1).join(' ') || '',
           role,
           isVerified: profile.verified,
+          phone: profile.phone
         }
       }
     });

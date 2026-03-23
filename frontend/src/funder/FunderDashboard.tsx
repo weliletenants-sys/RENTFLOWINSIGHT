@@ -15,7 +15,7 @@ import FunderInvestModal from './FunderInvestModal';
 import FunderActionButtons from './components/FunderActionButtons';
 import FunderPortfolioPage from './FunderPortfolioPage';
 import FunderOpportunitiesPage from './FunderOpportunitiesPage';
-import { getFunderDashboardStats } from '../services/funderApi';
+import { getFunderDashboardStats, getFunderPortfolios, getFunderActivities } from '../services/funderApi';
 import type { DashboardStatsResponse } from '../services/funderApi';
 import { useKycStatus } from './hooks/useKycStatus';
 
@@ -42,8 +42,26 @@ export default function FunderDashboard() {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const liveStats = await getFunderDashboardStats();
+        const [liveStats, livePortfolios, rawActivities] = await Promise.all([
+          getFunderDashboardStats(),
+          getFunderPortfolios(),
+          getFunderActivities()
+        ]);
         setStats(liveStats);
+        setPortfolios(livePortfolios);
+
+        const formattedActivities = rawActivities.map((item: any) => ({
+          id: item.id,
+          title: item.category ? item.category.replace(/_/g, ' ').toUpperCase() : 'TRANSACTION',
+          category: item.category?.includes('fund') ? 'investment' : item.category?.includes('reward') ? 'reward' : 'withdrawal',
+          status: 'COMPLETED',
+          provider: item.reference_id || 'SYSTEM',
+          date: new Date(item.transaction_date).toLocaleDateString(),
+          timestamp: new Date(item.transaction_date).toLocaleTimeString(),
+          amount: Number(item.amount),
+          isCredit: item.direction === 'cash_in' || item.direction === 'wallet_in'
+        }));
+        setActivities(formattedActivities);
       } catch (error) {
         console.error("Failed to load dashboard stats", error);
       } finally {
