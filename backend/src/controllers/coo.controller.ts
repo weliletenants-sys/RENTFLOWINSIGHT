@@ -221,7 +221,24 @@ export const getAlerts = async (req: Request, res: Response) => {
       orderBy: { created_at: 'desc' }
     });
     
-    res.json(events);
+    // Schema Translator Bridge: Align active AWS schema with the Frontend React component requirements
+    const mapped = events.map((e: any) => {
+        let severity = 'MEDIUM';
+        const typeStr = (e.event_type || '').toLowerCase();
+        if (typeStr.includes('failed') || typeStr.includes('error')) severity = 'HIGH';
+        else if (typeStr.includes('created') || typeStr.includes('success')) severity = 'LOW';
+        
+        return {
+            id: e.id,
+            type: e.event_type ? e.event_type.replace(/_/g, ' ').toUpperCase() : 'SYSTEM EVENT',
+            source: e.related_entity_type ? e.related_entity_type.toUpperCase() : 'SYSTEM_LOG',
+            description: `Automated event triggered: ${e.event_type}. Associated Entity: ${e.related_entity_id}`,
+            severity: severity,
+            created_at: e.created_at
+        };
+    });
+
+    res.json(mapped);
   } catch (error: any) {
     return problemResponse(res, 500, 'Internal Server Error', error.message, 'https://api.rentflow.com/errors/internal-error');
   }
