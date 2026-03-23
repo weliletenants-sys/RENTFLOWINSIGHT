@@ -1582,3 +1582,17 @@ model ImpersonationLogs {
 
   @@map("impersonation_logs")
 }
+
+model VirtualOpportunities {
+  id            String   @id @default(uuid())
+  name          String
+  location      String
+  image_url     String?
+  rent_required Float
+  bedrooms      Int
+  status        String   @default("available")
+  created_at    String
+  updated_at    String
+
+  @@map("virtual_opportunities")
+}
