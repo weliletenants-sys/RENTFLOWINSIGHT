@@ -19,7 +19,7 @@ async function main() {
 
     // Provide a small floating point tolerance just in case of Javascript precision weirdness
     if (Math.abs(wallet.balance - sum) > 0.01) {
-      console.error(`🚨 FATAL MISMATCH! Wallet ${wallet.id} (${wallet.user?.email})`);
+      console.error(`🚨 FATAL MISMATCH! Wallet ${wallet.id} (User ID: ${wallet.user_id})`);
       console.error(`  Total Wallet Balance: ${wallet.balance}`);
       console.error(`  SUM of their Buckets: ${sum}`);
       console.error(`  Diff: ${wallet.balance - sum}`);
