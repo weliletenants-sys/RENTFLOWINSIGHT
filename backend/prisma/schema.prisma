@@ -1583,6 +1583,17 @@ model ImpersonationLogs {
 }
 
 model VirtualOpportunities {
+<<<<<<< HEAD
+  id               String  @id @default(uuid())
+  property_type    String
+  expected_roi     Float
+  acquisition_cost Float
+  funding_goal     Float
+  location         String
+  status           String
+  created_at       String
+  updated_at       String
+=======
   id            String  @id @default(uuid())
   name          String
   location      String
@@ -1592,6 +1603,7 @@ model VirtualOpportunities {
   status        String  @default("available")
   created_at    String
   updated_at    String
+>>>>>>> 1edf14f3db594a4c9c89560379fcaa6dd2491fea
 
   @@map("virtual_opportunities")
 }

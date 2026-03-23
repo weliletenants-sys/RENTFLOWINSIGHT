@@ -3,6 +3,8 @@ info:
   title: RentFlow Insight - COO API
   version: "1.0.0"
   description: Operations and metrics endpoints for the Chief Operating Officer.
+  license:
+    name: MIT
 servers:
   - url: /api/v1
 paths:
@@ -22,6 +24,74 @@ paths:
                 $ref: "#/components/schemas/CooOverviewMetrics"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /coo/opportunities:
+    get:
+      summary: List all virtual opportunities
+      operationId: getVirtualOpportunities
+      tags: [COO, Operations]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: cursor
+          in: query
+          schema: { type: string }
+          description: Opaque cursor for pagination
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20, maximum: 100 }
+      responses:
+        "200":
+          description: Paginated list of available/urgent/taken property supply units
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, pagination]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/VirtualOpportunity" }
+                  pagination:
+                    $ref: "#/components/schemas/CursorPage"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      summary: Create a new virtual opportunity
+      operationId: createVirtualOpportunity
+      tags: [COO, Operations]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, location, rent_required, bedrooms]
+              properties:
+                name: { type: string, example: "Kampala Heights Apt 4B" }
+                location: { type: string, example: "Makindye, Kampala" }
+                image_url: { type: string, example: "https://example.com/property.png" }
+                rent_required: { type: number, example: 850000 }
+                bedrooms: { type: integer, example: 2 }
+                status: { type: string, enum: ["available", "urgent", "taken"], default: "available" }
+      responses:
+        "201":
+          description: Successfully created opportunity
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: "success" }
+                  data: { $ref: "#/components/schemas/VirtualOpportunity" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "500":
           $ref: "#/components/responses/InternalServerError"
 
@@ -47,6 +117,27 @@ components:
             mainFloat: { type: number, example: 12000000 }
             agentEscrow: { type: number, example: 1440000 }
 
+    VirtualOpportunity:
+      type: object
+      required: [id, name, location, rent_required, bedrooms, status, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        location: { type: string }
+        image_url: { type: ["string", "null"] }
+        rent_required: { type: number }
+        bedrooms: { type: integer }
+        status: { type: string, enum: ["available", "urgent", "taken"] }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    CursorPage:
+      type: object
+      required: [next_cursor, has_more]
+      properties:
+        next_cursor: { type: ["string", "null"] }
+        has_more: { type: boolean }
+
     Problem:
       type: object
       required: [type, title, status]
@@ -58,6 +149,11 @@ components:
         instance: { type: string, format: uri }
 
   responses:
+    BadRequest:
+      description: Invalid request payload or missing fields
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
     Unauthorized:
       description: Missing or invalid authentication
       content:

@@ -23,8 +23,8 @@ export const COOOpportunities = () => {
   const loadOpportunities = async () => {
     try {
       setLoading(true);
-      const data = await fetchOpportunities();
-      setOpportunities(data);
+      const responseData = await fetchOpportunities();
+      setOpportunities(responseData.data || responseData);
       setError(null);
     } catch (err: any) {
       console.error(err);
@@ -249,3 +249,5 @@ export const COOOpportunities = () => {
     </div>
   );
 };
+
+export default COOOpportunities;
