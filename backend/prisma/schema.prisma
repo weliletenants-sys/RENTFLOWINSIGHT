@@ -1583,17 +1583,6 @@ model ImpersonationLogs {
 }
 
 model VirtualOpportunities {
-<<<<<<< HEAD
-  id               String  @id @default(uuid())
-  property_type    String
-  expected_roi     Float
-  acquisition_cost Float
-  funding_goal     Float
-  location         String
-  status           String
-  created_at       String
-  updated_at       String
-=======
   id            String  @id @default(uuid())
   name          String
   location      String
@@ -1603,7 +1592,6 @@ model VirtualOpportunities {
   status        String  @default("available")
   created_at    String
   updated_at    String
->>>>>>> 1edf14f3db594a4c9c89560379fcaa6dd2491fea
 
   @@map("virtual_opportunities")
 }
@@ -1654,4 +1642,20 @@ model FunderPortfolios {
 
   @@index([user_id])
   @@map("funder_portfolios")
+}
+
+model FunderProxyMandates {
+  id              String   @id @default(uuid())
+  funder_id       String
+  agent_id        String
+  agent_name      String?
+  agent_code      String?
+  daily_limit     Float
+  status          String   @default("active") // active, revoked
+  revoked_at      DateTime?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  @@index([funder_id])
+  @@map("funder_proxy_mandates")
 }

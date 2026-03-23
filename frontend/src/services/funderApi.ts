@@ -161,3 +161,30 @@ export const getPortfolios = async () => {
   return response.data;
 };
 
+// --- PROXY MANDATES ---
+
+export const getProxyMandates = async () => {
+  const response = await axios.get(`${API}/funder/proxy/mandates`, getAuthHeaders());
+  return response.data;
+};
+
+export const createProxyMandate = async (data: { agent_code: string; daily_limit: number }) => {
+  const response = await axios.post(`${API}/funder/proxy/mandates`, data, getAuthHeaders());
+  return response.data;
+};
+
+export const updateProxyLimit = async (id: string, daily_limit: number) => {
+  const response = await axios.put(`${API}/funder/proxy/mandates/${id}/limit`, { daily_limit }, getAuthHeaders());
+  return response.data;
+};
+
+export const revokeProxyMandate = async (id: string) => {
+  const response = await axios.put(`${API}/funder/proxy/mandates/${id}/revoke`, {}, getAuthHeaders());
+  return response.data;
+};
+
+export const restoreProxyMandate = async (id: string) => {
+  const response = await axios.put(`${API}/funder/proxy/mandates/${id}/restore`, {}, getAuthHeaders());
+  return response.data;
+};
+

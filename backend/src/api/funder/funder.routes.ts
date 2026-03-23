@@ -3,6 +3,7 @@ import { getDashboardStats, getPortfolios, getRecentActivities, fundRentPool, re
 import { uploadAvatar, uploadKycDocuments, getKycStatus } from '../../controllers/funder.kyc.controller';
 import { getPayoutMethods, addPayoutMethod, setPrimaryPayoutMethod, deletePayoutMethod, getRewardMode, updateRewardMode, getExitQueue, requestWithdrawal as requestCapitalWithdrawal, getPortfolios as getCapitalPortfolios } from '../../controllers/funder.financial.controller';
 import { uploadS3 } from '../../services/s3.service';
+import { getMandates, addMandate, updateMandateLimit, revokeMandate, restoreMandate } from '../../controllers/funder.proxy.controller';
 import { authGuard, rolesGuard } from '../../middlewares/auth.middleware';
 
 const router = Router();
@@ -37,5 +38,12 @@ router.put('/financial/reward-mode', updateRewardMode);
 router.get('/financial/exit-queue', getExitQueue);
 router.post('/financial/withdraw', requestCapitalWithdrawal);
 router.get('/financial/portfolios', getCapitalPortfolios);
+
+// --- Proxy Mandates ---
+router.get('/proxy/mandates', getMandates);
+router.post('/proxy/mandates', addMandate);
+router.put('/proxy/mandates/:id/limit', updateMandateLimit);
+router.put('/proxy/mandates/:id/revoke', revokeMandate);
+router.put('/proxy/mandates/:id/restore', restoreMandate);
 
 export default router;
