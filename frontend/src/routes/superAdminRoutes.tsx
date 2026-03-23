@@ -1,15 +1,15 @@
-import { Navigate, Route } from 'react-router-dom';
+import { Navigate, Route, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { lazy, Suspense } from 'react';
 
 // Lazy loading Super Admin Components
-const SuperAdminLayout = lazy(() => import('../admin/superadmin/SuperAdminLayout'));
-const SuperAdminOverview = lazy(() => import('../admin/superadmin/SuperAdminOverview'));
-const SuperAdminUsers = lazy(() => import('../admin/superadmin/SuperAdminUserManagement'));
-const SuperAdminAudit = lazy(() => import('../admin/superadmin/SuperAdminAuditLogs'));
-const SuperAdminConfig = lazy(() => import('../admin/superadmin/SuperAdminSystemConfig'));
+const SuperAdminOverview = lazy(() => import('../admin/super/views/SystemOverview'));
+const SuperAdminUsers = lazy(() => import('../admin/super/views/UserMatrix'));
+const RoleIntelligence = lazy(() => import('../admin/super/views/RoleIntelligence'));
+const SuperAdminAudit = lazy(() => import('../admin/super/views/AuditLogs'));
+const SuperAdminConfig = lazy(() => import('../admin/super/views/GlobalConfig'));
 const SuperAdminLedger = lazy(() => import('../admin/superadmin/SuperAdminLedger'));
-const SuperAdminSecurity = lazy(() => import('../admin/superadmin/SuperAdminSecurity'));
+const IdentityAccess = lazy(() => import('../admin/super/views/IdentityAccess'));
 
 const CentralLoader = () => (
   <div className="flex h-[50vh] items-center justify-center">
@@ -18,9 +18,7 @@ const CentralLoader = () => (
 );
 
 function RequireSuperAdmin({ children }: { children: React.ReactNode }) {
-  const { user, isAuthLoading } = useAuth();
-  
-  if (isAuthLoading) return <CentralLoader />;
+  const { user } = useAuth();
   
   if (!user || user.role !== 'SUPER_ADMIN') {
     return <Navigate to="/dashboard" replace />;
@@ -35,7 +33,7 @@ export const superAdminRoutes = (
     element={
       <RequireSuperAdmin>
         <Suspense fallback={<CentralLoader />}>
-          <SuperAdminLayout />
+          <Outlet />
         </Suspense>
       </RequireSuperAdmin>
     } 
@@ -45,9 +43,10 @@ export const superAdminRoutes = (
     <Route index element={<Navigate to="dashboard" replace />} />
     <Route path="dashboard" element={<Suspense fallback={<CentralLoader />}><SuperAdminOverview /></Suspense>} />
     <Route path="users" element={<Suspense fallback={<CentralLoader />}><SuperAdminUsers /></Suspense>} />
+    <Route path="intelligence" element={<Suspense fallback={<CentralLoader />}><RoleIntelligence /></Suspense>} />
     <Route path="audit" element={<Suspense fallback={<CentralLoader />}><SuperAdminAudit /></Suspense>} />
     <Route path="config" element={<Suspense fallback={<CentralLoader />}><SuperAdminConfig /></Suspense>} />
     <Route path="ledger" element={<Suspense fallback={<CentralLoader />}><SuperAdminLedger /></Suspense>} />
-    <Route path="security" element={<Suspense fallback={<CentralLoader />}><SuperAdminSecurity /></Suspense>} />
+    <Route path="identity" element={<Suspense fallback={<CentralLoader />}><IdentityAccess /></Suspense>} />
   </Route>
 );
