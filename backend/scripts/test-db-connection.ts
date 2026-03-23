@@ -3,6 +3,7 @@
  * Run with: npx ts-node scripts/test-db-connection.ts
  */
 
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import * as dns from 'dns';
 import * as net from 'net';
