@@ -68,3 +68,19 @@ export const uploadFunderAvatar = async (formData: FormData) => {
   });
   return response.data;
 };
+
+// --- SECURITY & 2FA ---
+export const changeFunderPassword = async (currentPassword: string, newPassword: string) => {
+  const response = await axios.put(`${API}/auth/security/password`, { currentPassword, newPassword }, getAuthHeaders());
+  return response.data;
+};
+
+export const enableFunder2FA = async () => {
+  const response = await axios.post(`${API}/auth/security/2fa/enable`, {}, getAuthHeaders());
+  return response.data;
+};
+
+export const verifyFunder2FA = async (otp: string) => {
+  const response = await axios.post(`${API}/auth/security/2fa/verify`, { otp }, getAuthHeaders());
+  return response.data;
+};

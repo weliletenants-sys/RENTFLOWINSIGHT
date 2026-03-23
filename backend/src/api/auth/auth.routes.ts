@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { register, login, ssoLogin, sendOTP, verifyOTP, logout, forgotPassword, verifyResetCode, resetPassword } from '../../controllers/auth.controller';
+import { changePassword, enable2FA, verify2FA } from '../../controllers/auth.security.controller';
 import { authGuard } from '../../middlewares/auth.middleware';
 
 const router = Router();
@@ -30,6 +31,11 @@ router.post('/otp/verifications', authLimiter, verifyOTP);
 router.post('/forgot-password', authLimiter, forgotPassword);
 router.post('/forgot-password/verify', authLimiter, verifyResetCode);
 router.post('/forgot-password/reset', authLimiter, resetPassword);
+
+// Security & 2FA (Authenticated Flows)
+router.put('/security/password', authGuard, changePassword);
+router.post('/security/2fa/enable', authGuard, enable2FA);
+router.post('/security/2fa/verify', authGuard, verify2FA);
 
 export default router;
 

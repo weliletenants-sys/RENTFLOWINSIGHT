@@ -33,7 +33,7 @@ import FunderSidebar from './components/FunderSidebar';
 import FunderBottomNav from './components/FunderBottomNav';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
 import { useKycStatus } from './hooks/useKycStatus';
-import { getFunderDashboardStats, updateFunderProfile, uploadFunderAvatar, type DashboardStatsResponse } from '../services/funderApi';
+import { getFunderDashboardStats, updateFunderProfile, uploadFunderAvatar, changeFunderPassword, enableFunder2FA, verifyFunder2FA, type DashboardStatsResponse } from '../services/funderApi';
 
 export default function FunderAccountSettings() {
   const navigate = useNavigate();
@@ -56,6 +56,18 @@ export default function FunderAccountSettings() {
   const [email, setEmail] = useState(authUser?.email || '');
   const [phone, setPhone] = useState(authUser?.phone || '');
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+
+  // Security States
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  // 2FA States
+  const [is2FAEnabled, setIs2FAEnabled] = useState((authUser as any)?.is_2fa_enabled || false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpInput, setOtpInput] = useState('');
+  const [isVerifying2FA, setIsVerifying2FA] = useState(false);
+  const [isEnabling2FA, setIsEnabling2FA] = useState(false);
 
   // Avatar states - frontend AuthContext type does not currently type avatar_url so we use any casting safely or default string
   const [avatarPreview, setAvatarPreview] = useState<string>((authUser as any)?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userFirst}&backgroundColor=059669`);
@@ -153,6 +165,64 @@ export default function FunderAccountSettings() {
     { label: 'Contains an uppercase letter', met: /[A-Z]/.test(newPassword) },
     { label: 'Contains a special character', met: /[^A-Za-z0-9]/.test(newPassword) },
   ];
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentPassword) return toast.error('Please enter your current password.');
+    if (newPassword !== confirmPassword) return toast.error('The new passwords do not match.');
+    const allMet = passwordCriteria.every(c => c.met);
+    if (!allMet) return toast.error('Please ensure your new password meets all the strength requirements.');
+    
+    setIsChangingPassword(true);
+    const tId = toast.loading('Updating your password...');
+    try {
+      const res = await changeFunderPassword(currentPassword, newPassword);
+      toast.success(res.message || 'Your password has been updated securely.', { id: tId });
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || 'Failed to update password. Please try again.', { id: tId });
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const handleToggle2FA = async () => {
+    if (is2FAEnabled) {
+      toast.error('To disable 2FA, please contact support for assistance.');
+      return;
+    }
+    setIsEnabling2FA(true);
+    const tId = toast.loading('Sending verification code...');
+    try {
+      await enableFunder2FA();
+      toast.success('Verification code sent! Please check your messages.', { id: tId });
+      setShowOtpModal(true);
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || 'Failed to send the verification code.', { id: tId });
+    } finally {
+      setIsEnabling2FA(false);
+    }
+  };
+
+  const handleVerify2FA = async () => {
+    if (otpInput.length !== 6) return toast.error('Please enter the 6-digit verification code.');
+    setIsVerifying2FA(true);
+    const tId = toast.loading('Verifying your code...');
+    try {
+      await verifyFunder2FA(otpInput);
+      toast.success('Two-Factor Authentication has been successfully enabled!', { id: tId });
+      setIs2FAEnabled(true);
+      updateUserLocally({ is_2fa_enabled: true } as any);
+      setShowOtpModal(false);
+      setOtpInput('');
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || "That code didn't work. Please try again.", { id: tId });
+    } finally {
+      setIsVerifying2FA(false);
+    }
+  };
 
   return (
     <div className="min-h-screen font-sans" style={{ background: 'var(--color-primary-faint)' }}>
@@ -399,18 +469,18 @@ export default function FunderAccountSettings() {
                           Protect your capital pool from unauthorized withdrawals. Required for transactions exceeding UGX 1,000,000.
                         </p>
                         <div className="space-y-4">
-                          <div className="flex items-center justify-between p-5 border-2 border-slate-100 rounded-2xl bg-white hover:border-emerald-100 transition-colors cursor-pointer group">
+                          <div onClick={isEnabling2FA ? undefined : handleToggle2FA} className={`flex items-center justify-between p-5 border-2 rounded-2xl transition-colors cursor-pointer group ${is2FAEnabled ? 'border-emerald-500 bg-emerald-50' : 'border-slate-100 bg-white hover:border-emerald-100'}`}>
                             <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                              <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${is2FAEnabled ? 'bg-emerald-600 text-white' : 'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white'}`}>
                                 <Smartphone className="w-6 h-6" />
                               </div>
                               <div>
                                 <h4 className="font-bold text-slate-800">SMS OTP</h4>
-                                <p className="text-xs text-slate-500 font-medium">Text messages sent to +256 700 *** 936</p>
+                                <p className="text-xs text-slate-500 font-medium">Text messages sent to {phone || 'your phone line'}</p>
                               </div>
                             </div>
-                            <div className="w-12 h-6 bg-emerald-600 rounded-full flex items-center p-1 cursor-pointer transition-colors shadow-inner">
-                              <div className="w-4 h-4 bg-white rounded-full translate-x-6 transition-transform shadow-sm" />
+                            <div className={`w-12 h-6 rounded-full flex items-center p-1 transition-colors shadow-inner ${is2FAEnabled ? 'bg-emerald-600' : 'bg-slate-300'}`}>
+                              <div className={`w-4 h-4 bg-white rounded-full transition-transform shadow-sm ${is2FAEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
                             </div>
                           </div>
                           <div className="flex items-center justify-between p-5 border-2 border-slate-100 rounded-2xl bg-slate-50 cursor-not-allowed opacity-70">
@@ -444,6 +514,8 @@ export default function FunderAccountSettings() {
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Current Password</label>
                             <input 
                               type="password" 
+                              value={currentPassword}
+                              onChange={e => setCurrentPassword(e.target.value)}
                               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all placeholder:text-slate-400" 
                               placeholder="••••••••"
                             />
@@ -463,6 +535,8 @@ export default function FunderAccountSettings() {
                               <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Confirm Password</label>
                               <input 
                                 type="password" 
+                                value={confirmPassword}
+                                onChange={e => setConfirmPassword(e.target.value)}
                                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium text-slate-700 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all placeholder:text-slate-400" 
                                 placeholder="Repeat new password"
                               />
@@ -477,19 +551,11 @@ export default function FunderAccountSettings() {
                             ))}
                           </div>
                           <button 
-                            onClick={(e) => {
-                              e.preventDefault();
-                              const allMet = passwordCriteria.every(c => c.met);
-                              if (!allMet) {
-                                toast.error('Password does not meet all security criteria');
-                                return;
-                              }
-                              toast.success('Password updated securely!');
-                              setNewPassword('');
-                            }}
-                            className="cursor-pointer w-full mt-2 bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition-colors shadow-md"
+                            disabled={isChangingPassword}
+                            onClick={handleChangePassword}
+                            className="cursor-pointer w-full mt-2 bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition-colors shadow-md disabled:opacity-50"
                           >
-                            Update Password
+                            {isChangingPassword ? 'Working on Vault...' : 'Update Password'}
                           </button>
                         </div>
                       </div>
@@ -948,6 +1014,39 @@ export default function FunderAccountSettings() {
           </div>
         </div>
       )}
+
+      {/* SMS OTP VOLATILE MODAL */}
+      {showOtpModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-white rounded-[24px] w-full max-w-sm p-8 shadow-2xl animate-in zoom-in-95 duration-300 relative border border-slate-100/50">
+            <div className="mx-auto w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-emerald-100/50">
+              <Smartphone className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-black text-slate-900 text-center tracking-tight mb-2">Verify Ownership</h3>
+            <p className="text-sm font-medium text-slate-500 text-center mb-8 leading-relaxed px-2">
+              Enter the 6-digit confirmation code transmitted securely via Africa's Talking to your registered line.
+            </p>
+            <div className="space-y-4">
+              <input
+                type="text"
+                autoFocus
+                maxLength={6}
+                value={otpInput}
+                onChange={e => setOtpInput(e.target.value.replace(/[^0-9]/g, ''))}
+                className="w-full text-center tracking-[0.5em] text-2xl font-black bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-4 text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 transition-all placeholder:text-slate-300 placeholder:font-medium placeholder:tracking-normal"
+                placeholder="000000"
+              />
+              <div className="flex gap-3 pt-4">
+                <button onClick={() => setShowOtpModal(false)} className="flex-1 cursor-pointer bg-white text-slate-600 border border-slate-200 font-bold py-3.5 rounded-xl hover:bg-slate-50 transition-colors shadow-sm text-sm">Cancel</button>
+                <button disabled={isVerifying2FA || otpInput.length !== 6} onClick={handleVerify2FA} className="cursor-pointer flex-1 bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 transition-colors shadow-md text-sm disabled:opacity-50">
+                  {isVerifying2FA ? 'Verifying...' : 'Confirm PIN'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

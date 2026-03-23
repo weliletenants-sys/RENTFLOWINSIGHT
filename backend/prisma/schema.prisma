@@ -727,6 +727,11 @@ model Profiles {
   kyc_approved_at       String?
   kyc_rejected_reason   String?
 
+  // 2FA Security
+  is_2fa_enabled        Boolean  @default(false)
+  two_factor_otp        String?
+  two_factor_expires_at String?
+
   @@map("profiles")
 }
 
