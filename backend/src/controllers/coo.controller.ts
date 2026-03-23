@@ -9,8 +9,8 @@ export const getOverviewMetrics = async (req: Request, res: Response) => {
     const today = new Date().toISOString().split('T')[0]; // Simple YYYY-MM-DD prefix matcher for string dates
 
     // 1. Demographics
-    const totalInvestors = await prisma.userRoles.count({ where: { role: 'FUNDER', enabled: true } });
-    const activeAgents = await prisma.userRoles.count({ where: { role: 'AGENT', enabled: true } });
+    const totalInvestors = await prisma.profiles.count({ where: { role: 'FUNDER', is_frozen: false } });
+    const activeAgents = await prisma.profiles.count({ where: { role: 'AGENT', is_frozen: false } });
     const activeAccounts = await prisma.profiles.count({ where: { verified: true } });
 
     // 2. Portfolios (Total Investments)

@@ -27,7 +27,7 @@ export const getGlobalReconciliation = async (req: Request, res: Response) => {
         results.push({
           walletId: wallet.id,
           userId: wallet.user_id,
-          email: wallet.user?.email || 'Unknown',
+          email: 'Unknown',
           legacyTotal: wallet.balance,
           bucketSum: sum,
           discrepancy: wallet.balance - sum,

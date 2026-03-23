@@ -8,15 +8,21 @@ import { problemResponse } from '../utils/problem';
  */
 export const getRequisitions = async (req: Request, res: Response) => {
   try {
-    const requisitions = await prisma.personaRequisitions.findMany({
+    const requisitionsRaw = await prisma.personaRequisitions.findMany({
       where: { status: 'pending' },
-      include: {
-        user: {
-          select: { email: true, full_name: true, phone: true }
-        }
-      },
       orderBy: { created_at: 'asc' }
     });
+
+    const userIds = requisitionsRaw.map((r: any) => r.user_id);
+    const users = await prisma.profiles.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, email: true, full_name: true, phone: true }
+    });
+
+    const requisitions = requisitionsRaw.map((r: any) => ({
+      ...r,
+      user: users.find(u => u.id === r.user_id) || null
+    }));
 
     return res.status(200).json(requisitions);
   } catch (error) {
