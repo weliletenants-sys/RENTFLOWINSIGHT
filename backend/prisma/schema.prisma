@@ -1607,3 +1607,51 @@ model VirtualOpportunities {
 
   @@map("virtual_opportunities")
 }
+
+model PayoutMethods {
+  id             String   @id @default(uuid())
+  user_id        String
+  provider       String   // e.g., "MTN Mobile Money", "Bank Wire"
+  account_name   String   // Legal Name on Account
+  account_number String   // MSISDN or Bank Account
+  is_primary     Boolean  @default(false)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  @@index([user_id])
+  @@map("payout_methods")
+}
+
+model FunderSettings {
+  id               String   @id @default(uuid())
+  user_id          String   @unique
+  reward_mode      String   @default("compound") // "compound" or "payout"
+  updated_at       DateTime @updatedAt
+
+  @@map("funder_settings")
+}
+
+model CapitalWithdrawals {
+  id                  String   @id @default(uuid())
+  user_id             String
+  amount              Float
+  status              String   @default("in_queue") // in_queue, processing, completed
+  initiated_at        DateTime @default(now())
+  expected_release_at DateTime
+  
+  @@index([user_id])
+  @@map("capital_withdrawals")
+}
+
+model FunderPortfolios {
+  id             String   @id @default(uuid())
+  user_id        String
+  portfolio_id   String   @unique // e.g., "WPF-7291"
+  funding_date   DateTime @default(now())
+  active_capital Float
+  roi_rate       String   // e.g., "15% Standard"
+  earned_rewards Float    @default(0)
+
+  @@index([user_id])
+  @@map("funder_portfolios")
+}

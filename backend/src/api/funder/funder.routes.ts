@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { getDashboardStats, getPortfolios, getRecentActivities, fundRentPool, requestWithdrawal, getOpportunities, updateProfileInfo } from '../../controllers/funder.controller';
 import { uploadAvatar, uploadKycDocuments, getKycStatus } from '../../controllers/funder.kyc.controller';
+import { getPayoutMethods, addPayoutMethod, setPrimaryPayoutMethod, deletePayoutMethod, getRewardMode, updateRewardMode, getExitQueue, requestWithdrawal as requestCapitalWithdrawal, getPortfolios as getCapitalPortfolios } from '../../controllers/funder.financial.controller';
 import { uploadS3 } from '../../services/s3.service';
 import { authGuard, rolesGuard } from '../../middlewares/auth.middleware';
 
@@ -23,5 +24,18 @@ router.post('/withdrawals', requestWithdrawal);
 router.post('/kyc/avatar', uploadS3.single('avatar'), uploadAvatar);
 router.post('/kyc/documents', uploadS3.fields([{ name: 'front_id', maxCount: 1 }, { name: 'back_id', maxCount: 1 }]), uploadKycDocuments);
 router.put('/kyc/profile', updateProfileInfo);
+
+// --- Financial & Payout Methods ---
+router.get('/payout-methods', getPayoutMethods);
+router.post('/payout-methods', addPayoutMethod);
+router.put('/payout-methods/:id/primary', setPrimaryPayoutMethod);
+router.delete('/payout-methods/:id', deletePayoutMethod);
+
+// --- Capital & Escrow Management ---
+router.get('/financial/reward-mode', getRewardMode);
+router.put('/financial/reward-mode', updateRewardMode);
+router.get('/financial/exit-queue', getExitQueue);
+router.post('/financial/withdraw', requestCapitalWithdrawal);
+router.get('/financial/portfolios', getCapitalPortfolios);
 
 export default router;

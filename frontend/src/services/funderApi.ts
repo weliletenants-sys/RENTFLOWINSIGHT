@@ -104,3 +104,60 @@ export const revokeAllOtherSessions = async () => {
   const response = await axios.delete(`${API}/auth/security/sessions`, getAuthHeaders());
   return response.data;
 };
+
+export type PayoutMethodView = {
+  id: string;
+  provider: string;
+  account_name: string;
+  account_number: string;
+  is_primary: boolean;
+  created_at: string;
+};
+
+export const getPayoutMethods = async () => {
+  const response = await axios.get(`${API}/funder/payout-methods`, getAuthHeaders());
+  return response.data;
+};
+
+export const addPayoutMethod = async (data: { provider: string; account_name: string; account_number: string; is_primary: boolean }) => {
+  const response = await axios.post(`${API}/funder/payout-methods`, data, getAuthHeaders());
+  return response.data;
+};
+
+export const setPrimaryPayoutMethod = async (id: string) => {
+  const response = await axios.put(`${API}/funder/payout-methods/${id}/primary`, {}, getAuthHeaders());
+  return response.data;
+};
+
+export const deletePayoutMethod = async (id: string) => {
+  const response = await axios.delete(`${API}/funder/payout-methods/${id}`, getAuthHeaders());
+  return response.data;
+};
+
+// --- ESCROW & PORTFOLIOS ---
+
+export const getRewardMode = async () => {
+  const response = await axios.get(`${API}/funder/financial/reward-mode`, getAuthHeaders());
+  return response.data;
+};
+
+export const updateRewardMode = async (mode: 'compound' | 'payout') => {
+  const response = await axios.put(`${API}/funder/financial/reward-mode`, { mode }, getAuthHeaders());
+  return response.data;
+};
+
+export const getExitQueue = async () => {
+  const response = await axios.get(`${API}/funder/financial/exit-queue`, getAuthHeaders());
+  return response.data;
+};
+
+export const requestCapitalWithdrawal = async (amount: number) => {
+  const response = await axios.post(`${API}/funder/financial/withdraw`, { amount }, getAuthHeaders());
+  return response.data;
+};
+
+export const getPortfolios = async () => {
+  const response = await axios.get(`${API}/funder/financial/portfolios`, getAuthHeaders());
+  return response.data;
+};
+
