@@ -14,7 +14,7 @@ const s3Client = new S3Client({
   }
 });
 
-const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME || 'welile-express-bucket';
+const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME || 'welile-production-storage-2026';
 
 // Helper to filter allowed file types
 const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
@@ -37,19 +37,13 @@ export const uploadS3 = multer({
       const userId = req.user?.sub || req.user?.id || 'unknown_user';
       const fileExt = path.extname(file.originalname);
       
-      // Determine folder based on the upload type (sent via query or route params, or we default)
-      // If it's an avatar: "funder/${user_id}/avatar/${filename}"
-      // If it's KYC: "funder/${user_id}/kyc/${field_name}_${user_id}${fileExt}"
-      
-      let folderPath = `funder/${userId}/misc`;
+      const folderPath = `funder/${userId}`;
       let fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}${fileExt}`;
 
       if (file.fieldname === 'avatar') {
-        folderPath = `funder/${userId}/avatar`;
         fileName = `profile_photo_${Date.now()}${fileExt}`;
       } else if (file.fieldname === 'front_id' || file.fieldname === 'back_id') {
-        folderPath = `funder/${userId}/kyc`;
-        fileName = `${file.fieldname}_${userId}${fileExt}`; // e.g. front_id_12345.jpg
+        fileName = `${file.fieldname}_${Date.now()}${fileExt}`; // e.g. front_id_12345.jpg
       }
 
       cb(null, `${folderPath}/${fileName}`);

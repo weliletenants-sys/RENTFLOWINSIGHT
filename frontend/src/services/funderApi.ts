@@ -51,3 +51,20 @@ export const getFunderOpportunities = async () => {
   const response = await axios.get(`${API}/funder/opportunities`, getAuthHeaders());
   return response.data.data;
 };
+
+export const updateFunderProfile = async (firstName: string, lastName: string, email: string, phone: string) => {
+  const response = await axios.put(`${API}/funder/kyc/profile`, { firstName, lastName, email, phone }, getAuthHeaders());
+  return response.data;
+};
+
+export const uploadFunderAvatar = async (formData: FormData) => {
+  // Overriding content-type for multipart boundaries
+  const token = localStorage.getItem('access_token');
+  const response = await axios.post(`${API}/funder/kyc/avatar`, formData, {
+    headers: {
+      Authorization: token ? `Bearer ${token}` : '',
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};

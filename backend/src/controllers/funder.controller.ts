@@ -250,3 +250,79 @@ export const getOpportunities = async (req: Request, res: Response) => {
     return res.status(500).json({ status: 'error', message: 'Internal server error' });
   }
 };
+
+export const updateProfileInfo = async (req: Request, res: Response) => {
+  try {
+    const funderId = req.user?.sub || req.user?.id;
+    const { firstName, lastName, email, phone } = req.body;
+
+    if (!firstName || !lastName || !email || !phone) {
+      return res.status(400).type('application/problem+json').json({
+        type: 'https://api.example.com/errors/validation-error',
+        title: 'Bad Request',
+        status: 400,
+        detail: 'First name, last name, email, and phone number are absolutely required.'
+      });
+    }
+
+    // Strict sanitization: Alpha characters, spaces, hyphens, and apostrophes ONLY
+    const nameRegex = /^[a-zA-Z\s\-']+$/;
+    
+    if (!nameRegex.test(firstName) || !nameRegex.test(lastName)) {
+      return res.status(422).type('application/problem+json').json({
+        type: 'https://api.example.com/errors/validation-error',
+        title: 'Validation Error',
+        status: 422,
+        detail: 'Names must contain only text characters, spaces, or hyphens. Emojis, numbers, and special symbols are strictly forbidden.',
+        instance: `/api/funder/profile`,
+        errors: [{ field: 'name', message: 'Invalid characters detected' }]
+      });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(422).type('application/problem+json').json({
+        type: 'https://api.example.com/errors/validation-error',
+        title: 'Validation Error',
+        status: 422,
+        detail: 'The provided email address is not structurally valid.',
+        instance: `/api/funder/profile`
+      });
+    }
+
+    const phoneRegex = /^\+?[0-9\s\-]{9,15}$/;
+    if (!phoneRegex.test(phone)) {
+      return res.status(422).type('application/problem+json').json({
+        type: 'https://api.example.com/errors/validation-error',
+        title: 'Validation Error',
+        status: 422,
+        detail: 'The provided phone number contains disallowed characters or is not of the correct length.',
+        instance: `/api/funder/profile`
+      });
+    }
+
+    const updatedProfile = await prisma.profiles.update({
+      where: { id: funderId },
+      data: {
+        full_name: `${firstName.trim()} ${lastName.trim()}`,
+        email: email.trim().toLowerCase(),
+        phone: phone.trim(),
+        updated_at: new Date().toISOString()
+      }
+    });
+
+    return res.status(200).json({
+      status: 'success',
+      data: updatedProfile,
+      message: 'Profile updated successfully'
+    });
+  } catch (error: any) {
+    console.error('updateProfileInfo error:', error);
+    return res.status(500).type('application/problem+json').json({
+      type: 'https://api.example.com/errors/internal-server-error',
+      title: 'Internal Server Error',
+      status: 500,
+      detail: 'An unexpected error occurred while updating the profile.'
+    });
+  }
+};

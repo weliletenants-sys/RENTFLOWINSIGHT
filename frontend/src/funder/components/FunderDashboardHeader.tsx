@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, Search, User, CheckCircle, TrendingUp, Info, Settings, LogOut, LifeBuoy, Activity, BadgeCheck, Loader2, ShieldCheck, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { Bell, Search, CheckCircle, TrendingUp, Info, Settings, LogOut, LifeBuoy, Activity, BadgeCheck, Loader2, ShieldCheck, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface FunderDashboardHeaderProps {
@@ -224,20 +224,16 @@ export default function FunderDashboardHeader({
             }}
           >
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-bold leading-none text-slate-900">{user.fullName}</p>
+              <p className="text-sm font-bold leading-none text-slate-900">{authUser?.firstName || user.fullName}</p>
               <p className="text-[10px] text-slate-500 uppercase tracking-wider">{currentDate}</p>
             </div>
             <div className="relative">
-              {user.avatarUrl ? (
-                <img src={user.avatarUrl} alt={user.fullName} className="w-10 h-10 rounded-full object-cover border-2" style={{ borderColor: 'var(--color-primary-border)' }} />
-              ) : (
-                <div
-                  className="w-10 h-10 rounded-full border-2 flex items-center justify-center"
-                  style={{ background: 'var(--color-primary-light)', borderColor: 'var(--color-primary-border)' }}
-                >
-                  <User className="w-5 h-5" style={{ color: 'var(--color-primary)' }} />
-                </div>
-              )}
+              <img 
+                src={(authUser as any)?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${authUser?.firstName || 'User'}&backgroundColor=059669`} 
+                alt={user.fullName} 
+                className="w-10 h-10 rounded-full object-cover border-2" 
+                style={{ borderColor: 'var(--color-primary-border)' }} 
+              />
               {authUser?.isVerified && (
                 <div className="absolute -top-0 -right-1 bg-white rounded-full p-[1px]">
                   <BadgeCheck className="w-3.5 h-3.5 text-white" style={{ fill: 'var(--color-primary)' }} />
