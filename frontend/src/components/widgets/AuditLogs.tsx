@@ -75,7 +75,7 @@ export default function AuditLogsWidget() {
                 <tr>
                   <td colSpan={5} className="px-6 py-8 text-center text-sm font-medium text-on-surface-variant">Decrypting audit stream...</td>
                 </tr>
-              ) : logs.length === 0 ? (
+              ) : !logs || logs.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-8 text-center text-sm font-medium text-on-surface-variant">No cryptographic traces found.</td>
                 </tr>

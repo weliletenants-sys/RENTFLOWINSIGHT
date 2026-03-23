@@ -1294,15 +1294,15 @@ model WithdrawalRequests {
 
 model AuditLogs {
   id          String  @id @default(uuid())
-  user_id     String?  // Map this conceptually to actor_id
-  actor_role  String?  // New field
+  user_id     String? // Map this conceptually to actor_id
+  actor_role  String? // New field
   action_type String?
   table_name  String?
-  record_id   String?  // Map this conceptually to target_id
-  target_id   String?  // New field for specific user targets
+  record_id   String? // Map this conceptually to target_id
+  target_id   String? // New field for specific user targets
   metadata    Json?
-  ip_address  String?  // New field
-  user_agent  String?  // New field
+  ip_address  String? // New field
+  user_agent  String? // New field
   created_at  String?
 
   @@map("audit_logs")
@@ -1508,7 +1508,7 @@ model PersonaRequisitions {
 }
 
 model DailyPlatformStats {
-  date               String  @id
+  date               String @id
   total_users        Float
   new_users          Float
   active_users       Float
@@ -1543,7 +1543,7 @@ model StaffPerformanceSummary {
 }
 
 model StaffAuditLogs {
-  id            String  @id @default(uuid())
+  id            String @id @default(uuid())
   staff_id      String
   action        String
   created_at    String
@@ -1586,6 +1586,15 @@ model ImpersonationLogs {
   created_at     DateTime @default(now())
 
   @@map("impersonation_logs")
+}
+
+model SystemConfig {
+  key        String  @id
+  value      String
+  updated_at String
+  updated_by String?
+
+  @@map("system_config")
 }
 
 model VirtualOpportunities {

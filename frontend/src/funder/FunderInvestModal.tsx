@@ -31,7 +31,7 @@ export default function FunderInvestModal({ isOpen, onClose, onSuccess, walletBa
     setIsSubmitting(true);
     
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token') || localStorage.getItem('token');
       await axios.post('http://localhost:3000/api/supporter/funding-pools', 
         { amount: numAmount },
         { headers: { Authorization: `Bearer ${token}` } }

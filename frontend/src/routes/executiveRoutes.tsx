@@ -10,7 +10,6 @@ const CfoDashboard = lazy(() => import('../admin/cfo/CfoDashboard'));
 const CooDashboard = lazy(() => import('../admin/coo/COOOverview'));
 // We will build these two next
 const CtoDashboard = lazy(() => import('../admin/cto/CtoDashboard'));
-const CrmDashboard = lazy(() => import('../admin/crm/CrmDashboard'));
 
 const CentralLoader = () => (
   <div className="flex h-[50vh] items-center justify-center">
@@ -56,14 +55,7 @@ export const executiveRoutes = (
         </RequireRole>
       } 
     />
-    <Route 
-      path="crm" 
-      element={
-        <RequireRole allowedRoles={['CRM']}>
-          <Suspense fallback={<CentralLoader />}><CrmDashboard /></Suspense>
-        </RequireRole>
-      } 
-    />
+
     <Route 
       path="cfo" 
       element={
