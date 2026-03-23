@@ -89,3 +89,18 @@ export const disableFunder2FA = async () => {
   const response = await axios.post(`${API}/auth/security/2fa/disable`, {}, getAuthHeaders());
   return response.data;
 };
+
+export const getSessions = async () => {
+  const response = await axios.get(`${API}/auth/security/sessions`, getAuthHeaders());
+  return response.data;
+};
+
+export const revokeSession = async (id: string) => {
+  const response = await axios.delete(`${API}/auth/security/sessions/${id}`, getAuthHeaders());
+  return response.data;
+};
+
+export const revokeAllOtherSessions = async () => {
+  const response = await axios.delete(`${API}/auth/security/sessions`, getAuthHeaders());
+  return response.data;
+};

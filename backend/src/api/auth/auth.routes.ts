@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { register, login, ssoLogin, sendOTP, verifyOTP, logout, forgotPassword, verifyResetCode, resetPassword } from '../../controllers/auth.controller';
-import { changePassword, enable2FA, verify2FA, disable2FA } from '../../controllers/auth.security.controller';
+import { changePassword, enable2FA, verify2FA, disable2FA, getSessions, revokeSession, revokeAllOtherSessions } from '../../controllers/auth.security.controller';
 import { authGuard } from '../../middlewares/auth.middleware';
 
 const router = Router();
@@ -10,7 +10,24 @@ const router = Router();
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
-  message: { type: 'https://api.example.com/errors/too-many-requests', title: 'Too Many Requests', status: 429, detail: 'Too many login attempts, please try again after 15 minutes' }
+  handler: (req, res) => {
+    const resetTime = (req as any).rateLimit?.resetTime;
+    const remainingMs = resetTime ? resetTime.getTime() - Date.now() : 15 * 60 * 1000;
+    const remainingSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
+    const minutes = Math.floor(remainingSeconds / 60);
+    const seconds = remainingSeconds % 60;
+    
+    let timeString = '';
+    if (minutes > 0) timeString += `${minutes}m `;
+    timeString += `${seconds}s`;
+
+    res.status(429).json({
+      type: 'https://api.example.com/errors/too-many-requests',
+      title: 'Too Many Requests',
+      status: 429,
+      detail: `Too many login attempts, please try again in ${timeString.trim()}`
+    });
+  }
 });
 
 // Moderate limiter for Registration & OTP
@@ -37,6 +54,11 @@ router.put('/security/password', authGuard, changePassword);
 router.post('/security/2fa/enable', authGuard, enable2FA);
 router.post('/security/2fa/verify', authGuard, verify2FA);
 router.post('/security/2fa/disable', authGuard, disable2FA);
+
+// Session History Management
+router.get('/security/sessions', authGuard, getSessions);
+router.delete('/security/sessions', authGuard, revokeAllOtherSessions);
+router.delete('/security/sessions/:id', authGuard, revokeSession);
 
 export default router;
 

@@ -227,3 +227,104 @@ export const disable2FA = async (req: Request, res: Response) => {
     return problemResponse(res, 500, 'Internal Server Error', 'An unexpected error occurred while disabling 2FA.', 'internal-error');
   }
 };
+
+/**
+ * GET /api/auth/security/sessions
+ */
+export const getSessions = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.sub;
+    const currentToken = req.headers.authorization?.split(' ')[1];
+
+    const activeSessions = await prisma.sessions.findMany({
+      where: {
+        user_id: userId,
+        is_revoked: false,
+        expires_at: { gt: new Date() }
+      },
+      orderBy: { created_at: 'desc' }
+    });
+
+    // Mark which one is the current session
+    const sessionsList = activeSessions.map(session => ({
+      id: session.id,
+      device_info: session.device_info,
+      ip_address: session.ip_address,
+      created_at: session.created_at,
+      expires_at: session.expires_at,
+      is_current: session.token === currentToken
+    }));
+
+    return res.status(200).json({ status: 'success', data: { sessions: sessionsList } });
+  } catch (error) {
+    console.error('getSessions error:', error);
+    return problemResponse(res, 500, 'Internal Server Error', 'Failed to retrieve active sessions.', 'internal-error');
+  }
+};
+
+/**
+ * DELETE /api/auth/security/sessions/:id
+ */
+export const revokeSession = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.sub;
+    const sessionId = req.params.id;
+
+    const session = await prisma.sessions.findFirst({
+      where: { id: sessionId, user_id: userId }
+    });
+
+    if (!session) {
+      return problemResponse(res, 404, 'Not Found', 'Session not found.', 'not-found');
+    }
+
+    await prisma.sessions.update({
+      where: { id: sessionId },
+      data: { is_revoked: true, updated_at: new Date() }
+    });
+
+    await logSecurityEvent({
+      event: 'SESSION_REVOKED',
+      user_id: userId,
+      ip_address: req.ip,
+      user_agent: req.headers['user-agent'],
+      details: { revoked_session_id: sessionId }
+    });
+
+    return res.status(200).json({ status: 'success', message: 'Session revoked successfully.' });
+  } catch (error) {
+    console.error('revokeSession error:', error);
+    return problemResponse(res, 500, 'Internal Server Error', 'Failed to revoke session.', 'internal-error');
+  }
+};
+
+/**
+ * DELETE /api/auth/security/sessions
+ */
+export const revokeAllOtherSessions = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.sub;
+    const currentToken = req.headers.authorization?.split(' ')[1];
+
+    await prisma.sessions.updateMany({
+      where: {
+        user_id: userId,
+        token: { not: currentToken },
+        is_revoked: false
+      },
+      data: { is_revoked: true, updated_at: new Date() }
+    });
+
+    await logSecurityEvent({
+      event: 'ALL_OTHER_SESSIONS_REVOKED',
+      user_id: userId,
+      ip_address: req.ip,
+      user_agent: req.headers['user-agent']
+    });
+
+    return res.status(200).json({ status: 'success', message: 'All other sessions have been logged out securely.' });
+  } catch (error) {
+    console.error('revokeAllOtherSessions error:', error);
+    return problemResponse(res, 500, 'Internal Server Error', 'Failed to revoke other sessions.', 'internal-error');
+  }
+};

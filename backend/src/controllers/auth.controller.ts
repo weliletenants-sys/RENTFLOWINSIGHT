@@ -39,7 +39,7 @@ export const register = async (req: Request, res: Response) => {
 
     const now = new Date().toISOString();
     const password_hash = await bcrypt.hash(password, 12); // secure hashing
-    
+
     // 2. Atomic DB Transaction (backend.md)
     const result = await prisma.$transaction(async (tx) => {
       const profile = await tx.profiles.create({
@@ -48,6 +48,7 @@ export const register = async (req: Request, res: Response) => {
           full_name: `${firstName.trim()} ${lastName.trim()}`,
           phone: phone ? phone.trim() : '0000000000',
           password_hash,
+          role: role.toUpperCase(),
           is_frozen: false,
           verified: false,
           rent_discount_active: false,
@@ -99,10 +100,7 @@ export const register = async (req: Request, res: Response) => {
     const payload = { email: result.email, sub: result.id, role: role, firstName: firstName.trim() };
     const access_token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
 
-    await prisma.sessions.updateMany({
-      where: { user_id: result.id, is_revoked: false },
-      data: { is_revoked: true }
-    });
+    // Retain previous active sessions for multi-device support
 
     await prisma.sessions.create({
       data: {
@@ -146,21 +144,21 @@ export const login = async (req: Request, res: Response) => {
 
     const emailTrimmed = email.toLowerCase().trim();
     const profile = await prisma.profiles.findFirst({ where: { email: emailTrimmed } });
-    
+
     // Auth Validation
     if (!profile || !profile.password_hash) {
       // Intentional delay to avoid timing leaks
-      await bcrypt.compare('dummy', '$2b$12$dummyhashstings12345678'); 
-      await logSecurityEvent({ event: 'LOGIN_FAILED', email: emailTrimmed, ip_address: req.ip, user_agent: req.headers['user-agent'], details: { reason: 'user_not_found_or_no_password' }});
+      await bcrypt.compare('dummy', '$2b$12$dummyhashstings12345678');
+      await logSecurityEvent({ event: 'LOGIN_FAILED', email: emailTrimmed, ip_address: req.ip, user_agent: req.headers['user-agent'], details: { reason: 'user_not_found_or_no_password' } });
       return problemResponse(res, 401, 'Unauthorized', 'Invalid email or password', 'invalid-credentials');
     }
 
     const isPasswordValid = await bcrypt.compare(password, profile.password_hash);
     if (!isPasswordValid) {
-      await logSecurityEvent({ event: 'LOGIN_FAILED', user_id: profile.id, email: profile.email, ip_address: req.ip, user_agent: req.headers['user-agent'], details: { reason: 'wrong_password' }});
+      await logSecurityEvent({ event: 'LOGIN_FAILED', user_id: profile.id, email: profile.email, ip_address: req.ip, user_agent: req.headers['user-agent'], details: { reason: 'wrong_password' } });
       return problemResponse(res, 401, 'Unauthorized', 'Invalid email or password', 'invalid-credentials');
     }
-    
+
     const userPersona = await prisma.userPersonas.findFirst({ where: { user_id: profile.id, is_default: true } }) || await prisma.userPersonas.findFirst({ where: { user_id: profile.id }, orderBy: { created_at: 'desc' } });
     const role = userPersona ? userPersona.persona.toUpperCase() : 'TENANT';
     const firstName = profile.full_name?.split(' ')[0] || 'User';
@@ -168,10 +166,7 @@ export const login = async (req: Request, res: Response) => {
     const payload = { email: profile.email, sub: profile.id, role, firstName };
     const access_token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
 
-    await prisma.sessions.updateMany({
-      where: { user_id: profile.id, is_revoked: false },
-      data: { is_revoked: true }
-    });
+    // Retain previous active sessions for multi-device support
 
     await prisma.sessions.create({
       data: {
@@ -203,6 +198,7 @@ export const login = async (req: Request, res: Response) => {
           lastName: profile.full_name.split(' ').slice(1).join(' '),
           role,
           isVerified: profile.verified,
+          avatar_url: profile.avatar_url,
         }
       }
     });
@@ -255,10 +251,7 @@ export const ssoLogin = async (req: Request, res: Response) => {
     const access_token = jwt.sign(jwtPayload, process.env.JWT_SECRET || 'secret', { expiresIn: '24h' });
 
     // Business Logic constraint: Single Device Policy execution
-    await prisma.sessions.updateMany({
-      where: { user_id: profile.id, is_revoked: false },
-      data: { is_revoked: true }
-    });
+    // Retain previous active sessions for multi-device cross-browser tracking
 
     await prisma.sessions.create({
       data: {
@@ -308,7 +301,7 @@ export const sendOTP = async (req: Request, res: Response) => {
 
     const otp_code = OTPService.generateCode(4);
     const message = `Your RentFlowInsight verification code is ${otp_code}. It expires in 10 minutes.`;
-    
+
     // Dispatch SMS asynchronously
     const smsSent = await OTPService.sendSMS(phone, message);
     if (!smsSent) {
@@ -316,7 +309,7 @@ export const sendOTP = async (req: Request, res: Response) => {
       // Proceed gracefully for development/testing environments despite SMS failure.
     }
     const now = new Date();
-    const expires_at = new Date(now.getTime() + 10 * 60000).toISOString(); 
+    const expires_at = new Date(now.getTime() + 10 * 60000).toISOString();
 
     await prisma.otpVerifications.create({
       data: { phone, otp_code, attempts: 0, verified: false, created_at: now.toISOString(), updated_at: now.toISOString(), expires_at }

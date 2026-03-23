@@ -33,7 +33,7 @@ import FunderSidebar from './components/FunderSidebar';
 import FunderBottomNav from './components/FunderBottomNav';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
 import { useKycStatus } from './hooks/useKycStatus';
-import { getFunderDashboardStats, updateFunderProfile, uploadFunderAvatar, changeFunderPassword, enableFunder2FA, verifyFunder2FA, disableFunder2FA, type DashboardStatsResponse } from '../services/funderApi';
+import { getFunderDashboardStats, updateFunderProfile, uploadFunderAvatar, changeFunderPassword, enableFunder2FA, verifyFunder2FA, disableFunder2FA, getSessions, revokeSession, revokeAllOtherSessions, type DashboardStatsResponse } from '../services/funderApi';
 
 export default function FunderAccountSettings() {
   const navigate = useNavigate();
@@ -41,8 +41,20 @@ export default function FunderAccountSettings() {
   const { status: kycStatus } = useKycStatus();
   const [stats, setStats] = useState<DashboardStatsResponse | null>(null);
 
+  const [sessionsList, setSessionsList] = useState<{ id: string; device_info: string | null; ip_address: string | null; created_at: string; expires_at: string; is_current: boolean; }[]>([]);
+
+  const fetchSessions = async () => {
+    try {
+      const res = await getSessions();
+      if (res.data?.sessions) setSessionsList(res.data.sessions);
+    } catch (error) {
+      console.error('Failed to parse active telemetry:', error);
+    }
+  };
+
   useEffect(() => {
     getFunderDashboardStats().then(setStats).catch(console.error);
+    fetchSessions();
   }, []);
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'financial' | 'proxy' | 'reporting' | 'roles'>('profile');
   const [newPassword, setNewPassword] = useState('');
@@ -233,6 +245,29 @@ export default function FunderAccountSettings() {
       toast.error(err.response?.data?.detail || "That code didn't work. Please try again.", { id: tId });
     } finally {
       setIsVerifying2FA(false);
+    }
+  };
+
+  const handleRevokeSession = async (id: string) => {
+    const tId = toast.loading('Logging out device...');
+    try {
+      await revokeSession(id);
+      toast.success('Device removed successfully.', { id: tId });
+      setSessionsList(sessionsList.filter(s => s.id !== id));
+    } catch (err: any) {
+      toast.error('Failed to remove device.', { id: tId });
+    }
+  };
+
+  const handleRevokeAllOthers = async () => {
+    if (!window.confirm('Are you sure you want to log out all other devices?')) return;
+    const tId = toast.loading('Securing account...');
+    try {
+      await revokeAllOtherSessions();
+      toast.success('All other devices have been logged out.', { id: tId });
+      setSessionsList(sessionsList.filter(s => s.is_current));
+    } catch (err: any) {
+      toast.error('Failed to secure account.', { id: tId });
     }
   };
 
@@ -577,27 +612,32 @@ export default function FunderAccountSettings() {
                           <Activity className="w-5 h-5 text-slate-400" /> Session History
                         </h3>
                         <div className="space-y-0">
-                          <div className="flex items-center justify-between py-4 border-b border-slate-100">
-                            <div>
-                              <p className="font-bold text-slate-800 flex items-center gap-2">
-                                Windows PC — Chrome <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded uppercase tracking-wider font-extrabold">Current</span>
-                              </p>
-                              <p className="text-xs text-slate-500 mt-1 font-medium">Kampala, Uganda • 192.168.1.4</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between py-4">
-                            <div>
-                              <p className="font-bold text-slate-800">iPhone 14 Pro — Safari App</p>
-                              <p className="text-xs text-slate-500 mt-1 font-medium">Entebbe, Uganda • Yesterday at 14:32</p>
-                            </div>
-                            <button className="cursor-pointer text-slate-400 hover:text-red-500 transition-colors p-2">
-                              <LogOut className="w-5 h-5" />
-                            </button>
-                          </div>
+                          {sessionsList.length === 0 ? (
+                            <p className="py-4 text-slate-500 font-medium text-sm">Loading active sessions...</p>
+                          ) : (
+                            sessionsList.map(session => (
+                              <div key={session.id} className="flex items-center justify-between py-4 border-b border-slate-100 last:border-0">
+                                <div>
+                                  <p className="font-bold text-slate-800 flex items-center gap-2">
+                                    {session.device_info ? session.device_info.split(' ')[0] : 'Unknown Device'} 
+                                    {session.is_current && <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded uppercase tracking-wider font-extrabold">Current</span>}
+                                  </p>
+                                  <p className="text-xs text-slate-500 mt-1 font-medium">IP: {session.ip_address || 'Unknown'} • Logged in: {new Date(session.created_at).toLocaleDateString()}</p>
+                                </div>
+                                {!session.is_current && (
+                                  <button onClick={() => handleRevokeSession(session.id)} className="cursor-pointer text-slate-400 hover:text-red-500 transition-colors p-2 text-xs font-bold uppercase tracking-widest bg-slate-50 hover:bg-red-50 rounded-lg">
+                                    Logout
+                                  </button>
+                                )}
+                              </div>
+                            ))
+                          )}
                         </div>
-                        <button className="cursor-pointer w-full mt-4 py-3 border-2 border-slate-100 rounded-xl text-slate-600 font-bold text-sm hover:bg-slate-50 hover:border-slate-300 transition-all">
-                          Log out of all other devices
-                        </button>
+                        {sessionsList.filter(s => !s.is_current).length > 0 && (
+                          <button onClick={handleRevokeAllOthers} className="cursor-pointer w-full mt-4 py-3 border-2 border-slate-100 rounded-xl text-slate-600 font-bold text-sm hover:bg-slate-50 hover:border-slate-300 transition-all">
+                            Log out of all other devices
+                          </button>
+                        )}
                       </div>
                     </div>
 

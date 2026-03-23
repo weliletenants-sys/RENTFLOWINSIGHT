@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -48,8 +45,8 @@ model AgentAdvances {
   updated_at          String
   agent_id            String?
   advance_type        String?
-  reason              String?
   expected_date       String?
+  reason              String?
 
   @@map("agent_advances")
 }
@@ -61,19 +58,19 @@ model AgentCollections {
   float_before        Float
   id                  String   @id @default(uuid())
   payment_method      String
-  notes               String?
-  sms_sent_tenant     Boolean?
-  sms_sent_agent      Boolean?
+  agent_id            String?
   location_name       String?
-  tracking_id         String?
-  momo_transaction_id String?
   momo_payer_name     String?
   momo_phone          String?
   momo_provider       String?
-  visit_id            String?
-  token_id            String?
+  momo_transaction_id String?
+  notes               String?
+  sms_sent_agent      Boolean?
+  sms_sent_tenant     Boolean?
   tenant_id           String?
-  agent_id            String?
+  token_id            String?
+  tracking_id         String?
+  visit_id            String?
 
   @@map("agent_collections")
 }
@@ -153,8 +150,8 @@ model AgentSubagents {
   created_at      String
   id              String  @id @default(uuid())
   source          String
-  sub_agent_id    String?
   parent_agent_id String?
+  sub_agent_id    String?
 
   @@map("agent_subagents")
 }
@@ -166,9 +163,9 @@ model AgentVisits {
   id            String  @id @default(uuid())
   latitude      Float
   longitude     Float
+  agent_id      String?
   location_name String?
   tenant_id     String?
-  agent_id      String?
 
   @@map("agent_visits")
 }
@@ -196,8 +193,8 @@ model ConversationParticipants {
   id              String  @id @default(uuid())
   joined_at       String
   last_read_at    String?
-  user_id         String?
   conversation_id String?
+  user_id         String?
 
   @@map("conversation_participants")
 }
@@ -362,8 +359,8 @@ model InvestorPortfolios {
   roi_percentage      Float
   status              String
   total_roi_earned    Float
-  payout_day          Float?
   agent_id            String?
+  payout_day          Float?
 
   @@map("investor_portfolios")
 }
@@ -432,22 +429,22 @@ model Lc1Chairpersons {
 }
 
 model LedgerAccountGroups {
-  id          String @id @default(uuid()) @map("group_id")
   description String
   group_code  String
+  id          String @id @default(uuid()) @map("group_id")
 
   @@map("ledger_account_groups")
 }
 
 model LedgerAccounts {
-  id             String   @id @default(uuid()) @map("account_id")
-  group_id       String?
   account_code   String
   allow_negative Boolean?
   created_at     String?
   currency       String?
   owner_id       String?
   owner_type     String?
+  id             String   @id @default(uuid()) @map("account_id")
+  group_id       String?
 
   @@map("ledger_accounts")
 }
@@ -497,8 +494,8 @@ model LocationRequests {
   status          String
   target_role     String
   token           String
-  target_user_id  String?
   rent_request_id String?
+  target_user_id  String?
 
   @@map("location_requests")
 }
@@ -508,8 +505,8 @@ model Messages {
   created_at      String
   id              String  @id @default(uuid())
   read_at         String?
-  sender_id       String?
   conversation_id String?
+  sender_id       String?
 
   @@map("messages")
 }
@@ -602,8 +599,8 @@ model PaymentTokens {
   used       Boolean
   used_at    String?
   visit_id   String?
-  tenant_id  String?
   agent_id   String?
+  tenant_id  String?
 
   @@map("payment_tokens")
 }
@@ -712,7 +709,6 @@ model Profiles {
   monthly_rent          Float?
   national_id           String?
   phone                 String
-  password_hash         String?
   referrer_id           String?
   rent_discount_active  Boolean
   territory             String?
@@ -720,17 +716,15 @@ model Profiles {
   verified              Boolean
   whatsapp_verified     Boolean?
   whatsapp_verified_at  String?
+  password_hash         String?
   role                  String?
-  // KYC lifecycle: NOT_SUBMITTED | UNDER_REVIEW | APPROVED | REJECTED
   kyc_status            String   @default("NOT_SUBMITTED")
   kyc_submitted_at      String?
   kyc_approved_at       String?
   kyc_rejected_reason   String?
-
-  // 2FA Security
   is_2fa_enabled        Boolean  @default(false)
-  two_factor_otp        String?
   two_factor_expires_at String?
+  two_factor_otp        String?
 
   @@map("profiles")
 }
@@ -885,8 +879,8 @@ model SubscriptionChargeLogs {
   status                String
   wallet_balance_after  Float?
   wallet_balance_before Float?
-  tenant_id             String?
   subscription_id       String?
+  tenant_id             String?
 
   @@map("subscription_charge_logs")
 }
@@ -987,8 +981,8 @@ model SupporterRoiPayments {
   rent_amount     Float
   roi_amount      Float
   status          String
-  supporter_id    String?
   rent_request_id String?
+  supporter_id    String?
 
   @@map("supporter_roi_payments")
 }
@@ -1030,8 +1024,8 @@ model TenantMerchantPayments {
   tenant_id      String?
   tenant_phone   String?
   updated_at     String
-  transaction_id String?
   agent_id       String?
+  transaction_id String?
 
   @@map("tenant_merchant_payments")
 }
@@ -1094,8 +1088,8 @@ model UserLoans {
   repayment_frequency      String?
   status                   String
   total_repayment          Float
-  lender_id                String?
   borrower_id              String?
+  lender_id                String?
 
   @@map("user_loans")
 }
@@ -1294,30 +1288,30 @@ model WithdrawalRequests {
 
 model AuditLogs {
   id          String  @id @default(uuid())
-  user_id     String? // Map this conceptually to actor_id
-  actor_role  String? // New field
-  action_type String?
-  table_name  String?
-  record_id   String? // Map this conceptually to target_id
-  target_id   String? // New field for specific user targets
   metadata    Json?
-  ip_address  String? // New field
-  user_agent  String? // New field
+  action_type String?
   created_at  String?
+  record_id   String?
+  table_name  String?
+  user_id     String?
+  actor_role  String?
+  ip_address  String?
+  target_id   String?
+  user_agent  String?
 
   @@map("audit_logs")
 }
 
 model StaffProfiles {
   id                   String   @id @default(uuid())
-  user_id              String?
-  employee_id          String?
-  department           String?
-  position             String?
-  must_change_password Boolean?
-  created_by           String?
   created_at           String?
+  created_by           String?
+  department           String?
+  employee_id          String?
+  must_change_password Boolean?
+  position             String?
   updated_at           String?
+  user_id              String?
 
   @@map("staff_profiles")
 }
@@ -1460,12 +1454,12 @@ model AgentApplications {
 
 model SecurityLogs {
   id         String   @id @default(uuid())
-  event      String // e.g "LOGIN_SUCCESS", "LOGIN_FAILED", "REGISTER"
-  user_id    String? // nullable in case of failed login with unknown email
+  event      String
+  user_id    String?
   email      String?
   ip_address String?
   user_agent String?
-  details    String? // JSON stringified additional info
+  details    String?
   created_at DateTime @default(now())
 
   @@map("security_logs")
@@ -1588,23 +1582,14 @@ model ImpersonationLogs {
   @@map("impersonation_logs")
 }
 
-model SystemConfig {
-  key        String  @id
-  value      String
-  updated_at String
-  updated_by String?
-
-  @@map("system_config")
-}
-
 model VirtualOpportunities {
-  id            String   @id @default(uuid())
+  id            String  @id @default(uuid())
   name          String
   location      String
   image_url     String?
   rent_required Float
   bedrooms      Int
-  status        String   @default("available")
+  status        String  @default("available")
   created_at    String
   updated_at    String
 
