@@ -185,3 +185,45 @@ export const verify2FA = async (req: Request, res: Response) => {
     return problemResponse(res, 500, 'Internal Server Error', 'An unexpected error occurred verifying your code.', 'internal-error');
   }
 };
+
+/**
+ * POST /api/auth/security/2fa/disable
+ */
+export const disable2FA = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.sub;
+    const profile = await prisma.profiles.findUnique({ where: { id: userId } });
+
+    if (!profile) {
+      return problemResponse(res, 401, 'Unauthorized', 'Profile not found.', 'invalid-credentials');
+    }
+
+    if (!(profile as any).is_2fa_enabled) {
+      return res.status(200).json({ status: 'success', message: '2FA is already disabled on this account.' });
+    }
+
+    // @ts-ignore - DB Schema is newer than generated Prisma Types
+    await prisma.profiles.update({
+      where: { id: userId },
+      data: {
+        is_2fa_enabled: false,
+        two_factor_otp: null,
+        two_factor_expires_at: null,
+        updated_at: new Date().toISOString()
+      } as any
+    });
+
+    await logSecurityEvent({
+      event: '2FA_DISABLED_SUCCESS',
+      user_id: profile.id,
+      email: profile.email,
+      ip_address: req.ip,
+      user_agent: req.headers['user-agent']
+    });
+
+    return res.status(200).json({ status: 'success', message: 'Two-Factor Authentication has been successfully disabled.' });
+  } catch (error) {
+    console.error('disable2FA error:', error);
+    return problemResponse(res, 500, 'Internal Server Error', 'An unexpected error occurred while disabling 2FA.', 'internal-error');
+  }
+};

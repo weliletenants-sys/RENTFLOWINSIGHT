@@ -3,11 +3,7 @@ import axios from 'axios';
 const API = '/api';
 
 const getAuthHeaders = () => {
-<<<<<<< HEAD
   const token = localStorage.getItem('access_token') || localStorage.getItem('token');
-=======
-  const token = localStorage.getItem('access_token');
->>>>>>> efb2962c76c54fc5bbc6b5913845d1c851fb5c3e
   return {
     headers: {
       Authorization: token ? `Bearer ${token}` : '',
@@ -86,5 +82,10 @@ export const enableFunder2FA = async () => {
 
 export const verifyFunder2FA = async (otp: string) => {
   const response = await axios.post(`${API}/auth/security/2fa/verify`, { otp }, getAuthHeaders());
+  return response.data;
+};
+
+export const disableFunder2FA = async () => {
+  const response = await axios.post(`${API}/auth/security/2fa/disable`, {}, getAuthHeaders());
   return response.data;
 };

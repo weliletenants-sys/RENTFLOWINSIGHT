@@ -47,6 +47,6 @@ export const sendSms = async (to: string, message: string) => {
  * Sends a standard 6-digit OTP configuration for Funder 2FA.
  */
 export const sendTwoFactorOtp = async (to: string, otp: string) => {
-  const message = `[RentFlow] Your security code is ${otp}. It expires in 10 minutes. Do not share this code with anyone.`;
+  const message = `WELILE GUARD \nyour security code is ${otp}. It expires in 10 minutes.`;
   return sendSms(to, message);
 };
