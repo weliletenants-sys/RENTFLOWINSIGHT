@@ -192,9 +192,35 @@ export const getPartners = async (req: Request, res: Response) => {
     const escalations = await prisma.partnerEscalations.findMany({
       take: 50,
       orderBy: { created_at: 'desc' }
+    }).catch(() => []); // Fallback safety
+
+    // Fetch live FUNDERS from the profiles registry
+    const funders = await prisma.profiles.findMany({
+      where: { role: 'FUNDER' },
+      select: { id: true, full_name: true, is_frozen: true }
     });
 
-    res.json(escalations);
+    // Compute aggregated metrics for each structural Partner (Funder)
+    const investors = await Promise.all(funders.map(async f => {
+      const ports = await prisma.investorPortfolios.findMany({
+         where: { investor_id: f.id }
+      });
+      
+      const totalInvested = ports.reduce((sum: number, p: any) => sum + (p.investment_amount || 0), 0);
+      const activeDeals = ports.filter((p: any) => p.status === 'ACTIVE').length;
+      const returnsPaid = ports.reduce((sum: number, p: any) => sum + (p.total_roi_earned || 0), 0);
+
+      return {
+         id: f.id,
+         name: f.full_name || 'Unnamed Partner',
+         frozen: f.is_frozen || false,
+         totalInvested,
+         returnsPaid,
+         activeDeals
+      };
+    }));
+
+    res.json({ escalations, investors });
   } catch (error: any) {
     return problemResponse(res, 500, 'Internal Server Error', error.message, 'https://api.rentflow.com/errors/internal-error');
   }
@@ -203,12 +229,34 @@ export const getPartners = async (req: Request, res: Response) => {
 export const getTenants = async (req: Request, res: Response) => {
   try {
     const subCharges = await prisma.subscriptionCharges.findMany({
-      where: { status: 'FAILED' },
       take: 100,
       orderBy: { created_at: 'desc' }
     });
+
+    // Relational Identity Mapping: Lookup actual Tenant profile names
+    const userIds = Array.from(new Set(subCharges.map((c: any) => c.tenant_id || c.user_id).filter((id: any) => id)));
+    let userMap = new Map();
+    if (userIds.length > 0) {
+      const users = await prisma.profiles.findMany({ where: { id: { in: userIds as string[] } } });
+      userMap = new Map(users.map((u: any) => [u.id, u]));
+    }
     
-    res.json(subCharges);
+    // Bridge the live DB telemetry solidly to the explicit React format
+    const mapped = subCharges.map((charge: any) => {
+      const uid = charge.tenant_id || charge.user_id;
+      const tenant = userMap.get(uid);
+      return {
+        id: charge.id,
+        user_id: uid || 'UNKNOWN',
+        tenantName: tenant ? (tenant.full_name || 'Unknown User') : 'Unknown User',
+        tenantPhone: tenant ? (tenant.phone_number || 'No Phone') : 'No Phone',
+        amount: charge.charge_amount || charge.rent_amount || charge.expected_rent || 0,
+        status: charge.status || 'PENDING',
+        created_at: charge.created_at
+      };
+    });
+
+    res.json(mapped);
   } catch (error: any) {
     return problemResponse(res, 500, 'Internal Server Error', error.message, 'https://api.rentflow.com/errors/internal-error');
   }

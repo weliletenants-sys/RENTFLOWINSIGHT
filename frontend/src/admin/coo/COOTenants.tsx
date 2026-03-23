@@ -5,6 +5,8 @@ import { fetchTenants } from '../../services/cooApi';
 interface SubscriptionCharge {
   id: string;
   user_id: string;
+  tenantName: string;
+  tenantPhone: string;
   amount: number;
   status: string;
   created_at: string;
@@ -87,8 +89,8 @@ const COOTenants: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/50 border-b border-slate-100 text-slate-500 text-xs uppercase tracking-wider font-bold">
-                <th className="p-4 pl-6">Charge ID</th>
-                <th className="p-4">Tenant / Property ID</th>
+                <th className="p-4 pl-6">Tenant Name</th>
+                <th className="p-4">Charge / Property ID</th>
                 <th className="p-4">Assigned Agent</th>
                 <th className="p-4">Rent Status</th>
                 <th className="p-4 text-right pr-6">Actions</th>
@@ -103,13 +105,13 @@ const COOTenants: React.FC = () => {
                         <User size={20} />
                       </div>
                       <div>
-                        <p className="font-bold text-slate-800 uppercase text-xs">{charge.id}</p>
-                        <p className="text-xs text-slate-500 flex items-center mt-0.5"><Phone size={10} className="mr-1" /> No Phone</p>
+                        <p className="font-bold text-slate-800 uppercase text-xs">{charge.tenantName}</p>
+                        <p className="text-xs text-slate-500 flex items-center mt-0.5"><Phone size={10} className="mr-1" /> {charge.tenantPhone}</p>
                       </div>
                     </div>
                   </td>
                   <td className="p-4">
-                    <p className="text-[10px] font-mono text-slate-700">{charge.user_id}</p>
+                    <p className="text-[10px] font-mono text-slate-700 uppercase">{charge.id.split('-')[0]}</p>
                     <p className="text-xs text-slate-500 flex items-center mt-0.5"><MapPin size={10} className="mr-1" /> Unassigned</p>
                   </td>
                   <td className="p-4">
