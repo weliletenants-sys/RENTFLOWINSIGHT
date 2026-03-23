@@ -1598,15 +1598,15 @@ model SystemConfig {
 }
 
 model VirtualOpportunities {
-  id            String   @id @default(uuid())
-  name          String
-  location      String
-  image_url     String?
-  rent_required Float
-  bedrooms      Int
-  status        String   @default("available")
-  created_at    String
-  updated_at    String
+  id               String  @id @default(uuid())
+  property_type    String
+  expected_roi     Float
+  acquisition_cost Float
+  funding_goal     Float
+  location         String
+  status           String
+  created_at       String
+  updated_at       String
 
   @@map("virtual_opportunities")
 }

@@ -1,8 +1,6 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../prisma/prisma.client';
 import { problemResponse } from '../utils/problem';
-
-const prisma = new PrismaClient();
 
 export const getOverviewMetrics = async (req: Request, res: Response) => {
   try {
@@ -36,16 +34,19 @@ export const getOverviewMetrics = async (req: Request, res: Response) => {
     });
     let missedPaymentsCount = 0;
     for (const req of disbursedRequests) {
-        if (req.amount_repaid < req.total_repayment) {
+        const totalRepayment = req.rent_amount + req.request_fee;
+        if (req.amount_repaid < totalRepayment) {
             missedPaymentsCount++;
         }
     }
 
     // 6. Withdrawals
-    const pendingWithdrawals = await prisma.withdrawalRequests.aggregate({
+    const pendingWithdrawalsSum = await prisma.investmentWithdrawalRequests.aggregate({
       where: { status: 'manager_approved' },
-      _sum: { amount: true },
-      _count: true
+      _sum: { amount: true }
+    });
+    const pendingWithdrawalsCount = await prisma.investmentWithdrawalRequests.count({
+      where: { status: 'manager_approved' }
     });
 
     // 7. Wallet Monitoring
@@ -61,8 +62,8 @@ export const getOverviewMetrics = async (req: Request, res: Response) => {
         activeAccounts,
         todaysVisits: visits,
         missedPaymentsCount: missedPaymentsCount, // Using the computed value
-        pendingWithdrawalsAmount: pendingWithdrawals._sum.amount || 0,
-        pendingWithdrawalsCount: pendingWithdrawals._count || 0,
+        pendingWithdrawalsAmount: pendingWithdrawalsSum._sum.amount || 0,
+        pendingWithdrawalsCount: pendingWithdrawalsCount,
         walletMonitoring: {
            mainFloat,
            agentEscrow
@@ -259,7 +260,7 @@ export const createOpportunity = async (req: Request, res: Response) => {
     const { name, location, image_url, rent_required, bedrooms, status } = req.body;
     
     if (!name || !location || !rent_required || !bedrooms) {
-        return res.status(400).json({ error: "Missing required fields for Funder marketplace" });
+        return problemResponse(res, 400, 'Validation Error', 'Missing required fields for Funder marketplace', 'https://api.rentflow.com/errors/validation-error');
     }
 
     const now = new Date().toISOString();
@@ -278,20 +279,37 @@ export const createOpportunity = async (req: Request, res: Response) => {
     });
 
     return res.status(201).json({ status: 'success', data: newOpportunity });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to create virtual opportunity', error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return problemResponse(res, 500, 'Internal Server Error', error.message || 'Failed to process opportunity creation', 'https://api.rentflow.com/errors/internal-error');
   }
 };
 
 export const getOpportunities = async (req: Request, res: Response) => {
   try {
+    const cursor = req.query.cursor as string | undefined;
+    const limit = parseInt((req.query.limit as string) || '20', 10);
+    const take = Math.min(limit, 100);
+
     const ops = await prisma.virtualOpportunities.findMany({
+      take: take + 1, // Fetch one extra to determine 'has_more'
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
       orderBy: { created_at: 'desc' }
     });
-    res.json(ops);
-  } catch (error) {
+
+    const has_more = ops.length > take;
+    const data = has_more ? ops.slice(0, -1) : ops;
+    const next_cursor = has_more ? data[data.length - 1].id : null;
+
+    return res.status(200).json({
+      data,
+      pagination: {
+        next_cursor,
+        has_more
+      }
+    });
+  } catch (error: any) {
     console.error('Failed to fetch virtual opportunities', error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return problemResponse(res, 500, 'Internal Server Error', error.message || 'Failed to list opportunities', 'https://api.rentflow.com/errors/internal-error');
   }
 };
