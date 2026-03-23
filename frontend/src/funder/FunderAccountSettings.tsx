@@ -33,7 +33,7 @@ import FunderSidebar from './components/FunderSidebar';
 import FunderBottomNav from './components/FunderBottomNav';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
 import { useKycStatus } from './hooks/useKycStatus';
-import { getFunderDashboardStats, updateFunderProfile, uploadFunderAvatar, changeFunderPassword, enableFunder2FA, verifyFunder2FA, disableFunder2FA, getSessions, revokeSession, revokeAllOtherSessions, getPayoutMethods, addPayoutMethod, setPrimaryPayoutMethod, deletePayoutMethod, getRewardMode, updateRewardMode, getExitQueue, requestCapitalWithdrawal, getPortfolios, type PayoutMethodView, type DashboardStatsResponse } from '../services/funderApi';
+import { getFunderDashboardStats, updateFunderProfile, uploadFunderAvatar, changeFunderPassword, enableFunder2FA, verifyFunder2FA, disableFunder2FA, getSessions, revokeSession, revokeAllOtherSessions, getPayoutMethods, addPayoutMethod, setPrimaryPayoutMethod, deletePayoutMethod, getRewardMode, updateRewardMode, getExitQueue, requestCapitalWithdrawal, getPortfolios, getProxyMandates, createProxyMandate, updateProxyLimit, revokeProxyMandate, restoreProxyMandate, type PayoutMethodView, type DashboardStatsResponse } from '../services/funderApi';
 
 const parseUserAgent = (ua: string | null) => {
   if (!ua) return 'Unknown Device';
@@ -149,7 +149,67 @@ export default function FunderAccountSettings() {
     fetchSessions();
     fetchPayoutMethods();
     fetchCapitalData();
+    fetchProxyData();
   }, []);
+
+  const [proxyMandates, setProxyMandates] = useState<any[]>([]);
+  const [isAddingProxy, setIsAddingProxy] = useState(false);
+  const [proxyAgentCode, setProxyAgentCode] = useState('');
+  const [proxyLimit, setProxyLimit] = useState('');
+
+  const fetchProxyData = async () => {
+    try {
+      const res = await getProxyMandates();
+      setProxyMandates(res.data.mandates);
+    } catch (e) { console.error('Failed to load proxy relations'); }
+  };
+
+  const handleAddProxy = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const limit = Number(proxyLimit.replace(/,/g, ''));
+    if (!proxyAgentCode || limit <= 0 || isNaN(limit)) return toast.error('Valid agent code and numerical limit required.');
+    const tId = toast.loading('Securing new proxy mandate...');
+    try {
+      await createProxyMandate({ agent_code: proxyAgentCode, daily_limit: limit });
+      toast.success('Agent proxy legally bound to wallet.', { id: tId });
+      setIsAddingProxy(false);
+      setProxyAgentCode('');
+      setProxyLimit('');
+      fetchProxyData();
+    } catch (err: any) { toast.error(err.response?.data?.detail || 'Failed to bind agent mandate.', { id: tId }); }
+  };
+
+  const executeEditProxyLimit = async (id: string, currentLimit: number) => {
+    const val = window.prompt('Enter new daily transfer limit (UGX):', currentLimit.toString());
+    if (!val) return;
+    const limit = Number(val.replace(/,/g, ''));
+    if (limit <= 0 || isNaN(limit)) return toast.error('Invalid amount.');
+    const tId = toast.loading('Amending mandate limits...');
+    try {
+      await updateProxyLimit(id, limit);
+      toast.success('Daily limit successfully amended.', { id: tId });
+      fetchProxyData();
+    } catch { toast.error('Failed to update limit.', { id: tId }); }
+  };
+
+  const executeRevokeProxy = async (id: string) => {
+    if (!window.confirm("Permanently revoke this Agent's fund transfer rights?")) return;
+    const tId = toast.loading('Revoking proxy access...');
+    try {
+      await revokeProxyMandate(id);
+      toast.success('Agent access revoked.', { id: tId });
+      fetchProxyData();
+    } catch { toast.error('Failed to revoke.', { id: tId }); }
+  };
+
+  const executeRestoreProxy = async (id: string) => {
+    const tId = toast.loading('Restoring agent proxy limits...');
+    try {
+      await restoreProxyMandate(id);
+      toast.success('Access legally reinstated.', { id: tId });
+      fetchProxyData();
+    } catch { toast.error('Failed to restore access.', { id: tId }); }
+  };
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'financial' | 'proxy' | 'reporting' | 'roles'>('profile');
   const [newPassword, setNewPassword] = useState('');
   
@@ -1021,62 +1081,77 @@ export default function FunderAccountSettings() {
                             Manage which operations agents are legally allowed to initiate proxy investments from your wallet.
                           </p>
                         </div>
-                        <button className="cursor-pointer whitespace-nowrap bg-emerald-50 text-emerald-700 px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-emerald-100 transition-colors">
+                        <button onClick={() => setIsAddingProxy(true)} className="cursor-pointer whitespace-nowrap bg-emerald-50 text-emerald-700 px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-emerald-100 transition-colors">
                           Add Agent ID
                         </button>
                       </div>
+
+                      {isAddingProxy && (
+                        <div className="mb-8 p-6 border-2 border-purple-100 rounded-2xl bg-purple-50/50">
+                          <form onSubmit={handleAddProxy} className="flex flex-col sm:flex-row gap-4 items-end">
+                            <div className="flex-1 w-full">
+                              <label className="block text-xs font-bold text-purple-800 uppercase tracking-widest mb-1.5 ml-1">Agent Identity Code</label>
+                              <input value={proxyAgentCode} onChange={e => setProxyAgentCode(e.target.value)} placeholder="e.g. AG-2044" className="w-full bg-white border border-purple-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-purple-500 transition-all placeholder:text-slate-300" required />
+                            </div>
+                            <div className="flex-1 w-full">
+                              <label className="block text-xs font-bold text-purple-800 uppercase tracking-widest mb-1.5 ml-1">Daily Flow Limit (UGX)</label>
+                              <input value={proxyLimit} onChange={e => setProxyLimit(e.target.value)} type="number" placeholder="5000000" className="w-full bg-white border border-purple-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-purple-500 transition-all placeholder:text-slate-300" required />
+                            </div>
+                            <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                              <button type="button" onClick={() => setIsAddingProxy(false)} className="cursor-pointer flex-1 sm:flex-none px-6 py-3 bg-white text-slate-500 border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-colors">Cancel</button>
+                              <button type="submit" className="cursor-pointer flex-1 sm:flex-none px-8 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors">Bind Limit</button>
+                            </div>
+                          </form>
+                        </div>
+                      )}
+
                       <div className="rounded-2xl border border-slate-200 overflow-hidden divide-y divide-slate-100">
-                        <div className="p-5 sm:p-6 bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 hover:bg-slate-50 transition-colors">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center border border-slate-200 shadow-inner">
-                              <UserCheck className="w-6 h-6 text-slate-500" />
+                        {proxyMandates.length === 0 ? (
+                          <div className="p-8 text-center text-slate-500 font-medium italic">No agent proxy limits bound to your wallet yet.</div>
+                        ) : proxyMandates.map((mandate) => {
+                          const isRevoked = mandate.status === 'revoked';
+                          return (
+                            <div key={mandate.id} className={`p-5 sm:p-6 bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 hover:bg-slate-50 transition-colors ${isRevoked ? 'opacity-60 grayscale' : ''}`}>
+                              <div className="flex items-center gap-4">
+                                <div className={`w-12 h-12 rounded-full flex items-center justify-center border shadow-inner ${isRevoked ? 'bg-slate-50 border-slate-200' : 'bg-emerald-50 border-emerald-100'}`}>
+                                  <UserCheck className={`w-6 h-6 ${isRevoked ? 'text-slate-400' : 'text-emerald-600'}`} />
+                                </div>
+                                <div>
+                                  <h4 className={`font-bold text-slate-800 flex items-center gap-2 ${isRevoked ? 'line-through' : ''}`}>
+                                    {mandate.agent_name} <span className="text-[10px] font-mono bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md border border-slate-200 no-underline">{mandate.agent_code}</span>
+                                  </h4>
+                                  {isRevoked ? (
+                                    <p className="text-sm text-red-500 font-bold mt-1">Revoked on {new Date(mandate.revoked_at).toLocaleDateString()}</p>
+                                  ) : (
+                                    <p className="text-sm text-emerald-600 font-semibold mt-1">Active Proxy Bind</p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex-1 sm:px-8 w-full hidden sm:block">
+                                <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">Transaction Limit</p>
+                                <p className={`text-sm font-bold font-mono p-2 rounded-lg border inline-block ${isRevoked ? 'text-slate-400 bg-slate-50 border-slate-100' : 'text-emerald-800 bg-emerald-50/50 border-emerald-100'}`}>
+                                  UGX {mandate.daily_limit.toLocaleString()} / day
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-3 w-full sm:w-auto mt-4 sm:mt-0">
+                                {isRevoked ? (
+                                  <button onClick={() => executeRestoreProxy(mandate.id)} className="cursor-pointer w-full sm:w-auto border border-slate-300 bg-white text-slate-600 px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-50 transition-colors shadow-sm">
+                                    Restore Access
+                                  </button>
+                                ) : (
+                                  <>
+                                    <button onClick={() => executeEditProxyLimit(mandate.id, mandate.daily_limit)} className="cursor-pointer flex-1 sm:flex-none border border-slate-200 bg-white text-slate-600 px-4 py-2.5 rounded-xl text-xs font-bold hover:border-slate-300 hover:bg-slate-50 transition-colors shadow-sm">
+                                      Edit Limit
+                                    </button>
+                                    <button onClick={() => executeRevokeProxy(mandate.id)} className="cursor-pointer flex-1 sm:flex-none bg-red-50 border border-red-100 text-red-600 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-red-100 transition-colors shadow-sm">
+                                      Revoke Access
+                                    </button>
+                                  </>
+                                )}
+                              </div>
                             </div>
-                            <div>
-                              <h4 className="font-bold text-slate-800 flex items-center gap-2">
-                                John Kato <span className="text-[10px] font-mono bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md border border-slate-200">AG-4299</span>
-                              </h4>
-                              <p className="text-sm text-slate-500 font-medium">Assigned by Operations</p>
-                            </div>
-                          </div>
-                          <div className="flex-1 sm:px-8 w-full">
-                            <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">Transaction Limit</p>
-                            <p className="text-sm font-bold text-slate-700 font-mono bg-slate-100 p-2 rounded-lg border border-slate-200 inline-block">
-                              UGX 5,000,000 / day
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-3 w-full sm:w-auto mt-4 sm:mt-0">
-                            <button className="cursor-pointer flex-1 sm:flex-none border border-slate-200 bg-white text-slate-600 px-4 py-2 rounded-xl text-xs font-bold hover:border-slate-300 hover:bg-slate-50 transition-colors shadow-sm">
-                              Edit Limit
-                            </button>
-                            <button className="cursor-pointer flex-1 sm:flex-none bg-red-50 border border-red-100 text-red-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-100 transition-colors shadow-sm">
-                              Revoke Access
-                            </button>
-                          </div>
-                        </div>
-                        <div className="p-5 sm:p-6 bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 hover:bg-slate-50 transition-colors opacity-60">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center border border-slate-200 blur-[1px]">
-                              <UserCheck className="w-6 h-6 text-slate-400" />
-                            </div>
-                            <div>
-                              <h4 className="font-bold text-slate-800 line-through">
-                                Sarah N. <span className="text-[10px] font-mono bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md border border-slate-200 no-underline">AG-1033</span>
-                              </h4>
-                              <p className="text-sm text-red-500 font-bold mt-1">Revoked on Jan 14, 2026</p>
-                            </div>
-                          </div>
-                          <div className="flex-1 sm:px-8 w-full hidden sm:block">
-                            <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-1">Transaction Limit</p>
-                            <p className="text-sm font-bold text-slate-400 font-mono">
-                              UGX 0 / day
-                            </p>
-                          </div>
-                          <div className="w-full sm:w-auto mt-4 sm:mt-0">
-                            <button className="cursor-pointer w-full sm:w-auto border border-slate-200 bg-white text-slate-500 px-4 py-2 rounded-xl text-xs font-bold hover:border-slate-300 transition-colors shadow-sm">
-                              Restore Access
-                            </button>
-                          </div>
-                        </div>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>

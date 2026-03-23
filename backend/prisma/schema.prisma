@@ -1643,3 +1643,19 @@ model FunderPortfolios {
   @@index([user_id])
   @@map("funder_portfolios")
 }
+
+model FunderProxyMandates {
+  id              String   @id @default(uuid())
+  funder_id       String
+  agent_id        String
+  agent_name      String?
+  agent_code      String?
+  daily_limit     Float
+  status          String   @default("active") // active, revoked
+  revoked_at      DateTime?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  @@index([funder_id])
+  @@map("funder_proxy_mandates")
+}

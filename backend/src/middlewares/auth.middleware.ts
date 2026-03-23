@@ -14,10 +14,6 @@ declare global {
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
 
 export const authGuard = async (req: Request, res: Response, next: NextFunction) => {
-  // DEVELOPMENT BYPASS: Skip JWT verification completely and mock active identity
-  req.user = { id: 'dev-bypass-id', role: 'SUPER_ADMIN', email: 'dev@welile.com' };
-  return next();
-
   const authHeader = req.headers.authorization;
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
