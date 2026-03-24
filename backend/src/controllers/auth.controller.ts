@@ -97,6 +97,17 @@ export const register = async (req: Request, res: Response) => {
       user_agent: req.headers['user-agent']
     });
 
+    // Alert the COO Dashboard by adding a system event
+    await prisma.systemEvents.create({
+      data: {
+        event_type: 'USER_REGISTRATION',
+        related_entity_type: 'PROFILE',
+        related_entity_id: result.id,
+        severity: 'INFO',
+        created_at: now
+      }
+    });
+
     const payload = { email: result.email, sub: result.id, role: role, firstName: firstName.trim() };
     const access_token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
 
