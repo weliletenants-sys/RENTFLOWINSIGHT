@@ -1,13 +1,14 @@
 import { useState, useEffect, useMemo } from 'react';
 import { 
   Download, Upload, ArrowRightLeft, Clock, 
-  CheckCircle, XCircle, AlertCircle, Plus, Loader2
+  CheckCircle, XCircle, AlertCircle, Plus, Loader2, Phone, Wallet, Users, Info
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import FunderSidebar from './components/FunderSidebar';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
 import FunderBottomNav from './components/FunderBottomNav';
-import { getFunderDashboardStats, getFunderActivities, fundRentPool, requestDeposit, requestWalletWithdrawal, getWalletOperations } from '../services/funderApi';
+import { Link } from 'react-router-dom';
+import { getFunderDashboardStats, getFunderActivities, fundRentPool, requestDeposit, requestWalletWithdrawal, getWalletOperations, getPayoutMethods, transferFunds, type PayoutMethodView } from '../services/funderApi';
 import type { DashboardStatsResponse } from '../services/funderApi';
 
 export default function FunderWallet() {
@@ -32,30 +33,40 @@ export default function FunderWallet() {
 
   // Deposit State
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
-  const [depositProvider, setDepositProvider] = useState<'MTN' | 'Airtel' | 'Bank'>('MTN');
+  const [selectedDepositPayoutId, setSelectedDepositPayoutId] = useState('');
   const [depositAmount, setDepositAmount] = useState('');
   const [depositTid, setDepositTid] = useState('');
   const [isSubmittingDeposit, setIsSubmittingDeposit] = useState(false);
 
-  // Withdraw State
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
-  const [withdrawProvider, setWithdrawProvider] = useState<'MTN' | 'Airtel' | 'Bank'>('MTN');
   const [withdrawAmount, setWithdrawAmount] = useState('');
-  const [withdrawAccountName, setWithdrawAccountName] = useState('');
-  const [withdrawAccountNumber, setWithdrawAccountNumber] = useState('');
+  const [selectedPayoutId, setSelectedPayoutId] = useState('');
   const [isSubmittingWithdraw, setIsSubmittingWithdraw] = useState(false);
+  const [payoutMethods, setPayoutMethods] = useState<PayoutMethodView[]>([]);
+
+  // Transfer State
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [transferType, setTransferType] = useState<'internal' | 'p2p'>('internal');
+  const [transferAmount, setTransferAmount] = useState('');
+  const [transferSourceBucket, setTransferSourceBucket] = useState<'commission' | 'savings'>('commission');
+  const [transferTargetIdentifier, setTransferTargetIdentifier] = useState('');
+  const [isSubmittingTransfer, setIsSubmittingTransfer] = useState(false);
 
   // Withdrawal Notice logic (mocked visually for now, or extracted from backend)
   const pendingWithdrawal: any = null; // To fully support this, we would pull `InvestmentWithdrawalRequests` from API.
 
   const fetchData = async () => {
     try {
-      const [liveStats, liveTx, opsData] = await Promise.all([
+      const [liveStats, liveTx, opsData, payoutRes] = await Promise.all([
         getFunderDashboardStats(),
         getFunderActivities(),
-        getWalletOperations().catch(() => ({ data: { operations: [] } }))
+        getWalletOperations().catch(() => ({ data: { operations: [] } })),
+        getPayoutMethods().catch(() => ({ data: { payoutMethods: [] } }))
       ]);
       setStats(liveStats);
+      if (payoutRes?.data?.payoutMethods) {
+        setPayoutMethods(payoutRes.data.payoutMethods);
+      }
 
       const pendingOps = (opsData?.data?.operations || []).map((op: any) => ({
         id: op.id,
@@ -98,8 +109,8 @@ export default function FunderWallet() {
   }, []);
 
   const handleDepositSubmit = async () => {
-    if (!depositAmount || !depositTid) {
-      toast.error('Please fill in all fields');
+    if (!depositAmount || !depositTid || !selectedDepositPayoutId) {
+      toast.error('Please fill in all fields and select a source account');
       return;
     }
     const amount = Number(depositAmount);
@@ -110,11 +121,14 @@ export default function FunderWallet() {
     
     setIsSubmittingDeposit(true);
     try {
-      await requestDeposit({ amount, provider: depositProvider, external_tx_id: depositTid });
+      const selectedMethod = payoutMethods.find((m) => m.id === selectedDepositPayoutId);
+      const providerString = selectedMethod ? `${selectedMethod.provider} - ${selectedMethod.account_number}` : 'Unknown';
+      await requestDeposit({ amount, provider: providerString, external_tx_id: depositTid });
       toast.success('Deposit requested successfully! Awaiting verification.');
       setIsDepositModalOpen(false);
       setDepositAmount('');
       setDepositTid('');
+      setSelectedDepositPayoutId('');
       await fetchData();
     } catch (e: any) {
       toast.error(e.response?.data?.message || 'Deposit submission failed');
@@ -124,13 +138,13 @@ export default function FunderWallet() {
   };
 
   const handleWithdrawSubmit = async () => {
-    if (!withdrawAmount || !withdrawAccountName || !withdrawAccountNumber) {
-      toast.error('Please fill in all fields');
+    if (!withdrawAmount || !selectedPayoutId) {
+      toast.error('Please select a payout method and enter an amount');
       return;
     }
     const amount = Number(withdrawAmount);
-    if (amount <= 0) {
-      toast.error('Invalid withdrawal amount');
+    if (amount < 100000) {
+      toast.error('Minimum withdrawal is UGX 100,000');
       return;
     }
     if (!stats || amount > stats.availableLiquid) {
@@ -145,8 +159,7 @@ export default function FunderWallet() {
       
       setIsWithdrawModalOpen(false);
       setWithdrawAmount('');
-      setWithdrawAccountName('');
-      setWithdrawAccountNumber('');
+      setSelectedPayoutId('');
       await fetchData();
     } catch (e: any) {
       toast.error(e.response?.data?.message || 'Withdrawal failed');
@@ -168,17 +181,43 @@ export default function FunderWallet() {
     }
   };
 
+  const handleTransferSubmit = async () => {
+    const amount = Number(transferAmount);
+    if (!amount || amount <= 0) return toast.error('Enter a valid amount');
+    if (transferType === 'p2p' && !transferTargetIdentifier) return toast.error('Enter a valid recipient email or phone number');
+
+    setIsSubmittingTransfer(true);
+    try {
+      await transferFunds({
+        type: transferType,
+        amount,
+        sourceBucket: transferType === 'internal' ? transferSourceBucket : undefined,
+        targetIdentifier: transferType === 'p2p' ? transferTargetIdentifier : undefined
+      });
+      toast.success(transferType === 'internal' ? 'Internal transfer successful!' : 'Funds sent successfully!');
+      setIsTransferModalOpen(false);
+      setTransferAmount('');
+      setTransferTargetIdentifier('');
+      fetchData();
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || 'Transfer failed');
+    } finally {
+      setIsSubmittingTransfer(false);
+    }
+  };
+
   const filteredTransactions = activeTab === 'All' 
     ? transactions 
     : transactions.filter(tx => tx.type === activeTab);
 
   const formatStatus = (st: string) => {
     if (st.startsWith('pending')) return 'Pending';
+    if (st.startsWith('approved')) return 'Approved';
     return st.replace(/_/g, ' ');
   };
 
   const StatusIcon = ({ status }: { status: string }) => {
-    if (status === 'completed') return <CheckCircle className="w-4 h-4 text-emerald-500" />;
+    if (status === 'completed' || status.startsWith('approved')) return <CheckCircle className="w-4 h-4 text-emerald-500" />;
     if (status.startsWith('pending')) return <Clock className="w-4 h-4 text-orange-500" />;
     if (status === 'failed' || status === 'rejected') return <XCircle className="w-4 h-4 text-red-500" />;
     return null;
@@ -229,7 +268,7 @@ export default function FunderWallet() {
                 <div className="mt-10 flex flex-wrap gap-3 relative z-10">
                   <button 
                     onClick={() => setIsDepositModalOpen(true)}
-                    className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-light)] text-white px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-lg flex items-center gap-2"
+                    className="bg-[var(--color-primary)] hover:opacity-90 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-lg flex items-center gap-2"
                   >
                     <Plus className="w-4 h-4" /> Deposit
                   </button>
@@ -239,7 +278,10 @@ export default function FunderWallet() {
                   >
                     <Download className="w-4 h-4" /> Withdraw
                   </button>
-                  <button className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all flex items-center gap-2 border border-white/10">
+                  <button 
+                    onClick={() => setIsTransferModalOpen(true)}
+                    className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all flex items-center gap-2 border border-white/10"
+                  >
                     <ArrowRightLeft className="w-4 h-4" /> Transfer
                   </button>
                 </div>
@@ -424,53 +466,61 @@ export default function FunderWallet() {
               </div>
 
               <div>
-                <label className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2 block">Provider</label>
-                <div className="grid grid-cols-3 gap-2">
-                   <button 
-                     onClick={() => setDepositProvider('MTN')}
-                     className={`flex flex-col items-center justify-center py-3 border-2 rounded-xl transition-all font-bold gap-1 ${depositProvider === 'MTN' ? 'border-[var(--color-primary)] bg-slate-50 text-[var(--color-primary)]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
-                   >
-                     <img src="/mtn.png" alt="MTN" className="w-7 h-7 rounded-full object-cover shadow-sm" /> 
-                     <span className="text-xs">MTN MoMo</span>
-                     <span className="text-lg font-black text-yellow-500 tracking-tight">090777</span>
-                   </button>
-                   <button 
-                     onClick={() => setDepositProvider('Airtel')}
-                     className={`flex flex-col items-center justify-center py-3 border-2 rounded-xl transition-all font-bold gap-1 ${depositProvider === 'Airtel' ? 'border-[var(--color-primary)] bg-slate-50 text-[var(--color-primary)]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
-                   >
-                     <img src="/airtel.png" alt="Airtel" className="w-7 h-7 rounded-full object-cover shadow-sm" /> 
-                     <span className="text-xs">Airtel Money</span>
-                     <span className="text-lg font-black text-red-600 tracking-tight">4380664</span>
-                   </button>
-                   <button 
-                     onClick={() => setDepositProvider('Bank')}
-                     className={`flex flex-col items-center justify-center py-3 border-2 rounded-xl transition-all font-bold gap-1 ${depositProvider === 'Bank' ? 'border-[var(--color-primary)] bg-slate-50 text-[var(--color-primary)]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
-                   >
-                     <span className="text-2xl">🏦</span>
-                     <span className="text-xs">Bank Transfer</span>
-                     <span className="text-[10px] font-black text-slate-400 tracking-tight">STANBIC / UF</span>
-                   </button>
-                </div>
-                {depositProvider === 'Bank' && (
+                <label className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2 block">Source Account (Depositing From)</label>
+                {payoutMethods.length === 0 ? (
+                  <div className="bg-orange-50 border border-orange-100 rounded-xl p-4 text-center">
+                    <p className="text-xs font-bold text-orange-800 mb-2">No Verified Accounts Found</p>
+                    <p className="text-[10px] text-orange-600 mb-3">You must add a verified mobile money or bank account to use for deposits.</p>
+                    <Link to="/funder/account" className="inline-block bg-orange-600 text-white text-[10px] font-black uppercase px-3 py-1.5 rounded-lg hover:bg-orange-700 transition">Go to Settings</Link>
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-[180px] overflow-y-auto">
+                    {payoutMethods.map((method) => (
+                      <button
+                        key={method.id}
+                        onClick={() => setSelectedDepositPayoutId(method.id)}
+                        className={`w-full flex items-center justify-between p-3 rounded-xl border-2 transition-all ${selectedDepositPayoutId === method.id ? 'border-[var(--color-primary)] bg-[var(--color-primary-faint)]' : 'border-slate-100 bg-white hover:border-slate-200'}`}
+                      >
+                         <div className="flex items-center gap-3">
+                           <div className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 text-slate-500 shrink-0 shadow-sm border border-slate-200 overflow-hidden">
+                             {method.provider === 'MTN' || method.provider.toLowerCase().includes('mtn') ? (
+                               <img src="/mtn.png" alt="MTN" className="w-full h-full object-cover" />
+                             ) : method.provider === 'Airtel' || method.provider.toLowerCase().includes('airtel') ? (
+                               <img src="/airtel.png" alt="Airtel" className="w-full h-full object-cover" />
+                             ) : (
+                               <Phone className="w-4 h-4" />
+                             )}
+                           </div>
+                           <div className="text-left">
+                             <p className="text-xs font-bold text-slate-900">{method.provider}</p>
+                             <p className="text-[10px] font-semibold text-slate-500">{method.account_name} • {method.account_number}</p>
+                           </div>
+                         </div>
+                         {method.is_primary && (
+                           <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-sm">Primary</span>
+                         )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                
+                {selectedDepositPayoutId && payoutMethods.find((m) => m.id === selectedDepositPayoutId)?.provider === 'Bank' && (
                   <div className="mt-3 bg-purple-50 border border-purple-100 rounded-xl p-3 text-xs font-semibold text-purple-700 leading-relaxed">
-                    <p className="font-black text-purple-900 mb-1">Bank Transfer Details</p>
-                    <p>Bank: <span className="font-black">Stanbic Bank Uganda</span></p>
-                    <p>Account Name: <span className="font-black">Welile Housing Ltd</span></p>
-                    <p>Account No: <span className="font-black">9030012872445</span></p>
-                    <p>Branch: <span className="font-black">Kampala Main</span></p>
+                    <p className="font-black text-purple-900 mb-1">Bank Transfer Guidelines</p>
+                    <p>Please initiate the transfer from your bank account ending in <span className="font-black">{payoutMethods.find((m) => m.id === selectedDepositPayoutId)?.account_number?.slice(-4)}</span> to our Welile Housing Ltd account and provide the reference ID below.</p>
                   </div>
                 )}
               </div>
 
               <div>
                 <label className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2 block">
-                  {depositProvider === 'Bank' ? 'Bank Reference / Transaction ID' : 'Transaction ID (TID) *'}
+                  {selectedDepositPayoutId && payoutMethods.find((m) => m.id === selectedDepositPayoutId)?.provider === 'Bank' ? 'Bank Reference / Transaction ID' : 'Transaction ID (TID) *'}
                 </label>
                 <input 
                   type="text" 
                   value={depositTid}
                   onChange={e => setDepositTid(e.target.value)}
-                  placeholder={depositProvider === 'Bank' ? 'e.g. TRF20261803XXXX' : 'e.g. 153839202'}
+                  placeholder={selectedDepositPayoutId && payoutMethods.find((m) => m.id === selectedDepositPayoutId)?.provider === 'Bank' ? 'e.g. TRF20261803XXXX' : 'e.g. 153839202'}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-mono font-bold text-slate-900 outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all" 
                 />
                 <p className="text-[10px] font-semibold text-slate-500 mt-2">Min deposit: UGX 100,000. Required for manager verification.</p>
@@ -478,7 +528,7 @@ export default function FunderWallet() {
 
               <button 
                 onClick={handleDepositSubmit}
-                disabled={isSubmittingDeposit}
+                disabled={isSubmittingDeposit || payoutMethods.length === 0}
                 className="w-full bg-slate-900 hover:bg-black text-white py-4 rounded-xl font-black transition-colors shadow-md mt-4 disabled:bg-slate-400 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 {isSubmittingDeposit ? 'VERIFYING...' : 'SUBMIT FOR VERIFICATION'}
@@ -523,62 +573,48 @@ export default function FunderWallet() {
               </div>
 
               <div>
-                <label className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2 block">Destination Provider</label>
-                <div className="grid grid-cols-3 gap-2">
-                   <button 
-                     onClick={() => setWithdrawProvider('MTN')}
-                     className={`flex flex-col items-center justify-center py-2.5 border-2 rounded-xl transition-all font-bold gap-1 text-sm ${withdrawProvider === 'MTN' ? 'border-[var(--color-primary)] bg-slate-50 text-[var(--color-primary)]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
-                   >
-                     <span>📱</span>
-                     <span className="text-xs">MTN MoMo</span>
-                   </button>
-                   <button 
-                     onClick={() => setWithdrawProvider('Airtel')}
-                     className={`flex flex-col items-center justify-center py-2.5 border-2 rounded-xl transition-all font-bold gap-1 text-sm ${withdrawProvider === 'Airtel' ? 'border-[var(--color-primary)] bg-slate-50 text-[var(--color-primary)]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
-                   >
-                     <span>📱</span>
-                     <span className="text-xs">Airtel Money</span>
-                   </button>
-                   <button 
-                     onClick={() => setWithdrawProvider('Bank')}
-                     className={`flex flex-col items-center justify-center py-2.5 border-2 rounded-xl transition-all font-bold gap-1 text-sm ${withdrawProvider === 'Bank' ? 'border-[var(--color-primary)] bg-slate-50 text-[var(--color-primary)]' : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'}`}
-                   >
-                     <span>🏦</span>
-                     <span className="text-xs">Bank</span>
-                   </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2 block">Account Name</label>
-                <input 
-                  type="text" 
-                  value={withdrawAccountName}
-                  onChange={e => setWithdrawAccountName(e.target.value)}
-                  placeholder="e.g. John Doe" 
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-900 outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all" 
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2 block">
-                  {withdrawProvider === 'Bank' ? 'Account Number' : 'Phone Number'}
-                </label>
-                <input 
-                  type={withdrawProvider === 'Bank' ? 'text' : 'tel'} 
-                  value={withdrawAccountNumber}
-                  onChange={e => setWithdrawAccountNumber(e.target.value)}
-                  placeholder={withdrawProvider === 'Bank' ? 'e.g. 9030000001234' : 'e.g. 0770000000'} 
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-900 outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all" 
-                />
-                {withdrawProvider === 'Bank' && (
-                  <p className="text-[10px] font-semibold text-slate-500 mt-1.5">Enter your bank account number. Withdrawals to bank accounts may take 1–3 business days.</p>
+                <label className="text-xs font-black text-slate-500 uppercase tracking-wider mb-2 block">Destination Payout Method</label>
+                {payoutMethods.length === 0 ? (
+                  <div className="bg-orange-50 border border-orange-100 rounded-xl p-4 text-center">
+                    <p className="text-xs font-bold text-orange-800 mb-2">No Verified Methods Found</p>
+                    <p className="text-[10px] text-orange-600 mb-3">You must add a verified mobile money or bank account before withdrawing.</p>
+                    <Link to="/funder/account" className="inline-block bg-orange-600 text-white text-[10px] font-black uppercase px-3 py-1.5 rounded-lg hover:bg-orange-700 transition">Go to Settings</Link>
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-[180px] overflow-y-auto">
+                    {payoutMethods.map((method) => (
+                      <button
+                        key={method.id}
+                        onClick={() => setSelectedPayoutId(method.id)}
+                        className={`w-full flex items-center justify-between p-3 rounded-xl border-2 transition-all ${selectedPayoutId === method.id ? 'border-[var(--color-primary)] bg-[var(--color-primary-faint)]' : 'border-slate-100 bg-white hover:border-slate-200'}`}
+                      >
+                         <div className="flex items-center gap-3">
+                           <div className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 text-slate-500 shrink-0 shadow-sm border border-slate-200 overflow-hidden">
+                             {method.provider === 'MTN' || method.provider.toLowerCase().includes('mtn') ? (
+                               <img src="/mtn.png" alt="MTN" className="w-full h-full object-cover" />
+                             ) : method.provider === 'Airtel' || method.provider.toLowerCase().includes('airtel') ? (
+                               <img src="/airtel.png" alt="Airtel" className="w-full h-full object-cover" />
+                             ) : (
+                               <Phone className="w-4 h-4" />
+                             )}
+                           </div>
+                           <div className="text-left">
+                             <p className="text-xs font-bold text-slate-900">{method.provider}</p>
+                             <p className="text-[10px] font-semibold text-slate-500">{method.account_name} • {method.account_number}</p>
+                           </div>
+                         </div>
+                         {method.is_primary && (
+                           <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-sm">Primary</span>
+                         )}
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
 
               <button 
                 onClick={handleWithdrawSubmit}
-                disabled={isSubmittingWithdraw}
+                disabled={isSubmittingWithdraw || payoutMethods.length === 0}
                 className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-black text-white py-4 rounded-xl font-black transition-colors shadow-md mt-4 disabled:bg-slate-400 disabled:cursor-not-allowed"
               >
                 {isSubmittingWithdraw ? (
@@ -586,6 +622,96 @@ export default function FunderWallet() {
                 ) : (
                   <>CONFIRM WITHDRAWAL <ArrowRightLeft className="w-4 h-4" /></>
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Transfer Modal */}
+      {isTransferModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center shrink-0">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">Transfer Funds</h3>
+                <p className="text-xs font-medium text-slate-500 mt-0.5">Move your capital securely</p>
+              </div>
+              <button onClick={() => setIsTransferModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4 overflow-y-auto flex-1">
+              
+              {/* Transfer Tabs */}
+              <div className="flex bg-slate-50 p-1 rounded-xl mb-4 gap-1">
+                <button
+                  onClick={() => setTransferType('internal')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-semibold rounded-lg transition-all ${transferType === 'internal' ? 'bg-white shadow-sm border border-slate-200 text-[var(--color-primary)]' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  <Wallet className="w-4 h-4" /> Internal Wallet
+                </button>
+                <button
+                  onClick={() => setTransferType('p2p')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-semibold rounded-lg transition-all ${transferType === 'p2p' ? 'bg-white shadow-sm border border-slate-200 text-[var(--color-primary)]' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  <Users className="w-4 h-4" /> Send to User
+                </button>
+              </div>
+
+              {transferType === 'internal' ? (
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 block">Source Wallet</label>
+                  <select
+                    value={transferSourceBucket}
+                    onChange={(e) => setTransferSourceBucket(e.target.value as any)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-semibold text-slate-900 outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all mb-4"
+                  >
+                    {stats?.verifiedPersonas?.map(p => p.toUpperCase()).includes('AGENT') && (
+                      <option value="commission">Agent Commission (UGX {stats?.walletBuckets?.find(b => b.type === 'commission')?.balance?.toLocaleString() || 0})</option>
+                    )}
+                    <option value="savings">Savings Vault (UGX {stats?.walletBuckets?.find(b => b.type === 'savings')?.balance?.toLocaleString() || 0})</option>
+                  </select>
+                  <p className="text-[10px] text-slate-500 font-medium mb-4 flex items-center gap-1.5">
+                    <Info className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Funds will route directly into your <span className="text-slate-700 font-semibold">Available Liquidity</span> bucket.</span>
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 block">Recipient Email or Phone</label>
+                  <input
+                    type="text"
+                    value={transferTargetIdentifier}
+                    onChange={(e) => setTransferTargetIdentifier(e.target.value)}
+                    placeholder="Enter email or phone..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-semibold text-slate-900 outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all mb-4"
+                  />
+                  <p className="text-[10px] text-slate-500 font-medium mb-4 flex items-center gap-1.5">
+                    <Info className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Instantly send money to any actively registered RentFlowInsight user.</span>
+                  </p>
+                </div>
+              )}
+
+              <div>
+                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 block">Amount (UGX)</label>
+                <input 
+                  type="number" 
+                  value={transferAmount}
+                  onChange={(e) => setTransferAmount(e.target.value)}
+                  placeholder="Enter amount..." 
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-semibold text-slate-900 outline-none focus:bg-white focus:border-[var(--color-primary)] transition-all" 
+                />
+              </div>
+
+              <button 
+                onClick={handleTransferSubmit}
+                disabled={isSubmittingTransfer}
+                className="w-full flex items-center justify-center gap-2 bg-[var(--color-primary)] hover:opacity-90 text-white py-4 rounded-xl font-semibold transition-all shadow-md mt-6 disabled:bg-slate-400 disabled:cursor-not-allowed"
+              >
+                {isSubmittingTransfer ? 'PROCESSING...' : 'Confirm Transfer Funds'}
+                <ArrowRightLeft className="w-4 h-4" />
               </button>
             </div>
           </div>

@@ -611,7 +611,7 @@ model PendingWalletOperations {
   category             String
   created_at           String
   description          String?
-  direction            String   // 'debit' or 'credit'
+  direction            String // 'debit' or 'credit'
   id                   String  @id @default(uuid())
   linked_party         String?
   metadata             Json?
@@ -627,17 +627,17 @@ model PendingWalletOperations {
   user_id              String?
 
   // Strict 4-Stage Hierarchy Audit
-  manager_id           String?
-  manager_approved_at  DateTime?
-  cfo_id               String?
-  cfo_approved_at      DateTime?
-  coo_id               String?
-  coo_approved_at      DateTime?
+  manager_id          String?
+  manager_approved_at DateTime?
+  cfo_id              String?
+  cfo_approved_at     DateTime?
+  coo_id              String?
+  coo_approved_at     DateTime?
 
   // Security Meta
-  ip_address           String?
-  device_info          String?
-  external_tx_id       String?
+  ip_address     String?
+  device_info    String?
+  external_tx_id String?
 
   @@map("pending_wallet_operations")
 }
@@ -1612,9 +1612,9 @@ model VirtualOpportunities {
 model PayoutMethods {
   id             String   @id @default(uuid())
   user_id        String
-  provider       String   // e.g., "MTN Mobile Money", "Bank Wire"
-  account_name   String   // Legal Name on Account
-  account_number String   // MSISDN or Bank Account
+  provider       String // e.g., "MTN Mobile Money", "Bank Wire"
+  account_name   String // Legal Name on Account
+  account_number String // MSISDN or Bank Account
   is_primary     Boolean  @default(false)
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
@@ -1624,15 +1624,13 @@ model PayoutMethods {
 }
 
 model FunderSettings {
-  id               String   @id @default(uuid())
-  user_id          String   @unique
-  reward_mode      String   @default("compound") // "compound" or "payout"
-  updated_at       DateTime @updatedAt
+  id          String   @id @default(uuid())
+  user_id     String   @unique
+  reward_mode String   @default("compound") // "compound" or "payout"
+  updated_at  DateTime @updatedAt
 
   @@map("funder_settings")
 }
-
-
 
 model FunderPortfolios {
   id             String   @id @default(uuid())
@@ -1640,7 +1638,7 @@ model FunderPortfolios {
   portfolio_id   String   @unique // e.g., "WPF-7291"
   funding_date   DateTime @default(now())
   active_capital Float
-  roi_rate       String   // e.g., "15% Standard"
+  roi_rate       String // e.g., "15% Standard"
   earned_rewards Float    @default(0)
 
   @@index([user_id])
@@ -1648,16 +1646,16 @@ model FunderPortfolios {
 }
 
 model FunderProxyMandates {
-  id              String   @id @default(uuid())
-  funder_id       String
-  agent_id        String
-  agent_name      String?
-  agent_code      String?
-  daily_limit     Float
-  status          String   @default("active") // active, revoked
-  revoked_at      DateTime?
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
+  id          String    @id @default(uuid())
+  funder_id   String
+  agent_id    String
+  agent_name  String?
+  agent_code  String?
+  daily_limit Float
+  status      String    @default("active") // active, revoked
+  revoked_at  DateTime?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
 
   @@index([funder_id])
   @@map("funder_proxy_mandates")

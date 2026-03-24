@@ -12,6 +12,7 @@ const getAuthHeaders = () => {
   };
 };
 
+
 export interface DashboardStatsResponse {
   totalBalance: number;
   availableLiquid: number;
@@ -20,6 +21,8 @@ export interface DashboardStatsResponse {
   activePortfolios: number;
   pendingPortfolios: number;
   virtualHouses: number;
+  verifiedPersonas?: string[];
+  walletBuckets?: { type: string, balance: number }[];
 }
 
 export const getFunderDashboardStats = async (): Promise<DashboardStatsResponse> => {
@@ -156,8 +159,13 @@ export const requestWalletWithdrawal = async (amount: number) => {
   return response.data;
 };
 
-export const requestDeposit = async (data: { amount: number, provider: string, external_tx_id: string }) => {
-  const response = await axios.post(`${API}/funder/financial/wallet-deposit`, data, getAuthHeaders());
+export const requestDeposit = async (payload: { amount: number, provider: string, external_tx_id: string }) => {
+  const response = await axios.post(`${API}/funder/financial/wallet-deposit`, payload, getAuthHeaders());
+  return response.data;
+};
+
+export const transferFunds = async (payload: { type: 'internal' | 'p2p', amount: number, sourceBucket?: string, targetIdentifier?: string }) => {
+  const response = await axios.post(`${API}/funder/financial/transfer`, payload, getAuthHeaders());
   return response.data;
 };
 

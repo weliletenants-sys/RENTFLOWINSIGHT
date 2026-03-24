@@ -206,8 +206,8 @@ export const requestWalletWithdrawal = async (req: Request, res: Response) => {
     if (!userId) return problemResponse(res, 401, 'Unauthorized', 'Session invalid', 'unauthorized');
 
     const amount = Number(req.body.amount);
-    if (!amount || amount <= 0) {
-      return problemResponse(res, 400, 'Bad Request', 'Invalid withdrawal amount', 'validation-error');
+    if (!amount || amount < 100000) {
+      return problemResponse(res, 400, 'Bad Request', 'Invalid withdrawal amount: Minimum 100,000 UGX required', 'validation-error');
     }
 
     // Security meta capture
@@ -224,7 +224,10 @@ export const requestWalletWithdrawal = async (req: Request, res: Response) => {
         reference_id: `WRW-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
         status: 'pending_manager',
         ip_address,
-        device_info
+        device_info,
+        source_table: 'funder_wallet',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }
     });
 
@@ -243,8 +246,8 @@ export const requestDeposit = async (req: Request, res: Response) => {
     const amount = Number(req.body.amount);
     const { provider, external_tx_id } = req.body;
 
-    if (!amount || amount <= 0 || !provider || !external_tx_id) {
-      return problemResponse(res, 400, 'Bad Request', 'Missing required deposit fields (amount, provider, transaction ID)', 'validation-error');
+    if (!amount || amount < 100000 || !provider || !external_tx_id) {
+      return problemResponse(res, 400, 'Bad Request', 'Missing required deposit fields or amount below minimum 100,000 UGX', 'validation-error');
     }
 
     // Security meta capture
@@ -262,7 +265,10 @@ export const requestDeposit = async (req: Request, res: Response) => {
         external_tx_id: external_tx_id.trim(),
         status: 'pending_manager',
         ip_address,
-        device_info
+        device_info,
+        source_table: 'funder_wallet',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }
     });
 
@@ -287,5 +293,91 @@ export const getPortfolios = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error('Error fetching portfolios:', error);
     return problemResponse(res, 500, 'Internal Server Error', 'Could not fetch portfolios', 'internal-error');
+  }
+};
+
+export const transferFunds = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.sub;
+    if (!userId) return problemResponse(res, 401, 'Unauthorized', 'Session invalid', 'unauthorized');
+
+    const { type, amount, sourceBucket, targetIdentifier } = req.body;
+    const transferAmount = Number(amount);
+
+    if (!type || !transferAmount || transferAmount <= 0) {
+      return problemResponse(res, 400, 'Bad Request', 'Invalid transfer paramters', 'validation-error');
+    }
+
+    const senderWallet = await prisma.wallets.findFirst({ where: { user_id: userId } });
+    if (!senderWallet) return problemResponse(res, 404, 'Not Found', 'Wallet not found', 'not-found');
+
+    if (type === 'internal') {
+      if (!sourceBucket) return problemResponse(res, 400, 'Bad Request', 'Source bucket required for internal transfer', 'validation-error');
+      
+      const source = await prisma.walletBuckets.findFirst({ where: { wallet_id: senderWallet.id, bucket_type: sourceBucket } });
+      const dest = await prisma.walletBuckets.findFirst({ where: { wallet_id: senderWallet.id, bucket_type: 'available' } });
+      
+      if (!source || source.balance < transferAmount) return problemResponse(res, 400, 'Bad Request', 'Insufficient funds in source bucket', 'insufficient-funds');
+      
+      await prisma.$transaction([
+        prisma.walletBuckets.update({ where: { id: source.id }, data: { balance: { decrement: transferAmount } } }),
+        dest 
+          ? prisma.walletBuckets.update({ where: { id: dest.id }, data: { balance: { increment: transferAmount } } })
+          : prisma.walletBuckets.create({ data: { wallet_id: senderWallet.id, bucket_type: 'available', balance: transferAmount } }),
+        prisma.walletTransactions.create({
+          data: {
+            amount: transferAmount,
+            description: `Internal Transfer: ${sourceBucket} to available`,
+            sender_id: userId,
+            recipient_id: userId,
+            created_at: new Date().toISOString()
+          }
+        })
+      ]);
+
+      return res.status(200).json({ status: 'success', message: 'Internal reallocation successful' });
+
+    } else if (type === 'p2p') {
+      if (!targetIdentifier) return problemResponse(res, 400, 'Bad Request', 'Recipient identifier required', 'validation-error');
+      
+      const recipientProfile = await prisma.profiles.findFirst({
+        where: { OR: [{ email: targetIdentifier }, { phone: targetIdentifier }] }
+      });
+      if (!recipientProfile) return problemResponse(res, 404, 'Not Found', 'Recipient user not found on platform', 'not-found');
+      if (recipientProfile.id === userId) return problemResponse(res, 400, 'Bad Request', 'Cannot P2P transfer to yourself', 'validation-error');
+
+      const recipientWallet = await prisma.wallets.findFirst({ where: { user_id: recipientProfile.id } });
+      if (!recipientWallet) return problemResponse(res, 404, 'Not Found', 'Recipient wallet not active', 'not-found');
+
+      const sourceAvailable = await prisma.walletBuckets.findFirst({ where: { wallet_id: senderWallet.id, bucket_type: 'available' } });
+      if (!sourceAvailable || sourceAvailable.balance < transferAmount) {
+        return problemResponse(res, 400, 'Bad Request', 'Insufficient available liquidity for P2P transfer', 'insufficient-funds');
+      }
+
+      const destAvailable = await prisma.walletBuckets.findFirst({ where: { wallet_id: recipientWallet.id, bucket_type: 'available' } });
+
+      await prisma.$transaction([
+        prisma.walletBuckets.update({ where: { id: sourceAvailable.id }, data: { balance: { decrement: transferAmount } } }),
+        destAvailable 
+          ? prisma.walletBuckets.update({ where: { id: destAvailable.id }, data: { balance: { increment: transferAmount } } })
+          : prisma.walletBuckets.create({ data: { wallet_id: recipientWallet.id, bucket_type: 'available', balance: transferAmount } }),
+        prisma.walletTransactions.create({
+          data: {
+            amount: transferAmount,
+            description: `P2P Transfer to ${recipientProfile.full_name}`,
+            sender_id: userId,
+            recipient_id: recipientProfile.id,
+            created_at: new Date().toISOString()
+          }
+        })
+      ]);
+
+      return res.status(200).json({ status: 'success', message: `Successfully sent ${transferAmount.toLocaleString()} UGX to ${recipientProfile.full_name}` });
+    }
+
+    return problemResponse(res, 400, 'Bad Request', 'Unknown transfer type', 'validation-error');
+  } catch (error: any) {
+    console.error('Transfer error:', error);
+    return problemResponse(res, 500, 'Internal Server Error', 'Transfer processing failed', 'internal-error');
   }
 };

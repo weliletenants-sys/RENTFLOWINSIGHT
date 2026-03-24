@@ -22,7 +22,8 @@ import {
   X,
   Camera,
   User,
-  Info
+  Info,
+  Phone
 } from 'lucide-react';
 
 import { useNavigate } from 'react-router-dom';
@@ -923,9 +924,16 @@ export default function FunderAccountSettings() {
                                   <div className="relative">
                                     <input value={editForm.number} onChange={e => setEditForm({...editForm, number: e.target.value})} type="text" className="w-full bg-white border-2 border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-purple-500 font-mono" placeholder={editForm.type === 'momo' ? "077... (10 digits)" : "Bank Account No"} />
                                     {editForm.type === 'momo' && editForm.number.length >= 3 && (
-                                      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
-                                        {getNetworkFromNumber(editForm.number) === 'MTN' && <span className="bg-yellow-400 text-slate-900 text-[9px] font-black uppercase px-2 py-0.5 rounded-md">MTN</span>}
-                                        {getNetworkFromNumber(editForm.number) === 'Airtel' && <span className="bg-red-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-md">AIRTEL</span>}
+                                      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
+                                        {getNetworkFromNumber(editForm.number) === 'MTN' ? (
+                                          <img src="/mtn.png" alt="MTN" className="w-7 h-7 rounded-full object-cover border border-slate-200" />
+                                        ) : getNetworkFromNumber(editForm.number) === 'Airtel' ? (
+                                          <img src="/airtel.png" alt="Airtel" className="w-7 h-7 rounded-full object-cover border border-slate-200" />
+                                        ) : (
+                                          <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200">
+                                            <Phone className="w-3 h-3 text-slate-500" />
+                                          </div>
+                                        )}
                                       </div>
                                     )}
                                   </div>
