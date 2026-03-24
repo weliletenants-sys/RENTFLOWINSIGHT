@@ -52,7 +52,7 @@ export default function FunderWalletCard({
           {/* Main Focus: Wallet Balance */}
           <div>
             <p className="text-white/70 text-xs font-semibold mb-1 uppercase tracking-widest flex items-center gap-2">
-              Total Funder Value
+              Liquid Balance
               <button
                 onClick={() => setBalanceVisible((v) => !v)}
                 className="opacity-60 hover:opacity-100 transition-opacity p-1"
@@ -61,7 +61,7 @@ export default function FunderWalletCard({
               </button>
             </p>
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight drop-shadow-md">
-              {balanceVisible ? `UGX ${totalBalance.toLocaleString()}` : 'UGX ********'}
+              {balanceVisible ? `UGX ${availableLiquid.toLocaleString()}` : 'UGX ********'}
             </h2>
           </div>
 
@@ -69,20 +69,20 @@ export default function FunderWalletCard({
           <div className="grid grid-cols-2 gap-4 border-t border-white/20 pt-4 mt-2">
             <div>
               <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-0.5 flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                Liquid Balance
-              </p>
-              <p className="text-white font-bold text-sm sm:text-base">
-                {balanceVisible ? `UGX ${availableLiquid.toLocaleString()}` : '********'}
-              </p>
-            </div>
-            <div>
-              <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-0.5 flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-blue-400"></span>
                 Active Capital
               </p>
               <p className="text-white font-bold text-sm sm:text-base">
                 {balanceVisible ? `UGX ${totalInvested.toLocaleString()}` : '********'}
+              </p>
+            </div>
+            <div>
+              <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-0.5 flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-purple-300"></span>
+                Total Funder Value
+              </p>
+              <p className="text-white font-bold text-sm sm:text-base">
+                {balanceVisible ? `UGX ${totalBalance.toLocaleString()}` : '********'}
               </p>
             </div>
           </div>

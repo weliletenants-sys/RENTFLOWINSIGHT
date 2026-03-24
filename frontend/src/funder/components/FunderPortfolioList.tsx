@@ -1,4 +1,4 @@
-﻿import { ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import type { PortfolioItem, PortfolioStatus } from '../types';
 
 export type { PortfolioItem };
@@ -77,8 +77,8 @@ export default function FunderPortfolioList({ portfolios, onViewAll, onCashOut, 
                 <div className="bg-white p-2.5 rounded-lg border border-slate-100">
                   <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Earnings</p>
                   <div className="flex items-center justify-between">
-                    <p className={`font-bold text-sm ${item.totalEarned > 0 ? 'text-[var(--color-success)]' : 'text-slate-400'}`}>
-                      {item.totalEarned > 0 ? '+' : ''}UGX {item.totalEarned.toLocaleString()}
+                    <p className={`font-bold text-sm ${(item.totalEarned || 0) > 0 ? 'text-[var(--color-success)]' : 'text-slate-400'}`}>
+                      {(item.totalEarned || 0) > 0 ? '+' : ''}UGX {(item.totalEarned || 0).toLocaleString()}
                     </p>
                     <span className="font-bold text-[10px] bg-green-50 text-green-700 px-1.5 py-0.5 rounded ml-1 shrink-0">
                       {item.roiPercent ?? 0}%

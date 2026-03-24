@@ -70,12 +70,12 @@ interface FunderPortfolioPageProps {
 /* ═══════════════════════════════════════════════════════ */
 /*               MAIN COMPONENT                           */
 /* ═══════════════════════════════════════════════════════ */
-export default function FunderPortfolioPage({ onAddPortfolio, walletBalance = 0 }: FunderPortfolioPageProps) {
+export default function FunderPortfolioPage({ onAddPortfolio, walletBalance }: FunderPortfolioPageProps) {
   const navigate = useNavigate();
   const [filter, setFilter] = useState<FilterStatus>('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [portfolios, setPortfolios] = useState<PortfolioAccount[]>([]);
-  const [liveWalletBalance, setLiveWalletBalance] = useState<number>(walletBalance);
+  const [liveWalletBalance, setLiveWalletBalance] = useState<number>(walletBalance || 0);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -377,6 +377,19 @@ function AddPortfolioModal({ walletBalance, onClose, onSuccess }: AddPortfolioMo
   const [duration, setDuration] = useState<12 | 18 | 24>(12);
   const [autoRenew, setAutoRenew] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loadingPhraseIdx, setLoadingPhraseIdx] = useState(0);
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    if (isSubmitting) {
+      interval = setInterval(() => {
+        setLoadingPhraseIdx((prev) => (prev + 1) % 4);
+      }, 1500);
+    } else {
+      setLoadingPhraseIdx(0);
+    }
+    return () => clearInterval(interval);
+  }, [isSubmitting]);
 
   const numAmount = parseInt(amount.replace(/,/g, ''), 10) || 0;
   const roiRate = 15; // Locked at 15% system-wide
@@ -571,47 +584,101 @@ function AddPortfolioModal({ walletBalance, onClose, onSuccess }: AddPortfolioMo
             </div>
           )}
 
-          {/* ════════ STEP 2: PAYMENT ════════ */}
+          {/* ════════ STEP 2: INVESTMENT PROJECTION ════════ */}
           {step === 'payment' && (
-            <div>
-              <button onClick={goBack} className="flex items-center gap-1 text-xs font-bold text-gray-400 mb-4 hover:text-gray-600 transition cursor-pointer">
-                <ChevronLeft className="w-3.5 h-3.5" /> Back
+            <div className="flex flex-col h-full animate-fadeInUp">
+              <button onClick={goBack} className="flex items-center gap-1 text-xs font-bold text-slate-400 mb-6 hover:text-[var(--color-primary)] transition cursor-pointer w-fit p-1 rounded-md hover:bg-slate-50">
+                <ChevronLeft className="w-4 h-4" /> Back to details
               </button>
-              <h2 className="text-lg font-black text-gray-900 tracking-tight mb-0.5">Payment</h2>
-              <p className="text-xs text-gray-400 mb-5">Select how to fund UGX {numAmount.toLocaleString()}</p>
-
-              {/* ── Wallet Confirmation ── */}
-              <div className="space-y-3">
-                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex justify-between items-center">
-                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Wallet Balance</span>
-                  <span className="font-bold text-gray-900 text-sm">UGX {walletBalance.toLocaleString()}</span>
-                </div>
-                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex justify-between items-center">
-                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Amount to Deduct</span>
-                  <span className="font-bold text-gray-900 text-sm">UGX {numAmount.toLocaleString()}</span>
-                </div>
-                {numAmount > walletBalance ? (
-                  <div className="bg-red-50 border border-red-100 rounded-xl p-3">
-                    <p className="text-xs text-red-600 font-bold">⚠ Insufficient wallet balance. Please deposit funds via the Wallet page.</p>
-                  </div>
-                ) : (
-                  <div className="bg-green-50 border border-green-100 rounded-xl p-3">
-                    <p className="text-xs text-green-600 font-bold">✓ Wallet balance is sufficient. Remaining after deduction: UGX {(walletBalance - numAmount).toLocaleString()}</p>
-                  </div>
-                )}
+              
+              <div className="mb-6">
+                <h2 className="text-xl font-black text-slate-900 tracking-tight mb-1">Investment Projection</h2>
+                <p className="text-sm text-slate-500 font-medium">Review your projected returns before deploying your capital.</p>
               </div>
 
-              {/* Submit */}
-              <button
-                onClick={handlePaymentSubmit}
-                disabled={isSubmitting || numAmount > walletBalance}
-                className={`w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition mt-5 ${
-                  isSubmitting ? 'opacity-60 cursor-not-allowed' : ''
-                } ${numAmount > walletBalance ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'text-white hover:shadow-lg'}`}
-                style={!(numAmount > walletBalance) ? { background: 'var(--color-primary)' } : undefined}
-              >
-                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Confirm & Pay from Wallet'}
-              </button>
+              {/* ── Clean Mathematical Projection Box ── */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 mb-6 shadow-sm">
+                <div className="flex flex-col gap-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Initial Capital</span>
+                    <span className="font-bold text-slate-900 text-sm">UGX {numAmount.toLocaleString()}</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Annual ROI</span>
+                    <span className="font-bold text-[var(--color-success)] text-sm flex items-center gap-1">
+                      <TrendingUp className="w-4 h-4" /> 15%
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Lock-in Period</span>
+                    <span className="font-bold text-slate-900 text-sm">{duration} Months</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Yield Strategy</span>
+                    <span className="font-bold text-slate-900 text-sm">
+                      {String(roiMode).includes('compounding') ? 'Compounding' : 'Standard Payout'}
+                    </span>
+                  </div>
+
+                  <div className="h-px bg-slate-100 w-full" />
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Expected Profit</span>
+                    <span className="font-bold text-[var(--color-success)] text-sm">
+                      + UGX {(numAmount * 0.15 * (Number(duration) / 12)).toLocaleString()}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100 mt-1">
+                    <span className="text-xs text-slate-800 font-black uppercase tracking-widest">Est. Total Return</span>
+                    <span className="font-black text-[var(--color-primary)] text-lg">
+                      UGX {(numAmount + (numAmount * 0.15 * (Number(duration) / 12))).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-auto">
+                {/* ── Minimal Wallet Check ── */}
+                {numAmount > walletBalance ? (
+                  <div className="flex items-center justify-center gap-2 mb-4 text-xs font-bold text-red-500 bg-red-50 py-3 rounded-xl border border-red-100 uppercase tracking-wide">
+                    ⚠ Insufficient wallet balance (Available: UGX {walletBalance.toLocaleString()})
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center gap-2 mb-5 text-[11px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 py-2.5 rounded-xl border border-slate-100">
+                    Wallet Balance: UGX {walletBalance.toLocaleString()}
+                  </div>
+                )}
+
+                {/* Submit */}
+                <button
+                  onClick={handlePaymentSubmit}
+                  disabled={isSubmitting || numAmount > walletBalance}
+                  className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all relative overflow-hidden ${
+                    isSubmitting ? 'opacity-80 cursor-not-allowed' : ''
+                  } ${numAmount > walletBalance ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'text-white shadow-md hover:shadow-lg hover:-translate-y-[1px]'}`}
+                  style={!(numAmount > walletBalance) ? { background: 'var(--color-primary)' } : undefined}
+                >
+                  {isSubmitting ? (
+                    <div className="flex items-center gap-2.5 h-[20px] overflow-hidden">
+                       <Loader2 className="w-5 h-5 animate-spin shrink-0 text-white" />
+                       <div 
+                         className="flex flex-col transition-transform duration-500 ease-in-out"
+                         style={{ transform: `translateY(-${loadingPhraseIdx * 20}px)` }}
+                       >
+                         {['Getting Ready...', 'Preparing Node...', 'Deploying Capital...', 'Almost there...'].map((phrase, i) => (
+                           <span key={i} className="h-[20px] leading-[20px] block whitespace-nowrap">{phrase}</span>
+                         ))}
+                       </div>
+                    </div>
+                  ) : (
+                    'Confirm & Deploy Capital'
+                  )}
+                </button>
+              </div>
             </div>
           )}
 
@@ -630,8 +697,8 @@ function AddPortfolioModal({ walletBalance, onClose, onSuccess }: AddPortfolioMo
                 Portfolio <strong>#{portfolioCode}</strong> is now active. You'll earn <strong>UGX {Math.round(monthlyReturn).toLocaleString()}</strong>/month at {roiRate}% ROI.
               </p>
               <div className="bg-green-50 border border-green-100 rounded-xl p-3 mb-5">
-                <p className="text-[11px] text-green-600 font-bold">
-                  🎉 First payout in 30 days
+                <p className="text-[11px] text-green-600 font-bold uppercase tracking-widest">
+                  First payout in 30 days
                 </p>
               </div>
               <button
