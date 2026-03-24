@@ -32,30 +32,6 @@ export const getFunderDashboardStats = async (): Promise<DashboardStatsResponse>
   return response.data.data;
 };
 
-export const fundRentPool = async (amount: number) => {
-  const response = await axios.post(`${API}/funder/fund`, { amount }, getAuthHeaders());
-  return response.data;
-};
-
-export const requestWithdrawal = async (portfolio_id: string, amount: number) => {
-  const response = await axios.post(`${API}/funder/withdrawals`, { portfolio_id, amount }, getAuthHeaders());
-  return response.data;
-};
-
-export const getFunderPortfolios = async () => {
-  const response = await axios.get(`${API}/funder/portfolios`, getAuthHeaders());
-  return response.data.data;
-};
-
-export const getFunderActivities = async () => {
-  const response = await axios.get(`${API}/funder/activities`, getAuthHeaders());
-  return response.data.data;
-};
-
-export const getFunderOpportunities = async () => {
-  const response = await axios.get(`${API}/funder/opportunities`, getAuthHeaders());
-  return response.data.data;
-};
 
 export const updateFunderProfile = async (firstName: string, lastName: string, email: string, phone: string) => {
   const response = await axios.put(`${API}/funder/kyc/profile`, { firstName, lastName, email, phone }, getAuthHeaders());
@@ -201,5 +177,35 @@ export const revokeProxyMandate = async (id: string) => {
 export const restoreProxyMandate = async (id: string) => {
   const response = await axios.put(`${API}/funder/proxy/mandates/${id}/restore`, {}, getAuthHeaders());
   return response.data;
+};
+
+export const getFunderPortfolios = async () => {
+  const response = await axios.get(`${API}/funder/portfolios`, getAuthHeaders());
+  return response.data.data;
+};
+
+export const getFunderPortfolioDetails = async (code: string) => {
+  const response = await axios.get(`${API}/funder/portfolios/${code}`, getAuthHeaders());
+  return response.data.data;
+};
+
+export const fundRentPool = async (payload: { amount: number, roi_mode: string, duration_months: number, auto_renew: boolean }) => {
+  const response = await axios.post(`${API}/funder/fund`, payload, getAuthHeaders());
+  return response.data;
+};
+
+export const requestWithdrawal = async (portfolio_id: string, amount: number) => {
+  const response = await axios.post(`${API}/funder/withdrawals`, { portfolio_id, amount }, getAuthHeaders());
+  return response.data;
+};
+
+export const getFunderActivities = async () => {
+  const response = await axios.get(`${API}/funder/activities`, getAuthHeaders());
+  return response.data.data;
+};
+
+export const getFunderOpportunities = async () => {
+  const response = await axios.get(`${API}/funder/opportunities`, getAuthHeaders());
+  return response.data.data;
 };
 

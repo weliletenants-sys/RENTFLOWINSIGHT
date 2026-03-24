@@ -361,6 +361,7 @@ model InvestorPortfolios {
   total_roi_earned    Float
   agent_id            String?
   payout_day          Float?
+  auto_renew          Boolean? @default(false)
 
   @@map("investor_portfolios")
 }

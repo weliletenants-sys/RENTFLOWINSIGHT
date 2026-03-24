@@ -171,8 +171,12 @@ export default function FunderWallet() {
   const handleFundRentPool = async () => {
     try {
       setIsLoading(true);
-      await fundRentPool(100000); // Trigger a 100,000 UGX pool funding natively
-      toast.success("Successfully transferred 100,000 UGX into active Rent Pool!");
+      await fundRentPool({
+        amount: 100000,
+        roi_mode: 'monthly_compounding',
+        duration_months: 12, // Default 12 months for quick invest
+        auto_renew: false // Default to false for quick invest
+      });toast.success("Successfully transferred 100,000 UGX into active Rent Pool!");
       fetchData();
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to allocate funds to rent pool.");

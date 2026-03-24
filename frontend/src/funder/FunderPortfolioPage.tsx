@@ -4,17 +4,16 @@ import {
   Plus,
   TrendingUp,
   DollarSign,
-  Target,
   Filter,
   ChevronLeft,
   Layers,
   ArrowRight,
-  ShieldCheck,
   X,
   CheckCircle2,
-  Loader2
+  Loader2,
+  Wallet
 } from 'lucide-react';
-import { getFunderPortfolios } from '../services/funderApi';
+import { getFunderPortfolios, fundRentPool, getFunderDashboardStats } from '../services/funderApi';
 
 /* ═══════════ TYPES ═══════════ */
 
@@ -76,20 +75,25 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance = 0 
   const [filter, setFilter] = useState<FilterStatus>('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [portfolios, setPortfolios] = useState<PortfolioAccount[]>([]);
+  const [liveWalletBalance, setLiveWalletBalance] = useState<number>(walletBalance);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPortfolios = async () => {
+    const fetchViewData = async () => {
       try {
-        const data = await getFunderPortfolios();
-        setPortfolios(data);
+        const [portfolioData, statsData] = await Promise.all([
+          getFunderPortfolios(),
+          getFunderDashboardStats()
+        ]);
+        setPortfolios(portfolioData);
+        setLiveWalletBalance(statsData.availableLiquid || 0);
       } catch (error) {
-        console.error("Failed to load portfolios", error);
+        console.error("Failed to load portfolio view data", error);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchPortfolios();
+    fetchViewData();
   }, []);
 
   const filtered = filter === 'all' ? portfolios : portfolios.filter((p) => p.status === filter || p.status.toLowerCase() === filter);
@@ -322,11 +326,19 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance = 0 
 
       {showAddModal && (
         <AddPortfolioModal
-          walletBalance={walletBalance}
+          walletBalance={liveWalletBalance}
           onClose={() => setShowAddModal(false)}
-          onSuccess={() => {
+          onSuccess={async () => {
             setShowAddModal(false);
-            onAddPortfolio?.();
+            if (onAddPortfolio) onAddPortfolio();
+            try {
+               const [portfolioData, statsData] = await Promise.all([
+                 getFunderPortfolios(),
+                 getFunderDashboardStats()
+               ]);
+               setPortfolios(portfolioData);
+               setLiveWalletBalance(statsData.availableLiquid || 0);
+            } catch(e) {}
           }}
         />
       )}
@@ -345,7 +357,6 @@ interface AddPortfolioModalProps {
 }
 
 type ModalStep = 'details' | 'payment' | 'success';
-type PaymentMethod = 'wallet' | 'mobile_money' | 'bank';
 
 function AddPortfolioModal({ walletBalance, onClose, onSuccess }: AddPortfolioModalProps) {
   const [step, setStep] = useState<ModalStep>('details');
@@ -353,14 +364,11 @@ function AddPortfolioModal({ walletBalance, onClose, onSuccess }: AddPortfolioMo
   const [amount, setAmount] = useState('');
   const [roiMode, setRoiMode] = useState<RoiMode>('monthly_payout');
   const [duration, setDuration] = useState<12 | 18 | 24>(12);
-  const [autoRenew, setAutoRenew] = useState(true);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
-  const [transactionId, setTransactionId] = useState('');
-  const [bankRef, setBankRef] = useState('');
+  const [autoRenew, setAutoRenew] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const numAmount = parseInt(amount.replace(/,/g, ''), 10) || 0;
-  const roiRate = duration >= 18 ? 20 : 15;
+  const roiRate = 15; // Locked at 15% system-wide
   const monthlyReturn = numAmount * (roiRate / 100);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -382,15 +390,24 @@ function AddPortfolioModal({ walletBalance, onClose, onSuccess }: AddPortfolioMo
 
   // No auto-matching houses as all funds go directly to the central Rent Management Pool
 
-  const handlePaymentSubmit = () => {
-    if (paymentMethod === 'wallet' && numAmount > walletBalance) return;
-    if (paymentMethod === 'mobile_money' && !transactionId.trim()) return;
-    if (paymentMethod === 'bank' && !bankRef.trim()) return;
+  const handlePaymentSubmit = async () => {
+    if (numAmount > walletBalance) return;
+    
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await fundRentPool({ 
+        amount: numAmount, 
+        roi_mode: roiMode, 
+        duration_months: duration,
+        auto_renew: autoRenew 
+      });
       setStep('success');
-    }, 1500);
+    } catch (error: any) {
+      console.error(error);
+      alert(error.response?.data?.message || 'Failed to fund the rent pool.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   /* Back handler */
@@ -451,7 +468,10 @@ function AddPortfolioModal({ walletBalance, onClose, onSuccess }: AddPortfolioMo
 
               {/* Wallet Balance */}
               <div className={`mb-4 p-3 rounded-xl border flex justify-between items-center transition-colors ${walletBalance - numAmount <= 0 ? 'bg-red-50 border-red-100' : 'bg-gray-50 border-gray-100'}`}>
-                <span className={`text-[10px] font-bold uppercase tracking-wider ${walletBalance - numAmount <= 0 ? 'text-red-400' : 'text-gray-400'}`}>Available Balance</span>
+                <span className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 ${walletBalance - numAmount <= 0 ? 'text-red-400' : 'text-gray-400'}`}>
+                  <Wallet size={12} strokeWidth={2.5} />
+                  Available Balance
+                </span>
                 <span className={`font-bold text-sm ${walletBalance - numAmount <= 0 ? 'text-red-600' : 'text-gray-900'}`}>UGX {Math.max(0, walletBalance - numAmount).toLocaleString()}</span>
               </div>
 
@@ -506,7 +526,6 @@ function AddPortfolioModal({ walletBalance, onClose, onSuccess }: AddPortfolioMo
                         }`}
                     >
                       {d}M
-                      {d >= 18 && <span className="block text-[8px] text-green-600 font-bold">20% ROI</span>}
                     </button>
                   ))}
                 </div>
@@ -550,142 +569,38 @@ function AddPortfolioModal({ walletBalance, onClose, onSuccess }: AddPortfolioMo
               <h2 className="text-lg font-black text-gray-900 tracking-tight mb-0.5">Payment</h2>
               <p className="text-xs text-gray-400 mb-5">Select how to fund UGX {numAmount.toLocaleString()}</p>
 
-              {/* Payment Method Selector */}
-              <div className="flex gap-2 mb-5">
-                {([
-                  { value: 'wallet' as PaymentMethod, label: 'Wallet', icon: <DollarSign className="w-4 h-4" /> },
-                  { value: 'mobile_money' as PaymentMethod, label: 'Mobile Money', icon: <Target className="w-4 h-4" /> },
-                  { value: 'bank' as PaymentMethod, label: 'Bank', icon: <ShieldCheck className="w-4 h-4" /> },
-                ]).map((pm) => (
-                  <button
-                    key={pm.value}
-                    onClick={() => setPaymentMethod(pm.value)}
-                    className={`flex-1 p-2.5 rounded-xl border text-center cursor-pointer transition-all ${paymentMethod === pm.value
-                        ? 'border-[var(--color-primary)] bg-[var(--color-primary-faint)] shadow-sm'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                      }`}
-                  >
-                    <div className={`mx-auto mb-1 ${paymentMethod === pm.value ? 'text-[var(--color-primary)]' : 'text-gray-400'}`}>
-                      {pm.icon}
-                    </div>
-                    <p className={`text-[10px] font-bold ${paymentMethod === pm.value ? 'text-[var(--color-primary)]' : 'text-gray-500'}`}>{pm.label}</p>
-                  </button>
-                ))}
+              {/* ── Wallet Confirmation ── */}
+              <div className="space-y-3">
+                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex justify-between items-center">
+                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Wallet Balance</span>
+                  <span className="font-bold text-gray-900 text-sm">UGX {walletBalance.toLocaleString()}</span>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex justify-between items-center">
+                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Amount to Deduct</span>
+                  <span className="font-bold text-gray-900 text-sm">UGX {numAmount.toLocaleString()}</span>
+                </div>
+                {numAmount > walletBalance ? (
+                  <div className="bg-red-50 border border-red-100 rounded-xl p-3">
+                    <p className="text-xs text-red-600 font-bold">⚠ Insufficient wallet balance. Please deposit funds via the Wallet page.</p>
+                  </div>
+                ) : (
+                  <div className="bg-green-50 border border-green-100 rounded-xl p-3">
+                    <p className="text-xs text-green-600 font-bold">✓ Wallet balance is sufficient. Remaining after deduction: UGX {(walletBalance - numAmount).toLocaleString()}</p>
+                  </div>
+                )}
               </div>
 
-              {/* ── Wallet ── */}
-              {paymentMethod === 'wallet' && (
-                <div className="space-y-3">
-                  <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex justify-between items-center">
-                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Wallet Balance</span>
-                    <span className="font-bold text-gray-900 text-sm">UGX {walletBalance.toLocaleString()}</span>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex justify-between items-center">
-                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Amount to Deduct</span>
-                    <span className="font-bold text-gray-900 text-sm">UGX {numAmount.toLocaleString()}</span>
-                  </div>
-                  {numAmount > walletBalance ? (
-                    <div className="bg-red-50 border border-red-100 rounded-xl p-3">
-                      <p className="text-xs text-red-600 font-bold">⚠ Insufficient wallet balance. Please deposit funds or reduce the amount.</p>
-                    </div>
-                  ) : (
-                    <div className="bg-green-50 border border-green-100 rounded-xl p-3">
-                      <p className="text-xs text-green-600 font-bold">✓ Wallet balance is sufficient. Remaining after deduction: UGX {(walletBalance - numAmount).toLocaleString()}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* ── Mobile Money ── */}
-              {paymentMethod === 'mobile_money' && (
-                <div className="space-y-3">
-                  <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-3">
-                    <p className="text-[10px] text-yellow-700 font-bold uppercase tracking-wider mb-2">Send to Merchant</p>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-gray-600">MTN MoMo</span>
-                        <span className="font-mono font-bold text-sm text-gray-900">*165*3*123456#</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-gray-600">Airtel Money</span>
-                        <span className="font-mono font-bold text-sm text-gray-900">*185*9*654321#</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex justify-between items-center">
-                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Amount</span>
-                    <span className="font-bold text-gray-900 text-sm">UGX {numAmount.toLocaleString()}</span>
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Transaction ID</label>
-                    <input
-                      type="text"
-                      value={transactionId}
-                      onChange={(e) => setTransactionId(e.target.value)}
-                      placeholder="e.g. TXN1234567890"
-                      className="w-full bg-white border border-gray-200 rounded-xl py-2.5 px-3 text-sm font-medium text-gray-900 focus:outline-none focus:border-[var(--color-primary)] transition"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* ── Bank ── */}
-              {paymentMethod === 'bank' && (
-                <div className="space-y-3">
-                  <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
-                    <p className="text-[10px] text-blue-700 font-bold uppercase tracking-wider mb-2">Bank Details</p>
-                    <div className="space-y-1.5 text-xs">
-                      <div className="flex justify-between"><span className="text-gray-500">Bank</span><span className="font-bold text-gray-900">Stanbic Bank Uganda</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Account Name</span><span className="font-bold text-gray-900">Welile Technologies Ltd</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Account No.</span><span className="font-mono font-bold text-gray-900">9030 0051 2345 67</span></div>
-                      <div className="flex justify-between"><span className="text-gray-500">Branch</span><span className="font-bold text-gray-900">Kampala Main</span></div>
-                    </div>
-                  </div>
-                  <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 flex justify-between items-center">
-                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Amount</span>
-                    <span className="font-bold text-gray-900 text-sm">UGX {numAmount.toLocaleString()}</span>
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Reference Number</label>
-                    <input
-                      type="text"
-                      value={bankRef}
-                      onChange={(e) => setBankRef(e.target.value)}
-                      placeholder="e.g. REF20260318001"
-                      className="w-full bg-white border border-gray-200 rounded-xl py-2.5 px-3 text-sm font-medium text-gray-900 focus:outline-none focus:border-[var(--color-primary)] transition"
-                    />
-                  </div>
-                </div>
-              )}
-
               {/* Submit */}
-              {paymentMethod && (
-                <button
-                  onClick={handlePaymentSubmit}
-                  disabled={
-                    isSubmitting ||
-                    (paymentMethod === 'wallet' && numAmount > walletBalance) ||
-                    (paymentMethod === 'mobile_money' && !transactionId.trim()) ||
-                    (paymentMethod === 'bank' && !bankRef.trim())
-                  }
-                  className={`w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition mt-5 ${isSubmitting ? 'opacity-60 cursor-not-allowed' : ''
-                    } ${(paymentMethod === 'wallet' && numAmount > walletBalance) ||
-                      (paymentMethod === 'mobile_money' && !transactionId.trim()) ||
-                      (paymentMethod === 'bank' && !bankRef.trim())
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'text-white hover:shadow-lg'
-                    }`}
-                  style={
-                    !((paymentMethod === 'wallet' && numAmount > walletBalance) ||
-                      (paymentMethod === 'mobile_money' && !transactionId.trim()) ||
-                      (paymentMethod === 'bank' && !bankRef.trim()))
-                      ? { background: 'var(--color-primary)' }
-                      : undefined
-                  }
-                >
-                  {isSubmitting ? 'Submitting...' : paymentMethod === 'wallet' ? 'Confirm & Pay' : 'Submit for Approval'}
-                </button>
-              )}
+              <button
+                onClick={handlePaymentSubmit}
+                disabled={isSubmitting || numAmount > walletBalance}
+                className={`w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition mt-5 ${
+                  isSubmitting ? 'opacity-60 cursor-not-allowed' : ''
+                } ${numAmount > walletBalance ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'text-white hover:shadow-lg'}`}
+                style={!(numAmount > walletBalance) ? { background: 'var(--color-primary)' } : undefined}
+              >
+                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Confirm & Pay from Wallet'}
+              </button>
             </div>
           )}
 
@@ -698,20 +613,14 @@ function AddPortfolioModal({ walletBalance, onClose, onSuccess }: AddPortfolioMo
                 <CheckCircle2 size={28} className="text-green-600" />
               </div>
               <h2 className="text-lg font-black text-gray-900 tracking-tight mb-1">
-                {paymentMethod === 'wallet' ? 'Investment Confirmed!' : 'Submitted for Approval'}
+                Investment Confirmed!
               </h2>
               <p className="text-xs text-gray-400 mb-4">
-                {paymentMethod === 'wallet' ? (
-                  <>Portfolio <strong>#{portfolioCode}</strong> is now active. You'll earn <strong>UGX {Math.round(monthlyReturn).toLocaleString()}</strong>/month at {roiRate}% ROI.</>
-                ) : (
-                  <>Your payment for portfolio <strong>{portfolioName}</strong> has been submitted. It will be activated once the payment is verified by our team.</>
-                )}
+                Portfolio <strong>#{portfolioCode}</strong> is now active. You'll earn <strong>UGX {Math.round(monthlyReturn).toLocaleString()}</strong>/month at {roiRate}% ROI.
               </p>
               <div className="bg-green-50 border border-green-100 rounded-xl p-3 mb-5">
                 <p className="text-[11px] text-green-600 font-bold">
-                  {paymentMethod === 'wallet'
-                    ? '🎉 First payout in 30 days'
-                    : '📋 You will be notified once your payment is confirmed'}
+                  🎉 First payout in 30 days
                 </p>
               </div>
               <button
