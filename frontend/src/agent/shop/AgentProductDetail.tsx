@@ -1,4 +1,4 @@
-﻿import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { 
   ChevronLeft, Share2, Heart, Star, MapPin, ShieldCheck, 
   Store, MessageCircle, Info 
@@ -9,6 +9,12 @@ export default function AgentProductDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
   const product = MOCK_PRODUCTS.find(p => p.id === id) || MOCK_PRODUCTS[0];
+  if (!product) return (
+    <div className="p-8 text-center text-slate-500">
+      Product feed is empty pending backend integration.
+      <br/><button onClick={() => navigate('/agent-shop')} className="mt-4 text-[#6c11d4]">Go Back</button>
+    </div>
+  );
 
   return (
     <div className="bg-[#f8fafc] dark:bg-[#1e1e1e] min-h-[100dvh] flex flex-col font-['Inter'] relative">

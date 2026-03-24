@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
   ChevronLeft, Truck, CheckCircle2, 
@@ -11,8 +11,14 @@ export default function AgentCheckout() {
   const navigate = useNavigate();
   const { id } = useParams();
   const product = MOCK_PRODUCTS.find(p => p.id === id) || MOCK_PRODUCTS[0];
+  if (!product) return (
+    <div className="p-8 text-center text-slate-500">
+      Product feed is empty pending backend integration.
+      <br/><button onClick={() => navigate('/agent-shop')} className="mt-4 text-[#6c11d4]">Go Back</button>
+    </div>
+  );
 
-  const MOCK_WALLET_BALANCE = 5000000; // Agent has 5M UGX in virtual wallet
+  const MOCK_WALLET_BALANCE = 0; // Cleared offline mockup
 
   const [quantity, setQuantity] = useState(1);
   const [deliveryMethod, setDeliveryMethod] = useState<'PICKUP' | 'DELIVERY'>('DELIVERY');

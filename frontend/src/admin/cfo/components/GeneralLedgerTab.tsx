@@ -1,18 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { BookOpen, Search, Download, Filter } from 'lucide-react';
 
 export default function GeneralLedgerTab() {
   const [searchTerm, setSearchTerm] = useState('');
   
-  // Mock data for General Ledger based on specifications
-  const mockLedger = [
-    { id: 'TX-1001', date: '2026-03-23 09:15', description: 'Platform fee for rent RR-5192', category: 'platform_fee', direction: 'credit', amount: 5000, balance: 14500000 },
-    { id: 'TX-1002', date: '2026-03-23 08:30', description: 'Agent advance deduction - John Doe', category: 'agent_advance', direction: 'credit', amount: 15000, balance: 14495000 },
-    { id: 'TX-1003', date: '2026-03-22 16:45', description: 'Supporter ROI Payout - Portfolio 12A', category: 'roi_payout', direction: 'debit', amount: 450000, balance: 14480000 },
-    { id: 'TX-1004', date: '2026-03-22 14:20', description: 'Commission payout - Jane Smith', category: 'commission', direction: 'debit', amount: 125000, balance: 14930000 },
-    { id: 'TX-1005', date: '2026-03-22 11:10', description: 'Tenant deposit received - RM-881', category: 'deposit', direction: 'credit', amount: 850000, balance: 15055000 },
-    { id: 'TX-1006', date: '2026-03-21 09:00', description: 'Investment withdrawal processed - WL-019', category: 'withdrawal', direction: 'debit', amount: 2000000, balance: 14205000 }
-  ];
+  const [mockLedger, setLedger] = useState<any[]>([]);
+
+  useEffect(() => {
+    axios.get('/api/cfo/ledger')
+      .then(res => setLedger(res.data))
+      .catch(console.error);
+  }, []);
 
   return (
     <div className="space-y-6 font-inter">

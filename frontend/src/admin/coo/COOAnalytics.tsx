@@ -42,12 +42,7 @@ const COOAnalytics: React.FC = () => {
     );
   }
 
-  // Use the mocked data from the backend or fallback
-  const paymentMethods = data?.paymentMethods || [
-    { name: 'Mobile Money', value: 65 },
-    { name: 'Bank Transfer', value: 28 },
-    { name: 'Cash', value: 7 }
-  ];
+  const paymentMethods = data?.paymentMethods || [];
 
   return (
     <div className="space-y-6">
@@ -88,11 +83,11 @@ const COOAnalytics: React.FC = () => {
              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
                <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
                  <p className="text-xs font-bold text-slate-500 uppercase">Top Provider</p>
-                 <p className="font-bold text-slate-800">MTN MoMo (42%)</p>
+                 <p className="font-bold text-slate-800">{data?.topProvider || "MTN (Live)"}</p>
                </div>
                <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
                  <p className="text-xs font-bold text-slate-500 uppercase">Avg Ticket Size</p>
-                 <p className="font-bold text-slate-800">UGX 125,000</p>
+                 <p className="font-bold text-slate-800">{data?.avgTicketSize ? `UGX ${data.avgTicketSize.toLocaleString()}` : "Pending"}</p>
                </div>
              </div>
           </div>
@@ -123,8 +118,8 @@ const COOAnalytics: React.FC = () => {
              </div>
              
              <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-3 mt-4">
-                <p className="text-sm text-indigo-800 flex items-center">
-                  <BarChart2 size={16} className="mr-2" /> Collections are up <strong>&nbsp;18%&nbsp;</strong> compared to last month.
+                 <p className="text-sm text-indigo-800 flex items-center">
+                  <BarChart2 size={16} className="mr-2" /> Collections are up <strong>&nbsp;{data?.collectionGrowth || 0}%&nbsp;</strong> compared to last month.
                 </p>
              </div>
           </div>

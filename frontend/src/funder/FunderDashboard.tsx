@@ -23,83 +23,7 @@ import { useKycStatus } from './hooks/useKycStatus';
 
 // ─────────────────────────── MOCK DATA ───────────────────────
 
-const MOCK_PORTFOLIOS: PortfolioItem[] = [
-  {
-    id: '1',
-    portfolioCode: 'WEL-01',
-    assetName: 'Kampala Heights',
-    investedAmount: 2_500_000,
-    totalEarned: 462_500,
-    roiPercent: 15,
-    durationMonths: 12,
-    payoutType: 'Monthly',
-    nextPayoutDate: '24 Oct 2026',
-    maturityDate: 'Oct 12, 2027',
-    status: 'active',
-  },
-  {
-    id: '2',
-    portfolioCode: 'WEL-05',
-    assetName: 'Entebbe Views',
-    investedAmount: 5_000_000,
-    totalEarned: 0,
-    roiPercent: 18,
-    durationMonths: 24,
-    payoutType: 'Compounding',
-    nextPayoutDate: undefined,
-    maturityDate: 'Jan 15, 2027',
-    status: 'pending',
-  },
-  {
-    id: '3',
-    portfolioCode: 'WEL-09',
-    assetName: 'Jinja Retail Park',
-    investedAmount: 1_200_000,
-    totalEarned: 0,
-    roiPercent: 20,
-    durationMonths: 12,
-    payoutType: 'Monthly',
-    nextPayoutDate: undefined,
-    maturityDate: 'May 20, 2027',
-    status: 'pending_approval',
-  },
-];
-
-const MOCK_ACTIVITIES: ActivityItem[] = [
-  {
-    id: '1',
-    title: 'Monthly Earnings',
-    category: 'reward',
-    status: 'COMPLETED',
-    provider: 'Kampala Heights',
-    date: '12 Mar 2026',
-    timestamp: '2 hours ago',
-    amount: 375_000,
-    isCredit: true,
-  },
-  {
-    id: '2',
-    title: 'New Investment',
-    category: 'investment',
-    status: 'PENDING',
-    provider: '#WEL-09',
-    date: '10 Mar 2026',
-    timestamp: '2 days ago',
-    amount: 1_200_000,
-    isCredit: false,
-  },
-  {
-    id: '3',
-    title: 'Withdrawal',
-    category: 'withdrawal',
-    status: 'COMPLETED',
-    provider: 'BANK TRANSFER',
-    date: '08 Mar 2026',
-    timestamp: '4 days ago',
-    amount: 250_000,
-    isCredit: false,
-  },
-];
+  // Mock data completely extracted. Portfolios and Events mapped to live JSON telemetry.
 
 // ─────────────────────────── COMPONENT ───────────────────────
 
@@ -109,8 +33,8 @@ export default function FunderDashboard() {
   const { status: kycStatus } = useKycStatus();
 
   const [stats, setStats] = useState<DashboardStatsResponse | null>(null);
-  const [portfolios, setPortfolios] = useState<PortfolioItem[]>(MOCK_PORTFOLIOS);
-  const [activities, setActivities] = useState<ActivityItem[]>(MOCK_ACTIVITIES);
+  const [portfolios, setPortfolios] = useState<PortfolioItem[]>([]);
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activePage, setActivePage] = useState<string>('Dashboard');
