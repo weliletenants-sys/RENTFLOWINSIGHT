@@ -24,10 +24,12 @@ export default function CfoDashboard() {
   const [overviewMetrics, setOverviewMetrics] = useState<any>(null);
   const [reconciliation, setReconciliation] = useState<any>(null);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
+  const [statements, setStatements] = useState<any>(null);
+  const [commissions, setCommissions] = useState<any[]>([]);
 
   const fetchOverview = async () => {
     try {
-      const { data } = await axios.get('/api/cfo/statistics/overview');
+      const { data } = await axios.get(`/api/cfo/statistics/overview?range=${dateFilter}`);
       setOverviewMetrics(data);
     } catch (err) {
       console.error(err);
@@ -36,7 +38,7 @@ export default function CfoDashboard() {
 
   const fetchReconciliation = async () => {
     try {
-      const { data } = await axios.get('/api/cfo/reconciliations');
+      const { data } = await axios.get(`/api/cfo/reconciliations?range=${dateFilter}`);
       setReconciliation(data);
     } catch (err) {
       console.error(err);
@@ -44,9 +46,28 @@ export default function CfoDashboard() {
   };
 
   const fetchWithdrawals = async () => {
+    // Current pending requests shouldn't really be filtered by range, but we pass it anyway.
     try {
-      const { data } = await axios.get('/api/cfo/withdrawals/pending');
+      const { data } = await axios.get(`/api/cfo/withdrawals/pending?range=${dateFilter}`);
       setWithdrawals(data.withdrawals || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchStatements = async () => {
+    try {
+      const { data } = await axios.get(`/api/cfo/statements?range=${dateFilter}`);
+      setStatements(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchCommissions = async () => {
+    try {
+      const { data } = await axios.get(`/api/cfo/commissions/pending?range=${dateFilter}`);
+      setCommissions(data.commissions || []);
     } catch (err) {
       console.error(err);
     }
@@ -56,7 +77,9 @@ export default function CfoDashboard() {
     if (activeTab === 'overview') fetchOverview();
     if (activeTab === 'reconciliation') fetchReconciliation();
     if (activeTab === 'withdrawals') fetchWithdrawals();
-  }, [activeTab]);
+    if (activeTab === 'statements' || activeTab === 'solvency') fetchStatements();
+    if (activeTab === 'commissions') fetchCommissions();
+  }, [activeTab, dateFilter]);
 
   // Map tabs to Page Titles for the Header
   const getPageInfo = () => {
@@ -86,11 +109,11 @@ export default function CfoDashboard() {
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto w-full max-w-7xl mx-auto p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
            {activeTab === 'overview' && <OverviewTab overviewMetrics={overviewMetrics} />}
-           {activeTab === 'statements' && <FinancialStatementsTab />}
-           {activeTab === 'solvency' && <SolvencyBufferTab />}
+           {activeTab === 'statements' && <FinancialStatementsTab statementsData={statements} />}
+           {activeTab === 'solvency' && <SolvencyBufferTab solvencyData={statements?.solvency} />}
            {activeTab === 'reconciliation' && <ReconciliationTab reconciliationData={reconciliation} />}
            {activeTab === 'ledger' && <GeneralLedgerTab />}
-           {activeTab === 'commissions' && <CommissionPayoutsTab />}
+           {activeTab === 'commissions' && <CommissionPayoutsTab commissionsData={commissions} fetchCommissions={fetchCommissions} />}
            {activeTab === 'withdrawals' && <WithdrawalsTab withdrawals={withdrawals} fetchWithdrawals={fetchWithdrawals} />}
         </main>
       </div>

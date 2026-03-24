@@ -223,8 +223,7 @@ export const requestWalletWithdrawal = async (req: Request, res: Response) => {
         category: 'withdrawal',
         reference_id: `WRW-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
         status: 'pending_manager',
-        ip_address,
-        device_info,
+        metadata: { ip_address, device_info },
         source_table: 'funder_wallet',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -262,10 +261,8 @@ export const requestDeposit = async (req: Request, res: Response) => {
         category: 'deposit',
         reference_id: `WRD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
         linked_party: provider.trim(),
-        external_tx_id: external_tx_id.trim(),
         status: 'pending_manager',
-        ip_address,
-        device_info,
+        metadata: { external_tx_id: external_tx_id.trim(), ip_address, device_info },
         source_table: 'funder_wallet',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()

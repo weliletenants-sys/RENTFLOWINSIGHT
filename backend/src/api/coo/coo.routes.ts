@@ -11,7 +11,8 @@ import {
   getAlerts,
   getStaff,
   createOpportunity,
-  getOpportunities
+  getOpportunities,
+  getGlobalUsersList
 } from '../../controllers/coo.controller';
 import { authGuard, rolesGuard } from '../../middlewares/auth.middleware';
 
@@ -20,6 +21,8 @@ const router = Router();
 // Apply auth and RBAC. COO needs basic auth, but since Super Admin can access, rolesGuard handles the array of allowed roles
 router.use(authGuard);
 router.use(rolesGuard(['SUPER_ADMIN', 'COO']));
+
+router.get('/users', getGlobalUsersList);
 
 router.get('/metrics/overview', getOverviewMetrics);
 router.get('/metrics/transactions', getTransactions);

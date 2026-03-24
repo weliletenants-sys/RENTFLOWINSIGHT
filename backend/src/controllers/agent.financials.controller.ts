@@ -33,6 +33,24 @@ export const requestDeposit = async (req: Request, res: Response) => {
       }
     });
 
+    const executives = await prisma.profiles.findMany({
+      where: { role: { in: ['COO', 'CFO'] } }
+    });
+    
+    if (executives.length > 0) {
+      await prisma.notifications.createMany({
+        data: executives.map(exec => ({
+          user_id: exec.id,
+          title: 'New Agent Deposit Request',
+          message: `Agent ${userId} requested a deposit of UGX ${amount} for User ${target_user_id || 'unlinked'}.`,
+          type: 'DEPOSIT_REQUEST',
+          is_read: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }))
+      });
+    }
+
     return res.status(201).json({ message: 'Deposit recorded securely for manager review', request });
   } catch (error) {
     console.error('requestDeposit error:', error);

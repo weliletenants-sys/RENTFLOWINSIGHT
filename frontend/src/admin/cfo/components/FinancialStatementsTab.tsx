@@ -23,22 +23,37 @@ const CompactCurrency = ({ value }: { value: number }) => {
   return <span className="font-outfit">UGX {value.toLocaleString()}</span>;
 };
 
-export default function FinancialStatementsTab() {
+export default function FinancialStatementsTab({ statementsData }: { statementsData?: any }) {
   const [activeStatement, setActiveStatement] = useState<'income' | 'balance' | 'cash'>('income');
 
-  const [statements, setStatements] = useState<any>(null);
+  const statements = statementsData;
 
-  useEffect(() => {
-    axios.get('/api/v1/cfo/statements') // Ensure path matches API route
-      .then(res => setStatements(res.data))
-      .catch(console.error);
-  }, []);
+  const rev = statements?.incomeStatement?.revenue || 0;
+  const exp = statements?.incomeStatement?.expenses || 0;
+  const prof = statements?.incomeStatement?.profit || 0;
+  
+  const incomeStmt = [
+    { type: 'revenue', item: 'Platform Fees & Direct Revenue', amount: rev },
+    { type: 'expense', item: 'Operating & Admin Expenses', amount: exp }
+  ];
 
-  const incomeStmt = statements?.incomeStatement || [];
-  const balanceSheet = statements?.balanceSheet || { assets: [], liabilities: [], equity: [] };
-  const cashFlowStmt = statements?.cashFlowStatement || { operating: [], investing: [], financing: [] };
+  const ass = statements?.balanceSheet?.assets || 0;
+  const liab = statements?.balanceSheet?.liabilities || 0;
+  const eq = statements?.balanceSheet?.equity || 0;
 
-  const netIncome = incomeStmt.reduce((acc: number, curr: any) => acc + curr.amount, 0);
+  const balanceSheet = {
+    assets: [{ item: 'Cash & Receivables', amount: ass }],
+    liabilities: [{ item: 'Current Liabilities', amount: liab }],
+    equity: [{ item: 'Retained Earnings', amount: eq }]
+  };
+
+  const cashFlowStmt = statements?.cashFlowStatement || { 
+    operating: [{ item: 'Net Cash from Operations', amount: prof }], 
+    investing: [{ item: 'System Investments', amount: 0 }], 
+    financing: [{ item: 'Financing Flow', amount: 0 }] 
+  };
+
+  const netIncome = prof;
 
   const handleExportPDF = () => {
     const doc = new jsPDF('p', 'pt', 'letter');
