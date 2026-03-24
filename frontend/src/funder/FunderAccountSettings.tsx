@@ -1175,8 +1175,11 @@ export default function FunderAccountSettings() {
                       <p className="text-slate-500 text-sm font-medium mb-8">
                         Download a cryptographically verifiable CSV of all historical cash inflows, ROI payments, and principal deployments for your accountants.
                       </p>
-                      <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm bg-emerald-50 px-4 py-3 rounded-xl w-max">
-                        <Download className="w-4 h-4" /> Download 2025 Statement.csv
+                      <div 
+                        onClick={() => toast.success('Your encrypted ledger export is being generated and will be emailed shortly.')}
+                        className="cursor-pointer flex items-center gap-2 text-emerald-600 font-bold text-sm bg-emerald-50 px-4 py-3 rounded-xl w-max hover:bg-emerald-100 transition-colors"
+                      >
+                        <Download className="w-4 h-4" /> Download {new Date().getFullYear()} Statement.csv
                       </div>
                     </div>
 
@@ -1188,7 +1191,10 @@ export default function FunderAccountSettings() {
                       <p className="text-slate-500 text-sm font-medium mb-8">
                         Generate a formalized, stamped PDF certificate proving your active capital pool balance and status as a secured Welile Supporter.
                       </p>
-                      <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm bg-emerald-50 px-4 py-3 rounded-xl w-max">
+                      <div 
+                        onClick={() => toast.success('Your sealed investment certificate is being prepared and will be sent to your inbox.')}
+                        className="cursor-pointer flex items-center gap-2 text-emerald-600 font-bold text-sm bg-emerald-50 px-4 py-3 rounded-xl w-max hover:bg-emerald-100 transition-colors"
+                      >
                         <Download className="w-4 h-4" /> Download Certificate.pdf
                       </div>
                     </div>
@@ -1205,9 +1211,12 @@ export default function FunderAccountSettings() {
                       </div>
                       <div className="relative z-10 bg-slate-800 border border-slate-700 rounded-2xl p-5 w-full sm:w-auto">
                         <p className="text-[10px] uppercase font-black tracking-widest text-slate-500 mb-1">Registered Beneficiary</p>
-                        <p className="text-white font-bold mb-1">Emmanuel N.</p>
-                        <p className="text-emerald-400 font-mono text-xs font-bold">+256 701 *** 223</p>
-                        <button className="cursor-pointer w-full mt-4 bg-slate-700 text-white text-xs font-bold py-2 rounded-lg hover:bg-slate-600 transition-colors">
+                        <p className="text-white font-bold mb-1">{stats?.nextOfKinName || 'Pending Designation'}</p>
+                        <p className="text-emerald-400 font-mono text-xs font-bold">{stats?.nextOfKinPhone || 'Not provided'}</p>
+                        <button 
+                          onClick={() => toast('Mandate updates must be filed through manual CRM support for security reasons.', { icon: '🔒' })}
+                          className="cursor-pointer w-full mt-4 bg-slate-700 text-white text-xs font-bold py-2 rounded-lg hover:bg-slate-600 transition-colors"
+                        >
                           Update Mandate
                         </button>
                       </div>

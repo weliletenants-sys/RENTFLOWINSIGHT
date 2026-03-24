@@ -23,6 +23,8 @@ export interface DashboardStatsResponse {
   virtualHouses: number;
   verifiedPersonas?: string[];
   walletBuckets?: { type: string, balance: number }[];
+  nextOfKinName?: string | null;
+  nextOfKinPhone?: string | null;
 }
 
 export const getFunderDashboardStats = async (): Promise<DashboardStatsResponse> => {

@@ -31,6 +31,9 @@ export const getDashboardStats = async (req: Request, res: Response) => {
     const userPersonas = await prisma.userPersonas.findMany({ where: { user_id: funderId } }).catch(() => []);
     const allBuckets = wallet ? await prisma.walletBuckets.findMany({ where: { wallet_id: wallet.id } }) : [];
 
+    // 5. Next of Kin Data
+    const invite = await prisma.supporterInvites.findFirst({ where: { activated_user_id: funderId } });
+
     return res.status(200).json({
       status: 'success',
       data: {
@@ -41,7 +44,9 @@ export const getDashboardStats = async (req: Request, res: Response) => {
         activePortfolios: activePortfolios.length,
         pendingPortfolios: portfolios.filter(p => p.status === 'pending').length,
         verifiedPersonas: userPersonas.map(p => p.persona),
-        walletBuckets: allBuckets.map(b => ({ type: b.bucket_type, balance: b.balance }))
+        walletBuckets: allBuckets.map(b => ({ type: b.bucket_type, balance: b.balance })),
+        nextOfKinName: invite?.next_of_kin_name || null,
+        nextOfKinPhone: invite?.next_of_kin_phone || null,
       }
     });
   } catch (error: any) {
