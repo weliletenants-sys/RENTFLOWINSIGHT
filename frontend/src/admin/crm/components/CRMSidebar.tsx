@@ -6,8 +6,10 @@ interface CRMSidebarProps {
   setActiveTab: (tab: string) => void;
 }
 
+import { useAuth } from '../../../contexts/AuthContext';
+
 const CRMSidebar: React.FC<CRMSidebarProps> = ({ activeTab, setActiveTab }) => {
-  const links = [
+  const { logout } = useAuth();  const links = [
     { id: 'triage', name: 'Triage Center', icon: <MessagesSquare size={20} /> },
     { id: 'settings', name: 'Settings', icon: <Settings size={20} /> },
   ];
@@ -50,7 +52,7 @@ const CRMSidebar: React.FC<CRMSidebarProps> = ({ activeTab, setActiveTab }) => {
                 <div className="flex-shrink-0"><HelpCircle size={20} /></div>
                 <span className="text-sm">Help</span>
               </button>
-              <button className="w-full flex items-center space-x-3 px-4 py-2.5 rounded-full text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-semibold transition-all">
+              <button onClick={logout} className="w-full flex items-center space-x-3 px-4 py-2.5 rounded-full text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-semibold transition-all">
                 <div className="flex-shrink-0"><LogOut size={20} /></div>
                 <span className="text-sm">Log out</span>
               </button>

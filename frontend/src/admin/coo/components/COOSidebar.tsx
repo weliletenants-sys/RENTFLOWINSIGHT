@@ -5,8 +5,10 @@ import {
   BarChart2, FileText, AlertTriangle, Briefcase, Activity, 
   List, HelpCircle, LogOut, Sun, Moon, User
 } from 'lucide-react';
+import { useAuth } from '../../../contexts/AuthContext';
 
 const COOSidebar: React.FC = () => {
+  const { logout } = useAuth();
 
   const financialLinks = [
     { name: 'Dashboard', icon: <Home size={20} />, path: '/coo/overview' },
@@ -18,6 +20,7 @@ const COOSidebar: React.FC = () => {
 
   const governanceLinks = [
     { name: 'Reports', icon: <FileText size={20} />, path: '/coo/reports' },
+    { name: 'All Users', icon: <Users size={20} />, path: '/coo/users' },
     { name: 'Alerts', icon: <AlertTriangle size={20} />, path: '/coo/alerts' },
     { name: 'Withdrawals', icon: <CreditCard size={20} />, path: '/coo/withdrawals' },
     { name: 'Partners', icon: <Users size={20} />, path: '/coo/partners' },
@@ -87,7 +90,7 @@ const COOSidebar: React.FC = () => {
                 <div className="flex-shrink-0"><HelpCircle size={20} /></div>
                 <span className="text-sm">Help</span>
               </button>
-              <button className="w-full flex items-center space-x-3 px-4 py-2.5 rounded-full text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-semibold transition-all">
+              <button onClick={logout} className="w-full flex items-center space-x-3 px-4 py-2.5 rounded-full text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-semibold transition-all">
                 <div className="flex-shrink-0"><LogOut size={20} /></div>
                 <span className="text-sm">Log out</span>
               </button>

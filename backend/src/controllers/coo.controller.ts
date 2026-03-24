@@ -378,3 +378,25 @@ export const getOpportunities = async (req: Request, res: Response) => {
     return problemResponse(res, 500, 'Internal Server Error', error.message || 'Failed to list opportunities', 'https://api.rentflow.com/errors/internal-error');
   }
 };
+
+export const getGlobalUsersList = async (req: Request, res: Response) => {
+  try {
+    const users = await prisma.profiles.findMany({
+      select: {
+        id: true,
+        full_name: true,
+        email: true,
+        phone: true,
+        role: true,
+        created_at: true,
+        is_frozen: true,
+        verified: true
+      },
+      orderBy: { created_at: 'desc' }
+    });
+    return res.status(200).json({ status: 'success', data: { users } });
+  } catch (error: any) {
+    console.error('Error fetching global users:', error);
+    return problemResponse(res, 500, 'Internal Server Error', 'Could not fetch global users', 'internal-error');
+  }
+};

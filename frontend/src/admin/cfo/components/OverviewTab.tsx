@@ -25,10 +25,10 @@ export default function OverviewTab({ overviewMetrics }: OverviewTabProps) {
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Total Platform Revenue', value: `${formatMoney(overviewMetrics.metrics?.platformFees || 42800000)}`, curr: 'UGX', icon: <Activity size={18} /> },
-          { label: 'Total Capital Deployed', value: `${formatMoney(overviewMetrics.metrics?.capitalDeployed || 312000000)}`, curr: 'UGX', icon: <FileText size={18} /> },
-          { label: 'Outstanding Receivables', value: `${formatMoney(overviewMetrics.metrics?.outstandingReceivables || 18500000)}`, curr: 'UGX', icon: <ShieldAlert size={18} /> },
-          { label: 'Total Wallet Balances', value: `${formatMoney(overviewMetrics.metrics?.totalWalletBalance || 15000000)}`, curr: 'UGX', icon: <Home size={18} /> }
+          { label: 'Total Platform Revenue', value: `${formatMoney(overviewMetrics.metrics?.platformFees)}`, curr: 'UGX', icon: <Activity size={18} /> },
+          { label: 'Total Capital Deployed', value: `${formatMoney(overviewMetrics.metrics?.capitalDeployed)}`, curr: 'UGX', icon: <FileText size={18} /> },
+          { label: 'Outstanding Receivables', value: `${formatMoney(overviewMetrics.metrics?.outstandingReceivables)}`, curr: 'UGX', icon: <ShieldAlert size={18} /> },
+          { label: 'Total Wallet Balances', value: `${formatMoney(overviewMetrics.metrics?.totalWalletBalance)}`, curr: 'UGX', icon: <Home size={18} /> }
         ].map((stat, i) => (
           <div key={i} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between hover:bg-slate-50 transition-colors">
             <div className="flex justify-between items-start mb-4">
@@ -44,10 +44,10 @@ export default function OverviewTab({ overviewMetrics }: OverviewTabProps) {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Total Users', val: overviewMetrics.counts?.totalUsers || 120000, icon: <User size={16} /> },
-          { label: 'Agents', val: overviewMetrics.counts?.totalAgents || 5201, icon: <ShieldAlert size={16} /> },
-          { label: 'Tenants', val: overviewMetrics.counts?.totalTenants || 84200, icon: <Home size={16} /> },
-          { label: 'Supporters', val: overviewMetrics.counts?.totalSupporters || 892, icon: <Download size={16} /> }
+          { label: 'Total Users', val: overviewMetrics.counts?.totalUsers ?? 0, icon: <User size={16} /> },
+          { label: 'Agents', val: overviewMetrics.counts?.totalAgents ?? 0, icon: <ShieldAlert size={16} /> },
+          { label: 'Tenants', val: overviewMetrics.counts?.totalTenants ?? 0, icon: <Home size={16} /> },
+          { label: 'Supporters', val: overviewMetrics.counts?.totalSupporters ?? 0, icon: <Download size={16} /> }
         ].map((c, i) => (
           <div key={i} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between hover:bg-slate-50 transition-colors">
             <div>
@@ -68,18 +68,12 @@ export default function OverviewTab({ overviewMetrics }: OverviewTabProps) {
           <button className="text-xs font-bold text-[#6c11d4] bg-[#EAE5FF] px-3 py-1.5 rounded-full hover:bg-purple-100 transition-colors">Export CSV</button>
         </div>
         <div className="flex-1 border-t border-b border-l border-slate-100 relative w-full flex items-end justify-between px-4 pb-0 mt-4">
-          {/* Mock charts showing inflow/outflow */}
-          {([
-            { date: 'Mon', inflow: 45000, outflow: 21000 },
-            { date: 'Tue', inflow: 52000, outflow: 18000 },
-            { date: 'Wed', inflow: 38000, outflow: 42000 },
-            { date: 'Thu', inflow: 61000, outflow: 25000 },
-            { date: 'Fri', inflow: 85000, outflow: 30000 },
-          ]).map((t: any, i: number) => (
+          {/* Dynamic real charts coming from backend trends */}
+          {(overviewMetrics.trends || []).map((t: any, i: number) => (
             <div key={i} className="flex flex-col items-center gap-2 group w-1/5 h-full justify-end relative z-10">
               <div className="flex gap-2 items-end w-full justify-center">
-                <div className="w-8 bg-[#EAE5FF] hover:bg-purple-200 transition-colors rounded-t-lg" style={{ height: `${(t.inflow / 1000)}%`, minHeight: '10px' }} title={`Revenue: ${t.inflow}`}></div>
-                <div className="w-8 bg-[#6c11d4] hover:bg-[#5b21b6] shadow-md transition-colors rounded-t-lg" style={{ height: `${(t.outflow / 1000)}%`, minHeight: '10px' }} title={`Outflow: ${t.outflow}`}></div>
+                <div className="w-8 bg-[#EAE5FF] hover:bg-purple-200 transition-colors rounded-t-lg" style={{ height: `${Math.max((t.inflow / 1000), 5)}%`, minHeight: '10px' }} title={`Revenue: ${t.inflow}`}></div>
+                <div className="w-8 bg-[#6c11d4] hover:bg-[#5b21b6] shadow-md transition-colors rounded-t-lg" style={{ height: `${Math.max((t.outflow / 1000), 5)}%`, minHeight: '10px' }} title={`Outflow: ${t.outflow}`}></div>
               </div>
               <span className="text-xs font-bold text-slate-500 mb-2">{t.date}</span>
             </div>

@@ -4,30 +4,58 @@ import { problemResponse } from '../utils/problem';
 
 const prisma = new PrismaClient();
 
+const getDateFilters = (query: any) => {
+  let { start_date, end_date, range } = query as { start_date?: string, end_date?: string, range?: string };
+
+  if (range && !start_date && !end_date) {
+    const now = new Date();
+    let start = new Date();
+    if (range === 'Today') {
+      start.setHours(0, 0, 0, 0);
+    } else if (range === '7d') {
+      start.setDate(now.getDate() - 7);
+    } else if (range === '30d') {
+      start.setDate(now.getDate() - 30);
+    } else if (range === 'Month') {
+      start.setDate(1);
+      start.setHours(0, 0, 0, 0);
+    } else if (range === 'Year') {
+      start.setMonth(0, 1);
+      start.setHours(0, 0, 0, 0);
+    }
+    
+    const toDbStr = (d: Date) => d.toISOString().replace('T', ' ').replace('Z', '+00');
+    start_date = toDbStr(start);
+    end_date = toDbStr(now);
+  }
+
+  const dateFilter: any = {};
+  if (start_date || end_date) {
+    dateFilter.transaction_date = {};
+    if (start_date) dateFilter.transaction_date.gte = String(start_date);
+    if (end_date) dateFilter.transaction_date.lte = String(end_date);
+  }
+
+  const createdFilter: any = {};
+  if (start_date || end_date) {
+    createdFilter.created_at = {};
+    if (start_date) createdFilter.created_at.gte = String(start_date);
+    if (end_date) createdFilter.created_at.lte = String(end_date);
+  }
+
+  return { dateFilter, createdFilter };
+};
+
+
 // 1. Overview Tab Data
 export const getOverview = async (req: Request, res: Response) => {
   try {
-    const { start_date, end_date } = req.query;
+    const { dateFilter, createdFilter } = getDateFilters(req.query);
     
     // Total Wallet Balances
     const wallets = await prisma.wallets.aggregate({ _sum: { balance: true } });
     const totalWalletBalance = wallets._sum.balance || 0;
 
-    // Build date filter for Ledger queries if provided
-    const dateFilter: any = {};
-    if (start_date || end_date) {
-      dateFilter.transaction_date = {};
-      // Simplistic string filtering, in production would use true DateTime
-      if (start_date) dateFilter.transaction_date.gte = String(start_date);
-      if (end_date) dateFilter.transaction_date.lte = String(end_date);
-    }
-
-    const createdFilter: any = {};
-    if (start_date || end_date) {
-      createdFilter.created_at = {};
-      if (start_date) createdFilter.created_at.gte = String(start_date);
-      if (end_date) createdFilter.created_at.lte = String(end_date);
-    }
 
     // Deposits (from Ledger or Deposits table)
     const deposits = await prisma.generalLedger.aggregate({
@@ -264,8 +292,9 @@ export const getLedger = async (req: Request, res: Response) => {
 // 5. Solvency and Statements (Simplified)
 export const getStatements = async (req: Request, res: Response) => {
   try {
+    const { dateFilter } = getDateFilters(req.query);
     const revenueSum = await prisma.generalLedger.aggregate({
-      where: { category: 'platform_fee', direction: 'credit' },
+      where: { category: 'platform_fee', direction: 'credit', ...dateFilter },
       _sum: { amount: true }
     });
     const revenue = revenueSum._sum.amount || 0;
@@ -273,7 +302,8 @@ export const getStatements = async (req: Request, res: Response) => {
     const expenseSum = await prisma.generalLedger.aggregate({
       where: { 
         direction: 'debit',
-        category: { in: ['commission', 'agent_payout', 'staff_salary', 'bonus'] }
+        category: { in: ['commission', 'agent_payout', 'staff_salary', 'bonus'] },
+        ...dateFilter
       },
       _sum: { amount: true }
     });
@@ -286,10 +316,14 @@ export const getStatements = async (req: Request, res: Response) => {
     // Simplistic Receivables check
     const rentRequests = await prisma.rentRequests.findMany({ where: { status: 'DISBURSED' } });
     let outstandingReceivables = 0;
+    let totalFunded = 0;
+    let totalRepaid = 0;
     for (const rr of rentRequests) {
+      totalRepaid += Number(rr.amount_repaid) || 0;
       const remaining = Number(rr.total_repayment) - Number(rr.amount_repaid);
       if (remaining > 0) outstandingReceivables += remaining;
     }
+    totalFunded = totalRepaid + outstandingReceivables;
 
     const assets = liab + outstandingReceivables + profit;
     const equity = assets - liab;
@@ -299,7 +333,10 @@ export const getStatements = async (req: Request, res: Response) => {
     res.json({
       solvency: {
         coverageRatio: parseFloat(coverageRatio.toFixed(2)),
-        status: coverageRatio > 1.2 ? 'Safe' : coverageRatio >= 1.0 ? 'Warning' : 'Risk'
+        targetRatio: 1.2,
+        bufferHealth: coverageRatio >= 1.2 ? 'Healthy' : coverageRatio >= 1.0 ? 'Warning' : 'Critical',
+        liquidity: { available: assets, obligations: liab },
+        breakdown: { totalFunded, totalRepaid, outstandingBalance: outstandingReceivables }
       },
       incomeStatement: { revenue, expenses, profit },
       balanceSheet: { assets, liabilities: liab, equity }
@@ -391,4 +428,81 @@ export const approveDeposit = async (req: Request, res: Response) => {
     return problemResponse(res, 500, 'Internal Server Error', error.message, 'internal-server-error');
   }
 };
+
+export const getPendingCommissions = async (req: Request, res: Response) => {
+  try {
+    const payouts = await prisma.agentCommissionPayouts.findMany({
+      where: { status: 'PENDING' },
+      orderBy: { created_at: 'desc' }
+    });
+
+    const enriched = await Promise.all(payouts.map(async p => {
+      let profile = null;
+      if (p.agent_id) profile = await prisma.profiles.findUnique({ where: { id: p.agent_id } });
+      return {
+        id: p.id,
+        agentName: profile?.full_name || 'Unknown Agent',
+        amount: p.amount,
+        provider: p.mobile_money_provider,
+        number: p.mobile_money_number,
+        status: 'Pending',
+        requestedAt: new Date(p.created_at).toLocaleDateString()
+      };
+    }));
+
+    res.json({ commissions: enriched });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const approveCommission = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const cfoId = req.user?.sub;
+    
+    const payout = await prisma.agentCommissionPayouts.findUnique({ where: { id } });
+    if (!payout) return problemResponse(res, 404, 'Not Found', 'Payout not found', 'not-found');
+
+    const updated = await prisma.agentCommissionPayouts.update({
+      where: { id },
+      data: {
+        status: 'APPROVED',
+        processed_by: cfoId,
+        updated_at: new Date().toISOString()
+      }
+    });
+
+    res.json({ message: 'Commission approved', commission: updated });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const rejectCommission = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+    const cfoId = req.user?.sub;
+    
+    if (!reason || reason.trim() === '') {
+      return problemResponse(res, 400, 'Validation Error', 'Reason required', 'validation-error');
+    }
+
+    const updated = await prisma.agentCommissionPayouts.update({
+      where: { id },
+      data: {
+        status: 'REJECTED',
+        rejection_reason: reason,
+        processed_by: cfoId,
+        updated_at: new Date().toISOString()
+      }
+    });
+
+    res.json({ message: 'Commission rejected', commission: updated });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 

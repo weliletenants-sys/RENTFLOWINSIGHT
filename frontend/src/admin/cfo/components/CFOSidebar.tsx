@@ -9,8 +9,10 @@ interface CFOSidebarProps {
   setActiveTab: (tab: any) => void;
 }
 
-const CFOSidebar: React.FC<CFOSidebarProps> = ({ activeTab, setActiveTab }) => {
+import { useAuth } from '../../../contexts/AuthContext';
 
+const CFOSidebar: React.FC<CFOSidebarProps> = ({ activeTab, setActiveTab }) => {
+  const { logout } = useAuth();
   const primaryLinks = [
     { id: 'overview', name: 'Overview', icon: <BarChart3 size={20} /> },
     { id: 'statements', name: 'Financial Statements', icon: <FileText size={20} /> },
@@ -88,7 +90,7 @@ const CFOSidebar: React.FC<CFOSidebarProps> = ({ activeTab, setActiveTab }) => {
                 <div className="flex-shrink-0"><HelpCircle size={20} /></div>
                 <span className="text-sm">Help</span>
               </button>
-              <button className="w-full flex items-center space-x-3 px-4 py-2.5 rounded-full text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-semibold transition-all">
+              <button onClick={logout} className="w-full flex items-center space-x-3 px-4 py-2.5 rounded-full text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-semibold transition-all">
                 <div className="flex-shrink-0"><LogOut size={20} /></div>
                 <span className="text-sm">Log out</span>
               </button>

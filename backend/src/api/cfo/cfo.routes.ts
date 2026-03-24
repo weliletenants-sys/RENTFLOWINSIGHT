@@ -7,7 +7,10 @@ import {
   rejectWithdrawal,
   approveDeposit,
   getLedger,
-  getStatements
+  getStatements,
+  getPendingCommissions,
+  approveCommission,
+  rejectCommission
 } from '../../controllers/cfo.controller';
 
 const router = express.Router();
@@ -27,5 +30,10 @@ router.put('/deposits/:id/approve', approveDeposit);
 // Accounting
 router.get('/ledger', getLedger);
 router.get('/statements', getStatements);
+
+// Commissions
+router.get('/commissions/pending', getPendingCommissions);
+router.post('/commissions/:id/approve', approveCommission);
+router.post('/commissions/:id/reject', rejectCommission);
 
 export default router;

@@ -2,39 +2,45 @@ import React, { useState, useEffect } from 'react';
 import { Coins, CheckCircle2, AlertTriangle, ShieldAlert } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+import axios from 'axios';
+
 interface CommissionPayoutsTabProps {
   commissionsData?: any[];
+  fetchCommissions?: () => void;
 }
 
-export default function CommissionPayoutsTab({ commissionsData }: CommissionPayoutsTabProps) {
+export default function CommissionPayoutsTab({ commissionsData, fetchCommissions }: CommissionPayoutsTabProps) {
   const [commissions, setCommissions] = useState<any[]>([]);
 
   useEffect(() => {
-    // Mock data based on workflow: "Requested → Approved → Processed" or Rejected
     if (commissionsData) {
       setCommissions(commissionsData);
-    } else {
-      setCommissions([
-        { id: 'COM-001', agentName: 'Alex K', amount: 45000, provider: 'MTN', number: '0771234567', status: 'Pending', requestedAt: '2 hrs ago' },
-        { id: 'COM-002', agentName: 'Sarah M', amount: 125000, provider: 'AIRTEL', number: '0751234567', status: 'Pending', requestedAt: '5 hrs ago' },
-        { id: 'COM-003', agentName: 'Derek T', amount: 80000, provider: 'MTN', number: '0781234567', status: 'Approved', requestedAt: '1 day ago' },
-      ]);
     }
   }, [commissionsData]);
 
-  const handleApprove = (id: string) => {
-    toast.success(`Commission ${id} approved by CFO`);
-    setCommissions(prev => prev.map(c => c.id === id ? { ...c, status: 'Approved' } : c));
+  const handleApprove = async (id: string) => {
+    try {
+      await axios.post(`/api/cfo/commissions/${id}/approve`);
+      toast.success(`Commission approved`);
+      if (fetchCommissions) fetchCommissions();
+    } catch (err: any) {
+      toast.error(err.response?.data?.title || 'Failed to approve commission');
+    }
   };
 
-  const handleReject = (id: string) => {
+  const handleReject = async (id: string) => {
     const reason = prompt('Rejection reason (min 10 characters required for audit):');
     if (!reason || reason.length < 10) {
       toast.error('Rejection must include at least 10 characters for the audit log');
       return;
     }
-    toast.success(`Commission ${id} rejected. Reason logged.`);
-    setCommissions(prev => prev.filter(c => c.id !== id));
+    try {
+      await axios.post(`/api/cfo/commissions/${id}/reject`, { reason });
+      toast.success(`Commission rejected. Reason logged.`);
+      if (fetchCommissions) fetchCommissions();
+    } catch (err: any) {
+      toast.error(err.response?.data?.title || 'Failed to reject commission');
+    }
   };
 
   return (

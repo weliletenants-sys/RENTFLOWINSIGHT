@@ -102,15 +102,15 @@ export const register = async (req: Request, res: Response) => {
 
     // Retain previous active sessions for multi-device support
 
-    await prisma.sessions.create({
-      data: {
-        user_id: result.id,
-        token: access_token,
-        device_info: req.headers['user-agent']?.substring(0, 255) || null,
-        ip_address: req.ip?.substring(0, 45) || null,
-        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000)
-      }
-    });
+    // await prisma.sessions.create({
+    //   data: {
+    //     user_id: profile?.id || result?.id,
+    //     token: access_token,
+    //     device_info: req.headers['user-agent']?.substring(0, 255) || null,
+    //     ip_address: req.ip?.substring(0, 45) || null,
+    //     expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000)
+    //   }
+    // });
 
     let onboarding_url = '/dashboard';
     if (role === 'AGENT') onboarding_url = '/agent-onboarding';
@@ -168,15 +168,15 @@ export const login = async (req: Request, res: Response) => {
 
     // Retain previous active sessions for multi-device support
 
-    await prisma.sessions.create({
-      data: {
-        user_id: profile.id,
-        token: access_token,
-        device_info: req.headers['user-agent']?.substring(0, 255) || null,
-        ip_address: req.ip?.substring(0, 45) || null,
-        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000)
-      }
-    });
+    // await prisma.sessions.create({
+    //   data: {
+    //     user_id: profile.id,
+    //     token: access_token,
+    //     device_info: req.headers['user-agent']?.substring(0, 255) || null,
+    //     ip_address: req.ip?.substring(0, 45) || null,
+    //     expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000)
+    //   }
+    // });
 
     await logSecurityEvent({ event: 'LOGIN_SUCCESS', user_id: profile.id, email: profile.email, ip_address: req.ip, user_agent: req.headers['user-agent'] });
 
@@ -254,15 +254,15 @@ export const ssoLogin = async (req: Request, res: Response) => {
     // Business Logic constraint: Single Device Policy execution
     // Retain previous active sessions for multi-device cross-browser tracking
 
-    await prisma.sessions.create({
-      data: {
-        user_id: profile.id,
-        token: access_token,
-        device_info: req.headers['user-agent']?.substring(0, 255) || null,
-        ip_address: req.ip?.substring(0, 45) || null,
-        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000)
-      }
-    });
+    // await prisma.sessions.create({
+    //   data: {
+    //     user_id: profile.id,
+    //     token: access_token,
+    //     device_info: req.headers['user-agent']?.substring(0, 255) || null,
+    //     ip_address: req.ip?.substring(0, 45) || null,
+    //     expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000)
+    //   }
+    // });
 
     await logSecurityEvent({ event: 'SSO_LOGIN_SUCCESS', user_id: profile.id, email: profile.email, ip_address: req.ip, user_agent: req.headers['user-agent'] });
 

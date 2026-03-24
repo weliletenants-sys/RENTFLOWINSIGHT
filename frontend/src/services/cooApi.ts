@@ -101,6 +101,19 @@ export const fetchOpportunities = async () => {
   return response.data;
 };
 
+export const getGlobalUsers = async () => {
+  try {
+    const response = await axios.get(`${API}/v1/coo/users`, getAuthHeaders());
+    return response.data.data.users;
+  } catch (error: any) {
+    if (error.response?.data?.type) {
+      const problem = error.response.data as ProblemDetails;
+      throw new Error(`[${problem.title}]: ${problem.detail}`);
+    }
+    throw new Error(error.response?.data?.message || 'Failed to fetch global users list');
+  }
+};
+
 export const createOpportunity = async (data: any) => {
   const response = await axios.post(`${API}/v1/coo/opportunities`, data, getAuthHeaders());
   return response.data;
