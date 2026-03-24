@@ -101,10 +101,27 @@ export const fetchOpportunities = async () => {
   return response.data;
 };
 
-export const getGlobalUsers = async () => {
+export interface GetUsersParams {
+  pageParam: string | null;
+  search: string;
+  role: string;
+  status: string;
+}
+
+export const getGlobalUsers = async ({ pageParam, search, role, status }: GetUsersParams) => {
   try {
-    const response = await axios.get(`${API}/v1/coo/users`, getAuthHeaders());
-    return response.data.data.users;
+    const params = new URLSearchParams();
+    if (pageParam) params.append('cursor', pageParam);
+    if (search) params.append('search', search);
+    if (role && role !== 'ALL') params.append('role', role);
+    if (status && status !== 'ALL') params.append('status', status);
+    
+    const response = await axios.get(`${API}/v1/coo/users?${params.toString()}`, getAuthHeaders());
+    return {
+      users: response.data.data.users,
+      nextCursor: response.data.pagination.next_cursor as string | null,
+      hasMore: response.data.pagination.has_more as boolean
+    };
   } catch (error: any) {
     if (error.response?.data?.type) {
       const problem = error.response.data as ProblemDetails;
@@ -117,4 +134,46 @@ export const getGlobalUsers = async () => {
 export const createOpportunity = async (data: any) => {
   const response = await axios.post(`${API}/v1/coo/opportunities`, data, getAuthHeaders());
   return response.data;
+};
+
+export const deleteGlobalUsers = async (userIds: string[]) => {
+  try {
+    const response = await axios.delete(`${API}/v1/coo/users`, {
+      ...getAuthHeaders(),
+      data: { userIds }
+    });
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.data?.type) {
+      const problem = error.response.data as ProblemDetails;
+      throw new Error(`[${problem.title}]: ${problem.detail}`);
+    }
+    throw new Error(error.response?.data?.message || 'Failed to bulk delete users');
+  }
+};
+
+export const getGlobalUserProfile = async (id: string) => {
+  try {
+    const response = await axios.get(`${API}/v1/coo/users/${id}`, getAuthHeaders());
+    return response.data.data.user;
+  } catch (error: any) {
+    if (error.response?.data?.type) {
+      const problem = error.response.data as ProblemDetails;
+      throw new Error(`[${problem.title}]: ${problem.detail}`);
+    }
+    throw new Error(error.response?.data?.message || 'Failed to retrieve user profile');
+  }
+};
+
+export const updateGlobalUserProfile = async (id: string, updates: any) => {
+  try {
+    const response = await axios.patch(`${API}/v1/coo/users/${id}`, updates, getAuthHeaders());
+    return response.data.data.user;
+  } catch (error: any) {
+    if (error.response?.data?.type) {
+      const problem = error.response.data as ProblemDetails;
+      throw new Error(`[${problem.title}]: ${problem.detail}`);
+    }
+    throw new Error(error.response?.data?.message || 'Failed to update user profile');
+  }
 };
