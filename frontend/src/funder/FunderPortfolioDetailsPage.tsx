@@ -1,5 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, TrendingUp, Home, Calendar, Clock, DollarSign, Target } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ChevronLeft, TrendingUp, Home, Calendar, Clock, DollarSign, Target, Loader2 } from 'lucide-react';
+import { getFunderPortfolioDetails } from '../services/funderApi';
 
 interface VirtualHouse {
   id: string;
@@ -15,59 +17,48 @@ export default function FunderPortfolioDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // Mock fetching portfolio details based on ID
-  const portfolioInfo = {
-    portfolioName: 'Wealth Builder Fund',
-    portfolioCode: id || 'WPF-1234',
-    status: 'active' as const,
-    investmentAmount: 5000000,
-    totalRoiEarned: 150000,
-    todayGrowth: 12500,
-    roiMode: 'Monthly Payout',
-    durationLeft: '8 Months',
-    nextPayout: '12th April, 2026',
-  };
+  const [isLoading, setIsLoading] = useState(true);
+  const [data, setData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (id) {
+          const res = await getFunderPortfolioDetails(id);
+          setData(res);
+        }
+      } catch (err) {
+        console.error('Failed to load portfolio details:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <div className="bg-slate-50 min-h-screen p-8 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[var(--color-primary)] animate-spin" />
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="bg-slate-50 min-h-screen p-8 flex flex-col items-center justify-center pb-32">
+        <h2 className="text-xl font-bold text-slate-400 mb-4">Portfolio Not Found</h2>
+        <button onClick={() => navigate('/funder/portfolio')} className="px-6 py-2 rounded-xl text-sm font-bold border-2 transition-all hover:shadow-md border-[var(--color-primary)] text-[var(--color-primary)]">
+          Back to Portfolios
+        </button>
+      </div>
+    );
+  }
+
+  const { portfolioInfo, payoutHistory, virtualHouses } = data;
 
   const currentValue = portfolioInfo.investmentAmount + portfolioInfo.totalRoiEarned;
   const isGrowthPositive = portfolioInfo.todayGrowth >= 0;
-
-  // Mock payout history
-  const payoutHistory = [
-    { id: 'tx-1', date: '12th Mar 2026', amount: 15000, type: 'ROI Payout', status: 'Completed' },
-    { id: 'tx-2', date: '12th Feb 2026', amount: 15000, type: 'ROI Payout', status: 'Completed' },
-    { id: 'tx-3', date: '12th Jan 2026', amount: 15000, type: 'ROI Payout', status: 'Completed' },
-  ];
-
-  // Mock virtual houses mapped to this portfolio
-  const virtualHouses: VirtualHouse[] = [
-    {
-      id: 'vh1',
-      code: 'VH-802',
-      rentAmount: 400000,
-      location: 'Kampala, Makindye',
-      assignedDate: '15th Jan 2026',
-      status: 'active',
-      imageUrl: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=400',
-    },
-    {
-      id: 'vh2',
-      code: 'VH-914',
-      rentAmount: 600000,
-      location: 'Entebbe, Kitoro',
-      assignedDate: '01st Feb 2026',
-      status: 'active',
-      imageUrl: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=400',
-    },
-    {
-      id: 'vh3',
-      code: 'VH-105',
-      rentAmount: 350000,
-      location: 'Wakiso, Nansana',
-      assignedDate: '10th Mar 2026',
-      status: 'pending',
-      imageUrl: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=400',
-    }
-  ];
 
   return (
     <div className="bg-slate-50 min-h-screen p-4 sm:p-6 lg:p-8 font-sans pb-24 lg:pb-8">
@@ -170,7 +161,7 @@ export default function FunderPortfolioDetailsPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {virtualHouses.map(vh => (
+            {virtualHouses.map((vh: VirtualHouse) => (
               <div key={vh.id} className="bg-white rounded-[20px] overflow-hidden border border-slate-100 shadow-sm hover:shadow-md transition-shadow group">
                 <div className="h-48 overflow-hidden relative border-b border-slate-100">
                   <img src={vh.imageUrl} alt={vh.location} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -232,7 +223,7 @@ export default function FunderPortfolioDetailsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {payoutHistory.map((tx) => (
+                  {payoutHistory.map((tx: any) => (
                     <tr key={tx.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-6 py-4">
                         <span className="font-bold text-slate-900 text-sm">{tx.date}</span>

@@ -11,7 +11,6 @@ import FunderPortfolioList from './components/FunderPortfolioList';
 import FunderRecentActivity from './components/FunderRecentActivity';
 import type { PortfolioItem, ActivityItem } from './types';
 import FunderInvestCTA from './components/FunderInvestCTA';
-import FunderInvestModal from './FunderInvestModal';
 import FunderActionButtons from './components/FunderActionButtons';
 import FunderPortfolioPage from './FunderPortfolioPage';
 import FunderOpportunitiesPage from './FunderOpportunitiesPage';
@@ -36,7 +35,6 @@ export default function FunderDashboard() {
   const [portfolios, setPortfolios] = useState<PortfolioItem[]>([]);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [activePage, setActivePage] = useState<string>('Dashboard');
 
   useEffect(() => {
@@ -72,10 +70,6 @@ export default function FunderDashboard() {
     fetchDashboard();
   }, [user, navigate]);
 
-  const handleInvestSuccess = (amount: number) => {
-    // Refresh fully
-    getFunderDashboardStats().then(setStats);
-  };
 
   const handleVerificationCheck = (actionFn: () => void) => {
     // TEMPORARY: disabled verification requirement
@@ -114,7 +108,7 @@ export default function FunderDashboard() {
         <FunderSidebar
           activePage={activePage}
           onNavigate={(page) => setActivePage(page)}
-          onNewsupport={() => setIsModalOpen(true)}
+          onNewsupport={() => navigate('/funder/portfolio')}
         />
 
         {/* ──────────── MAIN CONTENT AREA ──────────── */}
@@ -170,7 +164,7 @@ export default function FunderDashboard() {
 
           {/* ──────────── PAGE BODY ──────────── */}
           {activePage === 'Portfolio' ? (
-            <FunderPortfolioPage onAddPortfolio={() => handleVerificationCheck(() => setIsModalOpen(true))} walletBalance={stats?.availableLiquid || 0} />
+            <FunderPortfolioPage onAddPortfolio={() => handleVerificationCheck(() => {})} walletBalance={stats?.availableLiquid || 0} />
           ) : activePage === 'Opportunities' ? (
             <FunderOpportunitiesPage />
           ) : (
@@ -204,11 +198,11 @@ export default function FunderDashboard() {
                     portfolios={portfolios}
                     onViewAll={() => navigate('/funder/portfolio')}
                     onCashOut={(id) => handleVerificationCheck(() => console.log('Cash out', id))}
-                    onAddAsset={() => handleVerificationCheck(() => setIsModalOpen(true))}
+                    onAddAsset={() => handleVerificationCheck(() => navigate('/funder/portfolio'))}
                   />
 
                   {/* Grow Your Wealth CTA */}
-                  <FunderInvestCTA onStartsupporting={() => handleVerificationCheck(() => setIsModalOpen(true))} />
+                  <FunderInvestCTA onStartsupporting={() => handleVerificationCheck(() => navigate('/funder/portfolio'))} />
 
                   {/* Recent Activity — mobile only */}
                   <div className="lg:hidden pb-32">
@@ -248,7 +242,7 @@ export default function FunderDashboard() {
                     <div>
                       <h3 className="font-bold text-slate-900 text-sm mb-1">Smart Insight</h3>
                       <p className="text-xs text-slate-600 leading-relaxed">
-                        You have <strong>UGX 2,500,000</strong> idle in your wallet. Consider putting it into one of the recommended opportunities below to start compounding your earnings.
+                        You have <strong>UGX {(stats?.availableLiquid || 0).toLocaleString()}</strong> idle in your wallet. Consider putting it into one of the recommended opportunities below to start compounding your earnings.
                       </p>
                     </div>
                   </div>
@@ -261,14 +255,6 @@ export default function FunderDashboard() {
 
       {/* ──────────── MOBILE BOTTOM NAV ──────────── */}
       <FunderBottomNav activePage="Home" />
-
-      {/* ──────────── INVEST MODAL ──────────── */}
-      <FunderInvestModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        walletBalance={stats?.availableLiquid || 0}
-        onSuccess={handleInvestSuccess}
-      />
     </div>
   );
 }

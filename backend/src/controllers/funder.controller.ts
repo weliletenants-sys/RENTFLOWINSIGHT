@@ -59,7 +59,7 @@ export const getDashboardStats = async (req: Request, res: Response) => {
 export const fundRentPool = async (req: Request, res: Response) => {
   try {
     const funderId = req.user?.sub || req.user?.id;
-    const { amount } = req.body;
+    const { amount, duration_months = 12, roi_mode = 'monthly_compounding', auto_renew = false } = req.body;
 
     if (!amount || Number(amount) < 100000) {
       return res.status(400).json({ status: 'error', message: 'Minimum investment amount is 100,000 UGX' });
@@ -125,11 +125,23 @@ export const fundRentPool = async (req: Request, res: Response) => {
         investment_amount: Number(amount),
         portfolio_pin: Math.floor(1000 + Math.random() * 9000).toString(),
         total_roi_earned: 0,
-        roi_percentage: 15, // Standard plan
-        roi_mode: 'monthly_compounding',
-        duration_months: 12,
+        roi_percentage: 15,
+        roi_mode: String(roi_mode),
+        duration_months: Number(duration_months),
+        auto_renew: Boolean(auto_renew),
         status: 'active',
         next_roi_date: nextMonth.toISOString()
+      }
+    });
+
+    await prisma.notifications.create({
+      data: {
+        user_id: funderId,
+        type: 'investment',
+        title: 'Investment Successful',
+        message: `You have successfully funded a new ${duration_months}-month rent pool with ${Number(amount).toLocaleString()} UGX.`,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }
     });
 
@@ -162,7 +174,7 @@ export const getPortfolios = async (req: Request, res: Response) => {
       createdDate: new Date(p.created_at).toLocaleDateString(),
       maturityDate: new Date(Date.now() + p.duration_months * 30 * 24 * 60 * 60 * 1000).toLocaleDateString(),
       expectedAmount: Number(p.investment_amount) + Number(p.total_roi_earned),
-      todayGrowth: Math.random() > 0.5 ? Math.floor(Math.random() * 10000) : 0, 
+      todayGrowth: (p.status === 'active' || p.status === 'ACTIVE') ? Math.floor(Number(p.investment_amount) * (Number(p.roi_percentage) / 100) / 30) : 0, 
       virtualHouses: []
     }));
 
@@ -335,5 +347,79 @@ export const updateProfileInfo = async (req: Request, res: Response) => {
       status: 500,
       detail: 'An unexpected error occurred while updating the profile.'
     });
+  }
+};
+
+export const getPortfolioDetails = async (req: Request, res: Response) => {
+  try {
+    const funderId = req.user?.sub || req.user?.id;
+    const { code } = req.params;
+
+    const p = await prisma.investorPortfolios.findFirst({
+      where: { portfolio_code: code, investor_id: funderId }
+    });
+
+    if (!p) {
+      return res.status(404).json({ status: 'error', message: 'Portfolio not found.' });
+    }
+
+    const todayGrowth = (p.status === 'active' || p.status === 'ACTIVE') 
+      ? Math.floor(Number(p.investment_amount) * (Number(p.roi_percentage) / 100) / 30) 
+      : 0;
+
+    const nextPayoutDate = p.next_roi_date ? new Date(p.next_roi_date) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    const portfolioInfo = {
+      portfolioName: p.account_name || `Portfolio ${p.portfolio_code}`,
+      portfolioCode: p.portfolio_code,
+      status: p.status,
+      investmentAmount: Number(p.investment_amount),
+      totalRoiEarned: Number(p.total_roi_earned),
+      todayGrowth,
+      roiMode: p.roi_mode === 'monthly_compounding' ? 'Monthly Compounding' : 'Monthly Payout',
+      durationLeft: `${p.duration_months} Months`,
+      nextPayout: nextPayoutDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    };
+
+    // Payout History
+    const ledger = await prisma.generalLedger.findMany({
+      where: { user_id: funderId, reference_id: p.portfolio_code },
+      orderBy: { created_at: 'desc' }
+    });
+    const payoutHistory = ledger.map((l: any, i: number) => ({
+      id: l.id || `tx-${i}`,
+      date: new Date(l.created_at || l.transaction_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+      amount: Number(l.amount),
+      type: l.category === 'supporter_roi_payout' ? 'ROI Payout' : l.category.replace(/_/g, ' '),
+      status: 'Completed'
+    }));
+
+    // Virtual Houses mapped
+    const opps = await prisma.virtualOpportunities.findMany({
+      orderBy: { created_at: 'desc' },
+      take: 3
+    });
+    const virtualHouses = opps.map((opp: any, i: number) => ({
+      id: opp.id || `vh-${i}`,
+      code: `VH-${opp.id.substring(0, 4).toUpperCase()}`,
+      rentAmount: Number(opp.rent_amount || opp.investment_needed || 350000),
+      location: opp.location || 'Kampala Area',
+      assignedDate: new Date(opp.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+      status: p.status === 'active' ? 'active' : 'pending',
+      imageUrl: opp.image_url || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=400'
+    }));
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        portfolioInfo,
+        payoutHistory,
+        virtualHouses
+      }
+    });
+
+  } catch (error) {
+    console.error('getPortfolioDetails error:', error);
+    return res.status(500).json({ status: 'error', message: 'Internal server error' });
   }
 };

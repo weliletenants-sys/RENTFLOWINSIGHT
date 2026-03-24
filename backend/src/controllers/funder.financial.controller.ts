@@ -230,6 +230,17 @@ export const requestWalletWithdrawal = async (req: Request, res: Response) => {
       }
     });
 
+    await prisma.notifications.create({
+      data: {
+        user_id: userId,
+        type: 'withdrawal',
+        title: 'Withdrawal Requested',
+        message: `Your withdrawal request for ${amount.toLocaleString()} UGX is securely queued for manual review.`,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    });
+
     return res.status(201).json({ status: 'success', message: 'Withdrawal queued successfully. Awaiting Manager Approval.', data: { withdrawal } });
   } catch (error: any) {
     console.error('Error requesting withdrawal:', error);
@@ -264,6 +275,17 @@ export const requestDeposit = async (req: Request, res: Response) => {
         status: 'pending_manager',
         metadata: { external_tx_id: external_tx_id.trim(), ip_address, device_info },
         source_table: 'funder_wallet',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    });
+
+    await prisma.notifications.create({
+      data: {
+        user_id: userId,
+        type: 'deposit',
+        title: 'Deposit Requested',
+        message: `Your deposit request for ${amount.toLocaleString()} UGX via ${provider} is under review by the COO.`,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }
@@ -346,6 +368,9 @@ export const transferFunds = async (req: Request, res: Response) => {
       const recipientWallet = await prisma.wallets.findFirst({ where: { user_id: recipientProfile.id } });
       if (!recipientWallet) return problemResponse(res, 404, 'Not Found', 'Recipient wallet not active', 'not-found');
 
+      const senderProfile = await prisma.profiles.findFirst({ where: { id: userId } });
+      if (!senderProfile) return problemResponse(res, 404, 'Not Found', 'Sender profile invalid', 'not-found');
+
       const sourceAvailable = await prisma.walletBuckets.findFirst({ where: { wallet_id: senderWallet.id, bucket_type: 'available' } });
       if (!sourceAvailable || sourceAvailable.balance < transferAmount) {
         return problemResponse(res, 400, 'Bad Request', 'Insufficient available liquidity for P2P transfer', 'insufficient-funds');
@@ -365,6 +390,26 @@ export const transferFunds = async (req: Request, res: Response) => {
             sender_id: userId,
             recipient_id: recipientProfile.id,
             created_at: new Date().toISOString()
+          }
+        }),
+        prisma.notifications.create({
+          data: {
+            user_id: userId,
+            type: 'transfer_out',
+            title: 'Funds Transferred',
+            message: `You have successfully sent ${transferAmount.toLocaleString()} UGX to ${recipientProfile.full_name}.`,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        }),
+        prisma.notifications.create({
+          data: {
+            user_id: recipientProfile.id,
+            type: 'transfer_in',
+            title: 'Funds Received',
+            message: `You have received ${transferAmount.toLocaleString()} UGX from ${senderProfile.full_name}.`,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           }
         })
       ]);
