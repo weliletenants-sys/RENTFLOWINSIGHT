@@ -15,13 +15,23 @@ const AVAILABLE_ROLES = ['FUNDER', 'LANDLORD', 'TENANT', 'AGENT'] as const;
 export const getMyRoles = async (req: Request, res: Response) => {
   try {
     const userId = req.user.sub;
+    const activeRole = req.user.role;
 
-    const userRoles = await prisma.userRoles.findMany({
-      where: { user_id: userId }
-    });
+    const [userRoles, userPersonas] = await Promise.all([
+      prisma.userRoles.findMany({ where: { user_id: userId } }),
+      prisma.userPersonas.findMany({ where: { user_id: userId } })
+    ]);
 
     // Build a combined view: all platform roles with status
     const rolesView = AVAILABLE_ROLES.map(role => {
+      // Naturally active via the current session payload
+      if (role === activeRole) return { role, status: 'ACTIVE', assignedAt: null };
+      
+      // Naturally active via a verified persona
+      const hasPersona = userPersonas.some(p => p.persona.toUpperCase() === role);
+      if (hasPersona) return { role, status: 'ACTIVE', assignedAt: null };
+
+      // Fallback to explicit role requests
       const existing = userRoles.find(r => r.role === role);
       return {
         role,
@@ -32,12 +42,13 @@ export const getMyRoles = async (req: Request, res: Response) => {
       };
     });
 
-    // Determine the current active role from JWT
-    const activeRole = req.user.role;
-
     return res.status(200).json({
-      activeRole,
-      roles: rolesView
+      status: 'success',
+      message: 'Roles fetched successfully',
+      data: {
+        activeRole,
+        roles: rolesView
+      }
     });
   } catch (error) {
     console.error('getMyRoles error:', error);
@@ -59,7 +70,15 @@ export const requestRole = async (req: Request, res: Response) => {
       return problemResponse(res, 400, 'Validation Error', `Invalid role. Must be one of: ${AVAILABLE_ROLES.join(', ')}`, 'validation-error');
     }
 
-    // Check if user already has this role (active or pending)
+    // Check if natively attached via Personas
+    const userPersona = await prisma.userPersonas.findFirst({
+      where: { user_id: userId, persona: { equals: role, mode: 'insensitive' } }
+    });
+    if (userPersona || req.user.role === role) {
+      return problemResponse(res, 409, 'Conflict', `You already natively hold the ${role} role.`, 'conflict');
+    }
+
+    // Check explicit requests
     const existing = await prisma.userRoles.findFirst({
       where: { user_id: userId, role }
     });
@@ -83,7 +102,11 @@ export const requestRole = async (req: Request, res: Response) => {
       }
     });
 
-    return problemResponse(res, 201, 'Error', `${role} role requested successfully. Awaiting admin approval.`, 'error');
+    return res.status(201).json({
+      status: 'success',
+      message: `${role} role requested successfully. Awaiting admin approval.`,
+      data: {}
+    });
   } catch (error) {
     console.error('requestRole error:', error);
     return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
@@ -104,12 +127,17 @@ export const switchRole = async (req: Request, res: Response) => {
       return problemResponse(res, 400, 'Validation Error', `Invalid role. Must be one of: ${AVAILABLE_ROLES.join(', ')}`, 'validation-error');
     }
 
-    // Check if user has this role enabled
-    const userRole = await prisma.userRoles.findFirst({
-      where: { user_id: userId, role, enabled: true }
-    });
+    if (role === req.user.role) {
+      return problemResponse(res, 400, 'Validation Error', `You are already logged into the ${role} role.`, 'validation-error');
+    }
 
-    if (!userRole) {
+    // Check if user has this role via Personas or explicit Role Requests
+    const [userPersona, explicitRole] = await Promise.all([
+      prisma.userPersonas.findFirst({ where: { user_id: userId, persona: { equals: role, mode: 'insensitive' } } }),
+      prisma.userRoles.findFirst({ where: { user_id: userId, role, enabled: true } })
+    ]);
+
+    if (!userPersona && !explicitRole) {
       return problemResponse(res, 403, 'Forbidden', `You do not have an active ${role} role.`, 'forbidden');
     }
 
@@ -120,17 +148,42 @@ export const switchRole = async (req: Request, res: Response) => {
     }
 
     // Issue new JWT with the switched role
-    const payload = { email: profile.email, sub: profile.id, role };
-    const access_token = jwt.sign(payload, JWT_SECRET);
+    const payload = { email: profile.email, sub: profile.id, role, firstName: profile.full_name?.split(' ')[0] || 'User' };
+    const access_token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
+
+    // Revoke old session to strictly enforce security guidelines
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const oldToken = authHeader.split(' ')[1];
+      await prisma.sessions.updateMany({
+        where: { token: oldToken },
+        data: { expires_at: new Date() }
+      });
+    }
+
+    // Create a new session record for the new token
+    await prisma.sessions.create({
+      data: {
+        user_id: profile.id,
+        token: access_token,
+        device_info: req.headers['user-agent']?.substring(0, 255) || null,
+        ip_address: req.ip?.substring(0, 45) || null,
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000)
+      }
+    });
 
     return res.status(200).json({
-      access_token,
-      user: {
-        id: profile.id,
-        email: profile.email,
-        firstName: profile.full_name.split(' ')[0],
-        lastName: profile.full_name.split(' ').slice(1).join(' '),
-        role
+      status: 'success',
+      message: `Switched to ${role} role successfully`,
+      data: {
+        access_token,
+        user: {
+          id: profile.id,
+          email: profile.email,
+          firstName: profile.full_name?.split(' ')[0] || 'User',
+          lastName: profile.full_name?.split(' ').slice(1).join(' ') || '',
+          role
+        }
       }
     });
   } catch (error) {

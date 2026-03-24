@@ -183,50 +183,99 @@ export const updateRewardMode = async (req: Request, res: Response) => {
   }
 };
 
-export const getExitQueue = async (req: Request, res: Response) => {
+export const getWalletOperations = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.sub;
     if (!userId) return problemResponse(res, 401, 'Unauthorized', 'Session invalid', 'unauthorized');
 
-    const withdrawals = await prisma.capitalWithdrawals.findMany({
+    const operations = await prisma.pendingWalletOperations.findMany({
       where: { user_id: userId },
-      orderBy: { initiated_at: 'desc' }
+      orderBy: { created_at: 'desc' }
     });
 
-    return res.status(200).json({ status: 'success', data: { withdrawals } });
+    return res.status(200).json({ status: 'success', data: { operations } });
   } catch (error: any) {
-    console.error('Error fetching exit queue:', error);
-    return problemResponse(res, 500, 'Internal Server Error', 'Could not fetch exit queue', 'internal-error');
+    console.error('Error fetching wallet operations:', error);
+    return problemResponse(res, 500, 'Internal Server Error', 'Could not fetch wallet operations', 'internal-error');
   }
 };
 
-export const requestWithdrawal = async (req: Request, res: Response) => {
+export const requestWalletWithdrawal = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.sub;
     if (!userId) return problemResponse(res, 401, 'Unauthorized', 'Session invalid', 'unauthorized');
 
     const amount = Number(req.body.amount);
-    if (!amount || amount <= 0) {
-      return problemResponse(res, 400, 'Bad Request', 'Invalid withdrawal amount', 'validation-error');
+    if (!amount || amount < 100000) {
+      return problemResponse(res, 400, 'Bad Request', 'Invalid withdrawal amount: Minimum 100,000 UGX required', 'validation-error');
     }
 
-    // Set 90 days from now
-    const releaseDate = new Date();
-    releaseDate.setDate(releaseDate.getDate() + 90);
+    // Security meta capture
+    const ip_address = Array.isArray(req.headers['x-forwarded-for']) ? req.headers['x-forwarded-for'][0] : req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+    const device_info = req.headers['user-agent'] || 'Unknown Device';
 
-    const withdrawal = await prisma.capitalWithdrawals.create({
+    // 90-day escrow withdrawal simulation - strictly formatted using "debit"
+    const withdrawal = await prisma.pendingWalletOperations.create({
       data: {
         user_id: userId,
         amount,
-        status: 'in_queue',
-        expected_release_at: releaseDate
+        direction: 'debit',
+        category: 'withdrawal',
+        reference_id: `WRW-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        status: 'pending_manager',
+        ip_address,
+        device_info,
+        source_table: 'funder_wallet',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }
     });
 
-    return res.status(201).json({ status: 'success', message: 'Withdrawal queued successfully', data: { withdrawal } });
+    return res.status(201).json({ status: 'success', message: 'Withdrawal queued successfully. Awaiting Manager Approval.', data: { withdrawal } });
   } catch (error: any) {
     console.error('Error requesting withdrawal:', error);
     return problemResponse(res, 500, 'Internal Server Error', 'Could not request withdrawal', 'internal-error');
+  }
+};
+
+export const requestDeposit = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.sub;
+    if (!userId) return problemResponse(res, 401, 'Unauthorized', 'Session invalid', 'unauthorized');
+
+    const amount = Number(req.body.amount);
+    const { provider, external_tx_id } = req.body;
+
+    if (!amount || amount < 100000 || !provider || !external_tx_id) {
+      return problemResponse(res, 400, 'Bad Request', 'Missing required deposit fields or amount below minimum 100,000 UGX', 'validation-error');
+    }
+
+    // Security meta capture
+    const ip_address = Array.isArray(req.headers['x-forwarded-for']) ? req.headers['x-forwarded-for'][0] : req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+    const device_info = req.headers['user-agent'] || 'Unknown Device';
+
+    const deposit = await prisma.pendingWalletOperations.create({
+      data: {
+        user_id: userId,
+        amount,
+        direction: 'credit',
+        category: 'deposit',
+        reference_id: `WRD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        linked_party: provider.trim(),
+        external_tx_id: external_tx_id.trim(),
+        status: 'pending_manager',
+        ip_address,
+        device_info,
+        source_table: 'funder_wallet',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    });
+
+    return res.status(201).json({ status: 'success', message: 'Deposit recorded securely. Awaiting Manager Audit verification.', data: { deposit } });
+  } catch (error: any) {
+    console.error('Error requesting deposit:', error);
+    return problemResponse(res, 500, 'Internal Server Error', 'Could not request deposit', 'internal-error');
   }
 };
 
@@ -244,5 +293,91 @@ export const getPortfolios = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error('Error fetching portfolios:', error);
     return problemResponse(res, 500, 'Internal Server Error', 'Could not fetch portfolios', 'internal-error');
+  }
+};
+
+export const transferFunds = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.sub;
+    if (!userId) return problemResponse(res, 401, 'Unauthorized', 'Session invalid', 'unauthorized');
+
+    const { type, amount, sourceBucket, targetIdentifier } = req.body;
+    const transferAmount = Number(amount);
+
+    if (!type || !transferAmount || transferAmount <= 0) {
+      return problemResponse(res, 400, 'Bad Request', 'Invalid transfer paramters', 'validation-error');
+    }
+
+    const senderWallet = await prisma.wallets.findFirst({ where: { user_id: userId } });
+    if (!senderWallet) return problemResponse(res, 404, 'Not Found', 'Wallet not found', 'not-found');
+
+    if (type === 'internal') {
+      if (!sourceBucket) return problemResponse(res, 400, 'Bad Request', 'Source bucket required for internal transfer', 'validation-error');
+      
+      const source = await prisma.walletBuckets.findFirst({ where: { wallet_id: senderWallet.id, bucket_type: sourceBucket } });
+      const dest = await prisma.walletBuckets.findFirst({ where: { wallet_id: senderWallet.id, bucket_type: 'available' } });
+      
+      if (!source || source.balance < transferAmount) return problemResponse(res, 400, 'Bad Request', 'Insufficient funds in source bucket', 'insufficient-funds');
+      
+      await prisma.$transaction([
+        prisma.walletBuckets.update({ where: { id: source.id }, data: { balance: { decrement: transferAmount } } }),
+        dest 
+          ? prisma.walletBuckets.update({ where: { id: dest.id }, data: { balance: { increment: transferAmount } } })
+          : prisma.walletBuckets.create({ data: { wallet_id: senderWallet.id, bucket_type: 'available', balance: transferAmount } }),
+        prisma.walletTransactions.create({
+          data: {
+            amount: transferAmount,
+            description: `Internal Transfer: ${sourceBucket} to available`,
+            sender_id: userId,
+            recipient_id: userId,
+            created_at: new Date().toISOString()
+          }
+        })
+      ]);
+
+      return res.status(200).json({ status: 'success', message: 'Internal reallocation successful' });
+
+    } else if (type === 'p2p') {
+      if (!targetIdentifier) return problemResponse(res, 400, 'Bad Request', 'Recipient identifier required', 'validation-error');
+      
+      const recipientProfile = await prisma.profiles.findFirst({
+        where: { OR: [{ email: targetIdentifier }, { phone: targetIdentifier }] }
+      });
+      if (!recipientProfile) return problemResponse(res, 404, 'Not Found', 'Recipient user not found on platform', 'not-found');
+      if (recipientProfile.id === userId) return problemResponse(res, 400, 'Bad Request', 'Cannot P2P transfer to yourself', 'validation-error');
+
+      const recipientWallet = await prisma.wallets.findFirst({ where: { user_id: recipientProfile.id } });
+      if (!recipientWallet) return problemResponse(res, 404, 'Not Found', 'Recipient wallet not active', 'not-found');
+
+      const sourceAvailable = await prisma.walletBuckets.findFirst({ where: { wallet_id: senderWallet.id, bucket_type: 'available' } });
+      if (!sourceAvailable || sourceAvailable.balance < transferAmount) {
+        return problemResponse(res, 400, 'Bad Request', 'Insufficient available liquidity for P2P transfer', 'insufficient-funds');
+      }
+
+      const destAvailable = await prisma.walletBuckets.findFirst({ where: { wallet_id: recipientWallet.id, bucket_type: 'available' } });
+
+      await prisma.$transaction([
+        prisma.walletBuckets.update({ where: { id: sourceAvailable.id }, data: { balance: { decrement: transferAmount } } }),
+        destAvailable 
+          ? prisma.walletBuckets.update({ where: { id: destAvailable.id }, data: { balance: { increment: transferAmount } } })
+          : prisma.walletBuckets.create({ data: { wallet_id: recipientWallet.id, bucket_type: 'available', balance: transferAmount } }),
+        prisma.walletTransactions.create({
+          data: {
+            amount: transferAmount,
+            description: `P2P Transfer to ${recipientProfile.full_name}`,
+            sender_id: userId,
+            recipient_id: recipientProfile.id,
+            created_at: new Date().toISOString()
+          }
+        })
+      ]);
+
+      return res.status(200).json({ status: 'success', message: `Successfully sent ${transferAmount.toLocaleString()} UGX to ${recipientProfile.full_name}` });
+    }
+
+    return problemResponse(res, 400, 'Bad Request', 'Unknown transfer type', 'validation-error');
+  } catch (error: any) {
+    console.error('Transfer error:', error);
+    return problemResponse(res, 500, 'Internal Server Error', 'Transfer processing failed', 'internal-error');
   }
 };

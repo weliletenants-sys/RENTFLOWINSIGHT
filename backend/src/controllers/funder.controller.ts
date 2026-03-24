@@ -27,6 +27,13 @@ export const getDashboardStats = async (req: Request, res: Response) => {
       ? activePortfolios.reduce((sum, p) => sum + Number(p.roi_percentage), 0) / activePortfolios.length
       : 15; // default 15%
 
+    // 4. Personas & Buckets for Transfer Modal
+    const userPersonas = await prisma.userPersonas.findMany({ where: { user_id: funderId } }).catch(() => []);
+    const allBuckets = wallet ? await prisma.walletBuckets.findMany({ where: { wallet_id: wallet.id } }) : [];
+
+    // 5. Next of Kin Data
+    const invite = await prisma.supporterInvites.findFirst({ where: { activated_user_id: funderId } });
+
     return res.status(200).json({
       status: 'success',
       data: {
@@ -35,7 +42,11 @@ export const getDashboardStats = async (req: Request, res: Response) => {
         totalInvested: investedBucket?.balance || 0,
         expectedYield,
         activePortfolios: activePortfolios.length,
-        pendingPortfolios: portfolios.filter(p => p.status === 'pending').length
+        pendingPortfolios: portfolios.filter(p => p.status === 'pending').length,
+        verifiedPersonas: userPersonas.map(p => p.persona),
+        walletBuckets: allBuckets.map(b => ({ type: b.bucket_type, balance: b.balance })),
+        nextOfKinName: invite?.next_of_kin_name || null,
+        nextOfKinPhone: invite?.next_of_kin_phone || null,
       }
     });
   } catch (error: any) {

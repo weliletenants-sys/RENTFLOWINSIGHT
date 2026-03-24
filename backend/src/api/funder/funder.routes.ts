@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { getDashboardStats, getPortfolios, getRecentActivities, fundRentPool, requestWithdrawal, getOpportunities, updateProfileInfo } from '../../controllers/funder.controller';
 import { uploadAvatar, uploadKycDocuments, getKycStatus } from '../../controllers/funder.kyc.controller';
-import { getPayoutMethods, addPayoutMethod, setPrimaryPayoutMethod, deletePayoutMethod, getRewardMode, updateRewardMode, getExitQueue, requestWithdrawal as requestCapitalWithdrawal, getPortfolios as getCapitalPortfolios } from '../../controllers/funder.financial.controller';
+import { getPayoutMethods, addPayoutMethod, setPrimaryPayoutMethod, deletePayoutMethod, getRewardMode, updateRewardMode, getWalletOperations, requestWalletWithdrawal, requestDeposit, getPortfolios as getCapitalPortfolios, transferFunds } from '../../controllers/funder.financial.controller';
 import { uploadS3 } from '../../services/s3.service';
 import { getMandates, addMandate, updateMandateLimit, revokeMandate, restoreMandate } from '../../controllers/funder.proxy.controller';
 import { authGuard, rolesGuard } from '../../middlewares/auth.middleware';
@@ -35,8 +35,10 @@ router.delete('/payout-methods/:id', deletePayoutMethod);
 // --- Capital & Escrow Management ---
 router.get('/financial/reward-mode', getRewardMode);
 router.put('/financial/reward-mode', updateRewardMode);
-router.get('/financial/exit-queue', getExitQueue);
-router.post('/financial/withdraw', requestCapitalWithdrawal);
+router.get('/financial/wallet-operations', getWalletOperations);
+router.post('/financial/wallet-withdraw', requestWalletWithdrawal);
+router.post('/financial/wallet-deposit', requestDeposit);
+router.post('/financial/transfer', transferFunds);
 router.get('/financial/portfolios', getCapitalPortfolios);
 
 // --- Proxy Mandates ---

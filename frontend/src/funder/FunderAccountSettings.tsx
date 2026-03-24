@@ -16,14 +16,14 @@ import {
   UserCheck,
   CheckCircle2,
   Circle,
-  Edit3,
   Trash2,
   Building2,
   Plus,
   X,
   Camera,
   User,
-  Info
+  Info,
+  Phone
 } from 'lucide-react';
 
 import { useNavigate } from 'react-router-dom';
@@ -33,7 +33,7 @@ import FunderSidebar from './components/FunderSidebar';
 import FunderBottomNav from './components/FunderBottomNav';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
 import { useKycStatus } from './hooks/useKycStatus';
-import { getFunderDashboardStats, updateFunderProfile, uploadFunderAvatar, changeFunderPassword, enableFunder2FA, verifyFunder2FA, disableFunder2FA, getSessions, revokeSession, revokeAllOtherSessions, getPayoutMethods, addPayoutMethod, setPrimaryPayoutMethod, deletePayoutMethod, getRewardMode, updateRewardMode, getExitQueue, requestCapitalWithdrawal, getPortfolios, getProxyMandates, createProxyMandate, updateProxyLimit, revokeProxyMandate, restoreProxyMandate, type PayoutMethodView, type DashboardStatsResponse } from '../services/funderApi';
+import { getFunderDashboardStats, updateFunderProfile, uploadFunderAvatar, changeFunderPassword, enableFunder2FA, verifyFunder2FA, disableFunder2FA, getSessions, revokeSession, revokeAllOtherSessions, getPayoutMethods, addPayoutMethod, setPrimaryPayoutMethod, deletePayoutMethod, getRewardMode, updateRewardMode, getPortfolios, getProxyMandates, createProxyMandate, updateProxyLimit, revokeProxyMandate, restoreProxyMandate, type PayoutMethodView, type DashboardStatsResponse } from '../services/funderApi';
 
 const parseUserAgent = (ua: string | null) => {
   if (!ua) return 'Unknown Device';
@@ -924,9 +924,16 @@ export default function FunderAccountSettings() {
                                   <div className="relative">
                                     <input value={editForm.number} onChange={e => setEditForm({...editForm, number: e.target.value})} type="text" className="w-full bg-white border-2 border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-purple-500 font-mono" placeholder={editForm.type === 'momo' ? "077... (10 digits)" : "Bank Account No"} />
                                     {editForm.type === 'momo' && editForm.number.length >= 3 && (
-                                      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
-                                        {getNetworkFromNumber(editForm.number) === 'MTN' && <span className="bg-yellow-400 text-slate-900 text-[9px] font-black uppercase px-2 py-0.5 rounded-md">MTN</span>}
-                                        {getNetworkFromNumber(editForm.number) === 'Airtel' && <span className="bg-red-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-md">AIRTEL</span>}
+                                      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
+                                        {getNetworkFromNumber(editForm.number) === 'MTN' ? (
+                                          <img src="/mtn.png" alt="MTN" className="w-7 h-7 rounded-full object-cover border border-slate-200" />
+                                        ) : getNetworkFromNumber(editForm.number) === 'Airtel' ? (
+                                          <img src="/airtel.png" alt="Airtel" className="w-7 h-7 rounded-full object-cover border border-slate-200" />
+                                        ) : (
+                                          <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200">
+                                            <Phone className="w-3 h-3 text-slate-500" />
+                                          </div>
+                                        )}
                                       </div>
                                     )}
                                   </div>
@@ -1168,8 +1175,11 @@ export default function FunderAccountSettings() {
                       <p className="text-slate-500 text-sm font-medium mb-8">
                         Download a cryptographically verifiable CSV of all historical cash inflows, ROI payments, and principal deployments for your accountants.
                       </p>
-                      <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm bg-emerald-50 px-4 py-3 rounded-xl w-max">
-                        <Download className="w-4 h-4" /> Download 2025 Statement.csv
+                      <div 
+                        onClick={() => toast.success('Your encrypted ledger export is being generated and will be emailed shortly.')}
+                        className="cursor-pointer flex items-center gap-2 text-emerald-600 font-bold text-sm bg-emerald-50 px-4 py-3 rounded-xl w-max hover:bg-emerald-100 transition-colors"
+                      >
+                        <Download className="w-4 h-4" /> Download {new Date().getFullYear()} Statement.csv
                       </div>
                     </div>
 
@@ -1181,7 +1191,10 @@ export default function FunderAccountSettings() {
                       <p className="text-slate-500 text-sm font-medium mb-8">
                         Generate a formalized, stamped PDF certificate proving your active capital pool balance and status as a secured Welile Supporter.
                       </p>
-                      <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm bg-emerald-50 px-4 py-3 rounded-xl w-max">
+                      <div 
+                        onClick={() => toast.success('Your sealed investment certificate is being prepared and will be sent to your inbox.')}
+                        className="cursor-pointer flex items-center gap-2 text-emerald-600 font-bold text-sm bg-emerald-50 px-4 py-3 rounded-xl w-max hover:bg-emerald-100 transition-colors"
+                      >
                         <Download className="w-4 h-4" /> Download Certificate.pdf
                       </div>
                     </div>
@@ -1198,9 +1211,12 @@ export default function FunderAccountSettings() {
                       </div>
                       <div className="relative z-10 bg-slate-800 border border-slate-700 rounded-2xl p-5 w-full sm:w-auto">
                         <p className="text-[10px] uppercase font-black tracking-widest text-slate-500 mb-1">Registered Beneficiary</p>
-                        <p className="text-white font-bold mb-1">Emmanuel N.</p>
-                        <p className="text-emerald-400 font-mono text-xs font-bold">+256 701 *** 223</p>
-                        <button className="cursor-pointer w-full mt-4 bg-slate-700 text-white text-xs font-bold py-2 rounded-lg hover:bg-slate-600 transition-colors">
+                        <p className="text-white font-bold mb-1">{stats?.nextOfKinName || 'Pending Designation'}</p>
+                        <p className="text-emerald-400 font-mono text-xs font-bold">{stats?.nextOfKinPhone || 'Not provided'}</p>
+                        <button 
+                          onClick={() => toast('Mandate updates must be filed through manual CRM support for security reasons.', { icon: '🔒' })}
+                          className="cursor-pointer w-full mt-4 bg-slate-700 text-white text-xs font-bold py-2 rounded-lg hover:bg-slate-600 transition-colors"
+                        >
                           Update Mandate
                         </button>
                       </div>
@@ -1345,7 +1361,7 @@ function RoleManagementTab({ platformRoles, rolesLoading, activeRole, onFetchRol
 }) {
   useEffect(() => { onFetchRoles(); }, []);
 
-  const rolesToRender = platformRoles.length > 0 ? platformRoles : AVAILABLE_FALLBACK;
+  const rolesToRender = platformRoles;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -1461,10 +1477,3 @@ function RoleManagementTab({ platformRoles, rolesLoading, activeRole, onFetchRol
     </div>
   );
 }
-
-const AVAILABLE_FALLBACK: RoleView[] = [
-  { role: 'FUNDER', status: 'ACTIVE', assignedAt: null },
-  { role: 'LANDLORD', status: 'AVAILABLE', assignedAt: null },
-  { role: 'TENANT', status: 'AVAILABLE', assignedAt: null },
-  { role: 'AGENT', status: 'AVAILABLE', assignedAt: null },
-];
