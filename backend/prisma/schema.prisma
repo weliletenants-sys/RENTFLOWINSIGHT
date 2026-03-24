@@ -611,7 +611,7 @@ model PendingWalletOperations {
   category             String
   created_at           String
   description          String?
-  direction            String
+  direction            String   // 'debit' or 'credit'
   id                   String  @id @default(uuid())
   linked_party         String?
   metadata             Json?
@@ -625,6 +625,19 @@ model PendingWalletOperations {
   transaction_group_id String?
   updated_at           String
   user_id              String?
+
+  // Strict 4-Stage Hierarchy Audit
+  manager_id           String?
+  manager_approved_at  DateTime?
+  cfo_id               String?
+  cfo_approved_at      DateTime?
+  coo_id               String?
+  coo_approved_at      DateTime?
+
+  // Security Meta
+  ip_address           String?
+  device_info          String?
+  external_tx_id       String?
 
   @@map("pending_wallet_operations")
 }
@@ -1619,17 +1632,7 @@ model FunderSettings {
   @@map("funder_settings")
 }
 
-model CapitalWithdrawals {
-  id                  String   @id @default(uuid())
-  user_id             String
-  amount              Float
-  status              String   @default("in_queue") // in_queue, processing, completed
-  initiated_at        DateTime @default(now())
-  expected_release_at DateTime
-  
-  @@index([user_id])
-  @@map("capital_withdrawals")
-}
+
 
 model FunderPortfolios {
   id             String   @id @default(uuid())

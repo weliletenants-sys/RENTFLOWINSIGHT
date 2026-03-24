@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import FunderSidebar from './components/FunderSidebar';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
 import FunderBottomNav from './components/FunderBottomNav';
-import { getFunderDashboardStats, getFunderActivities, requestWithdrawal, fundRentPool } from '../services/funderApi';
+import { getFunderDashboardStats, getFunderActivities, fundRentPool, requestDeposit, requestWalletWithdrawal, getWalletOperations } from '../services/funderApi';
 import type { DashboardStatsResponse } from '../services/funderApi';
 
 export default function FunderWallet() {
@@ -50,21 +50,41 @@ export default function FunderWallet() {
 
   const fetchData = async () => {
     try {
-      const [liveStats, liveTx] = await Promise.all([
+      const [liveStats, liveTx, opsData] = await Promise.all([
         getFunderDashboardStats(),
-        getFunderActivities()
+        getFunderActivities(),
+        getWalletOperations().catch(() => ({ data: { operations: [] } }))
       ]);
       setStats(liveStats);
-      setTransactions((liveTx || []).map((tx: any) => ({
+
+      const pendingOps = (opsData?.data?.operations || []).map((op: any) => ({
+        id: op.id,
+        date: new Date(op.created_at || Date.now()).toLocaleString(),
+        rawDate: new Date(op.created_at || Date.now()).getTime(),
+        type: op.direction === 'credit' ? 'Cash In' : 'Cash Out',
+        category: op.category || 'pending_op',
+        description: `Pending ${op.category}`,
+        amount: op.amount || 0,
+        status: op.status,
+        ref: op.reference_id || 'PENDING-...'
+      }));
+
+      const mappedTx = (liveTx || []).map((tx: any) => ({
         id: tx.id || `tx-${Math.random()}`,
         date: new Date(tx.created_at || tx.transaction_date || Date.now()).toLocaleString(),
+        rawDate: new Date(tx.created_at || tx.transaction_date || Date.now()).getTime(),
         type: tx.direction === 'cash_in' ? 'Cash In' : 'Cash Out',
         category: tx.category || 'general_transfer',
         description: tx.description || (tx.category ? String(tx.category).replace(/_/g, ' ') : 'Transfer'),
         amount: tx.amount || 0,
         status: 'completed', // Ledger entries are inherently completed
         ref: tx.reference_id || (tx.id ? String(tx.id).slice(0, 8) : 'REF-N/A')
-      })));
+      }));
+
+      // Combine and sort intelligently descending
+      const combined = [...pendingOps, ...mappedTx].sort((a, b) => b.rawDate - a.rawDate);
+      setTransactions(combined);
+
     } catch (error) {
       console.error("Error loading wallet", error);
       toast.error("Failed to load live wallet data.");
@@ -77,7 +97,7 @@ export default function FunderWallet() {
     fetchData();
   }, []);
 
-  const handleDepositSubmit = () => {
+  const handleDepositSubmit = async () => {
     if (!depositAmount || !depositTid) {
       toast.error('Please fill in all fields');
       return;
@@ -89,15 +109,18 @@ export default function FunderWallet() {
     }
     
     setIsSubmittingDeposit(true);
-    setTimeout(() => {
-      // Mocked deposit confirmation (in real life, posts to Paystack/Flutterwave API)
-      fetchData(); // Reload stats to simulate updates
-      setIsSubmittingDeposit(false);
+    try {
+      await requestDeposit({ amount, provider: depositProvider, external_tx_id: depositTid });
+      toast.success('Deposit requested successfully! Awaiting verification.');
       setIsDepositModalOpen(false);
       setDepositAmount('');
       setDepositTid('');
-      toast.success('Deposit sent for verification!');
-    }, 1500);
+      await fetchData();
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || 'Deposit submission failed');
+    } finally {
+      setIsSubmittingDeposit(false);
+    }
   };
 
   const handleWithdrawSubmit = async () => {
@@ -117,10 +140,8 @@ export default function FunderWallet() {
 
     setIsSubmittingWithdraw(true);
     try {
-      // In a full implementation, we would query the specific portfolio ID to withdraw from,
-      // but for this MVP mock, we hit the API. If we don't have a specific portfolio to target here,
-      // we'll simulate the UX.
-      toast.success('External withdrawal requested! Payout will be processed to ' + withdrawProvider);
+      await requestWalletWithdrawal(amount);
+      toast.success('External withdrawal requested! Now awaiting rigorous Manager & CFO verification.');
       
       setIsWithdrawModalOpen(false);
       setWithdrawAmount('');
@@ -128,7 +149,7 @@ export default function FunderWallet() {
       setWithdrawAccountNumber('');
       await fetchData();
     } catch (e: any) {
-      toast.error(e.message || 'Withdrawal failed');
+      toast.error(e.response?.data?.message || 'Withdrawal failed');
     } finally {
       setIsSubmittingWithdraw(false);
     }
@@ -151,13 +172,16 @@ export default function FunderWallet() {
     ? transactions 
     : transactions.filter(tx => tx.type === activeTab);
 
+  const formatStatus = (st: string) => {
+    if (st.startsWith('pending')) return 'Pending';
+    return st.replace(/_/g, ' ');
+  };
+
   const StatusIcon = ({ status }: { status: string }) => {
-    switch (status) {
-      case 'completed': return <CheckCircle className="w-4 h-4 text-emerald-500" />;
-      case 'pending': return <Clock className="w-4 h-4 text-orange-500" />;
-      case 'failed': return <XCircle className="w-4 h-4 text-red-500" />;
-      default: return null;
-    }
+    if (status === 'completed') return <CheckCircle className="w-4 h-4 text-emerald-500" />;
+    if (status.startsWith('pending')) return <Clock className="w-4 h-4 text-orange-500" />;
+    if (status === 'failed' || status === 'rejected') return <XCircle className="w-4 h-4 text-red-500" />;
+    return null;
   };
 
   return (
@@ -361,7 +385,7 @@ export default function FunderWallet() {
                         <td className="px-6 py-4 border-b border-slate-50 text-right">
                           <div className="flex items-center justify-end gap-1.5">
                             <StatusIcon status={tx.status} />
-                            <span className="text-xs font-bold text-slate-600 capitalize">{tx.status}</span>
+                            <span className="text-xs font-bold text-slate-600 capitalize">{formatStatus(tx.status)}</span>
                           </div>
                         </td>
                       </tr>

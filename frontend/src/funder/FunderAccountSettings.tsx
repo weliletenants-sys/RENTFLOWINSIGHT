@@ -16,7 +16,6 @@ import {
   UserCheck,
   CheckCircle2,
   Circle,
-  Edit3,
   Trash2,
   Building2,
   Plus,
@@ -33,7 +32,7 @@ import FunderSidebar from './components/FunderSidebar';
 import FunderBottomNav from './components/FunderBottomNav';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
 import { useKycStatus } from './hooks/useKycStatus';
-import { getFunderDashboardStats, updateFunderProfile, uploadFunderAvatar, changeFunderPassword, enableFunder2FA, verifyFunder2FA, disableFunder2FA, getSessions, revokeSession, revokeAllOtherSessions, getPayoutMethods, addPayoutMethod, setPrimaryPayoutMethod, deletePayoutMethod, getRewardMode, updateRewardMode, getExitQueue, requestCapitalWithdrawal, getPortfolios, getProxyMandates, createProxyMandate, updateProxyLimit, revokeProxyMandate, restoreProxyMandate, type PayoutMethodView, type DashboardStatsResponse } from '../services/funderApi';
+import { getFunderDashboardStats, updateFunderProfile, uploadFunderAvatar, changeFunderPassword, enableFunder2FA, verifyFunder2FA, disableFunder2FA, getSessions, revokeSession, revokeAllOtherSessions, getPayoutMethods, addPayoutMethod, setPrimaryPayoutMethod, deletePayoutMethod, getRewardMode, updateRewardMode, getPortfolios, getProxyMandates, createProxyMandate, updateProxyLimit, revokeProxyMandate, restoreProxyMandate, type PayoutMethodView, type DashboardStatsResponse } from '../services/funderApi';
 
 const parseUserAgent = (ua: string | null) => {
   if (!ua) return 'Unknown Device';

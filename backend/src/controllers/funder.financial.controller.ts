@@ -183,24 +183,24 @@ export const updateRewardMode = async (req: Request, res: Response) => {
   }
 };
 
-export const getExitQueue = async (req: Request, res: Response) => {
+export const getWalletOperations = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.sub;
     if (!userId) return problemResponse(res, 401, 'Unauthorized', 'Session invalid', 'unauthorized');
 
-    const withdrawals = await prisma.capitalWithdrawals.findMany({
+    const operations = await prisma.pendingWalletOperations.findMany({
       where: { user_id: userId },
-      orderBy: { initiated_at: 'desc' }
+      orderBy: { created_at: 'desc' }
     });
 
-    return res.status(200).json({ status: 'success', data: { withdrawals } });
+    return res.status(200).json({ status: 'success', data: { operations } });
   } catch (error: any) {
-    console.error('Error fetching exit queue:', error);
-    return problemResponse(res, 500, 'Internal Server Error', 'Could not fetch exit queue', 'internal-error');
+    console.error('Error fetching wallet operations:', error);
+    return problemResponse(res, 500, 'Internal Server Error', 'Could not fetch wallet operations', 'internal-error');
   }
 };
 
-export const requestWithdrawal = async (req: Request, res: Response) => {
+export const requestWalletWithdrawal = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.sub;
     if (!userId) return problemResponse(res, 401, 'Unauthorized', 'Session invalid', 'unauthorized');
@@ -210,23 +210,66 @@ export const requestWithdrawal = async (req: Request, res: Response) => {
       return problemResponse(res, 400, 'Bad Request', 'Invalid withdrawal amount', 'validation-error');
     }
 
-    // Set 90 days from now
-    const releaseDate = new Date();
-    releaseDate.setDate(releaseDate.getDate() + 90);
+    // Security meta capture
+    const ip_address = Array.isArray(req.headers['x-forwarded-for']) ? req.headers['x-forwarded-for'][0] : req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+    const device_info = req.headers['user-agent'] || 'Unknown Device';
 
-    const withdrawal = await prisma.capitalWithdrawals.create({
+    // 90-day escrow withdrawal simulation - strictly formatted using "debit"
+    const withdrawal = await prisma.pendingWalletOperations.create({
       data: {
         user_id: userId,
         amount,
-        status: 'in_queue',
-        expected_release_at: releaseDate
+        direction: 'debit',
+        category: 'withdrawal',
+        reference_id: `WRW-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        status: 'pending_manager',
+        ip_address,
+        device_info
       }
     });
 
-    return res.status(201).json({ status: 'success', message: 'Withdrawal queued successfully', data: { withdrawal } });
+    return res.status(201).json({ status: 'success', message: 'Withdrawal queued successfully. Awaiting Manager Approval.', data: { withdrawal } });
   } catch (error: any) {
     console.error('Error requesting withdrawal:', error);
     return problemResponse(res, 500, 'Internal Server Error', 'Could not request withdrawal', 'internal-error');
+  }
+};
+
+export const requestDeposit = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.sub;
+    if (!userId) return problemResponse(res, 401, 'Unauthorized', 'Session invalid', 'unauthorized');
+
+    const amount = Number(req.body.amount);
+    const { provider, external_tx_id } = req.body;
+
+    if (!amount || amount <= 0 || !provider || !external_tx_id) {
+      return problemResponse(res, 400, 'Bad Request', 'Missing required deposit fields (amount, provider, transaction ID)', 'validation-error');
+    }
+
+    // Security meta capture
+    const ip_address = Array.isArray(req.headers['x-forwarded-for']) ? req.headers['x-forwarded-for'][0] : req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+    const device_info = req.headers['user-agent'] || 'Unknown Device';
+
+    const deposit = await prisma.pendingWalletOperations.create({
+      data: {
+        user_id: userId,
+        amount,
+        direction: 'credit',
+        category: 'deposit',
+        reference_id: `WRD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        linked_party: provider.trim(),
+        external_tx_id: external_tx_id.trim(),
+        status: 'pending_manager',
+        ip_address,
+        device_info
+      }
+    });
+
+    return res.status(201).json({ status: 'success', message: 'Deposit recorded securely. Awaiting Manager Audit verification.', data: { deposit } });
+  } catch (error: any) {
+    console.error('Error requesting deposit:', error);
+    return problemResponse(res, 500, 'Internal Server Error', 'Could not request deposit', 'internal-error');
   }
 };
 

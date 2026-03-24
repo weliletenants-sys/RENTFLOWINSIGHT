@@ -146,13 +146,18 @@ export const updateRewardMode = async (mode: 'compound' | 'payout') => {
   return response.data;
 };
 
-export const getExitQueue = async () => {
-  const response = await axios.get(`${API}/funder/financial/exit-queue`, getAuthHeaders());
+export const getWalletOperations = async () => {
+  const response = await axios.get(`${API}/funder/financial/wallet-operations`, getAuthHeaders());
   return response.data;
 };
 
-export const requestCapitalWithdrawal = async (amount: number) => {
-  const response = await axios.post(`${API}/funder/financial/withdraw`, { amount }, getAuthHeaders());
+export const requestWalletWithdrawal = async (amount: number) => {
+  const response = await axios.post(`${API}/funder/financial/wallet-withdraw`, { amount }, getAuthHeaders());
+  return response.data;
+};
+
+export const requestDeposit = async (data: { amount: number, provider: string, external_tx_id: string }) => {
+  const response = await axios.post(`${API}/funder/financial/wallet-deposit`, data, getAuthHeaders());
   return response.data;
 };
 
