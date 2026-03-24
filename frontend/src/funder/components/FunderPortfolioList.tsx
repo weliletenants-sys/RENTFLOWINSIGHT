@@ -6,7 +6,7 @@ export type { PortfolioItem };
 interface FunderPortfolioListProps {
   portfolios: PortfolioItem[];
   onViewAll?: () => void;
-  onCashOut?: (id: string) => void;
+  onCardClick?: (code: string) => void;
   onAddAsset?: () => void;
 }
 
@@ -17,7 +17,7 @@ const statusConfig: Record<PortfolioStatus, { label: string; classes: string }> 
   cancelled:        { label: 'Cancelled',         classes: 'bg-red-100 text-red-600' },
 };
 
-export default function FunderPortfolioList({ portfolios, onViewAll, onCashOut, onAddAsset }: FunderPortfolioListProps) {
+export default function FunderPortfolioList({ portfolios, onViewAll, onCardClick, onAddAsset }: FunderPortfolioListProps) {
   return (
     <section>
       {/* Header */}
@@ -41,7 +41,7 @@ export default function FunderPortfolioList({ portfolios, onViewAll, onCashOut, 
           return (
             <div
               key={item.id}
-              onClick={() => onCashOut?.(item.id)}
+              onClick={() => onCardClick?.(item.portfolioCode)}
               className="bg-white rounded-2xl p-5 border border-[var(--color-primary-border)] shadow-sm hover:border-[var(--color-primary)] hover:shadow-lg transition-all cursor-pointer group flex flex-col gap-5"
             >
               {/* Header: Identity & Status */}

@@ -6,7 +6,7 @@ interface FunderPortfolioHealthProps {
 }
 
 export default function FunderPortfolioHealth({ portfolios }: FunderPortfolioHealthProps) {
-  const activePortfolios = portfolios.filter(p => p.status === 'active' || p.status.toLowerCase() === 'active');
+  const activePortfolios = portfolios.filter(p => p.status === 'active' || p.status.toLowerCase() === 'active' || p.status === 'pending' || p.status === 'pending_approval');
   
   const totalInvested = activePortfolios.reduce((sum, p) => sum + p.investedAmount, 0);
   

@@ -189,7 +189,7 @@ export const getFunderPortfolioDetails = async (code: string) => {
   return response.data.data;
 };
 
-export const fundRentPool = async (payload: { amount: number, roi_mode: string, duration_months: number, auto_renew: boolean }) => {
+export const fundRentPool = async (payload: { amount: number; roi_mode: string; duration_months: number; auto_renew: boolean; account_name?: string }) => {
   const response = await axios.post(`${API}/funder/fund`, payload, getAuthHeaders());
   return response.data;
 };
@@ -207,5 +207,10 @@ export const getFunderActivities = async () => {
 export const getFunderOpportunities = async () => {
   const response = await axios.get(`${API}/funder/opportunities`, getAuthHeaders());
   return response.data.data;
+};
+
+export const topupFunderPortfolio = async (portfolio_code: string, amount: number) => {
+  const response = await axios.put(`${API}/funder/portfolios/${portfolio_code}/topup`, { amount }, getAuthHeaders());
+  return response.data;
 };
 

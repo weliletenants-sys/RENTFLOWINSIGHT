@@ -197,7 +197,7 @@ export default function FunderDashboard() {
                   <FunderPortfolioList
                     portfolios={portfolios}
                     onViewAll={() => navigate('/funder/portfolio')}
-                    onCashOut={(id) => handleVerificationCheck(() => console.log('Cash out', id))}
+                    onCardClick={(code) => handleVerificationCheck(() => navigate(`/funder/portfolio/${code}`))}
                     onAddAsset={() => handleVerificationCheck(() => navigate('/funder/portfolio'))}
                   />
 
