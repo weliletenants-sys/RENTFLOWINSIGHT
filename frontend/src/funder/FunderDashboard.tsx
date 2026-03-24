@@ -9,8 +9,8 @@ import FunderBottomNav from './components/FunderBottomNav';
 import FunderWalletCard from './components/FunderWalletCard';
 import FunderPortfolioList from './components/FunderPortfolioList';
 import FunderRecentActivity from './components/FunderRecentActivity';
+import FunderPortfolioHealth from './components/FunderPortfolioHealth';
 import type { PortfolioItem, ActivityItem } from './types';
-import FunderInvestCTA from './components/FunderInvestCTA';
 import FunderActionButtons from './components/FunderActionButtons';
 import FunderPortfolioPage from './FunderPortfolioPage';
 import FunderOpportunitiesPage from './FunderOpportunitiesPage';
@@ -201,8 +201,10 @@ export default function FunderDashboard() {
                     onAddAsset={() => handleVerificationCheck(() => navigate('/funder/portfolio'))}
                   />
 
-                  {/* Grow Your Wealth CTA */}
-                  <FunderInvestCTA onStartsupporting={() => handleVerificationCheck(() => navigate('/funder/portfolio'))} />
+                  {/* Portfolio Health Distribution (Replacing Recommended Opportunities) */}
+                  <div className="relative w-full">
+                    <FunderPortfolioHealth portfolios={portfolios} />
+                  </div>
 
                   {/* Recent Activity — mobile only */}
                   <div className="lg:hidden pb-32">
@@ -231,18 +233,27 @@ export default function FunderDashboard() {
                     />
                   </div>
 
-                  {/* Investor Insights */}
+                  {/* Investor Insights (Interactive Yield Projection) */}
                   <div
                     className="bg-white rounded-xl border p-6 flex items-start gap-4 shadow-sm"
                     style={{ borderColor: 'var(--color-primary-border)', borderLeft: '4px solid var(--color-primary)' }}
                   >
-                    <div className="p-2 rounded-full" style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}>
+                    <div className="p-2 rounded-full shrink-0 mt-1" style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}>
                       <Lightbulb className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-slate-900 text-sm mb-1">Smart Insight</h3>
-                      <p className="text-xs text-slate-600 leading-relaxed">
-                        You have <strong>UGX {(stats?.availableLiquid || 0).toLocaleString()}</strong> idle in your wallet. Consider putting it into one of the recommended opportunities below to start compounding your earnings.
+                      <h3 className="font-bold text-slate-900 text-sm mb-1.5">Smart Insight</h3>
+                      <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                        {(stats?.availableLiquid || 0) > 0 ? (
+                          <>
+                            You currently have <strong>UGX {(stats?.availableLiquid || 0).toLocaleString()}</strong> resting idle in your wallet. 
+                            If you lock this into a standard 12-month compounding pool today, it will instantly project a return of <strong style={{ color: 'var(--color-success)' }}>UGX {((stats?.availableLiquid || 0) * 1.15).toLocaleString()}</strong>!
+                          </>
+                        ) : (
+                          <>
+                            Your wallet is perfectly clear! Top up your balance today to start structurally compounding your real estate portfolio yields.
+                          </>
+                        )}
                       </p>
                     </div>
                   </div>
