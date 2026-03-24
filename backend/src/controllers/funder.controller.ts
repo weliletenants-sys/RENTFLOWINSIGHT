@@ -134,6 +134,17 @@ export const fundRentPool = async (req: Request, res: Response) => {
       }
     });
 
+    await prisma.notifications.create({
+      data: {
+        user_id: funderId,
+        type: 'investment',
+        title: 'Investment Successful',
+        message: `You have successfully funded a new ${duration_months}-month rent pool with ${Number(amount).toLocaleString()} UGX.`,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    });
+
     return res.status(200).json({ status: 'success', data: portfolio, message: 'Successfully funded the rent pool.' });
   } catch (error) {
     console.error('fundRentPool error:', error);

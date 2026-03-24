@@ -1,4 +1,4 @@
-﻿import { Banknote, TrendingUp, ArrowDownToLine, ChevronRight } from 'lucide-react';
+import { Banknote, TrendingUp, ArrowDownToLine, ChevronRight } from 'lucide-react';
 import type { ActivityItem, ActivityCategory, ActivityStatus } from '../types';
 
 export type { ActivityItem };
@@ -41,8 +41,19 @@ export default function FunderRecentActivity({ activities, onViewAll }: FunderRe
       </div>
 
       <div className="space-y-2">
-        {activities.map((item) => {
-          const catCfg = categoryConfig[item.category];
+        {activities.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 px-4 bg-white rounded-xl border border-dashed border-slate-200">
+            <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+              <Banknote className="w-6 h-6 text-slate-300" />
+            </div>
+            <p className="text-sm font-bold text-slate-600">No activity yet</p>
+            <p className="text-xs text-slate-400 text-center mt-1 max-w-[200px]">
+              Your recent deposits, investments, and payouts will appear here.
+            </p>
+          </div>
+        ) : (
+          activities.map((item) => {
+            const catCfg = categoryConfig[item.category];
           const stsCfg = statusConfig[item.status];
           return (
             <div
@@ -89,7 +100,7 @@ export default function FunderRecentActivity({ activities, onViewAll }: FunderRe
               </div>
             </div>
           );
-        })}
+        }))}
       </div>
 
       {/* Desktop view-all at bottom */}

@@ -79,14 +79,25 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance = 0 
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Sync live balance when the parent prop changes
+    if (walletBalance !== undefined) {
+      setLiveWalletBalance(walletBalance);
+    }
+
     const fetchViewData = async () => {
       try {
-        const [portfolioData, statsData] = await Promise.all([
-          getFunderPortfolios(),
-          getFunderDashboardStats()
-        ]);
+        // Only fetch portfolios if nested in Dashboard (which fetches them globally)
+        // Wait, to safely reduce calls, we still fetch portfolios here because the user
+        // can create a new portfolio and we need to refresh the list independently.
+        const portfolioData = await getFunderPortfolios();
         setPortfolios(portfolioData);
-        setLiveWalletBalance(statsData.availableLiquid || 0);
+        
+        // Only trigger the secondary Stats API call if this page is rendered 
+        // completely standalone (where walletBalance prop is undefined).
+        if (walletBalance === undefined) {
+          const statsData = await getFunderDashboardStats();
+          setLiveWalletBalance(statsData.availableLiquid || 0);
+        }
       } catch (error) {
         console.error("Failed to load portfolio view data", error);
       } finally {
@@ -94,7 +105,7 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance = 0 
       }
     };
     fetchViewData();
-  }, []);
+  }, [walletBalance]);
 
   const filtered = filter === 'all' ? portfolios : portfolios.filter((p) => p.status === filter || p.status.toLowerCase() === filter);
 

@@ -242,7 +242,7 @@ export default function FunderDashboard() {
                     <div>
                       <h3 className="font-bold text-slate-900 text-sm mb-1">Smart Insight</h3>
                       <p className="text-xs text-slate-600 leading-relaxed">
-                        You have <strong>UGX 2,500,000</strong> idle in your wallet. Consider putting it into one of the recommended opportunities below to start compounding your earnings.
+                        You have <strong>UGX {(stats?.availableLiquid || 0).toLocaleString()}</strong> idle in your wallet. Consider putting it into one of the recommended opportunities below to start compounding your earnings.
                       </p>
                     </div>
                   </div>
