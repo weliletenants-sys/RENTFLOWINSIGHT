@@ -1361,7 +1361,7 @@ function RoleManagementTab({ platformRoles, rolesLoading, activeRole, onFetchRol
 }) {
   useEffect(() => { onFetchRoles(); }, []);
 
-  const rolesToRender = platformRoles.length > 0 ? platformRoles : AVAILABLE_FALLBACK;
+  const rolesToRender = platformRoles;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -1477,10 +1477,3 @@ function RoleManagementTab({ platformRoles, rolesLoading, activeRole, onFetchRol
     </div>
   );
 }
-
-const AVAILABLE_FALLBACK: RoleView[] = [
-  { role: 'FUNDER', status: 'ACTIVE', assignedAt: null },
-  { role: 'LANDLORD', status: 'AVAILABLE', assignedAt: null },
-  { role: 'TENANT', status: 'AVAILABLE', assignedAt: null },
-  { role: 'AGENT', status: 'AVAILABLE', assignedAt: null },
-];

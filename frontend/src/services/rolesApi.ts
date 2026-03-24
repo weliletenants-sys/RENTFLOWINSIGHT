@@ -31,15 +31,15 @@ export interface SwitchRoleResponse {
 
 export async function getMyRoles(): Promise<MyRolesResponse> {
   const res = await axios.get(`${API}/roles/my-roles`, { headers: authHeaders() });
-  return res.data;
+  return res.data.data;
 }
 
 export async function requestRole(role: string): Promise<{ message: string }> {
-  const res = await axios.post(`${API}/roles/requests`, { role }, { headers: authHeaders() });
+  const res = await axios.post(`${API}/roles/request`, { role }, { headers: authHeaders() });
   return res.data;
 }
 
 export async function switchRole(role: string): Promise<SwitchRoleResponse> {
-  const res = await axios.post(`${API}/roles/sessions/active`, { role }, { headers: authHeaders() });
-  return res.data;
+  const res = await axios.post(`${API}/roles/switch`, { role }, { headers: authHeaders() });
+  return res.data.data;
 }
