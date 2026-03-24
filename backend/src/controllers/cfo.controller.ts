@@ -308,3 +308,87 @@ export const getStatements = async (req: Request, res: Response) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const approveDeposit = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const cfoId = req.user?.sub;
+
+    if (!cfoId) {
+      return problemResponse(res, 401, 'Unauthorized', `Missing authentication token`, 'unauthorized');
+    }
+
+    const request = await prisma.depositRequests.findUnique({ where: { id } });
+    if (!request) {
+      return problemResponse(res, 404, 'Not Found', `Deposit request not found`, 'not-found');
+    }
+    if (request.status?.toUpperCase() !== 'PENDING') {
+      return problemResponse(res, 400, 'Validation Error', `Deposit request is not pending`, 'validation-error');
+    }
+
+    const targetUserId = request.user_id;
+    if (!targetUserId || targetUserId === 'unlinked') {
+      return problemResponse(res, 400, 'Validation Error', `Deposit request is not linked to a valid user account`, 'validation-error');
+    }
+
+    const wallet = await prisma.wallets.findFirst({ where: { user_id: targetUserId } });
+    if (!wallet) {
+      return problemResponse(res, 404, 'Not Found', `Target wallet not found`, 'not-found');
+    }
+
+    const now = new Date().toISOString();
+
+    const [updatedWallet, updatedRequest, tx] = await prisma.$transaction([
+      prisma.wallets.update({
+        where: { id: wallet.id },
+        data: { balance: { increment: request.amount }, updated_at: now }
+      }),
+      prisma.depositRequests.update({
+        where: { id },
+        data: {
+          status: 'APPROVED',
+          processed_by: cfoId,
+          approved_at: now,
+          updated_at: now
+        }
+      }),
+      prisma.walletTransactions.create({
+        data: {
+          amount: request.amount,
+          description: 'Deposit Approved by CFO',
+          recipient_id: targetUserId,
+          created_at: now
+        }
+      }),
+      prisma.generalLedger.create({
+        data: {
+          user_id: targetUserId,
+          amount: request.amount,
+          direction: 'credit',
+          category: 'deposit',
+          source_table: 'deposit_requests',
+          source_id: request.id,
+          transaction_date: now,
+          created_at: now
+        }
+      }),
+      prisma.notifications.create({
+        data: {
+          user_id: targetUserId,
+          title: 'Deposit Approved',
+          message: `Your deposit request of UGX ${request.amount} has been approved and added to your wallet.`,
+          type: 'DEPOSIT_APPROVED',
+          is_read: false,
+          created_at: now,
+          updated_at: now
+        }
+      })
+    ]);
+
+    return res.status(200).json({ message: 'Deposit successfully approved and verified', depositRequest: updatedRequest });
+  } catch (error: any) {
+    console.error('approveDeposit error:', error);
+    return problemResponse(res, 500, 'Internal Server Error', error.message, 'internal-server-error');
+  }
+};
+

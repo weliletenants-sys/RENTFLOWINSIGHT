@@ -5,6 +5,7 @@ import {
   getPendingWithdrawals,
   approveWithdrawal,
   rejectWithdrawal,
+  approveDeposit,
   getLedger,
   getStatements
 } from '../../controllers/cfo.controller';
@@ -21,6 +22,7 @@ router.get('/reconciliations', getReconciliation);
 router.get('/withdrawals/pending', getPendingWithdrawals);
 router.post('/withdrawals/:id/approvals', approveWithdrawal);
 router.post('/withdrawals/:id/rejections', rejectWithdrawal);
+router.put('/deposits/:id/approve', approveDeposit);
 
 // Accounting
 router.get('/ledger', getLedger);
