@@ -1,0 +1,11 @@
+agent_id;amount;created_at;description;earning_type;id;rent_request_id;source_user_id
+99890a2e-b842-4d44-8516-e2eafe0711ff;100;2026-01-08 07:24:26.498095+00;New member registration bonus;referral_bonus;7202423e-ca99-4e08-bd16-1f88e807ec63;;61ccec91-65de-4e15-bdf6-743d30097b9c
+99890a2e-b842-4d44-8516-e2eafe0711ff;100;2026-01-08 08:38:29.834425+00;New member registration bonus;referral_bonus;b2661bce-be9e-4897-9af0-8ececf582497;;7509cbc2-1614-4622-a9dc-07f75ebfc827
+99890a2e-b842-4d44-8516-e2eafe0711ff;100;2026-01-08 08:42:48.07197+00;New member registration bonus;referral_bonus;11fe6c44-cfa9-4025-961e-890fa91edb01;;d3ed3d9e-be9a-469e-b919-47a8f89866ec
+99890a2e-b842-4d44-8516-e2eafe0711ff;100;2026-01-08 11:49:33.152506+00;New member registration bonus;referral_bonus;a986fa29-a8b2-4179-a11a-674c49cf8835;;ff09d507-00e2-45ea-9fb4-0b8736ce7db4
+99890a2e-b842-4d44-8516-e2eafe0711ff;100;2026-01-12 13:18:23.82194+00;New member registration bonus;referral_bonus;b593c097-f5d3-4503-88d0-cb3fee6425d2;;972f4990-1c4e-4c96-a220-9c9463f58dbf
+7e506ac9-6c46-4fdf-b888-c972bad7350f;100;2026-01-12 13:22:34.845469+00;New member registration bonus;referral_bonus;10119ffe-0a5b-4280-ac73-4c0ac8cd6b3a;;3acbf7ec-a4dd-4a97-a51f-8679325ba0f1
+7e506ac9-6c46-4fdf-b888-c972bad7350f;100;2026-01-12 14:22:45.445565+00;New member registration bonus;referral_bonus;df6a6580-b658-47d0-835b-d58adc56787e;;10cf31d6-0429-46c1-b714-0378694372d8
+99890a2e-b842-4d44-8516-e2eafe0711ff;500;2026-01-19 14:40:27.473822+00;New member registration bonus;referral_bonus;7e6f0c43-ba93-4fd1-b40c-38405dd14963;;5f8d51df-ec4e-4516-a1b9-c412fcfa9c27
+99890a2e-b842-4d44-8516-e2eafe0711ff;500;2026-01-19 14:40:28.107873+00;Sub-agent registration bonus;referral_bonus;fd1cfae5-8d9d-4e03-8e12-1fb591552977;;5f8d51df-ec4e-4516-a1b9-c412fcfa9c27
+f954fa23-2fec-4668-b1b3-86ea34e567f2;500;2026-02-19 00:10:18.65303+00;New member registration bonus;referral_bonus;3469bb46-d95e-4616-9efc-ee196fa2ec5e;;4f3a8dfc-e968-417d-95b5-4015f9c987d6

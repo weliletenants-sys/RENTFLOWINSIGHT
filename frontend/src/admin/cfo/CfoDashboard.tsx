@@ -13,8 +13,9 @@ import ReconciliationTab from './components/ReconciliationTab';
 import GeneralLedgerTab from './components/GeneralLedgerTab';
 import CommissionPayoutsTab from './components/CommissionPayoutsTab';
 import WithdrawalsTab from './components/WithdrawalsTab';
+import RunwayAnalyticsTab from './components/RunwayAnalyticsTab';
 
-type TabType = 'overview' | 'statements' | 'solvency' | 'reconciliation' | 'ledger' | 'commissions' | 'withdrawals';
+type TabType = 'overview' | 'statements' | 'solvency' | 'runway' | 'reconciliation' | 'ledger' | 'commissions' | 'withdrawals';
 
 export default function CfoDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
@@ -26,6 +27,7 @@ export default function CfoDashboard() {
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [statements, setStatements] = useState<any>(null);
   const [commissions, setCommissions] = useState<any[]>([]);
+  const [runwayData, setRunwayData] = useState<any>(null);
 
   const fetchOverview = async () => {
     try {
@@ -73,12 +75,22 @@ export default function CfoDashboard() {
     }
   };
 
+  const fetchRunway = async () => {
+    try {
+      const { data } = await axios.get(`/api/cfo/analytics/runway`);
+      setRunwayData(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'overview') fetchOverview();
     if (activeTab === 'reconciliation') fetchReconciliation();
     if (activeTab === 'withdrawals') fetchWithdrawals();
     if (activeTab === 'statements' || activeTab === 'solvency') fetchStatements();
     if (activeTab === 'commissions') fetchCommissions();
+    if (activeTab === 'runway') fetchRunway();
   }, [activeTab, dateFilter]);
 
   // Map tabs to Page Titles for the Header
@@ -87,6 +99,7 @@ export default function CfoDashboard() {
       case 'overview': return { title: 'Overview', subtitle: 'Detailed overview of your operations' };
       case 'statements': return { title: 'Financial Statements', subtitle: 'Income statement and balance sheet tracking' };
       case 'solvency': return { title: 'Solvency & Buffer', subtitle: 'Platform liquidity and coverage ratios' };
+      case 'runway': return { title: 'Runway Analytics', subtitle: 'Multi-month predictive depletion modeling' };
       case 'reconciliation': return { title: 'Reconciliation', subtitle: 'Automated gap detection engine' };
       case 'ledger': return { title: 'General Ledger', subtitle: 'Full transactional double-entry ledger' };
       case 'commissions': return { title: 'Commission Payouts', subtitle: 'Pending agent commissions requiring sign-off' };
@@ -111,6 +124,7 @@ export default function CfoDashboard() {
            {activeTab === 'overview' && <OverviewTab overviewMetrics={overviewMetrics} />}
            {activeTab === 'statements' && <FinancialStatementsTab statementsData={statements} />}
            {activeTab === 'solvency' && <SolvencyBufferTab solvencyData={statements?.solvency} />}
+           {activeTab === 'runway' && <RunwayAnalyticsTab runwayData={runwayData} />}
            {activeTab === 'reconciliation' && <ReconciliationTab reconciliationData={reconciliation} />}
            {activeTab === 'ledger' && <GeneralLedgerTab />}
            {activeTab === 'commissions' && <CommissionPayoutsTab commissionsData={commissions} fetchCommissions={fetchCommissions} />}

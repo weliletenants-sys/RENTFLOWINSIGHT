@@ -1,0 +1,11 @@
+agent_id;amount;created_at;funded_by;id;notes
+fbcebe2e-f3da-41d9-bf53-ab4dc1cc55fa;160000.00;2026-03-24 11:52:43.640267+00;fbcebe2e-f3da-41d9-bf53-ab4dc1cc55fa;e5e98d85-cb71-4f56-9e86-3b0fdcba4508;Backfill: Funded rent request 532be737 – landlord Kayondo Sharif
+fbcebe2e-f3da-41d9-bf53-ab4dc1cc55fa;160000.00;2026-03-24 11:52:43.640267+00;fbcebe2e-f3da-41d9-bf53-ab4dc1cc55fa;e8dd09f3-2225-4dc0-9c93-a5d57ed443bc;Backfill: Funded rent request fae5a234 – landlord kayondo Sharif
+e4f07815-7991-422f-946f-7f351b38e954;450000.00;2026-03-24 11:52:43.640267+00;e4f07815-7991-422f-946f-7f351b38e954;45975d9d-593e-41f8-bb1d-d87b2104d0ac;Backfill: Funded rent request 3fae669e – landlord Fredrick Orwenyi
+fbcebe2e-f3da-41d9-bf53-ab4dc1cc55fa;160000.00;2026-03-24 11:52:43.640267+00;fbcebe2e-f3da-41d9-bf53-ab4dc1cc55fa;6fe431d4-4f0d-4377-97a2-5a5fdbd63208;Backfill: Funded rent request 8f983c96 – landlord Kayondo Sharif
+d06530e1-8458-4dd7-a455-5ad3e9c40e84;100000.00;2026-03-24 11:52:43.640267+00;d06530e1-8458-4dd7-a455-5ad3e9c40e84;67eeeb8d-4f85-42a7-a88b-93eee3405343;Backfill: Funded rent request 2849983b – landlord Christopher
+fbcebe2e-f3da-41d9-bf53-ab4dc1cc55fa;160000.00;2026-03-24 11:52:43.640267+00;fbcebe2e-f3da-41d9-bf53-ab4dc1cc55fa;dbf196ae-ae26-4c15-b749-fc50e9e73d66;Backfill: Funded rent request b87f5dad – landlord Kayondo Sharif
+37671b98-e914-4fbf-9f59-c38844b391c4;200000.00;2026-03-24 11:52:43.640267+00;37671b98-e914-4fbf-9f59-c38844b391c4;30769878-43c8-458e-be53-820dc39906be;Backfill: Funded rent request 08907aab – landlord Nanozi Lydia
+e4f07815-7991-422f-946f-7f351b38e954;1260000.00;2026-03-24 11:52:43.640267+00;e4f07815-7991-422f-946f-7f351b38e954;c7c4dc62-f656-41f2-a4b6-6c8c71638e5b;Backfill: Funded rent request b3da5b64 – landlord Nakate Sandra
+e3cf4d3a-d021-49e4-b815-7e1938166eeb;1000000.00;2026-03-24 11:52:43.640267+00;e3cf4d3a-d021-49e4-b815-7e1938166eeb;9d429a3f-734d-4324-ab03-84d4e330a478;Backfill: Funded rent request 7130a946 – landlord kabengwa Francis
+99890a2e-b842-4d44-8516-e2eafe0711ff;100000.00;2026-03-24 11:52:43.640267+00;99890a2e-b842-4d44-8516-e2eafe0711ff;15943c9a-07be-4c51-9f6b-6f4179604b95;Backfill: Funded rent request 6038f74d – landlord Grace

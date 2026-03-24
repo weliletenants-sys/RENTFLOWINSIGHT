@@ -1,9 +1,9 @@
-// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { Download, File as FileIcon } from 'lucide-react';
 import axios from 'axios';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 // Helper component for large numbers
 const CompactCurrency = ({ value }: { value: number }) => {
@@ -216,6 +216,44 @@ export default function FinancialStatementsTab({ statementsData }: { statementsD
     doc.save('welile-financial-statements.pdf');
   };
 
+  const handleExportExcel = () => {
+    let wsData: any[][] = [];
+    let sheetName = "";
+    
+    if (activeStatement === 'income') {
+      sheetName = "Income_Statement";
+      wsData.push(["Line Item", "Amount (UGX)"]);
+      wsData.push(["REVENUE", ""]);
+      incomeStmt.filter(i => i.type === 'revenue').forEach(i => wsData.push([i.item, i.amount]));
+      wsData.push(["EXPENSES", ""]);
+      incomeStmt.filter(i => i.type === 'expense').forEach(i => wsData.push([i.item, i.amount]));
+      wsData.push(["NET INCOME", netIncome]);
+    } else if (activeStatement === 'balance') {
+      sheetName = "Balance_Sheet";
+      wsData.push(["Line Item", "Amount (UGX)"]);
+      wsData.push(["ASSETS", ""]);
+      balanceSheet.assets.forEach(i => wsData.push([i.item, i.amount]));
+      wsData.push(["LIABILITIES", ""]);
+      balanceSheet.liabilities.forEach(i => wsData.push([i.item, i.amount]));
+      wsData.push(["EQUITY", ""]);
+      balanceSheet.equity.forEach(i => wsData.push([i.item, i.amount]));
+    } else {
+      sheetName = "Cash_Flow";
+      wsData.push(["Line Item", "Amount (UGX)"]);
+      wsData.push(["OPERATING ACTIVITIES", ""]);
+      cashFlowStmt.operating.forEach(i => wsData.push([i.item, i.amount]));
+      wsData.push(["INVESTING ACTIVITIES", ""]);
+      cashFlowStmt.investing.forEach(i => wsData.push([i.item, i.amount]));
+      wsData.push(["FINANCING ACTIVITIES", ""]);
+      cashFlowStmt.financing.forEach(i => wsData.push([i.item, i.amount]));
+    }
+    
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    XLSX.writeFile(wb, `Welile_Financials_${sheetName}.xlsx`);
+  };
+
   return (
     <div className="space-y-6 font-inter">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
@@ -240,9 +278,14 @@ export default function FinancialStatementsTab({ statementsData }: { statementsD
           </button>
         </div>
         
-        <button onClick={handleExportPDF} className="flex items-center gap-2 text-sm font-bold text-[#6c11d4] bg-[#EAE5FF] px-4 py-2 rounded-full hover:bg-purple-100 transition-colors">
-          <Download size={16} /> Export PDF
-        </button>
+        <div className="flex gap-2">
+          <button onClick={handleExportExcel} className="flex items-center gap-2 text-sm font-bold text-emerald-700 bg-emerald-50 px-4 py-2 rounded-full hover:bg-emerald-100 transition-colors border border-emerald-200 shadow-sm">
+            <Download size={16} /> Export Excel
+          </button>
+          <button onClick={handleExportPDF} className="flex items-center gap-2 text-sm font-bold text-[#6c11d4] bg-[#EAE5FF] px-4 py-2 rounded-full hover:bg-purple-100 transition-colors shadow-sm">
+            <Download size={16} /> Export PDF
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">

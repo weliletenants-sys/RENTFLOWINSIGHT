@@ -1,0 +1,2 @@
+agent_id;created_at;cycle_days;daily_rate;expires_at;id;issued_at;issued_by;outstanding_balance;principal;registration_fee;status;updated_at
+e4f07815-7991-422f-946f-7f351b38e954;2026-03-03 13:45:17.417928+00;30;0.33;2026-04-02 13:45:15.652+00;73282597-6485-4e38-b140-fadbd31cfc9d;2026-03-03 13:45:17.417928+00;cfa56623-e6cb-4023-b601-3dbd4fdbc027;907043;750000;20000;active;2026-03-24 05:00:01.838121+00

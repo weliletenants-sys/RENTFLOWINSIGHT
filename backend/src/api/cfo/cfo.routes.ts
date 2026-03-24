@@ -10,10 +10,14 @@ import {
   getStatements,
   getPendingCommissions,
   approveCommission,
-  rejectCommission
+  rejectCommission,
+  getPredictiveRunway
 } from '../../controllers/cfo.controller';
 
 const router = express.Router();
+
+// Analytics Engine
+router.get('/analytics/runway', getPredictiveRunway);
 
 // Dashboard Overview
 router.get('/statistics/overview', getOverview);
