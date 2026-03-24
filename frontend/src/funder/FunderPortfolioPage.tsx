@@ -32,18 +32,19 @@ interface VirtualHouse {
 interface PortfolioAccount {
   id: string;
   portfolioCode: string;
-  investmentAmount: number;
-  roiPercentage: number;
-  roiMode: RoiMode;
+  investedAmount: number;
+  totalEarned: number;
+  expectedAmount: number;
   durationMonths: number;
+  payoutType: string;
+  roiPercent: number;
+  roiMode: RoiMode;
   status: PortfolioStatus;
   nextRoiDate?: string;
   maturityDate: string;
-  totalRoiEarned: number;
   createdDate: string;
-  expectedAmount: number;
   virtualHouses: VirtualHouse[];
-  portfolioName?: string;
+  assetName?: string;
   todayGrowth?: number;
 }
 
@@ -110,10 +111,10 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance }: F
   const filtered = filter === 'all' ? portfolios : portfolios.filter((p) => p.status === filter || p.status.toLowerCase() === filter);
 
   /* ── summary stats ── */
-  const totalInvested = portfolios.reduce((s, p) => s + p.investmentAmount, 0);
-  const totalEarned = portfolios.reduce((s, p) => s + p.totalRoiEarned, 0);
+  const totalInvested = portfolios.reduce((s, p) => s + p.investedAmount, 0);
+  const totalEarned = portfolios.reduce((s, p) => s + p.totalEarned, 0);
   const avgRoi = portfolios.length
-    ? Math.round(portfolios.reduce((s, p) => s + p.roiPercentage, 0) / portfolios.length)
+    ? Math.round(portfolios.reduce((s, p) => s + p.roiPercent, 0) / portfolios.length)
     : 0;
 
 
@@ -228,7 +229,7 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance }: F
           <div className="flex flex-col gap-4">
             {filtered.map((p, idx) => {
               const sts = statusConfig[p.status];
-              const currentValue = p.investmentAmount + p.totalRoiEarned;
+              const currentValue = p.investedAmount + p.totalEarned;
               const growth = p.todayGrowth || 0;
               const isGrowthPositive = growth > 0;
               const isGrowthNegative = growth < 0;
@@ -251,12 +252,12 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance }: F
                   {/* Header: Identity */}
                   <div className="flex items-center gap-4 sm:gap-5 lg:gap-6 min-w-0 flex-1">
                     <div className="w-14 h-14 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-2xl overflow-hidden flex-shrink-0 relative group-hover:shadow-md transition-shadow">
-                      <img src={imgUrl} alt={p.portfolioName || 'Portfolio'} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                      <img src={imgUrl} alt={p.assetName || 'Portfolio'} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <h3 className="font-black text-slate-900 text-base sm:text-xl lg:text-2xl group-hover:text-[var(--color-primary)] transition-colors line-clamp-2 leading-tight">
-                        {p.portfolioName || `Portfolio ${p.portfolioCode}`}
+                        {p.assetName || `Portfolio ${p.portfolioCode}`}
                       </h3>
                       <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                         <span className="text-[10px] sm:text-xs font-bold text-slate-400 shrink-0">
@@ -273,7 +274,7 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance }: F
                         </div>
                         <span className="w-1 h-1 rounded-full bg-slate-200 hidden sm:block shrink-0" />
                         <span className="text-[11px] sm:text-xs font-semibold text-slate-400 hidden sm:block truncate">
-                          Pool Contribution: UGX {p.investmentAmount.toLocaleString()}
+                          Pool Contribution: UGX {p.investedAmount.toLocaleString()}
                         </span>
                       </div>
                     </div>
@@ -423,7 +424,8 @@ function AddPortfolioModal({ walletBalance, onClose, onSuccess }: AddPortfolioMo
         amount: numAmount, 
         roi_mode: roiMode, 
         duration_months: duration,
-        auto_renew: autoRenew 
+        auto_renew: autoRenew,
+        account_name: portfolioName.trim() || undefined
       });
       setStep('success');
     } catch (error: any) {
@@ -600,6 +602,13 @@ function AddPortfolioModal({ walletBalance, onClose, onSuccess }: AddPortfolioMo
               <div className="bg-white border border-slate-200 rounded-2xl p-5 mb-6 shadow-sm">
                 <div className="flex flex-col gap-4">
                   <div className="flex justify-between items-center">
+                    <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Portfolio Name</span>
+                    <span className="font-bold text-slate-900 text-sm max-w-[150px] sm:max-w-xs truncate text-right">
+                      {portfolioName.trim() || `${duration}-Month ${String(roiMode).includes('compounding') ? 'Compounding' : 'Yield'}`}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center">
                     <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Initial Capital</span>
                     <span className="font-bold text-slate-900 text-sm">UGX {numAmount.toLocaleString()}</span>
                   </div>
@@ -663,16 +672,9 @@ function AddPortfolioModal({ walletBalance, onClose, onSuccess }: AddPortfolioMo
                   style={!(numAmount > walletBalance) ? { background: 'var(--color-primary)' } : undefined}
                 >
                   {isSubmitting ? (
-                    <div className="flex items-center gap-2.5 h-[20px] overflow-hidden">
+                    <div className="flex items-center justify-center gap-2">
                        <Loader2 className="w-5 h-5 animate-spin shrink-0 text-white" />
-                       <div 
-                         className="flex flex-col transition-transform duration-500 ease-in-out"
-                         style={{ transform: `translateY(-${loadingPhraseIdx * 20}px)` }}
-                       >
-                         {['Getting Ready...', 'Preparing Node...', 'Deploying Capital...', 'Almost there...'].map((phrase, i) => (
-                           <span key={i} className="h-[20px] leading-[20px] block whitespace-nowrap">{phrase}</span>
-                         ))}
-                       </div>
+                       <span>{['Getting Ready...', 'Preparing Node...', 'Deploying Capital...', 'Almost there...'][loadingPhraseIdx]}</span>
                     </div>
                   ) : (
                     'Confirm & Deploy Capital'

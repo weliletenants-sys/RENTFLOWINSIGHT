@@ -59,7 +59,7 @@ export const getDashboardStats = async (req: Request, res: Response) => {
 export const fundRentPool = async (req: Request, res: Response) => {
   try {
     const funderId = req.user?.sub || req.user?.id;
-    const { amount, duration_months = 12, roi_mode = 'monthly_compounding', auto_renew = false } = req.body;
+    const { amount, duration_months = 12, roi_mode = 'monthly_compounding', auto_renew = false, account_name } = req.body;
 
     if (!amount || Number(amount) < 100000) {
       return res.status(400).json({ status: 'error', message: 'Minimum investment amount is 100,000 UGX' });
@@ -129,6 +129,7 @@ export const fundRentPool = async (req: Request, res: Response) => {
         roi_mode: String(roi_mode),
         duration_months: Number(duration_months),
         auto_renew: Boolean(auto_renew),
+        account_name: account_name ? String(account_name) : null,
         status: 'active',
         next_roi_date: nextMonth.toISOString()
       }
@@ -152,6 +153,90 @@ export const fundRentPool = async (req: Request, res: Response) => {
   }
 };
 
+export const topupRentPool = async (req: Request, res: Response) => {
+  try {
+    const funderId = req.user?.sub || req.user?.id;
+    const { code } = req.params;
+    const { amount } = req.body;
+
+    if (!amount || Number(amount) <= 0) {
+      return res.status(400).json({ status: 'error', message: 'Invalid top-up amount.' });
+    }
+
+    const wallet = await prisma.wallets.findFirst({ where: { user_id: funderId } });
+    if (!wallet) return res.status(404).json({ status: 'error', message: 'Wallet not found' });
+
+    const availableBucket = await prisma.walletBuckets.findFirst({
+      where: { wallet_id: wallet.id, bucket_type: 'available' }
+    });
+
+    if (!availableBucket || availableBucket.balance < Number(amount)) {
+      return res.status(400).json({ status: 'error', message: 'Insufficient liquid available balance.' });
+    }
+
+    const portfolio = await prisma.investorPortfolios.findFirst({
+      where: { portfolio_code: code, investor_id: funderId }
+    });
+
+    if (!portfolio || (portfolio.status !== 'active' && portfolio.status !== 'ACTIVE')) {
+      return res.status(400).json({ status: 'error', message: 'Invalid or inactive portfolio code.' });
+    }
+
+    // 1. Transaction Simulation
+    await prisma.walletBuckets.update({
+      where: { id: availableBucket.id },
+      data: { balance: { decrement: Number(amount) } }
+    });
+
+    const investedBucket = await prisma.walletBuckets.findFirst({
+      where: { wallet_id: wallet.id, bucket_type: 'invested' }
+    });
+
+    if (investedBucket) {
+      await prisma.walletBuckets.update({
+        where: { id: investedBucket.id },
+        data: { balance: { increment: Number(amount) } }
+      });
+    }
+
+    // 2. Ledger Update
+    await prisma.generalLedger.create({
+      data: {
+        user_id: funderId,
+        amount: Number(amount),
+        direction: 'cash_out',
+        category: 'supporter_top_up',
+        transaction_date: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        source_table: 'investor_portfolios',
+        reference_id: portfolio.portfolio_code
+      }
+    });
+
+    // 3. Augment Portfolio
+    await prisma.investorPortfolios.update({
+      where: { id: portfolio.id },
+      data: { investment_amount: { increment: Number(amount) } }
+    });
+
+    await prisma.notifications.create({
+      data: {
+        user_id: funderId,
+        type: 'investment',
+        title: 'Portfolio Top-up Successful',
+        message: `You successfully injected ${Number(amount).toLocaleString()} UGX into Portfolio ${portfolio.portfolio_code}.`,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    });
+
+    return res.status(200).json({ status: 'success', message: 'Successfully injected capital.' });
+  } catch (error) {
+    console.error('topupRentPool error:', error);
+    return res.status(500).json({ status: 'error', message: 'Internal server error during top-up.' });
+  }
+};
+
 export const getPortfolios = async (req: Request, res: Response) => {
   try {
     const funderId = req.user?.sub || req.user?.id;
@@ -162,21 +247,38 @@ export const getPortfolios = async (req: Request, res: Response) => {
     });
 
     // Map to frontend FunderPortfolioPage specifications securely
-    const portfolios = portfoliosRaw.map(p => ({
-      ...p,
-      investmentAmount: Number(p.investment_amount),
-      portfolioCode: p.portfolio_code,
-      portfolioName: p.account_name || `Portfolio ${p.portfolio_code}`,
-      roiPercentage: Number(p.roi_percentage),
-      roiMode: p.roi_mode,
-      durationMonths: p.duration_months,
-      totalRoiEarned: Number(p.total_roi_earned),
-      createdDate: new Date(p.created_at).toLocaleDateString(),
-      maturityDate: new Date(Date.now() + p.duration_months * 30 * 24 * 60 * 60 * 1000).toLocaleDateString(),
-      expectedAmount: Number(p.investment_amount) + Number(p.total_roi_earned),
-      todayGrowth: (p.status === 'active' || p.status === 'ACTIVE') ? Math.floor(Number(p.investment_amount) * (Number(p.roi_percentage) / 100) / 30) : 0, 
-      virtualHouses: []
-    }));
+    const portfolios = portfoliosRaw.map(p => {
+      const baseGrowth = (p.status === 'active' || p.status === 'ACTIVE') ? Math.floor(Number(p.investment_amount) * (Number(p.roi_percentage) / 100) / 30) : 0;
+      const expectedProfit = Math.floor((Number(p.roi_percentage) / 100) * Number(p.investment_amount));
+      
+      const msElapsed = Date.now() - new Date(p.created_at).getTime();
+      const daysElapsed = Math.floor(msElapsed / (1000 * 60 * 60 * 24));
+      
+      const accumulatedProfit = (p.status === 'active' || p.status === 'ACTIVE') 
+        ? Math.min(daysElapsed * baseGrowth, expectedProfit) 
+        : 0;
+
+      const todayGrowth = daysElapsed >= 1 ? baseGrowth : 0;
+
+      return {
+        ...p,
+        id: p.id,
+        investedAmount: Number(p.investment_amount),
+        portfolioCode: p.portfolio_code,
+        assetName: p.account_name || `${p.duration_months}-Month ${String(p.roi_mode).toLowerCase().includes('compounding') ? 'Compounding' : 'Standard Yield'} Portfolio`,
+        roiPercent: Number(p.roi_percentage),
+        payoutType: String(p.roi_mode).toLowerCase().includes('compounding') ? 'Compounding' : 'Monthly',
+        durationMonths: p.duration_months,
+        totalEarned: Number(p.total_roi_earned) + accumulatedProfit,
+        createdDate: new Date(p.created_at).toLocaleDateString(),
+        nextPayoutDate: p.next_roi_date ? new Date(p.next_roi_date).toLocaleDateString() : '—',
+        maturityDate: new Date(new Date(p.created_at).getTime() + p.duration_months * 30 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+        expectedAmount: expectedProfit,
+        status: String(p.status).toLowerCase(),
+        todayGrowth,
+        virtualHouses: []
+      };
+    });
 
     return res.status(200).json({ status: 'success', data: portfolios });
   } catch (error) {
@@ -363,22 +465,35 @@ export const getPortfolioDetails = async (req: Request, res: Response) => {
       return res.status(404).json({ status: 'error', message: 'Portfolio not found.' });
     }
 
-    const todayGrowth = (p.status === 'active' || p.status === 'ACTIVE') 
+    const baseGrowth = (p.status === 'active' || p.status === 'ACTIVE') 
       ? Math.floor(Number(p.investment_amount) * (Number(p.roi_percentage) / 100) / 30) 
       : 0;
+      
+    const expectedProfit = Math.floor((Number(p.roi_percentage) / 100) * Number(p.investment_amount));
+    const msElapsed = Date.now() - new Date(p.created_at).getTime();
+    const daysElapsed = Math.floor(msElapsed / (1000 * 60 * 60 * 24));
+    
+    const accumulatedProfit = (p.status === 'active' || p.status === 'ACTIVE') 
+      ? Math.min(daysElapsed * baseGrowth, expectedProfit) 
+      : 0;
+      
+    const todayGrowth = daysElapsed >= 1 ? baseGrowth : 0;
 
     const nextPayoutDate = p.next_roi_date ? new Date(p.next_roi_date) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
     const portfolioInfo = {
-      portfolioName: p.account_name || `Portfolio ${p.portfolio_code}`,
+      assetName: p.account_name || `Portfolio ${p.portfolio_code}`,
       portfolioCode: p.portfolio_code,
       status: p.status,
-      investmentAmount: Number(p.investment_amount),
-      totalRoiEarned: Number(p.total_roi_earned),
+      investedAmount: Number(p.investment_amount),
+      totalEarned: Number(p.total_roi_earned) + accumulatedProfit,
       todayGrowth,
       roiMode: p.roi_mode === 'monthly_compounding' ? 'Monthly Compounding' : 'Monthly Payout',
       durationLeft: `${p.duration_months} Months`,
-      nextPayout: nextPayoutDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+      nextPayout: nextPayoutDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+      maturityDate: new Date(new Date(p.created_at).getTime() + p.duration_months * 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+      autoRenew: p.auto_renew,
+      expectedTotal: expectedProfit
     };
 
     // Payout History
@@ -394,27 +509,11 @@ export const getPortfolioDetails = async (req: Request, res: Response) => {
       status: 'Completed'
     }));
 
-    // Virtual Houses mapped
-    const opps = await prisma.virtualOpportunities.findMany({
-      orderBy: { created_at: 'desc' },
-      take: 3
-    });
-    const virtualHouses = opps.map((opp: any, i: number) => ({
-      id: opp.id || `vh-${i}`,
-      code: `VH-${opp.id.substring(0, 4).toUpperCase()}`,
-      rentAmount: Number(opp.rent_amount || opp.investment_needed || 350000),
-      location: opp.location || 'Kampala Area',
-      assignedDate: new Date(opp.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
-      status: p.status === 'active' ? 'active' : 'pending',
-      imageUrl: opp.image_url || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=400'
-    }));
-
     return res.status(200).json({
       status: 'success',
       data: {
         portfolioInfo,
-        payoutHistory,
-        virtualHouses
+        payoutHistory
       }
     });
 
