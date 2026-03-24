@@ -1,15 +1,18 @@
 import React from 'react';
 import { MessagesSquare, Settings, HelpCircle, LogOut, Sun, Moon } from 'lucide-react';
+import { useAuth } from '../../../contexts/AuthContext';
+import { useDarkMode } from '../../../hooks/useDarkMode';
 
 interface CRMSidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
 }
 
-import { useAuth } from '../../../contexts/AuthContext';
-
 const CRMSidebar: React.FC<CRMSidebarProps> = ({ activeTab, setActiveTab }) => {
-  const { logout } = useAuth();  const links = [
+  const { logout } = useAuth();
+  const [isDark, setIsDark] = useDarkMode();
+  
+  const links = [
     { id: 'triage', name: 'Triage Center', icon: <MessagesSquare size={20} /> },
     { id: 'settings', name: 'Settings', icon: <Settings size={20} /> },
   ];
@@ -60,12 +63,16 @@ const CRMSidebar: React.FC<CRMSidebarProps> = ({ activeTab, setActiveTab }) => {
         </div>
       </div>
 
-      <div className="p-6">
-         <div className="w-full bg-slate-100 rounded-full p-1 flex relative">
-            <div className="w-1/2 bg-[#6c11d4] rounded-full shadow flex items-center justify-center py-1.5 text-white z-10 transition-colors">
+      <div className="p-6 shrink-0">
+         <div className="w-full bg-slate-100 rounded-full p-1 flex relative cursor-pointer" onClick={() => setIsDark(!isDark)}>
+            <div 
+              className={`w-1/2 rounded-full flex items-center justify-center py-1.5 z-10 transition-all duration-300 ${!isDark ? 'bg-[#6c11d4] text-white shadow' : 'text-slate-400 hover:text-slate-600'}`}
+            >
                <Sun size={16} />
             </div>
-            <div className="w-1/2 flex items-center justify-center py-1.5 text-slate-400 z-10 transition-colors cursor-pointer hover:text-slate-600">
+            <div 
+              className={`w-1/2 rounded-full flex items-center justify-center py-1.5 z-10 transition-all duration-300 ${isDark ? 'bg-[#6c11d4] text-white shadow' : 'text-slate-400 hover:text-slate-600'}`}
+            >
                <Moon size={16} />
             </div>
          </div>

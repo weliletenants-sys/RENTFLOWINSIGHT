@@ -381,7 +381,36 @@ export const getOpportunities = async (req: Request, res: Response) => {
 
 export const getGlobalUsersList = async (req: Request, res: Response) => {
   try {
+    const cursor = req.query.cursor as string | undefined;
+    const limit = parseInt((req.query.limit as string) || '100', 10);
+    const search = req.query.search as string | undefined;
+    const role = req.query.role as string | undefined;
+    const status = req.query.status as string | undefined;
+
+    const whereClause: any = {};
+    
+    if (search) {
+      whereClause.OR = [
+        { full_name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+        { phone: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+    
+    if (role && role !== 'ALL') {
+      whereClause.role = role.toUpperCase();
+    }
+    
+    if (status && status !== 'ALL') {
+      whereClause.verified = status === 'VERIFIED';
+    }
+
+    const take = Math.min(limit, 100);
+
     const users = await prisma.profiles.findMany({
+      take: take + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      where: whereClause,
       select: {
         id: true,
         full_name: true,
@@ -394,9 +423,87 @@ export const getGlobalUsersList = async (req: Request, res: Response) => {
       },
       orderBy: { created_at: 'desc' }
     });
-    return res.status(200).json({ status: 'success', data: { users } });
+    
+    const has_more = users.length > take;
+    const data = has_more ? users.slice(0, -1) : users;
+    const next_cursor = has_more ? data[data.length - 1].id : null;
+
+    return res.status(200).json({ 
+      status: 'success', 
+      data: { users: data },
+      pagination: { has_more, next_cursor }
+    });
   } catch (error: any) {
     console.error('Error fetching global users:', error);
-    return problemResponse(res, 500, 'Internal Server Error', 'Could not fetch global users', 'internal-error');
+    return problemResponse(res, 500, 'Internal Server Error', `Could not fetch global users: ${error.message} \n ${error.stack}`, 'internal-error');
+  }
+};
+
+export const deleteGlobalUsers = async (req: Request, res: Response) => {
+  try {
+    const { userIds } = req.body;
+    
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      return problemResponse(res, 400, 'Bad Request', 'An array of userIds must be provided', 'invalid-parameters');
+    }
+
+    const result = await prisma.profiles.deleteMany({
+      where: {
+        id: { in: userIds }
+      }
+    });
+
+    return res.status(200).json({ status: 'success', data: { deleted_count: result.count } });
+  } catch (error: any) {
+    console.error('Failed to bulk delete users:', error);
+    return problemResponse(res, 500, 'Internal Server Error', 'Could not delete user records', 'internal-error');
+  }
+};
+
+export const getUserProfile = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const user = await prisma.profiles.findUnique({
+      where: { id }
+    });
+
+    if (!user) {
+      return problemResponse(res, 404, 'Not Found', 'User identity not found', 'resource-not-found');
+    }
+
+    // Scrub password hash if present in schema, although findUnique typically maps directly.
+    return res.status(200).json({ status: 'success', data: { user } });
+  } catch (error: any) {
+    console.error('Failed to fetch user profile:', error);
+    return problemResponse(res, 500, 'Internal Server Error', 'Failed to retrieve profile record', 'internal-error');
+  }
+};
+
+export const updateUserProfile = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { full_name, email, phone, role, verified, is_frozen } = req.body;
+
+    const updateData: any = {};
+    if (full_name !== undefined) updateData.full_name = full_name;
+    if (email !== undefined) updateData.email = email;
+    if (phone !== undefined) updateData.phone = phone;
+    if (role !== undefined) updateData.role = role || null;
+    if (verified !== undefined) updateData.verified = verified;
+    if (is_frozen !== undefined) updateData.is_frozen = is_frozen;
+
+    const updatedUser = await prisma.profiles.update({
+      where: { id },
+      data: updateData
+    });
+
+    return res.status(200).json({ status: 'success', data: { user: updatedUser } });
+  } catch (error: any) {
+    console.error('Failed to update user profile:', error);
+    if (error.code === 'P2025') {
+      return problemResponse(res, 404, 'Not Found', 'User identity not found', 'resource-not-found');
+    }
+    return problemResponse(res, 500, 'Internal Server Error', 'Failed to update user profile details', 'internal-error');
   }
 };

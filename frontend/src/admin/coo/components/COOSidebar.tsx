@@ -6,9 +6,11 @@ import {
   List, HelpCircle, LogOut, Sun, Moon, User
 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useDarkMode } from '../../../hooks/useDarkMode';
 
 const COOSidebar: React.FC = () => {
   const { logout } = useAuth();
+  const [isDark, setIsDark] = useDarkMode();
 
   const financialLinks = [
     { name: 'Dashboard', icon: <Home size={20} />, path: '/coo/overview' },
@@ -30,49 +32,50 @@ const COOSidebar: React.FC = () => {
   ];
 
   return (
-    <div className="w-64 bg-white border-r border-slate-100 h-full flex flex-col hidden md:flex font-outfit">
-      {/* Brand / Logo Area */}
-      <div className="h-20 flex items-center px-6 mt-2">
-        <div className="flex items-center space-x-2">
-          <img src="/welile-colored.png" alt="Welile" className="h-8 object-contain" />
-        </div>
+    <div className="w-64 bg-white border-r border-slate-100 flex flex-col h-screen fixed shadow-sm z-30 font-outfit">
+      
+      {/* Brand Header */}
+      <div className="h-20 flex items-center px-8 border-b border-slate-100 shrink-0">
+         <span className="text-2xl font-bold text-[#6c11d4] tracking-tight">Welile</span>
       </div>
 
-      {/* Navigation */}
-      <div className="flex-1 overflow-y-auto py-2 space-y-8">
+      <div className="flex-1 overflow-y-auto sidebar-scroll py-6 flex flex-col justify-between">
         
-        <div>
-          <nav className="space-y-1 font-inter px-3">
+        <div className="px-6 space-y-8">
+          
+          {/* Main Navigation */}
+          <nav className="space-y-1.5 font-inter">
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-2 mb-3">Core Operations</div>
             {financialLinks.map((item) => (
               <NavLink
                 key={item.name}
                 to={item.path}
                 className={({ isActive }) =>
-                  `flex items-center space-x-3 px-4 py-3 rounded-full transition-all font-semibold ${
-                    isActive
-                      ? 'bg-[#6c11d4] text-white shadow-md shadow-purple-500/20'
-                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                  `flex items-center space-x-3 px-4 py-2.5 rounded-full transition-all ${
+                    isActive 
+                      ? 'bg-[#6c11d4] text-white font-semibold shadow-md shadow-purple-500/20' 
+                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-semibold'
                   }`
                 }
               >
-                <div className="flex-shrink-0">{item.icon}</div>
+                <div className={`flex-shrink-0 ${item.name === 'Overview' && 'active-icon'}`}>{item.icon}</div>
                 <span className="text-sm">{item.name}</span>
               </NavLink>
             ))}
           </nav>
-        </div>
 
-        <div>
-           <nav className="space-y-1 font-inter px-3">
+          {/* Governance Directory */}
+          <nav className="space-y-1.5 font-inter">
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-2 mb-3">Governance</div>
             {governanceLinks.map((item) => (
               <NavLink
                 key={item.name}
                 to={item.path}
                 className={({ isActive }) =>
-                  `flex items-center space-x-3 px-4 py-3 rounded-full transition-all font-semibold ${
-                    isActive
-                      ? 'bg-[#6c11d4] text-white shadow-md shadow-purple-500/20'
-                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                  `flex items-center space-x-3 px-4 py-2.5 rounded-full transition-all ${
+                    isActive 
+                      ? 'bg-[#6c11d4] text-white font-semibold shadow-md shadow-purple-500/20' 
+                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-semibold'
                   }`
                 }
               >
@@ -83,9 +86,8 @@ const COOSidebar: React.FC = () => {
           </nav>
         </div>
 
-        <div className="pt-4 border-t border-slate-100 mx-6">
-           <nav className="space-y-2 font-inter -mx-3">
-
+        <div className="px-6">
+           <nav className="space-y-1.5 font-inter">
               <button className="w-full flex items-center space-x-3 px-4 py-2.5 rounded-full text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-semibold transition-all">
                 <div className="flex-shrink-0"><HelpCircle size={20} /></div>
                 <span className="text-sm">Help</span>
@@ -99,12 +101,16 @@ const COOSidebar: React.FC = () => {
       </div>
 
       {/* Theme Toggle */}
-      <div className="p-6">
-         <div className="w-full bg-slate-100 rounded-full p-1 flex relative">
-            <div className="w-1/2 bg-[#6c11d4] rounded-full shadow flex items-center justify-center py-1.5 text-white z-10">
+      <div className="p-6 shrink-0">
+         <div className="w-full bg-slate-100 rounded-full p-1 flex relative cursor-pointer" onClick={() => setIsDark(!isDark)}>
+            <div 
+              className={`w-1/2 rounded-full flex items-center justify-center py-1.5 z-10 transition-all duration-300 ${!isDark ? 'bg-[#6c11d4] text-white shadow' : 'text-slate-400 hover:text-slate-600'}`}
+            >
                <Sun size={16} />
             </div>
-            <div className="w-1/2 flex items-center justify-center py-1.5 text-slate-400 z-10 transition-colors cursor-pointer hover:text-slate-600">
+            <div 
+              className={`w-1/2 rounded-full flex items-center justify-center py-1.5 z-10 transition-all duration-300 ${isDark ? 'bg-[#6c11d4] text-white shadow' : 'text-slate-400 hover:text-slate-600'}`}
+            >
                <Moon size={16} />
             </div>
          </div>
