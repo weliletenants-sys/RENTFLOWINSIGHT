@@ -130,7 +130,7 @@ const COOOverview: React.FC = () => {
                  Full Matrix
               </button>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
               <div className="p-4 bg-slate-50 rounded-2xl flex flex-col justify-center">
                 <p className="text-sm text-slate-500 font-bold mb-1">Active Agents</p>
                 <div className="flex items-center space-x-2">
@@ -147,6 +147,18 @@ const COOOverview: React.FC = () => {
                      <Users size={16} />
                    </div>
                    <p className="text-2xl font-bold text-slate-900">{metrics.activeAccounts}</p>
+                </div>
+              </div>
+              <div 
+                className="p-4 bg-red-50 rounded-2xl flex flex-col justify-center cursor-pointer hover:bg-red-100 transition-colors"
+                onClick={() => navigate('/coo/users')}
+              >
+                <p className="text-sm text-red-700 font-bold mb-1">Pending KYC</p>
+                <div className="flex items-center space-x-2">
+                   <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                     <AlertTriangle size={16} />
+                   </div>
+                   <p className="text-xl font-bold text-red-600">{metrics.pendingAccounts}</p>
                 </div>
               </div>
               <div className="p-4 bg-orange-50 rounded-2xl flex flex-col justify-center">

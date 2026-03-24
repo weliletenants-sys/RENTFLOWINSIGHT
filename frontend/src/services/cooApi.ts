@@ -28,6 +28,7 @@ export interface COOOverviewMetrics {
   dailyCollections: number;
   activeAgents: number;
   activeAccounts: number;
+  pendingAccounts: number;
   todaysVisits: number;
   missedPaymentsCount: number;
   pendingWithdrawalsAmount: number;
