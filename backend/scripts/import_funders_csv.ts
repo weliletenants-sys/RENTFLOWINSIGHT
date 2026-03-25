@@ -104,7 +104,9 @@ async function main() {
           user_id: targetUser,
           amount: safeNum(row.amount),
           status: row.status || 'pending',
-          mobile_money_number: row.mobile_money_number || 'N/A',
+          requested_at: safeDate(row.created_at) || new Date().toISOString(),
+          earliest_process_date: safeDate(row.created_at) || new Date().toISOString(),
+          rewards_paused: safeBool(row.rewards_paused),
           created_at: safeDate(row.created_at) || new Date().toISOString(),
           updated_at: safeDate(row.updated_at) || new Date().toISOString(),
         }
@@ -122,11 +124,10 @@ async function main() {
         update: {},
         create: {
           id: row.id,
-          ticket_id: row.ticket_id || `TCK-${Math.floor(Math.random() * 1000)}`,
+          escalation_type: row.priority || 'standard',
+          details: row.title || 'Legacy Support Ticket',
+          portfolio_id: row.portfolio_id || null,
           status: row.status || 'open',
-          priority: row.priority || 'medium',
-          title: row.title || 'Legacy Support Ticket',
-          agent_id: row.partner_id || row.agent_id || 'UNKNOWN',
           created_at: safeDate(row.created_at) || new Date().toISOString(),
         }
       });

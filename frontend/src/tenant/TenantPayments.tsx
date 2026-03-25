@@ -1,11 +1,20 @@
+import { useState, useEffect } from 'react';
 import { ChevronDown, CreditCard, History, User as UserIcon, Bell, Home as HomeIcon } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { getTenantActivities } from '../services/tenantApi';
 
 export default function TenantPayments() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [activities, setActivities] = useState<any[]>([]);
+
+  useEffect(() => {
+    getTenantActivities()
+      .then(setActivities)
+      .catch(console.error);
+  }, []);
 
   return (
     <div className="bg-background-light dark:bg-background-dark font-sans text-slate-900 dark:text-slate-100 min-h-screen">
@@ -67,81 +76,33 @@ export default function TenantPayments() {
 
           {/* Transaction Items */}
           <div className="space-y-3">
-            {/* Transaction 1 */}
-            <div className="flex items-center gap-4 bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
-              <div className="flex items-center justify-center rounded-full bg-primary/10 text-primary shrink-0 size-12">
-                <CreditCard size={24} />
-              </div>
-              <div className="flex flex-1 flex-col justify-center min-w-0">
-                <p className="text-slate-900 dark:text-slate-100 text-sm font-bold truncate">Rent Repayment - June 2024</p>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 uppercase tracking-wider">Completed</span>
-                  <span className="text-slate-400 text-xs">•</span>
-                  <p className="text-slate-500 dark:text-slate-400 text-xs">Auto-generated</p>
+            {activities.length > 0 ? (
+              activities.map((act) => (
+                <div key={act.id} className="flex items-center gap-4 bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                  <div className={`flex items-center justify-center rounded-full shrink-0 size-12 ${act.type === 'payment' ? 'bg-primary/10 text-primary' : 'bg-green-100 text-green-600'}`}>
+                    {act.type === 'payment' ? <CreditCard size={24} /> : <History size={24} />}
+                  </div>
+                  <div className="flex flex-1 flex-col justify-center min-w-0">
+                    <p className="text-slate-900 dark:text-slate-100 text-sm font-bold truncate">{act.description}</p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 uppercase tracking-wider">Completed</span>
+                      <span className="text-slate-400 text-xs">•</span>
+                      <p className="text-slate-500 dark:text-slate-400 text-xs">System generated</p>
+                    </div>
+                    <p className="text-slate-400 dark:text-slate-500 text-[11px] mt-1 font-medium uppercase tracking-wide">
+                      {new Date(act.date).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
+                    </p>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <p className={`text-base font-bold ${act.type === 'deposit' ? 'text-green-600' : 'text-slate-900 dark:text-slate-100'}`}>
+                      {act.type === 'deposit' ? '+' : '-'}${Math.abs(act.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-slate-400 dark:text-slate-500 text-[11px] mt-1 font-medium uppercase tracking-wide">June 1, 2024 • 10:00 AM</p>
-              </div>
-              <div className="shrink-0 text-right">
-                <p className="text-slate-900 dark:text-slate-100 text-base font-bold">-$1,200.00</p>
-              </div>
-            </div>
-
-            {/* Transaction 2 */}
-            <div className="flex items-center gap-4 bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
-              <div className="flex items-center justify-center rounded-full bg-primary/10 text-primary shrink-0 size-12">
-                <CreditCard size={24} />
-              </div>
-              <div className="flex flex-1 flex-col justify-center min-w-0">
-                <p className="text-slate-900 dark:text-slate-100 text-sm font-bold truncate">Rent Repayment - May 2024</p>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 uppercase tracking-wider">Completed</span>
-                  <span className="text-slate-400 text-xs">•</span>
-                  <p className="text-slate-500 dark:text-slate-400 text-xs">Auto-generated</p>
-                </div>
-                <p className="text-slate-400 dark:text-slate-500 text-[11px] mt-1 font-medium uppercase tracking-wide">May 1, 2024 • 09:30 AM</p>
-              </div>
-              <div className="shrink-0 text-right">
-                <p className="text-slate-900 dark:text-slate-100 text-base font-bold">-$1,200.00</p>
-              </div>
-            </div>
-
-            {/* Transaction 3 */}
-            <div className="flex items-center gap-4 bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm opacity-80">
-              <div className="flex items-center justify-center rounded-full bg-primary/10 text-primary shrink-0 size-12">
-                <CreditCard size={24} />
-              </div>
-              <div className="flex flex-1 flex-col justify-center min-w-0">
-                <p className="text-slate-900 dark:text-slate-100 text-sm font-bold truncate">Rent Repayment - April 2024</p>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 uppercase tracking-wider">Completed</span>
-                  <span className="text-slate-400 text-xs">•</span>
-                  <p className="text-slate-500 dark:text-slate-400 text-xs">Auto-generated</p>
-                </div>
-                <p className="text-slate-400 dark:text-slate-500 text-[11px] mt-1 font-medium uppercase tracking-wide">April 1, 2024 • 10:15 AM</p>
-              </div>
-              <div className="shrink-0 text-right">
-                <p className="text-slate-900 dark:text-slate-100 text-base font-bold">-$1,200.00</p>
-              </div>
-            </div>
-
-            {/* Transaction 4 */}
-            <div className="flex items-center gap-4 bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm opacity-80">
-              <div className="flex items-center justify-center rounded-full bg-primary/10 text-primary shrink-0 size-12">
-                <History size={24} />
-              </div>
-              <div className="flex flex-1 flex-col justify-center min-w-0">
-                <p className="text-slate-900 dark:text-slate-100 text-sm font-bold truncate">Utility Surcharge - March</p>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 uppercase tracking-wider">Completed</span>
-                  <span className="text-slate-400 text-xs">•</span>
-                  <p className="text-slate-500 dark:text-slate-400 text-xs">Manual Entry</p>
-                </div>
-                <p className="text-slate-400 dark:text-slate-500 text-[11px] mt-1 font-medium uppercase tracking-wide">March 15, 2024 • 02:45 PM</p>
-              </div>
-              <div className="shrink-0 text-right">
-                <p className="text-slate-900 dark:text-slate-100 text-base font-bold">-$45.50</p>
-              </div>
-            </div>
+              ))
+            ) : (
+              <p className="text-sm text-slate-500 italic p-4 text-center">No recent transactions to display.</p>
+            )}
           </div>
         </div>
 

@@ -89,9 +89,9 @@ export const getOverview = async (req: Request, res: Response) => {
     // Counts
     const [totalUsers, totalAgents, totalTenants, totalSupporters] = await Promise.all([
       prisma.profiles.count({ where: { verified: true } }),
-      prisma.userRoles.count({ where: { role: 'AGENT', enabled: true } }),
-      prisma.userRoles.count({ where: { role: 'TENANT', enabled: true } }),
-      prisma.userRoles.count({ where: { role: 'FUNDER', enabled: true } })
+      prisma.profiles.count({ where: { role: { in: ['AGENT', 'agent', 'partner'] } } }),
+      prisma.profiles.count({ where: { role: { in: ['TENANT', 'tenant'] } } }),
+      prisma.profiles.count({ where: { role: { in: ['FUNDER', 'funder', 'SUPPORTER', 'supporter'] } } })
     ]);
 
     // Financial Charts (last 7 days by default here for mock logic)
