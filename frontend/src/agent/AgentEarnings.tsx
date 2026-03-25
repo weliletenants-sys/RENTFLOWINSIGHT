@@ -1,46 +1,33 @@
-﻿import { Bell, MapPin, Star } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Bell, MapPin, Star } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { getEarnings } from '../services/agentApi';
+import toast from 'react-hot-toast';
 
 export default function AgentEarnings() {
   const { user } = useAuth();
-  
-  const transactions = [
-    {
-      id: 1,
-      name: 'Sarah Miller',
-      property: 'Maple Heights - Unit 402',
-      amount: '+ 50,000 UGX',
-      date: 'Oct 24, 2023'
-    },
-    {
-      id: 2,
-      name: 'David Chen',
-      property: 'Oak Ridge Villas - B12',
-      amount: '+ 75,000 UGX',
-      date: 'Oct 22, 2023'
-    },
-    {
-      id: 3,
-      name: 'Elena Rodriguez',
-      property: 'Skyline Apartments - 15C',
-      amount: '+ 45,000 UGX',
-      date: 'Oct 20, 2023'
-    },
-    {
-      id: 4,
-      name: 'James Wilson',
-      property: 'The Atrium - Unit 104',
-      amount: '+ 60,000 UGX',
-      date: 'Oct 18, 2023'
-    },
-    {
-      id: 5,
-      name: 'Amara Okafor',
-      property: 'Riverview Lofts - A02',
-      amount: '+ 55,000 UGX',
-      date: 'Oct 15, 2023'
-    }
-  ];
+  const [earningsData, setEarningsData] = useState<any[]>([]);
+  const [totalEarnings, setTotalEarnings] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchEarnings = async () => {
+      try {
+        const data = await getEarnings();
+        const earningsList = data.earnings || [];
+        setEarningsData(earningsList);
+        
+        // Sum basic earnings 
+        const total = earningsList.reduce((sum: number, tx: any) => sum + (Number(tx.amount) || 0), 0);
+        setTotalEarnings(total);
+      } catch (err: any) {
+        toast.error('Failed to load earnings');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchEarnings();
+  }, []);
 
   return (
     <div className="bg-background-light dark:bg-background-dark font-sans text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
@@ -79,8 +66,8 @@ export default function AgentEarnings() {
               </div>
               
               <p className="text-primary-100 text-sm font-medium opacity-90">Total Earnings</p>
-              <p className="text-[10px] text-white/70 font-medium uppercase tracking-wider mb-1">Since Oct 2023</p>
-              <h2 className="mt-1 text-3xl font-extrabold tracking-tight">2,500,000 UGX</h2>
+              <p className="text-[10px] text-white/70 font-medium uppercase tracking-wider mb-1">Since Joining</p>
+              <h2 className="mt-1 text-3xl font-extrabold tracking-tight">{totalEarnings.toLocaleString()} UGX</h2>
             </div>
           </div>
         </div>
@@ -88,28 +75,35 @@ export default function AgentEarnings() {
         {/* Section Title */}
         <div className="flex items-center justify-between px-4 py-2 mt-2">
           <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">Commission Received</h3>
-          <button className="text-sm font-semibold text-primary">View All</button>
         </div>
 
         {/* Commission List */}
         <div className="flex flex-col gap-px bg-slate-100 dark:bg-slate-800">
-          {transactions.map(tx => (
-            <div key={tx.id} className="flex items-center justify-between bg-white dark:bg-slate-900 p-4 border-b border-primary/5 last:border-0">
-              <div className="flex items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <MapPin size={24} />
+          {isLoading ? (
+            <div className="p-8 text-center text-sm text-slate-500">Loading earnings...</div>
+          ) : earningsData.length === 0 ? (
+            <div className="p-8 text-center text-sm text-slate-500">No earnings found.</div>
+          ) : (
+            earningsData.map(tx => (
+              <div key={tx.id} className="flex items-center justify-between bg-white dark:bg-slate-900 p-4 border-b border-primary/5 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <MapPin size={24} />
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-900 dark:text-white capitalize">{tx.earning_type?.replace(/_/g, ' ') || 'Commission'}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 max-w-[180px] truncate">{tx.description || 'System Earnings Allocation'}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-bold text-slate-900 dark:text-white">{tx.name}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{tx.property}</p>
+                <div className="text-right shrink-0">
+                  <p className="font-bold text-green-600">+ {Number(tx.amount).toLocaleString()} UGX</p>
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                    {new Date(tx.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </p>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="font-bold text-green-600">{tx.amount}</p>
-                <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider">{tx.date}</p>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
         <div className="flex-grow"></div>

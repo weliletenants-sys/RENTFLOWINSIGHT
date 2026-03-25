@@ -28,12 +28,25 @@ export default function FunderMobileHeader({ user, onNotificationClick, onAvatar
     };
   }, [showNotifs]);
 
-  // Demo Notifications State
-  const [notifications, setNotifications] = useState([
-    { id: 1, title: 'New Payout Received', desc: 'You received UGX 462,500 from Kampala Heights.', time: '2 hours ago', unread: true, type: 'success' },
-    { id: 2, title: 'Portfolio Update', desc: 'Entebbe Views property valuation increased by 4%.', time: '1 day ago', unread: true, type: 'update' },
-    { id: 3, title: 'System Alert', desc: 'Your monthly tax statement is ready for download.', time: '3 days ago', unread: false, type: 'info' },
-  ]);
+  // Live Notifications State
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  useEffect(() => {
+    import('../../services/funderApi').then(({ getFunderActivities }) => {
+      getFunderActivities().then(activities => {
+        setNotifications(
+          activities.slice(0, 5).map((act: any) => ({
+            id: act.id,
+            title: act.category ? act.category.replace(/_/g, ' ').toUpperCase() : 'TRANSACTION',
+            desc: act.description || `Transaction amount: UGX ${Number(act.amount).toLocaleString()}`,
+            time: new Date(act.transaction_date).toLocaleDateString(),
+            unread: true, // simplified logic
+            type: act.direction === 'cash_in' || act.direction === 'wallet_in' ? 'success' : 'info'
+          }))
+        );
+      }).catch(() => setNotifications([]));
+    });
+  }, []);
 
   const unreadCount = notifications.filter(n => n.unread).length;
 

@@ -89,9 +89,9 @@ export const getOverview = async (req: Request, res: Response) => {
     // Counts
     const [totalUsers, totalAgents, totalTenants, totalSupporters] = await Promise.all([
       prisma.profiles.count({ where: { verified: true } }),
-      prisma.userRoles.count({ where: { role: 'AGENT', enabled: true } }),
-      prisma.userRoles.count({ where: { role: 'TENANT', enabled: true } }),
-      prisma.userRoles.count({ where: { role: 'FUNDER', enabled: true } })
+      prisma.profiles.count({ where: { role: { in: ['AGENT', 'agent', 'partner'] } } }),
+      prisma.profiles.count({ where: { role: { in: ['TENANT', 'tenant'] } } }),
+      prisma.profiles.count({ where: { role: { in: ['FUNDER', 'funder', 'SUPPORTER', 'supporter'] } } })
     ]);
 
     // Financial Charts (last 7 days by default here for mock logic)
@@ -505,4 +505,72 @@ export const rejectCommission = async (req: Request, res: Response) => {
   }
 };
 
+export const getPredictiveRunway = async (req: Request, res: Response) => {
+  try {
+    // 1. Get Current Cash Balance (Platform Wallets)
+    const wallets = await prisma.wallets.aggregate({ _sum: { balance: true }});
+    const currentCashBal = wallets._sum.balance || 0;
 
+    // 2. Extrapolate Monthly Burn Rate
+    // In a real app, we'd average the last 3 months of General Ledger outflows (salaries, tech, ops).
+    // For now, we'll calculate a structural estimate based on active agents * commission baseline + fixed costs.
+    const activeAgents = await prisma.profiles.count({ where: { role: { in: ['AGENT', 'agent'] }, is_frozen: false } });
+    const estAgentPayouts = activeAgents * 800000; // rough 800k ugx avg commission
+    const fixedOps = 15000000; // 15M UGX fixed server/admin costs
+    
+    // Extrapolate Inflows (Platform fees from recent collections)
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const recentCollections = await prisma.agentCollections.aggregate({
+      where: { created_at: { gte: thirtyDaysAgo } },
+      _sum: { amount: true }
+    });
+    const monthlyInflowEstimate = (recentCollections._sum.amount || 0) * 0.05; // 5% platform fee margin
+
+    const monthlyOutflowEstimate = estAgentPayouts + fixedOps;
+    const monthlyBurnRate = monthlyOutflowEstimate - monthlyInflowEstimate;
+    
+    // 3. Extrapolate Runway
+    let runwayMonths = 999;
+    if (monthlyBurnRate > 0) {
+      runwayMonths = currentCashBal / monthlyBurnRate;
+    }
+
+    // Determine Cash-Zero Date
+    let projectedCashZeroDate = 'Stable';
+    if (monthlyBurnRate > 0) {
+      const zeroDate = new Date();
+      zeroDate.setMonth(zeroDate.getMonth() + Math.floor(runwayMonths));
+      projectedCashZeroDate = zeroDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    }
+
+    // 4. Generate 6-Month Projection Array
+    const projection = [];
+    let rollingCash = currentCashBal;
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const currentMonthIdx = new Date().getMonth();
+
+    for (let i = 0; i < 6; i++) {
+        const targetMonth = months[(currentMonthIdx + i) % 12];
+        
+        projection.push({
+            month: targetMonth,
+            cash: Math.max(0, rollingCash),
+            inflows: monthlyInflowEstimate,
+            outflows: monthlyOutflowEstimate
+        });
+
+        rollingCash -= monthlyBurnRate;
+    }
+
+    res.json({
+        runwayMonths: Number(runwayMonths.toFixed(1)),
+        monthlyBurnRate: monthlyBurnRate > 0 ? monthlyBurnRate : 0,
+        projectedCashZeroDate,
+        currentCashBal,
+        projection
+    });
+  } catch (error: any) {
+    console.error('getPredictiveRunway error:', error);
+    res.status(500).json({ message: error.message });
+  }
+};

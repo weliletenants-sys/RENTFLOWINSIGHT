@@ -1,0 +1,2 @@
+agent_id;amount;created_at;id;notes;payer_name;payer_phone;payment_method;receipt_image_url;transaction_id
+e3cf4d3a-d021-49e4-b815-7e1938166eeb;5000;2026-03-11 10:24:38.901988+00;db61c198-4eed-43b4-8576-dfb0b8b26d3f;;Grace;0787373498;cash;;

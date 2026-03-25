@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
   BarChart3, FileText, ShieldAlert, Scale, BookOpen,
-  Coins, ArrowDownToLine, HelpCircle, LogOut, Sun, Moon
+  Coins, ArrowDownToLine, HelpCircle, LogOut, Sun, Moon, Activity
 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useDarkMode } from '../../../hooks/useDarkMode';
@@ -19,6 +19,7 @@ const CFOSidebar: React.FC<CFOSidebarProps> = ({ activeTab, setActiveTab }) => {
     { id: 'overview', name: 'Overview', icon: <BarChart3 size={20} /> },
     { id: 'statements', name: 'Financial Statements', icon: <FileText size={20} /> },
     { id: 'solvency', name: 'Solvency & Buffer', icon: <ShieldAlert size={20} /> },
+    { id: 'runway', name: 'Runway Analytics', icon: <Activity size={20} /> },
     { id: 'reconciliation', name: 'Reconciliation', icon: <Scale size={20} /> },
     { id: 'ledger', name: 'General Ledger', icon: <BookOpen size={20} /> },
   ];

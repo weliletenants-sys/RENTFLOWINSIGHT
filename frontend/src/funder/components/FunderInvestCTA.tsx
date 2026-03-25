@@ -1,33 +1,28 @@
-﻿import { ShieldAlert, TrendingUp, Clock, Tag } from 'lucide-react';
-
+import { useState, useEffect } from 'react';
+import { ShieldAlert, TrendingUp, Clock, Tag } from 'lucide-react';
 interface FunderInvestCTAProps {
   onStartsupporting?: () => void;
 }
 
 export default function FunderInvestCTA({ onStartsupporting }: FunderInvestCTAProps) {
-  // Mock data for recommended opportunities
-  const opportunities = [
-    {
-      id: 'OPP-01',
-      name: 'Kampala Heights Phase 2',
-      roi: 20,
-      durationMonths: 18,
-      minInvestment: 500_000,
-      riskLevel: 'Medium',
-      isFeatured: true,
-      slotsLeft: 4,
-    },
-    {
-      id: 'OPP-02',
-      name: 'Entebbe Serviced Apartments',
-      roi: 12,
-      durationMonths: 12,
-      minInvestment: 2_000_000,
-      riskLevel: 'Low',
-      isFeatured: false,
-      slotsLeft: null,
-    },
-  ];
+  const [opportunities, setOpportunities] = useState<any[]>([]);
+
+  useEffect(() => {
+    import('../services/funderApi').then(({ getFunderOpportunities }) => {
+      getFunderOpportunities().then(ops => {
+        setOpportunities(ops.slice(0, 2).map((op: any) => ({
+          id: op.id,
+          name: op.name,
+          roi: op.rentRequired > 2000000 ? 12 : 20, // Simplified display mapping
+          durationMonths: 12,
+          minInvestment: op.rentRequired,
+          riskLevel: op.status === 'urgent' ? 'High' : 'Low',
+          isFeatured: op.status === 'available',
+          slotsLeft: op.status === 'urgent' ? 2 : null,
+        })));
+      }).catch(() => setOpportunities([]));
+    });
+  }, []);
 
   return (
     <section>
