@@ -8,7 +8,7 @@ export const getOverviewMetrics = async (req: Request, res: Response) => {
 
     // 1. Demographics
     const totalInvestors = await prisma.profiles.count({ where: { role: 'FUNDER', is_frozen: false } });
-    const activeAgents = await prisma.profiles.count({ where: { role: 'AGENT', is_frozen: false } });
+    const activeAgents = await prisma.profiles.count({ where: { role: { in: ['AGENT', 'agent'] }, is_frozen: false } });
     const activeAccounts = await prisma.profiles.count({ where: { verified: true } });
     const pendingAccounts = await prisma.profiles.count({ where: { verified: false } });
 

@@ -514,7 +514,7 @@ export const getPredictiveRunway = async (req: Request, res: Response) => {
     // 2. Extrapolate Monthly Burn Rate
     // In a real app, we'd average the last 3 months of General Ledger outflows (salaries, tech, ops).
     // For now, we'll calculate a structural estimate based on active agents * commission baseline + fixed costs.
-    const activeAgents = await prisma.profiles.count({ where: { role: 'AGENT', is_frozen: false } });
+    const activeAgents = await prisma.profiles.count({ where: { role: { in: ['AGENT', 'agent'] }, is_frozen: false } });
     const estAgentPayouts = activeAgents * 800000; // rough 800k ugx avg commission
     const fixedOps = 15000000; // 15M UGX fixed server/admin costs
     
