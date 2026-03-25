@@ -103,7 +103,6 @@ export const register = async (req: Request, res: Response) => {
         event_type: 'USER_REGISTRATION',
         related_entity_type: 'PROFILE',
         related_entity_id: result.id,
-        severity: 'INFO',
         created_at: now
       }
     });
