@@ -145,6 +145,11 @@ export const getAssignedTenants = async () => {
   return data.tenants; // Returns the exactly mapped array
 };
 
+export const getMyNetwork = async () => {
+  const { data } = await agentClient.get('/agent/networks');
+  return data.network; 
+};
+
 export const registerLandlord = async (payload: any) => {
   const { data } = await agentClient.post('/agent/landlords', payload);
   return data;
