@@ -3,6 +3,7 @@ import { Route } from 'react-router-dom';
 import FunderLayout from '../funder/components/FunderLayout';
 import ProtectedRoute from '../components/ProtectedRoute';
 
+const FunderLogin      = lazy(() => import('../pages/auth/FunderLogin'));
 const FunderOnboarding = lazy(() => import('../funder/FunderOnboarding'));
 const FunderKYCOnboarding = lazy(() => import('../funder/FunderKYCOnboarding'));
 const FunderDashboard  = lazy(() => import('../funder/FunderDashboard'));
@@ -24,6 +25,7 @@ const FunderOpportunitiesPage = lazy(() => import('../funder/FunderOpportunities
  * are wrapped in FunderLayout.
  */
 export const funderRoutes = [
+  <Route key="funder-login"      path="/funder/login"      element={<FunderLogin />} />,
   <Route key="funder-onboarding" path="/funder/onboarding" element={<FunderOnboarding />} />,
   <Route key="funder-kyc" path="/funder/kyc" element={<FunderKYCOnboarding />} />,
   <Route key="funder-activate"   path="/funder/activate"   element={<ActivateFunder />} />,
