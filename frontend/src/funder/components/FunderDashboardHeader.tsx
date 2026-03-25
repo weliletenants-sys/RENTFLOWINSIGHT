@@ -75,22 +75,26 @@ export default function FunderDashboardHeader({
     e.stopPropagation();
     try {
       const token = localStorage.getItem('access_token');
-      await fetch('/api/notifications/read-all', {
+      const res = await fetch('/api/notifications/read-all', {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` }
       });
-      setNotifications(notifications.map((n: any) => ({ ...n, unread: false })));
+      if (res.ok) {
+        setNotifications(notifications.map((n: any) => ({ ...n, unread: false })));
+      }
     } catch (err) {}
   };
 
   const handleReadSingle = async (id: string | number) => {
     try {
       const token = localStorage.getItem('access_token');
-      await fetch(`/api/notifications/${id}/read`, {
+      const res = await fetch(`/api/notifications/${id}/read`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` }
       });
-      setNotifications(notifications.map((n: any) => n.id === id ? { ...n, unread: false } : n));
+      if (res.ok) {
+        setNotifications(notifications.map((n: any) => n.id === id ? { ...n, unread: false } : n));
+      }
     } catch (err) {}
   };
 
@@ -171,7 +175,7 @@ export default function FunderDashboardHeader({
               </div>
               
               {/* Notification List */}
-              <div className="flex flex-col max-h-[380px] overflow-y-auto custom-scrollbar">
+              <div className="flex flex-col max-h-[380px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {notifications.map((notif: any) => (
                   <div 
                     key={notif.id}
