@@ -52,7 +52,7 @@ export default function Login() {
   const [fpResendTimer, setFpResendTimer] = useState(0);
   const codeRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
 
-  const { updateSession, user } = useAuth();
+  const { updateSession, user, intendedRole } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -406,14 +406,16 @@ export default function Login() {
               </GoogleOAuthProvider>
             </div>
             
-            <div className="text-center pt-8 mt-4">
-              <p className="text-sm font-medium text-slate-500">
-                Don't have an account?{' '}
-                <Link to="/signup" className="text-[#6c11d4] font-bold hover:text-[#5b21b6] hover:underline ml-1 transition-colors">
-                  Create Account
-                </Link>
-              </p>
-            </div>
+            {intendedRole !== 'FUNDER' && (
+              <div className="text-center pt-8 mt-4">
+                <p className="text-sm font-medium text-slate-500">
+                  Don't have an account?{' '}
+                  <Link to="/signup" className="text-[#6c11d4] font-bold hover:text-[#5b21b6] hover:underline ml-1 transition-colors">
+                    Create Account
+                  </Link>
+                </p>
+              </div>
+            )}
 
           </form>
         </div>

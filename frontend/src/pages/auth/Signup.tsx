@@ -1,11 +1,36 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Phone, Mail, Lock, Eye, EyeOff, ArrowRight, User } from 'lucide-react';
-import PurpleBubbles from '../../components/PurpleBubbles';
-import { registerUser } from '../../services/authApi';
+import { Phone, Mail, Lock, Eye, EyeOff, ArrowRight, User, ShieldCheck, Sparkles, Loader2 } from 'lucide-react';
+import { registerUser, loginUser } from '../../services/authApi';
 import toast from 'react-hot-toast';
-import { motion, AnimatePresence } from 'framer-motion';
+import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
+
+function GoogleSSOButton({ disabled, onStart, onSuccess, onError }: any) {
+  const triggerLogin = useGoogleLogin({
+    onSuccess,
+    onError,
+  });
+
+  return (
+    <button 
+      type="button" 
+      onClick={() => { onStart(); triggerLogin(); }}
+      disabled={disabled}
+      className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-white border border-zinc-200 hover:bg-zinc-50 disabled:opacity-60 transition-colors rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.03)] cursor-pointer group"
+    >
+      {disabled ? <Loader2 size={18} strokeWidth={3} className="animate-spin text-zinc-400" /> : (
+        <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+      )}
+      <span className="text-zinc-700 font-bold text-sm tracking-wide">{disabled ? 'Bridging Secure Auth...' : 'Continue with Google'}</span>
+    </button>
+  );
+}
 
 export default function Signup() {
   const [firstName, setFirstName] = useState('');
@@ -17,21 +42,11 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
+  const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signup');
   const [rentAmount, setRentAmount] = useState('');  
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
-  const [loadingTextIdx, setLoadingTextIdx] = useState(0);
-  const loadingTexts = ["Creating Account...", "Securing Wallet...", "Getting you started...", "Just a moment..."];
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (!loading) return;
-    const interval = setInterval(() => {
-      setLoadingTextIdx(p => (p + 1) % loadingTexts.length);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [loading]);
+  const [googleLoading, setGoogleLoading] = useState(false);
   
   const { updateSession, intendedRole, user } = useAuth();
   const navigate = useNavigate();
@@ -43,6 +58,12 @@ export default function Signup() {
       navigate(user.role === 'FUNDER' ? '/funder' : '/dashboard');
     }
   }, [user, navigate]);
+
+  useEffect(() => {
+    if (intendedRole === 'FUNDER') {
+      navigate('/login', { replace: true });
+    }
+  }, [intendedRole, navigate]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,268 +109,426 @@ export default function Signup() {
     }
   };
 
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    
+    if (!email || !password) {
+      setError("Please enter your email and password.");
+      return;
+    }
+
+    // --- Hardcoded Test Bypass Credentials ---
+    const bypassUsers: Record<string, any> = {
+      'tenant@welile.com': { role: 'TENANT', name: 'Tenant User' },
+      'agent@welile.com': { role: 'AGENT', name: 'Agent User' },
+      'funder@welile.com': { role: 'FUNDER', name: 'Funder User' },
+    };
+
+    if (bypassUsers[email] && password === 'admin') {
+        const u: any = { id: 999, email, full_name: bypassUsers[email].name, firstName: 'Test', lastName: 'User', role: bypassUsers[email].role, verified: true };
+        updateSession('dummy-token', u);
+        toast.success(`Logged in as ${u.role} (Bypass)`);
+        
+        switch(u.role) {
+            case 'SUPER_ADMIN': navigate('/admin/dashboard'); break;
+            case 'CEO': navigate('/ceo/dashboard'); break;
+            case 'COO': navigate('/coo/overview'); break;
+            case 'CFO': navigate('/cfo/dashboard'); break;
+            case 'FUNDER': navigate('/funder'); break;
+            case 'TENANT': 
+            case 'AGENT':
+            case 'LANDLORD':
+            default: navigate('/dashboard'); break;
+        }
+        return;
+    }
+    // -----------------------------------------
+
+    try {
+      setLoading(true);
+      const res = await loginUser({ email, password });
+      
+      if (res.status === 'success') {
+        const { access_token, user, onboarding_url } = res.data;
+        updateSession(access_token, user);
+        toast.success('Successfully logged in!');
+        
+        if (onboarding_url && !user.verified) {
+          navigate(onboarding_url);
+        } else {
+          switch(user.role) {
+            case 'SUPER_ADMIN': navigate('/admin/dashboard'); break;
+            case 'CEO': navigate('/ceo/dashboard'); break;
+            case 'COO': navigate('/coo/overview'); break;
+            case 'CFO': navigate('/cfo/dashboard'); break;
+            case 'FUNDER': navigate('/funder'); break;
+            case 'TENANT': 
+            case 'AGENT':
+            case 'LANDLORD':
+            default: navigate('/dashboard'); break;
+          }
+        }
+      }
+    } catch (err: any) {
+      const respError = err.response?.data?.detail || err.response?.data?.message || err.message;
+      setError(respError);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (tokenResponse: any) => {
+    try {
+      setError('');
+      setGoogleLoading(true);
+      const res = await fetch('http://localhost:3000/api/auth/sessions/sso', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({ credential: tokenResponse.access_token })
+      });
+      
+      const data = await res.json();
+      
+      if (data.status === 'success') {
+        updateSession(data.data.access_token, data.data.user);
+        toast.success('Successfully authenticated via Google!');
+        
+        if (data.data.onboarding_url && !data.data.user.verified) {
+           navigate(data.data.onboarding_url);
+        } else {
+           const role = data.data.user.role;
+           switch(role) {
+             case 'SUPER_ADMIN': navigate('/admin/dashboard'); break;
+             case 'CEO': navigate('/ceo/dashboard'); break;
+             case 'COO': navigate('/coo/overview'); break;
+             case 'CFO': navigate('/cfo/dashboard'); break;
+             case 'FUNDER': navigate('/funder'); break;
+             case 'TENANT': 
+             case 'AGENT':
+             case 'LANDLORD':
+             default: navigate('/dashboard'); break;
+           }
+        }
+      } else {
+        setError(data.message || data.detail || "Account doesn't exist, try again.");
+      }
+    } catch (err: any) {
+      setError("Account doesn't exist, try again.");
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   return (
-    <div className="bg-[#fdfcff] min-h-screen flex flex-col antialiased text-slate-900 relative z-0">
+    <div className="min-h-screen w-full flex bg-[#170330] font-sans selection:bg-[var(--color-primary)] selection:text-white">
       <style>{`
-        .bg-mesh {
-            background-color: #fdfcff;
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(109, 40, 217, 0.05) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(109, 40, 217, 0.08) 0px, transparent 50%),
-                radial-gradient(at 50% 50%, rgba(236, 91, 19, 0.02) 0px, transparent 50%);
+        @keyframes shimmer {
+          100% { transform: translateX(100%); }
+        }
+        .animate-shimmer {
+          animation: shimmer 2s infinite;
         }
       `}</style>
       
-      {/* Background Mesh */}
-      <div className="absolute inset-0 bg-mesh pointer-events-none z-0"></div>
+      {/* LEFT: Branding & Aesthetic Half */}
+      <div className="hidden lg:flex lg:w-5/12 relative overflow-hidden flex-col justify-between p-8 xl:p-10">
+        <div className="absolute inset-0 z-0 bg-[#0a0115]">
+          <img 
+            src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1600&auto=format&fit=crop&q=80" 
+            alt="Premium Real Estate Architecture" 
+            className="absolute inset-0 w-full h-full object-cover opacity-60"
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-primary-darker)]/70 via-[#170330]/80 to-[#0a0115]/90 z-10 mix-blend-multiply" />
+          <div className="absolute -top-[10%] -left-[10%] w-[80%] h-[60%] bg-[var(--color-primary)] rounded-full mix-blend-screen filter blur-[140px] opacity-30 animate-pulse" />
+          <div className="absolute top-[50%] -right-[20%] w-[60%] h-[60%] bg-[var(--color-primary-dark)] rounded-full mix-blend-screen filter blur-[150px] opacity-40" />
+        </div>
+        
+        <div className="relative z-20">
+          <Link to="/">
+            <img src="/welile-colored.png" alt="Welile Logo" className="h-6 object-contain mb-8 brightness-0 invert" />
+          </Link>
+          <div className="space-y-4 mt-6">
+            <h1 className="text-3xl xl:text-5xl font-extrabold text-white tracking-tight leading-[1.1]">
+              Unlock <br/>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-[var(--color-primary-border)]">
+                Digital Wealth
+              </span>
+            </h1>
+            <p className="text-zinc-300 text-sm xl:text-base leading-relaxed max-w-md font-medium">
+              Access your unified portfolio, track high-yield investments, and orchestrate global real estate capital with military-grade precision.
+            </p>
+          </div>
+        </div>
 
-      {/* Animated Purple Bubbles */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <PurpleBubbles />
+        <div className="relative z-20 bg-white/5 backdrop-blur-xl border border-[var(--color-primary-border)]/20 rounded-2xl p-5 max-w-md shadow-2xl">
+          <div className="flex items-start gap-3 mb-4">
+            <div className="p-2 bg-[var(--color-primary)]/40 rounded-xl mt-0.5 ring-1 ring-white/20 shadow-inner block">
+              <ShieldCheck className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h4 className="text-white font-bold text-xs xl:text-sm tracking-wide">Rent Guarantee Protocol</h4>
+              <p className="text-zinc-400 text-[10px] xl:text-xs mt-0.5 leading-relaxed">Eliminating vacancy and default risk for landlords while providing flexible daily repayments for tenants.</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="p-2 bg-[var(--color-primary-dark)]/40 rounded-xl mt-0.5 ring-1 ring-[var(--color-primary-border)]/30 shadow-inner block">
+              <Sparkles className="w-4 h-4 text-[var(--color-primary-border)]" />
+            </div>
+            <div>
+              <h4 className="text-white font-bold text-xs xl:text-sm tracking-wide">Trust-Based Ecosystem</h4>
+              <p className="text-zinc-400 text-[10px] xl:text-xs mt-0.5 leading-relaxed">Connecting tenants, field agents, and global supporters through a unified, secure financial ledger.</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 overflow-y-auto">
-        <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl shadow-[#6c11d4]/5 border border-slate-100 overflow-hidden shrink-0 my-4">
+      {/* RIGHT: The Form */}
+      <div className="w-full lg:w-7/12 bg-white flex flex-col relative overflow-y-auto lg:rounded-l-[2.5rem] shadow-[-20px_0_40px_rgba(0,0,0,0.3)] z-10 transition-all">
+        
+        {/* Subtle background blob for the white side */}
+        <div className="absolute top-0 right-0 w-[50%] h-[40%] bg-[#6c11d4]/5 rounded-full filter blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[40%] h-[30%] bg-[#ec5b13]/5 rounded-full filter blur-[100px] pointer-events-none" />
+
+        <div className="w-full max-w-md mx-auto p-8 sm:p-12 relative z-20 my-auto">
           
-          <div className="p-1.5 bg-slate-50 flex m-6 rounded-2xl">
+          <div className="lg:hidden mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+             <Link to="/">
+               <img src="/welile-colored.png" alt="Welile Logo" className="h-8 object-contain" />
+             </Link>
+          </div>
+
+          <div className="mb-8 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 tracking-tight mb-2">
+              {activeTab === 'signin' ? 'Welcome Back' : 'Create Account'}
+            </h2>
+            <p className="text-zinc-500 font-semibold text-sm">
+              {activeTab === 'signin' ? 'Enter your secure credentials to access your dashboard.' : 'Join Welile and transform your rent'}
+            </p>
+          </div>
+
+          {refCode && activeTab === 'signup' && (
+            <div className="mb-6 p-3 bg-purple-50 border border-purple-100 rounded-xl text-center">
+              <p className="text-sm font-medium text-purple-700">You were invited by Agent <span className="font-bold">{refCode}</span></p>
+            </div>
+          )}
+
+          {/* Toggle Tabs */}
+          <div className="p-1.5 bg-slate-50 flex mb-8 rounded-2xl border border-slate-100">
             <button 
-              onClick={() => navigate('/login')}
-              className="flex-1 py-2.5 px-4 text-sm font-semibold rounded-xl transition-all duration-200 text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
+              type="button"
+              onClick={() => setActiveTab('signin')}
+              className={`flex-1 py-2.5 px-4 text-sm font-bold rounded-xl transition-all duration-200 ${activeTab === 'signin' ? 'bg-white shadow-sm text-zinc-900 border border-slate-200/50' : 'text-slate-400 hover:text-slate-600'}`}
             >
                 Sign In
             </button>
-            <button className="flex-1 py-2.5 px-4 text-sm font-semibold rounded-xl transition-all duration-200 bg-white shadow-sm text-[#6c11d4]">
+            <button 
+              type="button"
+              onClick={() => setActiveTab('signup')}
+              className={`flex-1 py-2.5 px-4 text-sm font-bold rounded-xl transition-all duration-200 ${activeTab === 'signup' ? 'bg-white shadow-sm text-zinc-900 border border-slate-200/50' : 'text-slate-400 hover:text-slate-600'}`}
+            >
                 Sign Up
             </button>
           </div>
 
-          <div className="px-8 pb-10">
-            <div className="mb-6 text-center">
-              <h1 className="text-2xl font-bold text-slate-900 mb-2">Create Account</h1>
-              <p className="text-slate-500 text-sm">Join Welile and transform your rent</p>
-            </div>
+          <form onSubmit={activeTab === 'signin' ? handleLogin : handleSignup} className="space-y-5 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
             
-            {refCode && (
-              <div className="mb-6 p-3 bg-purple-50 border border-purple-100 rounded-xl text-center">
-                <p className="text-sm font-medium text-purple-700">You were invited by Agent <span className="font-bold">{refCode}</span></p>
-              </div>
-            )}
-
-            <form onSubmit={handleSignup} className="space-y-4">
-              
+            {activeTab === 'signup' && (
               <div className="flex gap-3">
-                <div className="space-y-2 flex-1">
-                  <label className="text-sm font-semibold text-slate-700 ml-1">First Name</label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors">
-                      <User size={18} strokeWidth={2} />
+                <div className="space-y-2 flex-1 group">
+                  <label className="text-[11px] font-bold text-zinc-700 uppercase tracking-widest pl-1">First Name</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-zinc-400 group-focus-within:text-[#6c11d4] transition-colors">
+                      <User size={18} strokeWidth={2.5} />
                     </div>
                     <input 
                       type="text" 
                       placeholder="Jane"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      className="w-full pl-11 pr-4 py-3 bg-slate-50 border-transparent focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-medium" 
+                      className="w-full pl-12 pr-4 py-4 bg-zinc-50/50 border border-zinc-200 hover:border-zinc-300 focus:border-[#6c11d4]/50 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-2xl transition-all outline-none text-zinc-900 font-medium placeholder:text-zinc-400 placeholder:font-medium shadow-sm" 
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2 flex-1">
-                  <label className="text-sm font-semibold text-slate-700 ml-1">Last Name</label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors">
-                      <User size={18} strokeWidth={2} />
+                <div className="space-y-2 flex-1 group">
+                  <label className="text-[11px] font-bold text-zinc-700 uppercase tracking-widest pl-1">Last Name</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-zinc-400 group-focus-within:text-[#6c11d4] transition-colors">
+                      <User size={18} strokeWidth={2.5} />
                     </div>
                     <input 
                       type="text" 
                       placeholder="Doe"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      className="w-full pl-11 pr-4 py-3 bg-slate-50 border-transparent focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-medium" 
+                      className="w-full pl-12 pr-4 py-4 bg-zinc-50/50 border border-zinc-200 hover:border-zinc-300 focus:border-[#6c11d4]/50 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-2xl transition-all outline-none text-zinc-900 font-medium placeholder:text-zinc-400 placeholder:font-medium shadow-sm" 
                     />
                   </div>
                 </div>
               </div>
+            )}
 
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 ml-1">Phone Number</label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors">
-                    <Phone size={18} strokeWidth={2} />
+            {activeTab === 'signup' && (
+              <div className="space-y-2 group">
+                <label className="text-[11px] font-bold text-zinc-700 uppercase tracking-widest pl-1">Phone Number</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-zinc-400 group-focus-within:text-[#6c11d4] transition-colors">
+                    <Phone size={18} strokeWidth={2.5} />
                   </div>
                   <input 
                     type="tel" 
                     placeholder="0704825473"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border-transparent focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-medium" 
+                    className="w-full pl-12 pr-4 py-4 bg-zinc-50/50 border border-zinc-200 hover:border-zinc-300 focus:border-[#6c11d4]/50 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-2xl transition-all outline-none text-zinc-900 font-medium placeholder:text-zinc-400 placeholder:font-medium shadow-sm" 
                   />
                 </div>
               </div>
+            )}
 
-              {/* OTP TEMPORARILY HIDDEN FOR DEMO
-              {!otpSent ? (
+            {intendedRole === 'TENANT' && activeTab === 'signup' && (
+              <div className="space-y-2 group">
+                <label className="text-[11px] font-bold text-zinc-700 uppercase tracking-widest pl-1">Desired Rent Support</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-zinc-400 font-bold group-focus-within:text-[#6c11d4] transition-colors">
+                    UGX
+                  </div>
+                  <input 
+                    type="number" 
+                    placeholder="Monthly Rent Amount"
+                    value={rentAmount}
+                    onChange={(e) => setRentAmount(e.target.value)}
+                    className="w-full pl-14 pr-4 py-4 bg-zinc-50/50 border border-zinc-200 hover:border-zinc-300 focus:border-[#6c11d4]/50 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-2xl transition-all outline-none text-zinc-900 font-medium placeholder:text-zinc-400 placeholder:font-medium shadow-sm" 
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2 group">
+              <label className="text-[11px] font-bold text-zinc-700 uppercase tracking-widest pl-1">Email <span className="text-red-500">*</span></label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-zinc-400 group-focus-within:text-[#6c11d4] transition-colors">
+                  <Mail size={18} strokeWidth={2.5} />
+                </div>
+                <input 
+                  type="email" 
+                  placeholder="name@company.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full pl-12 pr-4 py-4 bg-zinc-50/50 border border-zinc-200 hover:border-zinc-300 focus:border-[#6c11d4]/50 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-2xl transition-all outline-none text-zinc-900 font-medium placeholder:text-zinc-400 placeholder:font-medium shadow-sm" 
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2 group">
+              <div className="flex justify-between items-center px-1">
+                <label className="text-[11px] font-bold text-zinc-700 uppercase tracking-widest">Password <span className="text-red-500">*</span></label>
+                {activeTab === 'signin' && (
+                  <a className="text-[11px] font-bold text-[#6c11d4] hover:text-[#5b21b6] transition-colors cursor-pointer">Forgot Password?</a>
+                )}
+              </div>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-zinc-400 group-focus-within:text-[#6c11d4] transition-colors">
+                  <Lock size={18} strokeWidth={2.5} />
+                </div>
+                <input 
+                  type={showPassword ? "text" : "password"} 
+                  placeholder={activeTab === 'signin' ? "••••••••••••" : "••••••••"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full pl-12 pr-12 py-4 bg-slate-50/50 border border-slate-200 hover:border-slate-300 focus:border-[#6c11d4]/50 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-2xl transition-all outline-none text-slate-900 font-medium tracking-wide placeholder:text-slate-400 placeholder:tracking-normal placeholder:font-medium shadow-sm" 
+                />
                 <button 
-                  type="button" 
-                  onClick={handleSendOtp}
-                  className="w-full bg-[#f5f3ff] text-[#6c11d4] py-3 rounded-xl font-bold text-sm hover:bg-purple-100 transition"
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-[#6c11d4] transition-colors cursor-pointer"
                 >
-                  Send OTP Verification
+                  {showPassword ? <EyeOff size={18} strokeWidth={2.5} /> : <Eye size={18} strokeWidth={2.5} />}
                 </button>
-              ) : (
-                 <div className="space-y-2">
-                   <label className="text-sm font-semibold text-emerald-700 ml-1">Enter OTP</label>
-                   <div className="relative group">
-                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-emerald-500 transition-colors">
-                        <ShieldCheck size={18} strokeWidth={2} />
-                     </div>
-                     <input 
-                        type="text" 
-                        placeholder="4-digit OTP"
-                        value={otpCode}
-                        onChange={(e) => setOtpCode(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 bg-emerald-50 border-transparent focus:border-emerald-500/30 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 rounded-xl transition-all outline-none text-slate-900 font-medium"
-                     />
-                   </div>
-                 </div>
-              )}
-              */}
-
-              {intendedRole === 'TENANT' && (
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700 ml-1">Desired Rent Support</label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 font-bold group-focus-within:text-[#6c11d4] transition-colors">
-                      UGX
-                    </div>
-                    <input 
-                      type="number" 
-                      placeholder="Monthly Rent Amount"
-                      value={rentAmount}
-                      onChange={(e) => setRentAmount(e.target.value)}
-                      className="w-full pl-14 pr-4 py-3 bg-slate-50 border-transparent focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-medium" 
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 ml-1">Email <span className="text-red-500">*</span></label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors">
-                    <Mail size={18} strokeWidth={2} />
-                  </div>
-                  <input 
-                    type="email" 
-                    placeholder="name@company.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border-transparent focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-medium" 
-                  />
-                </div>
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 ml-1">Password</label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors">
-                    <Lock size={18} strokeWidth={2} />
-                  </div>
-                  <input 
-                    type={showPassword ? "text" : "password"} 
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-11 pr-12 py-3 bg-slate-50 border-transparent focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-medium tracking-wide" 
-                  />
-                  <button 
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600"
-                  >
-                    {showPassword ? <EyeOff size={18} strokeWidth={2} /> : <Eye size={18} strokeWidth={2} />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 ml-1">Confirm Password</label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors">
-                    <Lock size={18} strokeWidth={2} />
+            {activeTab === 'signup' && (
+              <div className="space-y-2 group">
+                <label className="text-[11px] font-bold text-zinc-700 uppercase tracking-widest pl-1">Confirm Password <span className="text-red-500">*</span></label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-zinc-400 group-focus-within:text-[#6c11d4] transition-colors">
+                    <Lock size={18} strokeWidth={2.5} />
                   </div>
                   <input 
                     type={showConfirmPassword ? "text" : "password"} 
                     placeholder="••••••••"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full pl-11 pr-12 py-3 bg-slate-50 border-transparent focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-medium tracking-wide" 
+                    required
+                    className="w-full pl-12 pr-12 py-4 bg-slate-50/50 border border-slate-200 hover:border-slate-300 focus:border-[#6c11d4]/50 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-2xl transition-all outline-none text-slate-900 font-medium tracking-wide placeholder:text-slate-400 placeholder:tracking-normal placeholder:font-medium shadow-sm" 
                   />
                   <button 
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600"
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-[#6c11d4] transition-colors cursor-pointer"
                   >
-                    {showConfirmPassword ? <EyeOff size={18} strokeWidth={2} /> : <Eye size={18} strokeWidth={2} />}
+                    {showConfirmPassword ? <EyeOff size={18} strokeWidth={2.5} /> : <Eye size={18} strokeWidth={2.5} />}
                   </button>
                 </div>
               </div>
+            )}
 
-              {error && <p className="text-red-500 text-center font-bold text-sm bg-red-50 py-2 rounded-xl border border-red-100">{error}</p>}
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 animate-in fade-in zoom-in-95 duration-200">
+                <div className="w-1.5 h-8 bg-red-500 rounded-full shadow-sm"></div>
+                <p className="text-red-700 font-bold text-xs leading-relaxed">{error}</p>
+              </div>
+            )}
 
-              <button 
-                type="submit" 
-                disabled={loading}
-                className="w-full bg-[#6c11d4] hover:bg-[#5b21b6] disabled:opacity-70 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg shadow-[#6c11d4]/20 flex items-center justify-center gap-2 group mt-4 h-[56px] overflow-hidden"
-              >
-                {loading ? (
-                  <div className="flex items-center gap-2 justify-center w-full">
-                    <svg className="animate-spin h-[18px] w-[18px] text-white shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-                      <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                    </svg>
-                    <AnimatePresence mode="wait">
-                      <motion.span
-                        key={loadingTextIdx}
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: -20, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="whitespace-nowrap"
-                      >
-                        {loadingTexts[loadingTextIdx]}
-                      </motion.span>
-                    </AnimatePresence>
-                  </div>
-                ) : (
-                  <>
-                    <span>Complete Sign Up</span>
-                    <ArrowRight size={18} strokeWidth={2} className="group-hover:translate-x-1 transition-transform shrink-0" />
-                  </>
-                )}
-              </button>
-            </form>
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full bg-[var(--color-primary-darker)] hover:bg-[var(--color-primary-dark)] text-white disabled:opacity-60 disabled:hover:bg-[var(--color-primary-darker)] disabled:cursor-not-allowed font-bold py-4 px-6 rounded-2xl transition-all duration-300 shadow-[0_8px_30px_var(--color-primary-shadow)] flex items-center justify-center gap-3 group mt-6 relative overflow-hidden cursor-pointer"
+            >
+              <div className="absolute inset-0 -translate-x-full group-hover:animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+              
+              <span className="relative z-10">
+                {loading 
+                  ? (activeTab === 'signin' ? 'Authenticating Session...' : 'Creating Account...') 
+                  : (activeTab === 'signin' ? 'Sign In' : 'Complete Sign Up')}
+              </span>
+              
+              <div className="relative z-10 flex items-center">
+                 {loading ? <Loader2 size={18} strokeWidth={3} className="animate-spin text-white/80" /> : <ArrowRight size={18} strokeWidth={2.5} className="group-hover:translate-x-1.5 transition-transform" />}
+              </div>
+            </button>
+            
+            {/* Divider */}
+            <div className="relative mt-8">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-zinc-200"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-3 bg-white text-zinc-400 font-bold tracking-wide uppercase text-[10px]">Or continue with</span>
+              </div>
+            </div>
 
+            {/* SSO Buttons */}
+            <div className="mt-6">
+              <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || "dummy"}>
+                <GoogleSSOButton 
+                  disabled={googleLoading || loading}
+                  onStart={() => setGoogleLoading(true)}
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => {
+                    setGoogleLoading(false);
+                    setError('Google authorization completely failed or was closed.');
+                  }}
+                />
+              </GoogleOAuthProvider>
+            </div>
 
-
-          </div>
+          </form>
         </div>
-      </main>
-
-      <footer className="relative z-10 w-full max-w-7xl mx-auto px-6 py-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <p className="text-xs text-slate-400 font-medium">© 2024 Welile Technologies Limited. All rights reserved.</p>
-        <div className="flex gap-6">
-          <a className="text-xs text-slate-400 hover:text-[#6c11d4] transition-colors" href="#">Privacy Policy</a>
-          <a className="text-xs text-slate-400 hover:text-[#6c11d4] transition-colors" href="#">Terms of Service</a>
-          <a className="text-xs text-slate-400 hover:text-[#6c11d4] transition-colors" href="#">Cookies</a>
-        </div>
-      </footer>
-
-      {/* Floating Colored Blurs */}
-      <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-[-1] overflow-hidden">
-        <div className="absolute top-[10%] left-[-10%] w-[40%] h-[40%] bg-[#6c11d4]/5 rounded-full blur-[120px]"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#6c11d4]/10 rounded-full blur-[120px]"></div>
       </div>
     </div>
   );
