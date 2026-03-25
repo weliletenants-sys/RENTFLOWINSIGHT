@@ -509,3 +509,82 @@ export const updateUserProfile = async (req: Request, res: Response) => {
     return problemResponse(res, 500, 'Internal Server Error', 'Failed to update user profile details', 'internal-error');
   }
 };
+
+// --- Deposit Review & Forwarding (Multi-Stage Approval Pipeline) ---
+
+export const getPendingDeposits = async (req: Request, res: Response) => {
+  try {
+    const deposits = await prisma.depositRequests.findMany({
+      where: { status: 'PENDING' },
+      orderBy: { created_at: 'desc' }
+    });
+
+    const enriched = await Promise.all(deposits.map(async d => {
+      let profile = null;
+      if (d.user_id) profile = await prisma.profiles.findUnique({ where: { id: d.user_id } });
+      return {
+        ...d,
+        user_name: profile?.full_name || 'Unknown',
+        user_phone: profile?.phone || 'Unknown',
+        avatar_url: profile?.avatar_url || null
+      };
+    }));
+
+    res.json({ deposits: enriched });
+  } catch (error: any) {
+    return problemResponse(res, 500, 'Internal Server Error', error.message, 'internal-error');
+  }
+};
+
+export const forwardDeposit = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const cooId = req.user?.sub;
+
+    const request = await prisma.depositRequests.findUnique({ where: { id } });
+    if (!request) return problemResponse(res, 404, 'Not Found', `Deposit not found`, 'not-found');
+    if (request.status?.toUpperCase() !== 'PENDING') return problemResponse(res, 400, 'Validation Error', `Deposit is not pending`, 'validation-error');
+
+    const updated = await prisma.depositRequests.update({
+      where: { id },
+      data: {
+        status: 'COO_APPROVED',
+        // @ts-ignore - Bypass local Prisma lock typecheck
+        coo_id: cooId,
+        // @ts-ignore
+        coo_approved_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    });
+
+    res.json({ message: 'Deposit successfully forwarded to CFO queue', request: updated });
+  } catch (error: any) {
+    return problemResponse(res, 500, 'Internal Server Error', error.message, 'internal-error');
+  }
+};
+
+export const rejectDeposit = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+    const cooId = req.user?.sub;
+
+    if (!reason || reason.trim() === '') {
+      return problemResponse(res, 400, 'Validation Error', `Rejection reason is required`, 'validation-error');
+    }
+
+    const updated = await prisma.depositRequests.update({
+      where: { id },
+      data: {
+        status: 'REJECTED',
+        rejection_reason: reason,
+        processed_by: cooId,
+        updated_at: new Date().toISOString()
+      }
+    });
+
+    res.json({ message: 'Deposit rejected', request: updated });
+  } catch (error: any) {
+    return problemResponse(res, 500, 'Internal Server Error', error.message, 'internal-error');
+  }
+};

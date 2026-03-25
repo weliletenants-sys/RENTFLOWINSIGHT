@@ -30,6 +30,7 @@ const COOSidebar: React.FC<COOSidebarProps> = ({ isOpen, setIsOpen }) => {
     { name: 'All Users', icon: <Users size={20} />, path: '/coo/users' },
     { name: 'Alerts', icon: <AlertTriangle size={20} />, path: '/coo/alerts' },
     { name: 'Withdrawals', icon: <CreditCard size={20} />, path: '/coo/withdrawals' },
+    { name: 'Deposits', icon: <FileText size={20} />, path: '/coo/deposits' },
     { name: 'Partners', icon: <Users size={20} />, path: '/coo/partners' },
     { name: 'Tenants', icon: <User size={20} />, path: '/coo/tenants' },
     { name: 'Opportunities', icon: <Home size={20} />, path: '/coo/opportunities' },

@@ -14,8 +14,9 @@ import GeneralLedgerTab from './components/GeneralLedgerTab';
 import CommissionPayoutsTab from './components/CommissionPayoutsTab';
 import WithdrawalsTab from './components/WithdrawalsTab';
 import RunwayAnalyticsTab from './components/RunwayAnalyticsTab';
+import CFODepositsTab from './components/CFODepositsTab';
 
-type TabType = 'overview' | 'statements' | 'solvency' | 'runway' | 'reconciliation' | 'ledger' | 'commissions' | 'withdrawals';
+type TabType = 'overview' | 'statements' | 'solvency' | 'runway' | 'reconciliation' | 'ledger' | 'commissions' | 'withdrawals' | 'deposits';
 
 export default function CfoDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
@@ -25,6 +26,7 @@ export default function CfoDashboard() {
   const [overviewMetrics, setOverviewMetrics] = useState<any>(null);
   const [reconciliation, setReconciliation] = useState<any>(null);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
+  const [deposits, setDeposits] = useState<any[]>([]);
   const [statements, setStatements] = useState<any>(null);
   const [commissions, setCommissions] = useState<any[]>([]);
   const [runwayData, setRunwayData] = useState<any>(null);
@@ -48,10 +50,18 @@ export default function CfoDashboard() {
   };
 
   const fetchWithdrawals = async () => {
-    // Current pending requests shouldn't really be filtered by range, but we pass it anyway.
     try {
       const { data } = await axios.get(`/api/cfo/withdrawals/pending?range=${dateFilter}`);
       setWithdrawals(data.withdrawals || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchDeposits = async () => {
+    try {
+      const { data } = await axios.get(`/api/cfo/deposits/forwarded`);
+      setDeposits(data.deposits || []);
     } catch (err) {
       console.error(err);
     }
@@ -88,6 +98,7 @@ export default function CfoDashboard() {
     if (activeTab === 'overview') fetchOverview();
     if (activeTab === 'reconciliation') fetchReconciliation();
     if (activeTab === 'withdrawals') fetchWithdrawals();
+    if (activeTab === 'deposits') fetchDeposits();
     if (activeTab === 'statements' || activeTab === 'solvency') fetchStatements();
     if (activeTab === 'commissions') fetchCommissions();
     if (activeTab === 'runway') fetchRunway();
@@ -104,6 +115,7 @@ export default function CfoDashboard() {
       case 'ledger': return { title: 'General Ledger', subtitle: 'Full transactional double-entry ledger' };
       case 'commissions': return { title: 'Commission Payouts', subtitle: 'Pending agent commissions requiring sign-off' };
       case 'withdrawals': return { title: 'Withdrawals Engine', subtitle: 'Pending withdrawal clearances' };
+      case 'deposits': return { title: 'Deposit Verification', subtitle: 'Final clearance and ledger routing for COO-verified deposits' };
       default: return { title: 'Overview', subtitle: 'Detailed overview of your operations' };
     }
   };
@@ -129,6 +141,7 @@ export default function CfoDashboard() {
            {activeTab === 'ledger' && <GeneralLedgerTab />}
            {activeTab === 'commissions' && <CommissionPayoutsTab commissionsData={commissions} fetchCommissions={fetchCommissions} />}
            {activeTab === 'withdrawals' && <WithdrawalsTab withdrawals={withdrawals} fetchWithdrawals={fetchWithdrawals} />}
+           {activeTab === 'deposits' && <CFODepositsTab deposits={deposits} fetchDeposits={fetchDeposits} />}
         </main>
       </div>
     </div>

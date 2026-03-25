@@ -178,3 +178,44 @@ export const updateGlobalUserProfile = async (id: string, updates: any) => {
     throw new Error(error.response?.data?.message || 'Failed to update user profile');
   }
 };
+
+// --- Deposit Review Workflow ---
+
+export const getPendingDeposits = async () => {
+  try {
+    const response = await axios.get(`${API}/v1/coo/deposits/pending`, getAuthHeaders());
+    return response.data.deposits;
+  } catch (error: any) {
+    if (error.response?.data?.type) {
+      const problem = error.response.data as ProblemDetails;
+      throw new Error(`[${problem.title}]: ${problem.detail}`);
+    }
+    throw new Error(error.response?.data?.message || 'Failed to fetch pending deposits');
+  }
+};
+
+export const forwardDeposit = async (id: string) => {
+  try {
+    const response = await axios.post(`${API}/v1/coo/deposits/${id}/forward`, {}, getAuthHeaders());
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.data?.type) {
+      const problem = error.response.data as ProblemDetails;
+      throw new Error(`[${problem.title}]: ${problem.detail}`);
+    }
+    throw new Error(error.response?.data?.message || 'Failed to forward deposit to CFO');
+  }
+};
+
+export const rejectDeposit = async (id: string, reason: string) => {
+  try {
+    const response = await axios.post(`${API}/v1/coo/deposits/${id}/reject`, { reason }, getAuthHeaders());
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.data?.type) {
+      const problem = error.response.data as ProblemDetails;
+      throw new Error(`[${problem.title}]: ${problem.detail}`);
+    }
+    throw new Error(error.response?.data?.message || 'Failed to reject deposit');
+  }
+};

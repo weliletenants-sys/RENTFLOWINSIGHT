@@ -25,6 +25,7 @@ const CFOSidebar: React.FC<CFOSidebarProps> = ({ activeTab, setActiveTab }) => {
   ];
 
   const secondaryLinks = [
+    { id: 'deposits', name: 'Deposit Processing', icon: <FileText size={20} /> },
     { id: 'commissions', name: 'Commission Payouts', icon: <Coins size={20} /> },
     { id: 'withdrawals', name: 'Withdrawals', icon: <ArrowDownToLine size={20} /> },
   ];

@@ -359,8 +359,8 @@ export const approveDeposit = async (req: Request, res: Response) => {
     if (!request) {
       return problemResponse(res, 404, 'Not Found', `Deposit request not found`, 'not-found');
     }
-    if (request.status?.toUpperCase() !== 'PENDING') {
-      return problemResponse(res, 400, 'Validation Error', `Deposit request is not pending`, 'validation-error');
+    if (request.status?.toUpperCase() !== 'COO_APPROVED') {
+      return problemResponse(res, 400, 'Validation Error', `Deposit request has not been verified by operations yet`, 'validation-error');
     }
 
     const targetUserId = request.user_id;
@@ -385,6 +385,10 @@ export const approveDeposit = async (req: Request, res: Response) => {
         data: {
           status: 'APPROVED',
           processed_by: cfoId,
+          // @ts-ignore
+          cfo_id: cfoId,
+          // @ts-ignore
+          cfo_approved_at: now,
           approved_at: now,
           updated_at: now
         }
@@ -572,5 +576,29 @@ export const getPredictiveRunway = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error('getPredictiveRunway error:', error);
     res.status(500).json({ message: error.message });
+  }
+};
+
+export const getForwardedDeposits = async (req: Request, res: Response) => {
+  try {
+    const deposits = await prisma.depositRequests.findMany({
+      where: { status: 'COO_APPROVED' },
+      orderBy: { updated_at: 'desc' }
+    });
+
+    const enriched = await Promise.all(deposits.map(async d => {
+      let profile = null;
+      if (d.user_id) profile = await prisma.profiles.findUnique({ where: { id: d.user_id } });
+      return {
+        ...d,
+        user_name: profile?.full_name || 'Unknown',
+        user_phone: profile?.phone || 'Unknown',
+        avatar_url: profile?.avatar_url || null
+      };
+    }));
+
+    res.json({ deposits: enriched });
+  } catch (error: any) {
+    return problemResponse(res, 500, 'Internal Server Error', error.message, 'internal-error');
   }
 };

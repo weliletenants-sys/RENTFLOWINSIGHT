@@ -11,7 +11,8 @@ import {
   getPendingCommissions,
   approveCommission,
   rejectCommission,
-  getPredictiveRunway
+  getPredictiveRunway,
+  getForwardedDeposits
 } from '../../controllers/cfo.controller';
 
 const router = express.Router();
@@ -29,6 +30,7 @@ router.get('/reconciliations', getReconciliation);
 router.get('/withdrawals/pending', getPendingWithdrawals);
 router.post('/withdrawals/:id/approvals', approveWithdrawal);
 router.post('/withdrawals/:id/rejections', rejectWithdrawal);
+router.get('/deposits/forwarded', getForwardedDeposits);
 router.put('/deposits/:id/approve', approveDeposit);
 
 // Accounting

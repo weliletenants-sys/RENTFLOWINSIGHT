@@ -269,6 +269,11 @@ model DepositRequests {
   updated_at       String
   user_id          String?
 
+  coo_id           String?
+  coo_approved_at  String?
+  cfo_id           String?
+  cfo_approved_at  String?
+
   @@map("deposit_requests")
 }
 
