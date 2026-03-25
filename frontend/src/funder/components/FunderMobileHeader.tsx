@@ -121,7 +121,7 @@ export default function FunderMobileHeader({ user, onNotificationClick, onAvatar
               </div>
               
               {/* Notification List */}
-              <div className="flex flex-col max-h-[380px] overflow-y-auto custom-scrollbar">
+              <div className="flex flex-col max-h-[380px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {notifications.map((notif) => (
                   <div 
                     key={notif.id}

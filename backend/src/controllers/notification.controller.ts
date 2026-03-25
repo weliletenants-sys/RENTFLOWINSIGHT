@@ -48,7 +48,7 @@ export const markAllAsRead = async (req: Request, res: Response) => {
     if (!userId) return res.status(401).json({ status: 'error', message: 'Unauthorized' });
 
     await prisma.notifications.updateMany({
-      where: { user_id: userId, is_read: false },
+      where: { user_id: userId, is_read: { not: true } },
       data: { is_read: true, updated_at: new Date().toISOString() }
     });
 
