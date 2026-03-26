@@ -19,6 +19,10 @@ export default function ProtectedRoute({ children }: { children?: ReactNode }) {
       return <Navigate to="/admin/login" state={{ from: location }} replace />;
     }
 
+    if (location.pathname.startsWith('/funder')) {
+      return <Navigate to="/funder/login" state={{ from: location }} replace />;
+    }
+
     // Default: Not logged in, redirect to consumer login
     return <Navigate to="/login" state={{ from: location }} replace />;
   }

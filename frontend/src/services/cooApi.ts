@@ -206,7 +206,6 @@ export const forwardDeposit = async (id: string) => {
     throw new Error(error.response?.data?.message || 'Failed to forward deposit to CFO');
   }
 };
-
 export const rejectDeposit = async (id: string, reason: string) => {
   try {
     const response = await axios.post(`${API}/v1/coo/deposits/${id}/reject`, { reason }, getAuthHeaders());

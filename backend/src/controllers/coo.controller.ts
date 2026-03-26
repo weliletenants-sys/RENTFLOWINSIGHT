@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../prisma/prisma.client';
 import { problemResponse } from '../utils/problem';
 import crypto from 'crypto';
+import bcrypt from 'bcrypt';
 
 export const getOverviewMetrics = async (req: Request, res: Response) => {
   try {
@@ -701,6 +702,8 @@ export const importPartners = async (req: Request, res: Response) => {
     let importedCount = 0;
     let portfolioCount = 0;
 
+    const defaultPasswordHash = await bcrypt.hash('Partner@welile', 12);
+
     for (const p of partners) {
       if (!p.phone && !p.email) continue;
       
@@ -717,6 +720,7 @@ export const importPartners = async (req: Request, res: Response) => {
             phone: p.phone || `mock_${crypto.randomUUID().slice(0, 8)}`,
             email: p.email || null,
             role: 'FUNDER',
+            password_hash: defaultPasswordHash,
             verified: true,
             is_frozen: false,
             rent_discount_active: false,

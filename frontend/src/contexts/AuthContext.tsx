@@ -77,6 +77,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   const logout = async () => {
     const token = localStorage.getItem('access_token');
+    const isFunder = user?.role === 'FUNDER';
+    
     if (token) {
       try {
         await logoutUser(token);
@@ -87,7 +89,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('user_data');
     setUser(null);
-    window.location.replace('/login');
+    
+    if (isFunder) {
+       window.location.replace('/funder/login');
+    } else {
+       window.location.replace('/login');
+    }
   };
   
   // The magic mock method to switch dashboards quickly
