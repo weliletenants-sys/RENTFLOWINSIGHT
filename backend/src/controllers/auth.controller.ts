@@ -138,6 +138,7 @@ export const register = async (req: Request, res: Response) => {
     let onboarding_url = '/dashboard';
     if (role === 'AGENT') onboarding_url = '/agent-onboarding';
     if (role === 'TENANT') onboarding_url = '/tenant-agreement';
+    if (role === 'SUPER_ADMIN') onboarding_url = '/admin';
 
     // 4. Standardized Success Output {status, data, message} (backend.md)
     return res.status(201).json({
@@ -207,6 +208,7 @@ export const login = async (req: Request, res: Response) => {
     if (role === 'AGENT' && profile.verified === false) onboarding_url = '/agent-onboarding';
     else if (role === 'AGENT') onboarding_url = '/dashboard';
     if (role === 'TENANT') onboarding_url = '/tenant-agreement'; // or based on tenant onboarding status
+    if (role === 'SUPER_ADMIN') onboarding_url = '/admin';
 
     return res.status(200).json({
       status: 'success',
@@ -294,6 +296,7 @@ export const ssoLogin = async (req: Request, res: Response) => {
     else if (role === 'AGENT') onboarding_url = '/dashboard';
     if (role === 'TENANT') onboarding_url = '/tenant-agreement';
     if (role === 'FUNDER') onboarding_url = '/funder';
+    if (role === 'SUPER_ADMIN') onboarding_url = '/admin';
 
     return res.status(200).json({
       status: 'success',

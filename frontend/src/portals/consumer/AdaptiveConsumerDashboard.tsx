@@ -8,8 +8,11 @@ export default function AdaptiveConsumerDashboard() {
   const { user } = useAuth();
   
   // Boundary check: Staff shouldn't be here, they go to /staff
-  // Exception: Super Admin might want to view this, but generally this is for consumers
-  const isConsumer = user && ['TENANT', 'AGENT', 'LANDLORD', 'FUNDER', 'SUPER_ADMIN'].includes(user.role as string);
+  if (user?.role === 'SUPER_ADMIN') {
+    return <Navigate to="/admin" replace />;
+  }
+
+  const isConsumer = user && ['TENANT', 'AGENT', 'LANDLORD', 'FUNDER'].includes(user.role as string);
 
   if (!isConsumer) {
     return <Navigate to="/staff" replace />;
