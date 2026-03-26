@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -10,6 +10,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     // Force dark mode on mounting the layout
@@ -37,10 +38,18 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   ];
 
   return (
-    <div className="bg-white text-slate-900 font-inter selection:bg-[#9234eb]/30 min-h-screen">
+    <div className="bg-white text-slate-900 font-inter selection:bg-[#9234eb]/30 min-h-screen relative">
       
+      {/* Mobile Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 transition-opacity"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* NavigationDrawer Shell */}
-      <aside className="fixed left-0 top-0 h-full flex flex-col z-50 w-64 bg-white border-r border-slate-200">
+      <aside className={`fixed left-0 top-0 h-full flex flex-col z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-6">
           <span className="text-xl font-black tracking-tighter text-[#9234eb]">WELILE</span>
         </div>
@@ -48,7 +57,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           {navItems.map((item, idx) => (
             <button
               key={idx}
-              onClick={() => navigate(item.path)}
+              onClick={() => { navigate(item.path); setIsSidebarOpen(false); }}
               className={`flex items-center gap-3 w-full text-left px-4 py-2 rounded-lg transition-all duration-150 ${
                 item.active 
                   ? 'bg-slate-50 text-[#9234eb] font-bold' 
@@ -73,11 +82,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </aside>
 
       {/* Main Content Wrapper */}
-      <main className="ml-64 min-h-screen flex flex-col">
+      <main className="min-h-screen flex flex-col transition-all duration-300">
         {/* TopAppBar */}
-        <header className="flex justify-between items-center w-full px-6 h-14 sticky top-0 bg-white/70 backdrop-blur-xl z-40 border-b border-slate-200 shadow-[0_20px_40px_rgba(146,52,235,0.08)]">
+        <header className="flex justify-between items-center w-full px-4 sm:px-6 h-14 sticky top-0 bg-white/70 backdrop-blur-xl z-30 border-b border-slate-200 shadow-[0_20px_40px_rgba(146,52,235,0.08)]">
           <div className="flex items-center gap-4">
-            <span className="material-symbols-outlined text-[#9234eb] cursor-pointer" data-icon="search">search</span>
+            <button onClick={() => setIsSidebarOpen(true)} className="text-slate-500 hover:text-[#9234eb] flex items-center shrink-0">
+               <span className="material-symbols-outlined text-2xl">menu</span>
+            </button>
+            <span className="material-symbols-outlined text-[#9234eb] cursor-pointer hidden sm:block" data-icon="search">search</span>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-[#4edea3] animate-pulse shadow-[0_0_8px_#4EDEA3]"></div>
               <span className="font-label text-xs tracking-widest text-[#4edea3] font-bold uppercase">System: Operational</span>
