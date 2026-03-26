@@ -18,7 +18,7 @@ export default function SystemOverview() {
     const fetchStats = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:3000/api/superadmin/system-stats', {
+        const res = await axios.get((import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:3000')) + '/api/superadmin/system-stats', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setStats(res.data);

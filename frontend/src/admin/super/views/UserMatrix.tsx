@@ -12,7 +12,7 @@ export default function UserMatrix() {
     const fetchUsers = async () => {
       try {
         const token = localStorage.getItem('access_token') || localStorage.getItem('token');
-        const res = await axios.get('http://localhost:3000/api/superadmin/users', {
+        const res = await axios.get((import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:3000')) + '/api/superadmin/users', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setUsers(res.data);
@@ -33,7 +33,7 @@ export default function UserMatrix() {
   const handleFreezeConfirm = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:3000/api/superadmin/freeze-account', { targetUserId, reason: 'Manual Admin Action' }, {
+      await axios.post((import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:3000')) + '/api/superadmin/freeze-account', { targetUserId, reason: 'Manual Admin Action' }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setFreezeModalOpen(false);

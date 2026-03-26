@@ -191,7 +191,7 @@ export default function Login() {
     try {
       setError('');
       
-      const res = await fetch('http://localhost:3000/api/auth/sessions/sso', {
+      const res = await fetch((import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:3000')) + '/api/auth/sessions/sso', {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
          body: JSON.stringify({ credential: tokenResponse.access_token })

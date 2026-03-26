@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
 
-const API = 'http://localhost:3000/api';
+const API = (import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:3000')) + '/api';
 
 // Create a configured axios instance for Agent calls
 const agentClient = axios.create({

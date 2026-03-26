@@ -14,7 +14,7 @@ export default function GeneralLedgerWidget() {
   const fetchLedger = async () => {
     try {
       const token = localStorage.getItem('access_token');
-      const { data } = await axios.get('http://localhost:3000/api/cfo/ledger', {
+      const { data } = await axios.get((import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:3000')) + '/api/cfo/ledger', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setLedger(data.ledger || []);

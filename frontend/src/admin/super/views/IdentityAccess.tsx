@@ -12,7 +12,7 @@ export default function IdentityAccess() {
   const fetchUsers = async () => { // Renamed to fetchUsers for clarity, but the logic is from the snippet's useEffect
     try {
       const token = localStorage.getItem('access_token') || localStorage.getItem('token');
-      const response = await axios.get('http://localhost:3000/api/superadmin/users', { headers: { Authorization: `Bearer ${token}` } });
+      const response = await axios.get((import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:3000')) + '/api/superadmin/users', { headers: { Authorization: `Bearer ${token}` } });
       setUsers(response.data); // Changed res.data to response.data
     } catch (err) {
       console.error('Failed to fetch executives:', err);
@@ -35,7 +35,7 @@ export default function IdentityAccess() {
     try {
       setAssigning(true); // Set assigning state
       const token = localStorage.getItem('access_token') || localStorage.getItem('token'); // Updated token retrieval
-      await axios.post('http://localhost:3000/api/superadmin/assign-role', {
+      await axios.post((import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:3000')) + '/api/superadmin/assign-role', {
         targetUserId: targetUser.id,
         newRole: formRole,
         reason: 'Automated Executive Promotion via Identity Matrix'
