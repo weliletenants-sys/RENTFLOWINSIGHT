@@ -33,6 +33,7 @@ import { funderRoutes } from './routes/funderRoutes';
 import { cooRoutes } from './routes/cooRoutes';
 import { executiveRoutes } from './routes/executiveRoutes';
 import { superAdminRoutes } from './routes/superAdminRoutes';
+import { managerRoutes } from './routes/managerRoutes';
 
 const queryClient = new QueryClient();
 
@@ -67,13 +68,56 @@ class GlobalErrorBoundary extends React.Component<{ children: React.ReactNode },
   static getDerivedStateFromError(error: any) {
     return { hasError: true, error };
   }
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error("Uncaught error:", error, errorInfo);
+    
+    // Check if the error is a Vite dynamic import failure (stale chunk cache)
+    const errorMsg = error?.message || error?.toString() || '';
+    const isChunkLoadError = /Failed to fetch dynamically imported module/i.test(errorMsg) || /Importing a module script failed/i.test(errorMsg);
+    
+    if (isChunkLoadError) {
+      // Prevent infinite reload loops by setting a short-lived flag in sessionStorage
+      const reloadKey = 'welile_chunk_retried';
+      const hasRetried = sessionStorage.getItem(reloadKey);
+      
+      if (!hasRetried) {
+        sessionStorage.setItem(reloadKey, 'true');
+        console.warn('Stale build chunk detected. Initiating hard reload to fetch new bundles...');
+        window.location.reload();
+      } else {
+        console.error('Hard reload failed to resolve the chunk missing issue. Check deployment status.');
+      }
+    }
+  }
   render() {
     if (this.state.hasError) {
+      const isChunkLoadError = /Failed to fetch dynamically imported module/i.test(this.state.error?.message || '');
+      // If we are about to reload, show a friendly spinner instead of the red crash screen
+      if (isChunkLoadError && sessionStorage.getItem('welile_chunk_retried')) {
+        return (
+          <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#FAFAFA', fontFamily: 'sans-serif' }}>
+            <div style={{ width: 40, height: 40, borderRadius: '50%', border: '3px solid #E8DBFC', borderTopColor: '#6c11d4', animation: 'spin 0.7s linear infinite', marginBottom: 20 }} />
+            <h2 style={{ color: '#170330', fontSize: '18px', fontWeight: 600 }}>Applying latest system updates...</h2>
+            <p style={{ color: '#64748b', fontSize: '13px', marginTop: '8px' }}>Please wait a moment while we load the new version.</p>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          </div>
+        );
+      }
+
       return (
-        <div style={{ padding: 20, background: 'red', color: 'white', fontFamily: 'monospace' }}>
-          <h2>Something went wrong.</h2>
-          <pre>{this.state.error?.toString()}</pre>
-          <pre>{this.state.error?.stack}</pre>
+        <div style={{ padding: 40, background: '#fee2e2', color: '#991b1b', fontFamily: 'monospace', minHeight: '100vh' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px' }}>Terminal Application Error</h2>
+          <pre style={{ background: '#fef2f2', padding: '20px', borderRadius: '8px', border: '1px solid #fca5a5', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+            {this.state.error?.toString()}
+            {'\n\n'}
+            {this.state.error?.stack}
+          </pre>
+          <button 
+            onClick={() => window.location.reload()}
+            style={{ marginTop: '20px', padding: '10px 20px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            Force Application Reload
+          </button>
         </div>
       );
     }
@@ -98,6 +142,7 @@ function App() {
                 {tenantRoutes}
                 {funderRoutes}
                 {cooRoutes}
+                {managerRoutes}
 
                 {/* Admin Routes */}
                 <Route path="/admin/login" element={<AdminLogin />} />

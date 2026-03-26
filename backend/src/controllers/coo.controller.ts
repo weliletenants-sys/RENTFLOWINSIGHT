@@ -218,7 +218,8 @@ export const getPartners = async (req: Request, res: Response) => {
          frozen: f.is_frozen || false,
          totalInvested,
          returnsPaid,
-         activeDeals
+         activeDeals,
+         portfolios: ports
       };
     }));
 
@@ -507,5 +508,110 @@ export const updateUserProfile = async (req: Request, res: Response) => {
       return problemResponse(res, 404, 'Not Found', 'User identity not found', 'resource-not-found');
     }
     return problemResponse(res, 500, 'Internal Server Error', 'Failed to update user profile details', 'internal-error');
+  }
+};
+
+// --- Deposit Review & Forwarding (Multi-Stage Approval Pipeline) ---
+
+export const getPendingDeposits = async (req: Request, res: Response) => {
+  try {
+    const deposits = await prisma.depositRequests.findMany({
+      where: { status: 'PENDING' },
+      orderBy: { created_at: 'desc' }
+    });
+
+    const enriched = await Promise.all(deposits.map(async d => {
+      let profile = null;
+      if (d.user_id) profile = await prisma.profiles.findUnique({ where: { id: d.user_id } });
+      return {
+        ...d,
+        user_name: profile?.full_name || 'Unknown',
+        user_phone: profile?.phone || 'Unknown',
+        avatar_url: profile?.avatar_url || null
+      };
+    }));
+
+    res.json({ deposits: enriched });
+  } catch (error: any) {
+    return problemResponse(res, 500, 'Internal Server Error', error.message, 'internal-error');
+  }
+};
+
+export const forwardDeposit = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const cooId = req.user?.sub;
+
+    const request = await prisma.depositRequests.findUnique({ where: { id } });
+    if (!request) return problemResponse(res, 404, 'Not Found', `Deposit not found`, 'not-found');
+    if (request.status?.toUpperCase() !== 'PENDING') return problemResponse(res, 400, 'Validation Error', `Deposit is not pending`, 'validation-error');
+
+    const updated = await prisma.depositRequests.update({
+      where: { id },
+      data: {
+        status: 'COO_APPROVED',
+        // @ts-ignore - Bypass local Prisma lock typecheck
+        coo_id: cooId,
+        // @ts-ignore
+        coo_approved_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    });
+
+    res.json({ message: 'Deposit successfully forwarded to CFO queue', request: updated });
+  } catch (error: any) {
+    return problemResponse(res, 500, 'Internal Server Error', error.message, 'internal-error');
+  }
+};
+
+export const rejectDeposit = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+    const cooId = req.user?.sub;
+
+    if (!reason || reason.trim() === '') {
+      return problemResponse(res, 400, 'Validation Error', `Rejection reason is required`, 'validation-error');
+    }
+
+    const updated = await prisma.depositRequests.update({
+      where: { id },
+      data: {
+        status: 'REJECTED',
+        rejection_reason: reason,
+        processed_by: cooId,
+        updated_at: new Date().toISOString()
+      }
+    });
+
+    res.json({ message: 'Deposit rejected', request: updated });
+  } catch (error: any) {
+    return problemResponse(res, 500, 'Internal Server Error', error.message, 'internal-error');
+  }
+};
+
+// --- Portfolio Management ---
+
+export const updatePortfolio = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { investment_amount, total_roi_earned, status } = req.body;
+
+    const data: any = { updated_at: new Date().toISOString() };
+    if (investment_amount !== undefined) data.investment_amount = Number(investment_amount);
+    if (total_roi_earned !== undefined) data.total_roi_earned = Number(total_roi_earned);
+    if (status !== undefined) data.status = status;
+
+    const updated = await prisma.investorPortfolios.update({
+      where: { id },
+      data
+    });
+
+    res.json({ message: 'Portfolio updated successfully', portfolio: updated });
+  } catch (error: any) {
+    if (error.code === 'P2025') {
+       return problemResponse(res, 404, 'Not Found', 'Portfolio record not found', 'not-found');
+    }
+    return problemResponse(res, 500, 'Internal Server Error', error.message, 'internal-error');
   }
 };

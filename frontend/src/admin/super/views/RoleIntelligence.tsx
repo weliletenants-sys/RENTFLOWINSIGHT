@@ -15,8 +15,8 @@ export default function RoleIntelligence() {
         setLoading(true);
         const token = localStorage.getItem('access_token') || localStorage.getItem('token');
         const [usersRes, logsRes] = await Promise.all([
-          axios.get('http://localhost:3000/api/superadmin/users', { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get('http://localhost:3000/api/superadmin/audit-logs?limit=500', { headers: { Authorization: `Bearer ${token}` } })
+          axios.get((import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:3000')) + '/api/superadmin/users', { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get((import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:3000')) + '/api/superadmin/audit-logs?limit=500', { headers: { Authorization: `Bearer ${token}` } })
         ]);
         setUsers(usersRes.data || []);
         setLogs(logsRes.data.data || []);

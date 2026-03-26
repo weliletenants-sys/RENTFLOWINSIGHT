@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Server, ShieldAlert, Loader2 } from 'lucide-react';
+import { Phone, Lock, Eye, EyeOff, ArrowRight, Server, ShieldAlert, Loader2 } from 'lucide-react';
 import { loginUser } from '../../services/authApi';
 import toast from 'react-hot-toast';
 
 export default function AdminLogin() {
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -29,21 +29,21 @@ export default function AdminLogin() {
     e.preventDefault();
     setError('');
     
-    if (!email || !password) {
+    if (!phone || !password) {
       setError("Root access requires complete credentials.");
       return;
     }
 
     // --- Hardcoded Test Bypass Credentials ---
     const adminBypassUsers: Record<string, any> = {
-      'ceo@welile.com': { role: 'CEO', name: 'CEO User' },
-      'coo@welile.com': { role: 'COO', name: 'COO User' },
-      'cfo@welile.com': { role: 'CFO', name: 'CFO User' }
+      '0700000000': { role: 'CEO', name: 'CEO User' },
+      '0700000001': { role: 'COO', name: 'COO User' },
+      '0700000002': { role: 'CFO', name: 'CFO User' }
     };
 
-    if (adminBypassUsers[email] && password === 'admin') {
-        const u: any = { id: 999, email, full_name: adminBypassUsers[email].name, firstName: 'Test', lastName: 'User', role: adminBypassUsers[email].role, verified: true };
-        updateSession('dummy-token-admin', u);
+    if (adminBypassUsers[phone] && password === 'admin') {
+        const u: any = { id: 999, phone, full_name: adminBypassUsers[phone].name, firstName: 'Test', lastName: 'User', role: adminBypassUsers[phone].role, verified: true };
+        updateSession('dummy-token-admin_' + u.role, u);
         toast.success(`Admin authorization granted (${u.role}).`);
         
         if (u.role === 'CEO') navigate('/ceo/dashboard');
@@ -56,7 +56,7 @@ export default function AdminLogin() {
     
     try {
       setLoading(true);
-      const res = await loginUser({ email, password });
+      const res = await loginUser({ phone, password });
       
       if (res.status === 'success') {
         const { access_token, user } = res.data;
@@ -168,18 +168,18 @@ export default function AdminLogin() {
 
           <form onSubmit={handleLogin} className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
             <div className="space-y-2 group">
-              <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest pl-1">Admin Identity</label>
+              <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest pl-1">Admin Phone Number</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-600 group-focus-within:text-blue-500 transition-colors">
-                   <Mail size={18} strokeWidth={2.5} />
+                   <Phone size={18} strokeWidth={2.5} />
                 </div>
                 <input 
-                  type="email" 
-                  placeholder="root@welile.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="tel" 
+                  placeholder="0700000000"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   className="w-full pl-12 pr-4 py-4 bg-[#0f172a] border border-slate-800 hover:border-slate-700 focus:border-blue-500/50 focus:bg-[#1e293b] focus:ring-4 focus:ring-blue-500/10 rounded-2xl transition-all outline-none text-white font-medium placeholder:text-slate-600 placeholder:font-medium shadow-inner" 
-                  autoComplete="email"
+                  autoComplete="tel"
                 />
               </div>
             </div>

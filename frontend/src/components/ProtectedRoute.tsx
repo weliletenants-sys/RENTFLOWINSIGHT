@@ -8,7 +8,18 @@ export default function ProtectedRoute({ children }: { children?: ReactNode }) {
 
   // FRONTEND DEV OVERRIDE: Disabled all route guards so every page is accessible
   if (!user) {
-    // Not logged in, redirect to login
+    // Check if the requested route is a system/executive dashboard
+    const isAdminRoute = location.pathname.startsWith('/admin') || 
+                         location.pathname.startsWith('/ceo') || 
+                         location.pathname.startsWith('/coo') || 
+                         location.pathname.startsWith('/cfo') ||
+                         location.pathname.startsWith('/crm');
+                         
+    if (isAdminRoute) {
+      return <Navigate to="/admin/login" state={{ from: location }} replace />;
+    }
+
+    // Default: Not logged in, redirect to consumer login
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

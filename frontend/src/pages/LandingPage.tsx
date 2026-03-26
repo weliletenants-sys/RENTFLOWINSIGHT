@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserPlus, UserCheck, Rocket, Zap, CalendarDays, LineChart, ShieldCheck, Home, Users, CreditCard, TrendingUp } from 'lucide-react';
 
@@ -514,12 +514,21 @@ export default function LandingPage() {
                </ul>
              </div>
            </div>
-           <div className="pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-6">
-             <p className="text-slate-600 text-xs">
-               © 2026 Welile Fintech Limited. All rights reserved. Registered financial services provider.
-             </p>
-             
-           </div>
+            <div className="pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-6">
+              <p className="text-slate-600 text-xs">
+                © 2026 Welile Fintech Limited. All rights reserved. Registered financial services provider.
+              </p>
+              <div className="flex items-center gap-4">
+                <button 
+                  onClick={() => navigate('/admin/login')} 
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 bg-slate-100 hover:bg-[#6c11d4] hover:text-white transition-all duration-300 shadow-sm"
+                  aria-label="Staff Access"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Admin Gateway</span>
+                </button>
+              </div>
+            </div>
          </div>
        </footer>
      </div>

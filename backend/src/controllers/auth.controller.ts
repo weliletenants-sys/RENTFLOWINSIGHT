@@ -10,11 +10,11 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
 // Standard RFC 7807 Error Response wrapper matching api.md
 export const register = async (req: Request, res: Response) => {
   try {
-    const { email, password, firstName, lastName, role, phone } = req.body;
+    const { phone, password, firstName, lastName, role, email } = req.body;
 
     // 1. Strict Input Validation (backend.md)
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return problemResponse(res, 400, 'Validation Error', 'A valid email address is required', 'invalid-email');
+    if (!phone || phone.trim().length === 0) {
+      return problemResponse(res, 400, 'Validation Error', 'A valid phone number is required', 'missing-phone');
     }
     if (!password || password.length < 8) {
       return problemResponse(res, 400, 'Validation Error', 'Password must be at least 8 characters long', 'weak-password');
@@ -23,17 +23,30 @@ export const register = async (req: Request, res: Response) => {
       return problemResponse(res, 400, 'Validation Error', 'First name, last name, and role are required', 'missing-fields');
     }
 
-    const emailTrimmed = email.toLowerCase().trim();
-    const existingUser = await prisma.profiles.findFirst({ where: { email: emailTrimmed } });
-    if (existingUser) {
-      return problemResponse(res, 409, 'Conflict', 'Account with this email already exists', 'email-exists');
+    const phoneTrimmed = phone.trim();
+    const existingPhoneUser = await prisma.profiles.findFirst({ where: { phone: phoneTrimmed } });
+    if (existingPhoneUser) {
+      return problemResponse(res, 409, 'Conflict', 'Account with this phone number already exists', 'phone-exists');
     }
 
-    if (phone && phone.trim().length > 0) {
-      const phoneTrimmed = phone.trim();
-      const existingPhoneUser = await prisma.profiles.findFirst({ where: { phone: phoneTrimmed } });
-      if (existingPhoneUser) {
-        return problemResponse(res, 409, 'Conflict', 'Account with this phone number already exists', 'phone-exists');
+    // Must have successfully verified OTP in the last hour
+    const isVerified = await prisma.otpVerifications.findFirst({
+      where: {
+        phone: phoneTrimmed,
+        verified: true,
+        updated_at: { gte: new Date(Date.now() - 60 * 60 * 1000).toISOString() }
+      }
+    });
+
+    if (!isVerified) {
+      return problemResponse(res, 403, 'Forbidden', 'Phone number must be verified via OTP before registration.', 'unverified-phone');
+    }
+
+    const emailTrimmed = email && email.trim().length > 0 ? email.toLowerCase().trim() : null;
+    if (emailTrimmed) {
+      const existingEmailUser = await prisma.profiles.findFirst({ where: { email: emailTrimmed } });
+      if (existingEmailUser) {
+        return problemResponse(res, 409, 'Conflict', 'Account with this email already exists', 'email-exists');
       }
     }
 
@@ -46,7 +59,7 @@ export const register = async (req: Request, res: Response) => {
         data: {
           email: emailTrimmed,
           full_name: `${firstName.trim()} ${lastName.trim()}`,
-          phone: phone ? phone.trim() : '0000000000',
+          phone: phoneTrimmed,
           password_hash,
           role: role.toUpperCase(),
           is_frozen: false,
@@ -92,7 +105,7 @@ export const register = async (req: Request, res: Response) => {
     await logSecurityEvent({
       event: 'REGISTER_SUCCESS',
       user_id: result.id,
-      email: result.email,
+      email: result.email || undefined,
       ip_address: req.ip,
       user_agent: req.headers['user-agent']
     });
@@ -107,7 +120,7 @@ export const register = async (req: Request, res: Response) => {
       }
     });
 
-    const payload = { email: result.email, sub: result.id, role: role, firstName: firstName.trim() };
+    const payload = { phone: result.phone, email: result.email, sub: result.id, role: role, firstName: firstName.trim() };
     const access_token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
 
     // Retain previous active sessions for multi-device support
@@ -125,6 +138,7 @@ export const register = async (req: Request, res: Response) => {
     let onboarding_url = '/dashboard';
     if (role === 'AGENT') onboarding_url = '/agent-onboarding';
     if (role === 'TENANT') onboarding_url = '/tenant-agreement';
+    if (role === 'SUPER_ADMIN') onboarding_url = '/admin';
 
     // 4. Standardized Success Output {status, data, message} (backend.md)
     return res.status(201).json({
@@ -146,34 +160,34 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    const { phone, password } = req.body;
 
-    if (!email || !password) {
-      return problemResponse(res, 400, 'Validation Error', 'Email and password are required', 'missing-credentials');
+    if (!phone || !password) {
+      return problemResponse(res, 400, 'Validation Error', 'Phone and password are required', 'missing-credentials');
     }
 
-    const emailTrimmed = email.toLowerCase().trim();
-    const profile = await prisma.profiles.findFirst({ where: { email: emailTrimmed } });
+    const phoneTrimmed = phone.trim();
+    const profile = await prisma.profiles.findFirst({ where: { phone: phoneTrimmed } });
 
     // Auth Validation
     if (!profile || !profile.password_hash) {
       // Intentional delay to avoid timing leaks
       await bcrypt.compare('dummy', '$2b$12$dummyhashstings12345678');
-      await logSecurityEvent({ event: 'LOGIN_FAILED', email: emailTrimmed, ip_address: req.ip, user_agent: req.headers['user-agent'], details: { reason: 'user_not_found_or_no_password' } });
-      return problemResponse(res, 401, 'Unauthorized', 'Invalid email or password', 'invalid-credentials');
+      await logSecurityEvent({ event: 'LOGIN_FAILED', ip_address: req.ip, user_agent: req.headers['user-agent'], details: { reason: 'user_not_found_or_no_password', phone: phoneTrimmed } });
+      return problemResponse(res, 401, 'Unauthorized', 'Invalid phone number or password', 'invalid-credentials');
     }
 
     const isPasswordValid = await bcrypt.compare(password, profile.password_hash);
     if (!isPasswordValid) {
-      await logSecurityEvent({ event: 'LOGIN_FAILED', user_id: profile.id, email: profile.email, ip_address: req.ip, user_agent: req.headers['user-agent'], details: { reason: 'wrong_password' } });
-      return problemResponse(res, 401, 'Unauthorized', 'Invalid email or password', 'invalid-credentials');
+      await logSecurityEvent({ event: 'LOGIN_FAILED', user_id: profile.id, ip_address: req.ip, user_agent: req.headers['user-agent'], details: { reason: 'wrong_password', phone: profile.phone } });
+      return problemResponse(res, 401, 'Unauthorized', 'Invalid phone number or password', 'invalid-credentials');
     }
 
     const userPersona = await prisma.userPersonas.findFirst({ where: { user_id: profile.id, is_default: true } }) || await prisma.userPersonas.findFirst({ where: { user_id: profile.id }, orderBy: { created_at: 'desc' } });
     const role = userPersona ? userPersona.persona.toUpperCase() : 'TENANT';
     const firstName = profile.full_name?.split(' ')[0] || 'User';
 
-    const payload = { email: profile.email, sub: profile.id, role, firstName };
+    const payload = { phone: profile.phone, email: profile.email, sub: profile.id, role, firstName };
     const access_token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
 
     // Retain previous active sessions for multi-device support
@@ -188,12 +202,13 @@ export const login = async (req: Request, res: Response) => {
     //   }
     // });
 
-    await logSecurityEvent({ event: 'LOGIN_SUCCESS', user_id: profile.id, email: profile.email, ip_address: req.ip, user_agent: req.headers['user-agent'] });
+    await logSecurityEvent({ event: 'LOGIN_SUCCESS', user_id: profile.id, email: profile.email || undefined, ip_address: req.ip, user_agent: req.headers['user-agent'] });
 
     let onboarding_url = '/dashboard';
     if (role === 'AGENT' && profile.verified === false) onboarding_url = '/agent-onboarding';
     else if (role === 'AGENT') onboarding_url = '/dashboard';
     if (role === 'TENANT') onboarding_url = '/tenant-agreement'; // or based on tenant onboarding status
+    if (role === 'SUPER_ADMIN') onboarding_url = '/admin';
 
     return res.status(200).json({
       status: 'success',
@@ -274,13 +289,14 @@ export const ssoLogin = async (req: Request, res: Response) => {
     //   }
     // });
 
-    await logSecurityEvent({ event: 'SSO_LOGIN_SUCCESS', user_id: profile.id, email: profile.email, ip_address: req.ip, user_agent: req.headers['user-agent'] });
+    await logSecurityEvent({ event: 'SSO_LOGIN_SUCCESS', user_id: profile.id, email: profile.email || undefined, ip_address: req.ip, user_agent: req.headers['user-agent'] });
 
     let onboarding_url = '/dashboard';
     if (role === 'AGENT' && profile.verified === false) onboarding_url = '/agent-onboarding';
     else if (role === 'AGENT') onboarding_url = '/dashboard';
     if (role === 'TENANT') onboarding_url = '/tenant-agreement';
     if (role === 'FUNDER') onboarding_url = '/funder';
+    if (role === 'SUPER_ADMIN') onboarding_url = '/admin';
 
     return res.status(200).json({
       status: 'success',

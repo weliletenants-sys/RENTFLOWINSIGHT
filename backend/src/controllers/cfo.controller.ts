@@ -24,9 +24,8 @@ const getDateFilters = (query: any) => {
       start.setHours(0, 0, 0, 0);
     }
     
-    const toDbStr = (d: Date) => d.toISOString().replace('T', ' ').replace('Z', '+00');
-    start_date = toDbStr(start);
-    end_date = toDbStr(now);
+    start_date = start.toISOString();
+    end_date = now.toISOString();
   }
 
   const dateFilter: any = {};
@@ -57,6 +56,13 @@ export const getOverview = async (req: Request, res: Response) => {
     const totalWalletBalance = wallets._sum.balance || 0;
 
 
+    // Total Partner Capital (Funder Portfolios)
+    const portfolios = await prisma.investorPortfolios.aggregate({
+      where: { status: 'ACTIVE' },
+      _sum: { investment_amount: true, total_roi_earned: true }
+    });
+    const totalPartnerCapital = (portfolios._sum.investment_amount || 0) + (portfolios._sum.total_roi_earned || 0);
+
     // Deposits (from Ledger or Deposits table)
     const deposits = await prisma.generalLedger.aggregate({
       where: { category: 'deposit', direction: 'credit', ...dateFilter },
@@ -81,8 +87,11 @@ export const getOverview = async (req: Request, res: Response) => {
     });
     
     let pendingRepayments = 0;
+    let capitalDeployed = 0;
     for (const rr of rentRequests) {
-      const remaining = Number(rr.total_repayment) - Number(rr.amount_repaid);
+      const principal = Number(rr.total_repayment) || 0;
+      capitalDeployed += principal;
+      const remaining = principal - Number(rr.amount_repaid);
       if (remaining > 0) pendingRepayments += remaining;
     }
 
@@ -105,6 +114,9 @@ export const getOverview = async (req: Request, res: Response) => {
     res.json({
       metrics: {
         totalWalletBalance,
+        totalPartnerCapital,
+        capitalDeployed,
+        outstandingReceivables: pendingRepayments,
         deposits: deposits._sum.amount || 0,
         withdrawals: withdrawals._sum.amount || 0,
         platformFees: fees._sum.amount || 0,
@@ -113,7 +125,7 @@ export const getOverview = async (req: Request, res: Response) => {
         agentEarnings: 0,
         commissions: 0,
         bonuses: 0,
-        rentFacilitated: 0
+        rentFacilitated: capitalDeployed
       },
       counts: {
         totalUsers,
@@ -310,8 +322,16 @@ export const getStatements = async (req: Request, res: Response) => {
     const expenses = expenseSum._sum.amount || 0;
     const profit = revenue - expenses;
 
+    const portfolios = await prisma.investorPortfolios.aggregate({
+      where: { status: 'ACTIVE' },
+      _sum: { investment_amount: true, total_roi_earned: true }
+    });
+    const totalPartnerCapital = (portfolios._sum.investment_amount || 0) + (portfolios._sum.total_roi_earned || 0);
+
     const wallets = await prisma.wallets.aggregate({ _sum: { balance: true } });
-    const liab = wallets._sum.balance || 0;
+    
+    // The true operational liability base is now Company Capital raised from Funders
+    const liab = totalPartnerCapital;
     
     // Simplistic Receivables check
     const rentRequests = await prisma.rentRequests.findMany({ where: { status: 'DISBURSED' } });
@@ -359,8 +379,8 @@ export const approveDeposit = async (req: Request, res: Response) => {
     if (!request) {
       return problemResponse(res, 404, 'Not Found', `Deposit request not found`, 'not-found');
     }
-    if (request.status?.toUpperCase() !== 'PENDING') {
-      return problemResponse(res, 400, 'Validation Error', `Deposit request is not pending`, 'validation-error');
+    if (request.status?.toUpperCase() !== 'COO_APPROVED') {
+      return problemResponse(res, 400, 'Validation Error', `Deposit request has not been verified by operations yet`, 'validation-error');
     }
 
     const targetUserId = request.user_id;
@@ -385,6 +405,10 @@ export const approveDeposit = async (req: Request, res: Response) => {
         data: {
           status: 'APPROVED',
           processed_by: cfoId,
+          // @ts-ignore
+          cfo_id: cfoId,
+          // @ts-ignore
+          cfo_approved_at: now,
           approved_at: now,
           updated_at: now
         }
@@ -572,5 +596,29 @@ export const getPredictiveRunway = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error('getPredictiveRunway error:', error);
     res.status(500).json({ message: error.message });
+  }
+};
+
+export const getForwardedDeposits = async (req: Request, res: Response) => {
+  try {
+    const deposits = await prisma.depositRequests.findMany({
+      where: { status: 'COO_APPROVED' },
+      orderBy: { updated_at: 'desc' }
+    });
+
+    const enriched = await Promise.all(deposits.map(async d => {
+      let profile = null;
+      if (d.user_id) profile = await prisma.profiles.findUnique({ where: { id: d.user_id } });
+      return {
+        ...d,
+        user_name: profile?.full_name || 'Unknown',
+        user_phone: profile?.phone || 'Unknown',
+        avatar_url: profile?.avatar_url || null
+      };
+    }));
+
+    res.json({ deposits: enriched });
+  } catch (error: any) {
+    return problemResponse(res, 500, 'Internal Server Error', error.message, 'internal-error');
   }
 };

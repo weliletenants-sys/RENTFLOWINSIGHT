@@ -1,20 +1,26 @@
 import React from 'react';
-import { Bell, Search } from 'lucide-react';
+import { Bell, Search, Menu } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 
 interface COOHeaderProps {
   pageTitle: string;
   pageSubtitle: string;
+  onMenuClick: () => void;
 }
 
-const COOHeader: React.FC<COOHeaderProps> = ({ pageTitle, pageSubtitle }) => {
+const COOHeader: React.FC<COOHeaderProps> = ({ pageTitle, pageSubtitle, onMenuClick }) => {
   const { user } = useAuth();
   
   return (
     <header className="pt-8 pb-4 bg-transparent flex items-center justify-between px-4 sm:px-6 md:px-8 z-10">
-      <div>
-         <h2 className="text-3xl font-bold font-outfit text-slate-900 mb-1">{pageTitle}</h2>
-         <p className="text-sm text-slate-400 font-medium font-inter">{pageSubtitle}</p>
+      <div className="flex items-center">
+         <button onClick={onMenuClick} className="lg:hidden mr-3 p-2 -ml-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800 rounded-lg transition-colors">
+           <Menu size={24} />
+         </button>
+         <div>
+            <h2 className="text-2xl sm:text-3xl font-bold font-outfit text-slate-900 mb-1">{pageTitle}</h2>
+            <p className="text-xs sm:text-sm text-slate-400 font-medium font-inter">{pageSubtitle}</p>
+         </div>
       </div>
       
       <div className="flex items-center space-x-4">

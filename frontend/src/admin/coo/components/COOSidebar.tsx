@@ -3,12 +3,17 @@ import { NavLink } from 'react-router-dom';
 import { 
   Home, Users, CreditCard, Wallet, 
   BarChart2, FileText, AlertTriangle, Briefcase, Activity, 
-  List, HelpCircle, LogOut, Sun, Moon, User
+  List, HelpCircle, LogOut, Sun, Moon, User, X
 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useDarkMode } from '../../../hooks/useDarkMode';
 
-const COOSidebar: React.FC = () => {
+interface COOSidebarProps {
+  isOpen: boolean;
+  setIsOpen: (val: boolean) => void;
+}
+
+const COOSidebar: React.FC<COOSidebarProps> = ({ isOpen, setIsOpen }) => {
   const { logout } = useAuth();
   const [isDark, setIsDark] = useDarkMode();
 
@@ -25,6 +30,7 @@ const COOSidebar: React.FC = () => {
     { name: 'All Users', icon: <Users size={20} />, path: '/coo/users' },
     { name: 'Alerts', icon: <AlertTriangle size={20} />, path: '/coo/alerts' },
     { name: 'Withdrawals', icon: <CreditCard size={20} />, path: '/coo/withdrawals' },
+    { name: 'Deposits', icon: <FileText size={20} />, path: '/coo/deposits' },
     { name: 'Partners', icon: <Users size={20} />, path: '/coo/partners' },
     { name: 'Tenants', icon: <User size={20} />, path: '/coo/tenants' },
     { name: 'Opportunities', icon: <Home size={20} />, path: '/coo/opportunities' },
@@ -32,11 +38,14 @@ const COOSidebar: React.FC = () => {
   ];
 
   return (
-    <div className="w-64 bg-white border-r border-slate-100 flex flex-col h-screen fixed shadow-sm z-30 font-outfit">
+    <aside className={`w-64 bg-white border-r border-slate-100 flex flex-col h-screen fixed inset-y-0 left-0 shadow-xl lg:shadow-sm z-50 font-outfit transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
       
       {/* Brand Header */}
-      <div className="h-20 flex items-center px-8 border-b border-slate-100 shrink-0">
+      <div className="h-20 flex items-center justify-between px-8 border-b border-slate-100 shrink-0">
          <span className="text-2xl font-bold text-[#6c11d4] tracking-tight">Welile</span>
+         <button onClick={() => setIsOpen(false)} className="lg:hidden text-slate-400 hover:text-slate-600 p-1">
+           <X size={24} />
+         </button>
       </div>
 
       <div className="flex-1 overflow-y-auto sidebar-scroll py-6 flex flex-col justify-between">
@@ -50,6 +59,7 @@ const COOSidebar: React.FC = () => {
               <NavLink
                 key={item.name}
                 to={item.path}
+                onClick={() => setIsOpen(false)}
                 className={({ isActive }) =>
                   `flex items-center space-x-3 px-4 py-2.5 rounded-full transition-all ${
                     isActive 
@@ -71,6 +81,7 @@ const COOSidebar: React.FC = () => {
               <NavLink
                 key={item.name}
                 to={item.path}
+                onClick={() => setIsOpen(false)}
                 className={({ isActive }) =>
                   `flex items-center space-x-3 px-4 py-2.5 rounded-full transition-all ${
                     isActive 
@@ -86,13 +97,13 @@ const COOSidebar: React.FC = () => {
           </nav>
         </div>
 
-        <div className="px-6">
+        <div className="px-6 mt-8">
            <nav className="space-y-1.5 font-inter">
-              <button className="w-full flex items-center space-x-3 px-4 py-2.5 rounded-full text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-semibold transition-all">
+              <button onClick={() => setIsOpen(false)} className="w-full flex items-center space-x-3 px-4 py-2.5 rounded-full text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-semibold transition-all">
                 <div className="flex-shrink-0"><HelpCircle size={20} /></div>
                 <span className="text-sm">Help</span>
               </button>
-              <button onClick={logout} className="w-full flex items-center space-x-3 px-4 py-2.5 rounded-full text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-semibold transition-all">
+              <button onClick={() => { setIsOpen(false); logout(); }} className="w-full flex items-center space-x-3 px-4 py-2.5 rounded-full text-slate-500 hover:bg-slate-50 hover:text-slate-900 font-semibold transition-all">
                 <div className="flex-shrink-0"><LogOut size={20} /></div>
                 <span className="text-sm">Log out</span>
               </button>
@@ -115,7 +126,7 @@ const COOSidebar: React.FC = () => {
             </div>
          </div>
       </div>
-    </div>
+    </aside>
   );
 };
 

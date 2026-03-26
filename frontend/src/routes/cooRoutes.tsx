@@ -12,6 +12,7 @@ const COOAlerts = lazy(() => import('../admin/coo/COOAlerts'));
 const COOUsers = lazy(() => import('../admin/coo/COOUsers'));
 const COOUserProfile = lazy(() => import('../admin/coo/COOUserProfile'));
 const COOWithdrawals = lazy(() => import('../admin/coo/COOWithdrawals'));
+const COODeposits = lazy(() => import('../admin/coo/COODeposits'));
 const COOPartnersPage = lazy(() => import('../admin/coo/COOPartnersPage'));
 const COOTenants = lazy(() => import('../admin/coo/COOTenants'));
 const COOStaffPerformance = lazy(() => import('../admin/coo/COOStaffPerformance'));
@@ -30,6 +31,7 @@ export const cooRoutes = [
   <Route key="coo-users" path="/coo/users" element={<COOLayout pageTitle="Global Users Registry"><COOUsers /></COOLayout>} />,
   <Route key="coo-user-profile" path="/coo/users/:id" element={<COOLayout pageTitle="Identity Management"><COOUserProfile /></COOLayout>} />,
   <Route key="coo-withdrawals" path="/coo/withdrawals" element={<COOLayout pageTitle="Withdrawals Engine"><COOWithdrawals /></COOLayout>} />,
+  <Route key="coo-deposits" path="/coo/deposits" element={<COOLayout pageTitle="Deposit Tracking"><COODeposits /></COOLayout>} />,
   <Route key="coo-partners" path="/coo/partners" element={<COOLayout pageTitle="Partners Governance"><COOPartnersPage /></COOLayout>} />,
   <Route key="coo-tenants" path="/coo/tenants" element={<COOLayout pageTitle="Tenants Management"><COOTenants /></COOLayout>} />,
   <Route key="coo-staff-performance" path="/coo/staff-performance" element={<COOLayout pageTitle="Staff Performance"><COOStaffPerformance /></COOLayout>} />,

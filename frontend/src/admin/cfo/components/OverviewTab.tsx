@@ -23,9 +23,10 @@ export default function OverviewTab({ overviewMetrics }: OverviewTabProps) {
   return (
     <div className="space-y-6 max-w-7xl mx-auto font-inter">
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         {[
           { label: 'Total Platform Revenue', value: `${formatMoney(overviewMetrics.metrics?.platformFees)}`, curr: 'UGX', icon: <Activity size={18} /> },
+          { label: 'Total Partner Capital', value: `${formatMoney(overviewMetrics.metrics?.totalPartnerCapital)}`, curr: 'UGX', icon: <User size={18} /> },
           { label: 'Total Capital Deployed', value: `${formatMoney(overviewMetrics.metrics?.capitalDeployed)}`, curr: 'UGX', icon: <FileText size={18} /> },
           { label: 'Outstanding Receivables', value: `${formatMoney(overviewMetrics.metrics?.outstandingReceivables)}`, curr: 'UGX', icon: <ShieldAlert size={18} /> },
           { label: 'Total Wallet Balances', value: `${formatMoney(overviewMetrics.metrics?.totalWalletBalance)}`, curr: 'UGX', icon: <Home size={18} /> }

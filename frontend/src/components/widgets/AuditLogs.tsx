@@ -16,7 +16,7 @@ export default function AuditLogsWidget() {
   const fetchLogs = async () => {
     try {
       const token = localStorage.getItem('access_token');
-      const res = await axios.get(`http://localhost:3000/api/superadmin/audit-logs?page=${page}&limit=50`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:3000')}/api/superadmin/audit-logs?page=${page}&limit=50`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setLogs(res.data.data);

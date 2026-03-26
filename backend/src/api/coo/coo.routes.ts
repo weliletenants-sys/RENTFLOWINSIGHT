@@ -15,7 +15,11 @@ import {
   getGlobalUsersList,
   deleteGlobalUsers,
   getUserProfile,
-  updateUserProfile
+  updateUserProfile,
+  getPendingDeposits,
+  forwardDeposit,
+  rejectDeposit,
+  updatePortfolio
 } from '../../controllers/coo.controller';
 import { authGuard, rolesGuard } from '../../middlewares/auth.middleware';
 
@@ -46,5 +50,13 @@ router.get('/metrics/staff', getStaff);
 // Funder Opportunities Integration
 router.post('/opportunities', createOpportunity);
 router.get('/opportunities', getOpportunities);
+
+// Deposits Verification Queue
+router.get('/deposits/pending', getPendingDeposits);
+router.post('/deposits/:id/forward', forwardDeposit);
+router.post('/deposits/:id/reject', rejectDeposit);
+
+// Portfolio Structuring
+router.patch('/portfolios/:id', updatePortfolio);
 
 export default router;

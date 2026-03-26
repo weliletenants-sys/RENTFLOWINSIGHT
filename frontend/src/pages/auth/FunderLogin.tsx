@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles, Loader2, Phone, KeyRound, CheckCircle2, X } from 'lucide-react';
+import { Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles, Loader2, Phone, KeyRound, CheckCircle2, X } from 'lucide-react';
 import { loginUser } from '../../services/authApi';
 import toast from 'react-hot-toast';
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
@@ -33,7 +33,7 @@ function GoogleSSOButton({ disabled, onStart, onSuccess, onError }: any) {
 }
 
 export default function Login() {
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -52,7 +52,7 @@ export default function Login() {
   const [fpResendTimer, setFpResendTimer] = useState(0);
   const codeRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
 
-  const { updateSession, user } = useAuth();
+  const { updateSession, user, intendedRole } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -120,21 +120,21 @@ export default function Login() {
     e.preventDefault();
     setError('');
     
-    if (!email || !password) {
-      setError("Please enter your email and password.");
+    if (!phone || !password) {
+      setError("Please enter your phone number and password.");
       return;
     }
 
     // --- Hardcoded Test Bypass Credentials ---
     const bypassUsers: Record<string, any> = {
-      'tenant@welile.com': { role: 'TENANT', name: 'Tenant User' },
-      'agent@welile.com': { role: 'AGENT', name: 'Agent User' },
-      'funder@welile.com': { role: 'FUNDER', name: 'Funder User' },
+      '0700000010': { role: 'TENANT', name: 'Tenant User' },
+      '0700000011': { role: 'AGENT', name: 'Agent User' },
+      '0700000012': { role: 'FUNDER', name: 'Funder User' },
     };
 
-    if (bypassUsers[email] && password === 'admin') {
-        const u: any = { id: 999, email, full_name: bypassUsers[email].name, firstName: 'Test', lastName: 'User', role: bypassUsers[email].role, verified: true };
-        updateSession('dummy-token', u);
+    if (bypassUsers[phone] && password === 'admin') {
+        const u: any = { id: 999, phone, full_name: bypassUsers[phone].name, firstName: 'Test', lastName: 'User', role: bypassUsers[phone].role, verified: true };
+        updateSession('dummy-token_' + u.role, u);
         toast.success(`Logged in as ${u.role} (Bypass)`);
         
         switch(u.role) {
@@ -155,7 +155,7 @@ export default function Login() {
     try {
       setLoading(true);
       const sanitizeInput = (val: string) => val.replace(/[<>]/g, '');
-      const res = await loginUser({ email: sanitizeInput(email), password });
+      const res = await loginUser({ phone: sanitizeInput(phone), password });
       
       // Update real JWT session via AuthContext
       if (res.status === 'success') {
@@ -191,7 +191,7 @@ export default function Login() {
     try {
       setError('');
       
-      const res = await fetch('http://localhost:3000/api/auth/sessions/sso', {
+      const res = await fetch((import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:3000')) + '/api/auth/sessions/sso', {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
          body: JSON.stringify({ credential: tokenResponse.access_token })
@@ -316,18 +316,18 @@ export default function Login() {
 
           <form onSubmit={handleLogin} className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
             <div className="space-y-2 group">
-              <label className="text-[11px] font-bold text-zinc-700 uppercase tracking-widest pl-1">Email Address</label>
+              <label className="text-[11px] font-bold text-zinc-700 uppercase tracking-widest pl-1">Mobile Number</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-zinc-400 group-focus-within:text-[#6c11d4] transition-colors">
-                   <Mail size={18} strokeWidth={2.5} />
+                   <Phone size={18} strokeWidth={2.5} />
                 </div>
                 <input 
-                  type="email" 
-                  placeholder="name@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="tel" 
+                  placeholder="0700000000"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   className="w-full pl-12 pr-4 py-4 bg-zinc-50/50 border border-zinc-200 hover:border-zinc-300 focus:border-[#6c11d4]/50 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-2xl transition-all outline-none text-zinc-900 font-medium placeholder:text-zinc-400 placeholder:font-medium shadow-sm" 
-                  autoComplete="email"
+                  autoComplete="tel"
                 />
               </div>
             </div>
@@ -406,14 +406,16 @@ export default function Login() {
               </GoogleOAuthProvider>
             </div>
             
-            <div className="text-center pt-8 mt-4">
-              <p className="text-sm font-medium text-slate-500">
-                Don't have an account?{' '}
-                <Link to="/signup" className="text-[#6c11d4] font-bold hover:text-[#5b21b6] hover:underline ml-1 transition-colors">
-                  Create Account
-                </Link>
-              </p>
-            </div>
+            {intendedRole !== 'FUNDER' && (
+              <div className="text-center pt-8 mt-4">
+                <p className="text-sm font-medium text-slate-500">
+                  Don't have an account?{' '}
+                  <Link to="/signup" className="text-[#6c11d4] font-bold hover:text-[#5b21b6] hover:underline ml-1 transition-colors">
+                    Create Account
+                  </Link>
+                </p>
+              </div>
+            )}
 
           </form>
         </div>

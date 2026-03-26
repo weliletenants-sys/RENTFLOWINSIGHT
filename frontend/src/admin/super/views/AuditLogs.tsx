@@ -14,7 +14,7 @@ export default function AuditLogs() {
     setLoading(true);
     try {
       const token = localStorage.getItem('access_token') || localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:3000/api/superadmin/audit-logs?page=${currentPage}&limit=${limit}&severity=${selectedSeverity}`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:3000')}/api/superadmin/audit-logs?page=${currentPage}&limit=${limit}&severity=${selectedSeverity}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setLogs(res.data.data || []);

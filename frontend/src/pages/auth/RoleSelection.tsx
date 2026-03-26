@@ -12,7 +12,11 @@ export default function RoleSelection() {
     if (role) {
       setIntendedRole(role);
     }
-    navigate('/signup');
+    if (role === 'FUNDER') {
+      navigate('/funder/login');
+    } else {
+      navigate('/signup');
+    }
   };
 
   return (

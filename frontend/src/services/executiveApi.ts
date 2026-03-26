@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const executiveApi = axios.create({
-  baseURL: 'http://localhost:3000/api/executive',
+  baseURL: (import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:3000')) + '/api/executive',
   headers: {
     'Content-Type': 'application/json',
   },

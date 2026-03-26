@@ -11,7 +11,7 @@ export default function GlobalConfig() {
     const fetchConfig = async () => {
       try {
         const token = localStorage.getItem('access_token') || localStorage.getItem('token');
-        const res = await axios.get('http://localhost:3000/api/superadmin/config', {
+        const res = await axios.get((import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:3000')) + '/api/superadmin/config', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setConfig(res.data);
@@ -32,7 +32,7 @@ export default function GlobalConfig() {
     try {
       setSaving(true);
       const token = localStorage.getItem('access_token') || localStorage.getItem('token');
-      await axios.post('http://localhost:3000/api/superadmin/config', config, {
+      await axios.post((import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:3000')) + '/api/superadmin/config', config, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('Global configuration synchronized successfully.');
