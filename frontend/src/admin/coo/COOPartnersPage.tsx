@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Check, Loader2, AlertTriangle, ShieldAlert, X, Edit2, Save, XCircle } from 'lucide-react';
-import { fetchPartners, updatePartnerPortfolio } from '../../services/cooApi';
+import { Search, Check, Loader2, AlertTriangle, ShieldAlert, X, Edit2, Save, XCircle, Upload, PlusCircle, Lock, Unlock } from 'lucide-react';
+import { fetchPartners, updatePartnerPortfolio, freezePartnerAccount } from '../../services/cooApi';
+import PartnerImportDialog from './components/PartnerImportDialog';
+import CreatePortfolioDialog from './components/CreatePortfolioDialog';
 
 const COOPartnersPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'active' | 'pending'>('active');
@@ -15,6 +17,9 @@ const COOPartnersPage: React.FC = () => {
   const [editingDealId, setEditingDealId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<{ capital: number, roi: number, status: string }>({ capital: 0, roi: 0, status: 'ACTIVE' });
   const [isSaving, setIsSaving] = useState(false);
+  const [showImport, setShowImport] = useState(false);
+  const [showCreatePort, setShowCreatePort] = useState(false);
+  const [isFreezing, setIsFreezing] = useState(false);
 
   const startEditing = (port: any) => {
     setEditingDealId(port.id);
@@ -60,20 +65,40 @@ const COOPartnersPage: React.FC = () => {
     }
   };
 
+  const loadPartners = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchPartners();
+      setEscalations(data.escalations || []);
+      setInvestors(data.investors || []);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadPartners = async () => {
-      try {
-        const data = await fetchPartners();
-        setEscalations(data.escalations || []);
-        setInvestors(data.investors || []);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
     loadPartners();
   }, []);
+
+  const handleFreezeToggle = async () => {
+    if (!selectedPartner) return;
+    const action = selectedPartner.frozen ? 'Unfreeze' : 'Freeze';
+    if (!window.confirm(`Are you sure you want to ${action} the account for ${selectedPartner.name}?`)) return;
+
+    try {
+      setIsFreezing(true);
+      await freezePartnerAccount(selectedPartner.id, !selectedPartner.frozen);
+      const updated = { ...selectedPartner, frozen: !selectedPartner.frozen };
+      setSelectedPartner(updated);
+      setInvestors(prev => prev.map(inv => inv.id === updated.id ? updated : inv));
+    } catch (err: any) {
+      alert(err.message || `Failed to ${action} account`);
+    } finally {
+      setIsFreezing(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -105,6 +130,12 @@ const COOPartnersPage: React.FC = () => {
           <p className="text-sm text-slate-500">Track portfolio performance and backend SLAs</p>
         </div>
         <div className="flex gap-4">
+          <button 
+            onClick={() => setShowImport(true)}
+            className="hidden sm:flex items-center px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition-colors"
+          >
+            <Upload size={18} className="mr-2" /> Import Partners
+          </button>
           <div className="bg-[#EAE5FF] p-3 rounded-lg text-center">
             <p className="text-xs text-[#6c11d4] font-semibold uppercase">Total Issues</p>
             <p className="text-lg font-bold text-slate-800">{escalations.length}</p>
@@ -209,12 +240,30 @@ const COOPartnersPage: React.FC = () => {
           />
           <div className="fixed inset-y-0 right-0 max-w-md w-full bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col font-inter">
             <div className="flex items-center justify-between p-6 border-b border-slate-100 bg-slate-50/50">
-               <div>
-                  <h3 className="font-bold text-lg text-slate-800 tracking-tight">{selectedPartner.name}</h3>
+               <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                     <h3 className="font-bold text-lg text-slate-800 tracking-tight">{selectedPartner.name}</h3>
+                     {selectedPartner.frozen && <span className="bg-red-100 text-red-600 text-[10px] px-2 py-0.5 rounded-full font-bold">FROZEN</span>}
+                  </div>
                   <p className="text-sm font-medium text-slate-500">Investment Portfolio</p>
                </div>
                <button onClick={() => setSelectedPartner(null)} className="p-2 hover:bg-slate-200 rounded-xl transition-colors text-slate-500 cursor-pointer">
                   <X size={20} />
+               </button>
+            </div>
+            <div className="p-4 bg-white border-b border-slate-100 flex gap-3 shadow-sm z-10">
+               <button 
+                  onClick={handleFreezeToggle}
+                  disabled={isFreezing}
+                  className={`flex-1 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center transition-colors ${selectedPartner.frozen ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-red-50 text-red-600 hover:bg-red-100'}`}
+               >
+                  {isFreezing ? <Loader2 size={16} className="animate-spin" /> : selectedPartner.frozen ? <><Unlock size={16} className="mr-2" /> Unfreeze Account</> : <><Lock size={16} className="mr-2" /> Freeze Account</>}
+               </button>
+               <button 
+                  onClick={() => setShowCreatePort(true)}
+                  className="flex-1 py-2.5 bg-[#6c11d4]/10 text-[#6c11d4] hover:bg-[#6c11d4]/20 rounded-xl font-bold text-xs flex items-center justify-center transition-colors"
+               >
+                  <PlusCircle size={16} className="mr-2" /> Register Capital
                </button>
             </div>
             
@@ -322,6 +371,26 @@ const COOPartnersPage: React.FC = () => {
           </div>
         </>
       )}
+
+      <PartnerImportDialog 
+        isOpen={showImport} 
+        onClose={() => setShowImport(false)} 
+        onSuccess={() => {
+          setShowImport(false);
+          loadPartners();
+        }} 
+      />
+
+      <CreatePortfolioDialog 
+        isOpen={showCreatePort} 
+        onClose={() => setShowCreatePort(false)}
+        partnerId={selectedPartner?.id}
+        partnerName={selectedPartner?.name}
+        onSuccess={() => {
+          setShowCreatePort(false);
+          loadPartners();
+        }}
+      />
 
     </div>
   );

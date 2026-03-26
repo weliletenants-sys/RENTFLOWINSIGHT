@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell, User, CheckCircle, TrendingUp, Info } from 'lucide-react';
+import { Bell, User, CheckCircle, TrendingUp, Info, PieChart } from 'lucide-react';
 
 interface FunderMobileHeaderProps {
   user: { fullName: string; avatarUrl?: string };
@@ -41,7 +41,7 @@ export default function FunderMobileHeader({ user, onNotificationClick, onAvatar
             desc: act.description || `Transaction amount: UGX ${Number(act.amount).toLocaleString()}`,
             time: new Date(act.transaction_date).toLocaleDateString(),
             unread: true, // simplified logic
-            type: act.direction === 'cash_in' || act.direction === 'wallet_in' ? 'success' : 'info'
+            type: act.category === 'supporter_rent_fund' ? 'investment' : (act.direction === 'cash_in' || act.direction === 'wallet_in' ? 'success' : 'info')
           }))
         );
       }).catch(() => setNotifications([]));
@@ -62,7 +62,8 @@ export default function FunderMobileHeader({ user, onNotificationClick, onAvatar
   const IconMap: any = {
     success: <CheckCircle className="w-5 h-5 text-green-500" />,
     update: <TrendingUp className="w-5 h-5 text-[var(--color-primary)]" />,
-    info: <Info className="w-5 h-5 text-blue-500" />
+    info: <Info className="w-5 h-5 text-blue-500" />,
+    investment: <PieChart className="w-5 h-5 text-[#580CAE]" />
   };
 
   return (
@@ -126,7 +127,7 @@ export default function FunderMobileHeader({ user, onNotificationClick, onAvatar
                   <div 
                     key={notif.id}
                     onClick={() => handleReadSingle(notif.id)}
-                    className={`flex items-start gap-4 p-4 border-b border-slate-50 cursor-pointer transition-all hover:bg-slate-50 group relative ${notif.unread ? 'bg-[var(--color-primary-faint)]/30' : 'opacity-80'}`}
+                    className={`flex items-start gap-4 p-4 border-b border-slate-50 cursor-pointer transition-all group relative ${notif.unread ? 'bg-purple-50 hover:bg-purple-100/50' : 'hover:bg-slate-50 opacity-80'}`}
                   >
                     {/* Icon */}
                     <div className="flex-shrink-0 mt-0.5 p-2 bg-white rounded-full shadow-sm border border-slate-100 group-hover:scale-110 transition-transform">

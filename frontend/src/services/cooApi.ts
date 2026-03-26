@@ -232,3 +232,49 @@ export const updatePartnerPortfolio = async (id: string, updates: any) => {
     throw new Error(error.response?.data?.message || 'Failed to update portfolio details');
   }
 };
+
+export const validatePartnersImport = async (partners: any[]) => {
+  try {
+    const response = await axios.post(`${API}/v1/coo/partners/import/validate`, { partners }, getAuthHeaders());
+    return response.data.data;
+  } catch (error: any) {
+    if (error.response?.data?.type) {
+      const problem = error.response.data as ProblemDetails;
+      throw new Error(`[${problem.title}]: ${problem.detail}`);
+    }
+    throw new Error(error.response?.data?.message || 'Failed to validate partners');
+  }
+};
+
+
+export const importPartners = async (partners: any[]) => {
+  try {
+    const response = await axios.post(`${API}/v1/coo/partners/import`, { partners }, getAuthHeaders());
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.data?.type) {
+      const problem = error.response.data as ProblemDetails;
+      throw new Error(`[${problem.title}]: ${problem.detail}`);
+    }
+    throw new Error(error.response?.data?.message || 'Failed to import partners');
+  }
+};
+
+export const createPartnerPortfolio = async (id: string, data: any) => {
+  try {
+    const response = await axios.post(`${API}/v1/coo/partners/${id}/portfolios`, data, getAuthHeaders());
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.data?.type) {
+      const problem = error.response.data as ProblemDetails;
+      throw new Error(`[${problem.title}]: ${problem.detail}`);
+    }
+    throw new Error(error.response?.data?.message || 'Failed to create manual portfolio');
+  }
+};
+
+export const freezePartnerAccount = async (id: string, is_frozen: boolean) => {
+  // reusing the existing update endpoint
+  return updateGlobalUserProfile(id, { is_frozen });
+};
+

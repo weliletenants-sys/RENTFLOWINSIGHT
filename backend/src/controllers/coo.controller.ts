@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../prisma/prisma.client';
 import { problemResponse } from '../utils/problem';
+import crypto from 'crypto';
 
 export const getOverviewMetrics = async (req: Request, res: Response) => {
   try {
@@ -615,3 +616,353 @@ export const updatePortfolio = async (req: Request, res: Response) => {
     return problemResponse(res, 500, 'Internal Server Error', error.message, 'internal-error');
   }
 };
+
+export const validatePartnersImport = async (req: Request, res: Response) => {
+  try {
+    const { partners } = req.body;
+    if (!Array.isArray(partners)) return problemResponse(res, 400, "Validation Error", "partners must be an array", "import-validation");
+
+    const groupsMap = new Map<string, any>();
+    
+    for (const p of partners) {
+       const key = p.phone || p.email || p.name;
+       if (!groupsMap.has(key)) {
+          groupsMap.set(key, {
+             name: p.name || 'Unknown Partner',
+             phone: p.phone,
+             email: p.email,
+             portfolios: []
+          });
+       }
+       groupsMap.get(key).portfolios.push({
+          amount: Number(p.amount) || 0,
+          roi: Number(p.roi) || 15,
+          duration: Number(p.duration) || 12,
+          date: p.date,
+          roiMode: p.roiMode
+       });
+    }
+
+    const groups = Array.from(groupsMap.values());
+    let newPartnersCount = 0;
+    let existingCount = 0;
+    let portfolioCount = 0;
+    let totalCapital = 0;
+
+    for (const g of groups) {
+       let user = null;
+       if (g.phone || g.email) {
+          user = await prisma.profiles.findFirst({
+            where: g.phone && g.email 
+              ? { OR: [{ phone: g.phone }, { email: g.email }] }
+              : g.phone ? { phone: g.phone } : { email: g.email }
+          });
+       }
+       
+       if (user) {
+          g.existing = true;
+          existingCount++;
+       } else {
+          g.existing = false;
+          newPartnersCount++;
+       }
+
+       portfolioCount += g.portfolios.length;
+       for (const port of g.portfolios) {
+          totalCapital += port.amount;
+       }
+    }
+
+    return res.status(200).json({
+       status: 'success',
+       data: {
+          summary: {
+             newPartners: newPartnersCount,
+             existing: existingCount,
+             portfolios: portfolioCount,
+             totalCapital: totalCapital,
+             errors: 0
+          },
+          groups
+       }
+    });
+
+  } catch (error: any) {
+    return problemResponse(res, 500, "Internal Server Error", error.message, "internal-error");
+  }
+};
+
+
+export const importPartners = async (req: Request, res: Response) => {
+  try {
+    const { partners } = req.body;
+    if (!Array.isArray(partners)) return problemResponse(res, 400, "Validation Error", "partners must be an array", "import-validation");
+
+    let importedCount = 0;
+    let portfolioCount = 0;
+
+    for (const p of partners) {
+      if (!p.phone && !p.email) continue;
+      
+      let user = await prisma.profiles.findFirst({
+        where: p.phone && p.email 
+          ? { OR: [{ phone: p.phone }, { email: p.email }] }
+          : p.phone ? { phone: p.phone } : { email: p.email }
+      });
+
+      if (!user) {
+        user = await prisma.profiles.create({
+          data: {
+            full_name: p.name || 'Unnamed Partner',
+            phone: p.phone || `mock_${crypto.randomUUID().slice(0, 8)}`,
+            email: p.email || null,
+            role: 'FUNDER',
+            verified: true,
+            is_frozen: false,
+            rent_discount_active: false,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        });
+        importedCount++;
+      } else if (user.role !== 'FUNDER') {
+         await prisma.profiles.update({ where: { id: user.id }, data: { role: 'FUNDER' }});
+      }
+
+      let wallet = await prisma.wallets.findFirst({ where: { user_id: user.id } });
+      if (!wallet) {
+        wallet = await prisma.wallets.create({
+          data: {
+            user_id: user.id,
+            balance: 0,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+        });
+      }
+
+      const amount = Number(p.amount) || 0;
+      if (amount <= 0) continue;
+
+      const duration = Number(p.duration) || 12;
+      const createdDate = p.date ? new Date(p.date) : new Date();
+      const nextMonth = new Date(createdDate.getTime());
+      nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+      const portfolio = await prisma.investorPortfolios.create({
+        data: {
+          investor_id: user.id,
+          activation_token: crypto.randomUUID(),
+          created_at: createdDate.toISOString(),
+          portfolio_code: `WPF-IMP-${crypto.randomUUID().slice(0, 6).toUpperCase()}`,
+          investment_amount: amount,
+          portfolio_pin: Math.floor(1000 + Math.random() * 9000).toString(),
+          total_roi_earned: 0,
+          roi_percentage: Number(p.roi) || 15,
+          roi_mode: p.roiMode || 'monthly_compounding',
+          duration_months: duration,
+          auto_renew: false,
+          status: 'active',
+          next_roi_date: nextMonth.toISOString()
+        }
+      });
+      portfolioCount++;
+
+      let investedBucket = await prisma.walletBuckets.findFirst({
+        where: { wallet_id: wallet.id, bucket_type: 'invested' }
+      });
+
+      if (investedBucket) {
+        await prisma.walletBuckets.update({
+          where: { id: investedBucket.id },
+          data: { balance: { increment: amount }, updated_at: new Date() }
+        });
+      } else {
+        await prisma.walletBuckets.create({
+          data: { wallet_id: wallet.id, bucket_type: 'invested', balance: amount }
+        });
+      }
+
+      await prisma.wallets.update({
+        where: { id: wallet.id },
+        data: { balance: { increment: amount }, updated_at: new Date().toISOString() }
+      });
+
+      await prisma.generalLedger.create({
+        data: {
+          user_id: user.id,
+          amount: amount,
+          direction: 'cash_in',
+          category: 'coo_manual_portfolio',
+          transaction_date: createdDate.toISOString(),
+          created_at: new Date().toISOString(),
+          source_table: 'investor_portfolios',
+          reference_id: portfolio.portfolio_code
+        }
+      });
+    }
+
+    return res.status(200).json({ status: 'success', data: { importedCount, portfolioCount } });
+  } catch (error: any) {
+    console.error("importPartners Error", error);
+    return problemResponse(res, 500, "Internal Server Error", error.message, "internal-error");
+  }
+};
+
+export const createManualPortfolio = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params; // Funder ID
+    const { amount, roi, duration, date, roiMode } = req.body;
+    
+    if (!amount || Number(amount) <= 0) return problemResponse(res, 400, "Validation Error", "Amount is required", "manual-validation");
+
+    let wallet = await prisma.wallets.findFirst({ where: { user_id: id } });
+    if (!wallet) {
+      wallet = await prisma.wallets.create({
+        data: { user_id: id, balance: 0, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+      });
+    }
+
+    const createdDate = date ? new Date(date) : new Date();
+    const nextMonth = new Date(createdDate.getTime());
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+    const portfolio = await prisma.investorPortfolios.create({
+        data: {
+          investor_id: id,
+          activation_token: crypto.randomUUID(),
+          created_at: createdDate.toISOString(),
+          portfolio_code: `WPF-MAN-${crypto.randomUUID().slice(0, 6).toUpperCase()}`,
+          investment_amount: Number(amount),
+          portfolio_pin: Math.floor(1000 + Math.random() * 9000).toString(),
+          total_roi_earned: 0,
+          roi_percentage: Number(roi) || 15,
+          roi_mode: roiMode || 'monthly_compounding',
+          duration_months: Number(duration) || 12,
+          auto_renew: false,
+          status: 'active',
+          next_roi_date: nextMonth.toISOString()
+        }
+    });
+
+    let investedBucket = await prisma.walletBuckets.findFirst({
+        where: { wallet_id: wallet.id, bucket_type: 'invested' }
+    });
+
+    if (investedBucket) {
+        await prisma.walletBuckets.update({
+          where: { id: investedBucket.id },
+          data: { balance: { increment: Number(amount) }, updated_at: new Date() }
+        });
+    } else {
+        await prisma.walletBuckets.create({
+          data: { wallet_id: wallet.id, bucket_type: 'invested', balance: Number(amount) }
+        });
+    }
+
+    await prisma.wallets.update({
+        where: { id: wallet.id },
+        data: { balance: { increment: Number(amount) }, updated_at: new Date().toISOString() }
+    });
+
+    await prisma.generalLedger.create({
+        data: {
+          user_id: id,
+          amount: Number(amount),
+          direction: 'cash_in',
+          category: 'coo_manual_portfolio',
+          transaction_date: createdDate.toISOString(),
+          created_at: new Date().toISOString(),
+          source_table: 'investor_portfolios',
+          reference_id: portfolio.portfolio_code
+        }
+    });
+
+    return res.status(200).json({ status: 'success', data: { portfolio } });
+  } catch (error: any) {
+    console.error("createManualPortfolio Error", error);
+    return problemResponse(res, 500, "Internal Server Error", error.message, "internal-error");
+  }
+};
+
+export const investForPartner = async (req: Request, res: Response) => {
+  try {
+    const funderId = req.params.id;
+    const { amount, duration_months = 12, roi_mode = 'monthly_compounding', auto_renew = false } = req.body;
+
+    if (!amount || Number(amount) < 100000) {
+      return problemResponse(res, 400, "Validation Error", "Minimum investment amount is 100,000 UGX", "proxy-validation");
+    }
+
+    const wallet = await prisma.wallets.findFirst({ where: { user_id: funderId } });
+    if (!wallet) return problemResponse(res, 404, "Not Found", "Wallet not found", "proxy-not-found");
+
+    const availableBucket = await prisma.walletBuckets.findFirst({
+      where: { wallet_id: wallet.id, bucket_type: 'available' }
+    });
+
+    if (!availableBucket || availableBucket.balance < Number(amount)) {
+      return problemResponse(res, 400, "Validation Error", "Insufficient liquid available balance in partner wallet.", "proxy-insufficient-funds");
+    }
+
+    await prisma.walletBuckets.update({
+      where: { id: availableBucket.id },
+      data: { balance: { decrement: Number(amount) } }
+    });
+
+    let investedBucket = await prisma.walletBuckets.findFirst({
+      where: { wallet_id: wallet.id, bucket_type: 'invested' }
+    });
+
+    if (investedBucket) {
+      await prisma.walletBuckets.update({
+        where: { id: investedBucket.id },
+        data: { balance: { increment: Number(amount) } }
+      });
+    } else {
+      await prisma.walletBuckets.create({
+        data: { wallet_id: wallet.id, bucket_type: 'invested', balance: Number(amount) }
+      });
+    }
+
+    await prisma.generalLedger.create({
+      data: {
+        user_id: funderId,
+        amount: Number(amount),
+        direction: 'cash_out',
+        category: 'coo_proxy_investment',
+        transaction_date: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        source_table: 'wallet_buckets',
+        reference_id: `PROXY${new Date().getTime().toString().slice(-6)}`
+      }
+    });
+
+    const nextMonth = new Date();
+    nextMonth.setDate(nextMonth.getDate() + 30);
+
+    const portfolio = await prisma.investorPortfolios.create({
+      data: {
+        investor_id: funderId,
+        activation_token: crypto.randomUUID(),
+        created_at: new Date().toISOString(),
+        portfolio_code: `WPF-PROXY-${new Date().getTime().toString().slice(-4)}`,
+        investment_amount: Number(amount),
+        portfolio_pin: Math.floor(1000 + Math.random() * 9000).toString(),
+        total_roi_earned: 0,
+        roi_percentage: 15,
+        roi_mode: String(roi_mode),
+        duration_months: Number(duration_months),
+        auto_renew: Boolean(auto_renew),
+        status: 'active',
+        next_roi_date: nextMonth.toISOString()
+      }
+    });
+
+    return res.status(200).json({ status: 'success', data: portfolio, message: 'Successfully funded the rent pool proxy.' });
+  } catch (error: any) {
+    console.error('investForPartner error:', error);
+    return problemResponse(res, 500, "Internal Server Error", error.message, "internal-error");
+  }
+};
+

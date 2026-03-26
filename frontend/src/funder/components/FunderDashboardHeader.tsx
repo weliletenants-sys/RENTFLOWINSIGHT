@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, Search, CheckCircle, TrendingUp, Info, Settings, LogOut, LifeBuoy, Activity, BadgeCheck, Loader2, ShieldCheck, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { Bell, Search, CheckCircle, TrendingUp, Info, Settings, LogOut, LifeBuoy, Activity, BadgeCheck, Loader2, ShieldCheck, ArrowDownLeft, ArrowUpRight, PieChart } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface FunderDashboardHeaderProps {
@@ -104,6 +104,7 @@ export default function FunderDashboardHeader({
     info:          <Info          className="w-5 h-5 text-blue-500" />,
     KYC_SUBMITTED: <ShieldCheck   className="w-5 h-5 text-blue-600" />,
     INVESTMENT:    <ArrowDownLeft className="w-5 h-5 text-emerald-500" />,
+    investment:    <PieChart      className="w-5 h-5 text-[#580CAE]" />,
     WITHDRAWAL:    <ArrowUpRight  className="w-5 h-5 text-orange-500" />,
   };
   const DefaultIcon = <Activity className="w-5 h-5 text-slate-400" />;
@@ -180,7 +181,7 @@ export default function FunderDashboardHeader({
                   <div 
                     key={notif.id}
                     onClick={() => handleReadSingle(notif.id)}
-                    className={`flex items-start gap-4 p-4 border-b border-slate-50 cursor-pointer transition-all hover:bg-slate-50 group relative ${notif.unread ? 'bg-[var(--color-primary-faint)]/30' : 'opacity-80'}`}
+                    className={`flex items-start gap-4 p-4 border-b border-slate-50 cursor-pointer transition-all group relative ${notif.unread ? 'bg-purple-50 hover:bg-purple-100/50' : 'hover:bg-slate-50 opacity-80'}`}
                   >
                     {/* Unread Indicator (removed per feedback) */}
 
@@ -265,10 +266,10 @@ export default function FunderDashboardHeader({
                   <Settings className="w-4 h-4 text-slate-400" />
                   Account Settings
                 </Link>
-                <button onClick={() => setShowProfile(false)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+                <Link to="/funder/wallet" onClick={() => setShowProfile(false)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
                   <Activity className="w-4 h-4 text-slate-400" />
                   Activity Log
-                </button>
+                </Link>
                 <button onClick={() => setShowProfile(false)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
                   <LifeBuoy className="w-4 h-4 text-slate-400" />
                   Help & Support

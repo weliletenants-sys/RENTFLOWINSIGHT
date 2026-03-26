@@ -1,4 +1,4 @@
-import { Banknote, TrendingUp, ArrowDownToLine, ChevronRight } from 'lucide-react';
+import { ChevronRight, Banknote, Download, Upload, PieChart, ArrowRightLeft } from 'lucide-react';
 import type { ActivityItem, ActivityCategory, ActivityStatus } from '../types';
 
 export type { ActivityItem };
@@ -7,15 +7,6 @@ interface FunderRecentActivityProps {
   activities: ActivityItem[];
   onViewAll?: () => void;
 }
-
-const categoryConfig: Record<ActivityCategory, { icon: React.ReactNode; bg: string }> = {
-  reward:     { icon: <Banknote className="w-5 h-5 text-[var(--color-success)]" />, bg: 'bg-green-50' },
-  support:    { icon: <TrendingUp className="w-5 h-5 text-[var(--color-primary)]" />, bg: 'bg-[var(--color-primary-light)]' },
-  investment: { icon: <TrendingUp className="w-5 h-5 text-[var(--color-primary)]" />, bg: 'bg-[var(--color-primary-light)]' },
-  withdrawal: { icon: <ArrowDownToLine className="w-5 h-5 text-blue-500" />, bg: 'bg-blue-50' },
-  deposit:    { icon: <Banknote className="w-5 h-5 text-[var(--color-success)]" />, bg: 'bg-green-50' },
-  refund:     { icon: <ArrowDownToLine className="w-5 h-5 text-orange-500" />, bg: 'bg-orange-50' },
-};
 
 const statusConfig: Record<ActivityStatus, { label: string; classes: string }> = {
   ACTIVE:    { label: 'ACTIVE',    classes: 'bg-green-50 text-green-600' },
@@ -53,8 +44,33 @@ export default function FunderRecentActivity({ activities, onViewAll }: FunderRe
           </div>
         ) : (
           activities.map((item) => {
-            const catCfg = categoryConfig[item.category];
           const stsCfg = statusConfig[item.status];
+          
+          const isRentFund = item.title.includes('RENT FUND') || item.category === 'investment' || item.category === 'support';
+          const isCashIn = item.isCredit;
+          
+          let txColor = '#64748B'; // default
+          let txBg = '#F1F5F9'; // default bg
+          let txSymbol = '';
+          let TxIcon = <ArrowRightLeft className="w-5 h-5" strokeWidth={2.5} />;
+
+          if (isRentFund) {
+            txColor = '#580CAE';
+            txBg = '#580CAE1A';
+            txSymbol = '-';
+            TxIcon = <PieChart className="w-5 h-5 drop-shadow-sm" strokeWidth={2.5} />;
+          } else if (isCashIn) {
+            txColor = '#10B981';
+            txBg = '#10B9811A';
+            txSymbol = '+';
+            TxIcon = <Download className="w-5 h-5" strokeWidth={2.5} />;
+          } else {
+            txColor = '#EF4444';
+            txBg = '#EF44441A';
+            txSymbol = '-';
+            TxIcon = <Upload className="w-5 h-5" strokeWidth={2.5} />;
+          }
+
           return (
             <div
               key={item.id}
@@ -62,10 +78,13 @@ export default function FunderRecentActivity({ activities, onViewAll }: FunderRe
             >
               {/* Row 1: Small Icon + Title */}
               <div className="flex items-center gap-2.5">
-                <div className={`w-7 h-7 ${catCfg.bg} rounded-md flex items-center justify-center shrink-0 [&>svg]:w-4 [&>svg]:h-4`}>
-                  {catCfg.icon}
+                <div className={`w-7 h-7 rounded-md flex items-center justify-center shrink-0 [&>svg]:w-4 [&>svg]:h-4`} style={{
+                  backgroundColor: txBg,
+                  color: txColor
+                }}>
+                  {TxIcon}
                 </div>
-                <h5 className="font-bold text-[13px] text-slate-900 truncate group-hover:text-[var(--color-primary)] transition-colors">
+                <h5 className="font-semibold text-[13px] text-slate-900 truncate group-hover:text-[var(--color-primary)] transition-colors">
                   {item.title}
                 </h5>
               </div>
@@ -90,10 +109,10 @@ export default function FunderRecentActivity({ activities, onViewAll }: FunderRe
                     {item.date} <span className="mx-1 text-slate-300">•</span> {item.timestamp}
                   </p>
                   <p
-                    className="font-black text-[13px] whitespace-nowrap"
-                    style={{ color: item.isCredit ? 'var(--color-success)' : '#ef4444' }}
+                    className="font-bold text-[13px] whitespace-nowrap"
+                    style={{ color: txColor }}
                   >
-                    {item.isCredit ? '+' : '-'} UGX {(item.amount / 1000).toFixed(0)}K
+                    {txSymbol} UGX {(item.amount / 1000).toFixed(0)}K
                   </p>
                 </div>
               </div>

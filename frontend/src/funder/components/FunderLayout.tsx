@@ -26,7 +26,7 @@ export default function FunderLayout({ children, activePage = 'Dashboard', pageT
   const displayName =
     user?.firstName && user?.lastName
       ? `${user.firstName} ${user.lastName}`
-      : 'Grace Nakato';
+      : user?.firstName || (user as any)?.name || 'Rentflow Funder';
 
   return (
     <div className="min-h-screen font-sans" style={{ background: 'var(--color-primary-faint)' }}>

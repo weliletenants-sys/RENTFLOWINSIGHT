@@ -19,7 +19,11 @@ import {
   getPendingDeposits,
   forwardDeposit,
   rejectDeposit,
-  updatePortfolio
+  updatePortfolio,
+  importPartners,
+  createManualPortfolio,
+  investForPartner,
+  validatePartnersImport
 } from '../../controllers/coo.controller';
 import { authGuard, rolesGuard } from '../../middlewares/auth.middleware';
 
@@ -58,5 +62,11 @@ router.post('/deposits/:id/reject', rejectDeposit);
 
 // Portfolio Structuring
 router.patch('/portfolios/:id', updatePortfolio);
+
+// Partner Bulk Imports and Manual Operations
+router.post('/partners/import/validate', validatePartnersImport);
+router.post('/partners/import', importPartners);
+router.post('/partners/:id/portfolios', createManualPortfolio);
+router.post('/partners/:id/invest', investForPartner);
 
 export default router;
