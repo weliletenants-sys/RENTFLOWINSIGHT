@@ -37,6 +37,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { label: 'Global Config', icon: 'settings', path: '/admin/config', active: location.pathname === '/admin/config' },
   ];
 
+  const platformViews = [
+    { label: 'CEO View', icon: 'monitoring', path: '/ceo/dashboard' },
+    { label: 'COO View', icon: 'account_tree', path: '/coo/dashboard' },
+    { label: 'CFO View', icon: 'account_balance', path: '/cfo' },
+    { label: 'Funder Portal', icon: 'payments', path: '/funder' },
+    { label: 'Agent Hub', icon: 'real_estate_agent', path: '/dashboard/agent/clients' },
+    { label: 'Tenant View', icon: 'door_front', path: '/dashboard/tenant/profile' },
+  ];
+
   return (
     <div className="bg-white text-slate-900 font-inter selection:bg-[#9234eb]/30 min-h-screen relative">
       
@@ -53,7 +62,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <div className="p-6">
           <span className="text-xl font-black tracking-tighter text-[#9234eb]">WELILE</span>
         </div>
-        <nav className="flex-1 px-4 space-y-1 mt-4">
+        <nav className="flex-1 px-4 space-y-1 mt-4 overflow-y-auto pb-4 custom-scrollbar">
+          <div className="mb-2 mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-4">System Settings</div>
           {navItems.map((item, idx) => (
             <button
               key={idx}
@@ -61,10 +71,22 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               className={`flex items-center gap-3 w-full text-left px-4 py-2 rounded-lg transition-all duration-150 ${
                 item.active 
                   ? 'bg-slate-50 text-[#9234eb] font-bold' 
-                  : 'text-slate-500 hover:bg-slate-50'
+                  : 'text-slate-500 hover:bg-slate-50 hover:text-[#9234eb]'
               }`}
             >
               <span className="material-symbols-outlined text-lg" data-icon={item.icon}>{item.icon}</span>
+              <span className="font-label text-[11px] uppercase tracking-wider">{item.label}</span>
+            </button>
+          ))}
+
+          <div className="mt-8 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-4">Platform Views</div>
+          {platformViews.map((item, idx) => (
+            <button
+              key={`pv-${idx}`}
+              onClick={() => { navigate(item.path); setIsSidebarOpen(false); }}
+              className="flex items-center gap-3 w-full text-left px-4 py-2 rounded-lg transition-all duration-150 text-slate-500 hover:bg-[#9234eb]/10 hover:text-[#9234eb]"
+            >
+              <span className="material-symbols-outlined text-lg opacity-80" data-icon={item.icon}>{item.icon}</span>
               <span className="font-label text-[11px] uppercase tracking-wider">{item.label}</span>
             </button>
           ))}
