@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles, Loader2, Phone, KeyRound, CheckCircle2, X } from 'lucide-react';
+import { Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles, Loader2, Phone, KeyRound, CheckCircle2, X } from 'lucide-react';
 import { loginUser } from '../../services/authApi';
 import toast from 'react-hot-toast';
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
@@ -134,7 +134,7 @@ export default function Login() {
 
     if (bypassUsers[phone] && password === 'admin') {
         const u: any = { id: 999, phone, full_name: bypassUsers[phone].name, firstName: 'Test', lastName: 'User', role: bypassUsers[phone].role, verified: true };
-        updateSession('dummy-token', u);
+        updateSession('dummy-token_' + u.role, u);
         toast.success(`Logged in as ${u.role} (Bypass)`);
         
         switch(u.role) {

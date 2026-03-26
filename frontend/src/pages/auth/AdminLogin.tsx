@@ -43,7 +43,7 @@ export default function AdminLogin() {
 
     if (adminBypassUsers[phone] && password === 'admin') {
         const u: any = { id: 999, phone, full_name: adminBypassUsers[phone].name, firstName: 'Test', lastName: 'User', role: adminBypassUsers[phone].role, verified: true };
-        updateSession('dummy-token-admin', u);
+        updateSession('dummy-token-admin_' + u.role, u);
         toast.success(`Admin authorization granted (${u.role}).`);
         
         if (u.role === 'CEO') navigate('/ceo/dashboard');
