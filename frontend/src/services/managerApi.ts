@@ -81,5 +81,18 @@ export const managerApi = {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
     return response.data;
+  },
+  getLandlordDisbursements: async (params: { page: number; limit: number }) => {
+    const { page, limit } = params;
+    const response = await axios.get(`${API_URL}/api/v1/manager/landlords/disbursements?page=${page}&limit=${limit}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    return response.data;
+  },
+  onboardLandlord: async (data: { full_name: string; phone: string; email?: string; properties_count: number }) => {
+    const response = await axios.post(`${API_URL}/api/v1/manager/landlords/onboard`, data, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    return response.data;
   }
 };

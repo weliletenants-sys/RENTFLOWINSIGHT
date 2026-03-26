@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { managerApi } from '../../../services/managerApi';
 import { formatMoney } from '../../../utils/currency';
-import { formatDistanceToNow } from 'date-fns';
 import { Send, CheckCircle, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -69,7 +68,7 @@ export default function RentPipelineQueue() {
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-2 text-gray-500 font-medium">
                       <Clock size={14} />
-                      {formatDistanceToNow(new Date(req.created_at))} ago
+                      {new Date(req.created_at).toLocaleDateString()}
                     </div>
                   </td>
                   <td className="px-6 py-5 font-medium text-gray-900">
