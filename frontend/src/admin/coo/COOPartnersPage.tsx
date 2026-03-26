@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Check, Loader2, AlertTriangle, ShieldAlert, X } from 'lucide-react';
-import { fetchPartners } from '../../services/cooApi';
+import { Search, Check, Loader2, AlertTriangle, ShieldAlert, X, Edit2, Save, XCircle } from 'lucide-react';
+import { fetchPartners, updatePartnerPortfolio } from '../../services/cooApi';
 
 const COOPartnersPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'active' | 'pending'>('active');
@@ -11,6 +11,54 @@ const COOPartnersPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   
   const [selectedPartner, setSelectedPartner] = useState<any>(null);
+  
+  const [editingDealId, setEditingDealId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<{ capital: number, roi: number, status: string }>({ capital: 0, roi: 0, status: 'ACTIVE' });
+  const [isSaving, setIsSaving] = useState(false);
+
+  const startEditing = (port: any) => {
+    setEditingDealId(port.id);
+    setEditForm({
+      capital: port.investment_amount || 0,
+      roi: port.total_roi_earned || 0,
+      status: port.status || 'ACTIVE'
+    });
+  };
+
+  const handleSavePortfolio = async (portId: string) => {
+    if (!selectedPartner) return;
+    try {
+      setIsSaving(true);
+      await updatePartnerPortfolio(portId, {
+        investment_amount: editForm.capital,
+        total_roi_earned: editForm.roi,
+        status: editForm.status
+      });
+
+      // Optimistic Local Sync to avoid re-fetching all partners
+      const newPortfolios = selectedPartner.portfolios.map((p: any) => 
+        p.id === portId ? { ...p, investment_amount: editForm.capital, total_roi_earned: editForm.roi, status: editForm.status } : p
+      );
+
+      const newTotalInvested = newPortfolios.reduce((sum: number, p: any) => sum + (p.investment_amount || 0), 0);
+      const newReturnsPaid = newPortfolios.reduce((sum: number, p: any) => sum + (p.total_roi_earned || 0), 0);
+      
+      const updatedPartner = {
+        ...selectedPartner,
+        portfolios: newPortfolios,
+        totalInvested: newTotalInvested,
+        returnsPaid: newReturnsPaid
+      };
+      
+      setSelectedPartner(updatedPartner);
+      setInvestors(prev => prev.map(inv => inv.id === updatedPartner.id ? updatedPartner : inv));
+      setEditingDealId(null);
+    } catch (err: any) {
+      alert(err.message || 'Failed to update portfolio');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   useEffect(() => {
     const loadPartners = async () => {
@@ -177,22 +225,74 @@ const COOPartnersPage: React.FC = () => {
                   </div>
                ) : (
                   <div className="space-y-4 shadow-inner p-2 bg-slate-100/50 rounded-3xl">
-                     {selectedPartner.portfolios.map((port: any, idx: number) => (
-                        <div key={idx} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-[#6c11d4]/30 hover:shadow-md transition-all group">
+                     {selectedPartner.portfolios.map((port: any, idx: number) => {
+                        const isEditing = editingDealId === port.id;
+                        
+                        return (
+                        <div key={idx} className={`bg-white p-6 rounded-2xl border ${isEditing ? 'border-[#6c11d4] shadow-md ring-4 ring-[#6c11d4]/5' : 'border-slate-200 shadow-sm hover:border-[#6c11d4]/30 hover:shadow-md'} transition-all group`}>
                            <div className="flex justify-between items-start mb-4">
-                              <h4 className="font-bold text-slate-800 text-xs tracking-widest uppercase">Deal ID: {port.id?.slice(0, 8) || 'N/A'}</h4>
-                              <span className={`px-3 py-1 text-[10px] uppercase tracking-widest font-black rounded-full ${port.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-500/20' : 'bg-slate-100 text-slate-500'}`}>
-                                 {port.status || 'PENDING'}
-                              </span>
+                              <h4 className="font-bold text-slate-800 text-xs tracking-widest uppercase mt-1">Deal ID: {port.id?.slice(0, 8) || 'N/A'}</h4>
+                              
+                              <div className="flex flex-wrap justify-end gap-2 items-center">
+                                {isEditing ? (
+                                   <select 
+                                      value={editForm.status}
+                                      onChange={(e) => setEditForm({...editForm, status: e.target.value})}
+                                      className="px-2 py-1 text-[10px] uppercase font-bold rounded-lg border border-slate-300 bg-white text-slate-700 outline-none focus:border-[#6c11d4]"
+                                   >
+                                      <option value="ACTIVE">ACTIVE</option>
+                                      <option value="COMPLETED">COMPLETED</option>
+                                      <option value="PENDING">PENDING</option>
+                                   </select>
+                                ) : (
+                                   <span className={`px-3 py-1 text-[10px] uppercase tracking-widest font-black rounded-full ${port.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-500/20' : 'bg-slate-100 text-slate-500'}`}>
+                                      {port.status || 'PENDING'}
+                                   </span>
+                                )}
+
+                                {!isEditing ? (
+                                   <button onClick={() => startEditing(port)} className="p-1.5 text-slate-400 hover:text-[#6c11d4] hover:bg-[#6c11d4]/10 rounded-lg transition-colors ml-1" title="Edit Deal">
+                                      <Edit2 size={14} />
+                                   </button>
+                                ) : (
+                                   <div className="flex gap-1 ml-1 bg-slate-50 border border-slate-200 rounded-lg p-0.5">
+                                      <button disabled={isSaving} onClick={() => handleSavePortfolio(port.id)} className={`p-1.5 text-emerald-600 hover:bg-emerald-100 rounded-md transition-colors ${isSaving ? 'opacity-50' : ''}`} title="Save Changes">
+                                         {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                                      </button>
+                                      <button disabled={isSaving} onClick={() => setEditingDealId(null)} className="p-1.5 text-red-500 hover:bg-red-100 rounded-md transition-colors" title="Cancel">
+                                         <XCircle size={14} />
+                                      </button>
+                                   </div>
+                                )}
+                              </div>
                            </div>
+                           
                            <div className="grid grid-cols-2 gap-4">
                               <div>
                                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-[#6c11d4]"></div> Capital</p>
-                                 <p className="font-black text-[#6c11d4] tracking-tight">UGX {(port.investment_amount || 0).toLocaleString()}</p>
+                                 {isEditing ? (
+                                    <input 
+                                       type="number"
+                                       value={editForm.capital}
+                                       onChange={(e) => setEditForm({...editForm, capital: Number(e.target.value)})}
+                                       className="w-full px-2 py-1 bg-slate-50 border border-slate-300 focus:border-[#6c11d4] rounded-lg font-bold text-[#6c11d4] text-sm focus:outline-none transition-colors"
+                                    />
+                                 ) : (
+                                    <p className="font-black text-[#6c11d4] tracking-tight">UGX {(port.investment_amount || 0).toLocaleString()}</p>
+                                 )}
                               </div>
                               <div>
                                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div> ROI Paid</p>
-                                 <p className="font-black text-emerald-600 tracking-tight">UGX {(port.total_roi_earned || 0).toLocaleString()}</p>
+                                 {isEditing ? (
+                                    <input 
+                                       type="number"
+                                       value={editForm.roi}
+                                       onChange={(e) => setEditForm({...editForm, roi: Number(e.target.value)})}
+                                       className="w-full px-2 py-1 bg-slate-50 border border-slate-300 focus:border-emerald-500 rounded-lg font-bold text-emerald-600 text-sm focus:outline-none transition-colors"
+                                    />
+                                 ) : (
+                                    <p className="font-black text-emerald-600 tracking-tight">UGX {(port.total_roi_earned || 0).toLocaleString()}</p>
+                                 )}
                               </div>
                            </div>
                            {port.created_at && (
@@ -203,7 +303,8 @@ const COOPartnersPage: React.FC = () => {
                               </div>
                            )}
                         </div>
-                     ))}
+                        );
+                     })}
                   </div>
                )}
             </div>
