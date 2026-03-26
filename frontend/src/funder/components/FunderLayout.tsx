@@ -19,7 +19,7 @@ export default function FunderLayout({ children, activePage = 'Dashboard', pageT
 
   useEffect(() => {
     if (!user) {
-      navigate('/login');
+      navigate('/funder/login');
     }
   }, [user, navigate]);
 

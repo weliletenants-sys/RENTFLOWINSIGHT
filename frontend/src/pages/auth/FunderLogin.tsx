@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles, Loader2, Phone, KeyRound, CheckCircle2, X } from 'lucide-react';
+import { Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles, Loader2, Phone, Mail, KeyRound, CheckCircle2, X } from 'lucide-react';
 import { loginUser } from '../../services/authApi';
 import toast from 'react-hot-toast';
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
@@ -316,18 +316,20 @@ export default function Login() {
 
           <form onSubmit={handleLogin} className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
             <div className="space-y-2 group">
-              <label className="text-[11px] font-bold text-zinc-700 uppercase tracking-widest pl-1">Mobile Number</label>
+              <label className="text-[11px] font-bold text-zinc-700 uppercase tracking-widest pl-1">
+                 Email / Mobile Number
+              </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-zinc-400 group-focus-within:text-[#6c11d4] transition-colors">
-                   <Phone size={18} strokeWidth={2.5} />
+                   {phone.includes('@') ? <Mail size={18} strokeWidth={2.5} /> : <Phone size={18} strokeWidth={2.5} />}
                 </div>
                 <input 
-                  type="tel" 
+                  type={phone.includes('@') ? "email" : "tel"}
                   placeholder="0700000000"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 bg-zinc-50/50 border border-zinc-200 hover:border-zinc-300 focus:border-[#6c11d4]/50 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-2xl transition-all outline-none text-zinc-900 font-medium placeholder:text-zinc-400 placeholder:font-medium shadow-sm" 
-                  autoComplete="tel"
+                  className="w-full pl-12 pr-4 py-4 bg-zinc-50/50 border border-zinc-200 hover:border-zinc-300 focus:border-[#6c11d4]/50 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-2xl transition-all outline-none text-zinc-900 font-medium placeholder:text-zinc-400 placeholder:font-medium shadow-sm flex-1" 
+                  autoComplete="username"
                 />
               </div>
             </div>

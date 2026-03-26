@@ -56,12 +56,27 @@ const PartnerImportDialog: React.FC<PartnerImportDialogProps> = ({ isOpen, onClo
               return key ? row[key] : undefined;
            };
 
+           let rawDate = getVal(['date', 'contribution']);
+           let finalDate = rawDate;
+           if (typeof rawDate === 'number' && rawDate > 10000) {
+              // Convert Excel serial date to JS Date (1899-12-30 epoch)
+              const jsDate = new Date(Math.round((rawDate - 25569) * 86400 * 1000));
+              finalDate = jsDate.toISOString().split('T')[0];
+           } else if (rawDate instanceof Date) {
+              finalDate = rawDate.toISOString().split('T')[0];
+           } else if (typeof rawDate === 'string') {
+              const d = new Date(rawDate);
+              if (!isNaN(d.getTime())) finalDate = d.toISOString().split('T')[0];
+           } else if (!rawDate) {
+              finalDate = new Date().toISOString().split('T')[0];
+           }
+
            return {
               name: getVal(['name', 'supporter']),
               phone: getVal(['phone', 'mobile']),
               email: getVal(['email']),
               amount: parseFloat(String(getVal(['amount', 'principal'])).replace(/[^0-9.-]+/g,"")) || 0,
-              date: getVal(['date', 'contribution']),
+              date: finalDate,
               roi: parseFloat(getVal(['roi', 'rate'])) || 15,
               duration: parseInt(getVal(['duration', 'months'])) || 12,
               roiMode: getVal(['mode']) || 'monthly_compounding'

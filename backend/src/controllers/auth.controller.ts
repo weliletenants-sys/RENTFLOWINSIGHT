@@ -166,8 +166,12 @@ export const login = async (req: Request, res: Response) => {
       return problemResponse(res, 400, 'Validation Error', 'Phone and password are required', 'missing-credentials');
     }
 
-    const phoneTrimmed = phone.trim();
-    const profile = await prisma.profiles.findFirst({ where: { phone: phoneTrimmed } });
+    const phoneTrimmed = phone.trim().toLowerCase();
+    const profile = await prisma.profiles.findFirst({ 
+       where: phoneTrimmed.includes('@') 
+          ? { email: phoneTrimmed } 
+          : { phone: phoneTrimmed } 
+    });
 
     // Auth Validation
     if (!profile || !profile.password_hash) {

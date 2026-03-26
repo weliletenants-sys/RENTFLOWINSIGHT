@@ -784,7 +784,7 @@ export default function FunderOnboarding() {
 
   const handleBack = () => {
     if (step > 1) setStep(s => s - 1);
-    else navigate('/login');
+    else navigate('/funder/login');
   };
 
   const stepComponents: Record<number, React.ReactNode> = {
