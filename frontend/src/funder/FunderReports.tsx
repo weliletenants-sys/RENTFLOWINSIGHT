@@ -6,7 +6,6 @@ import {
 import { Download, FileText, ChevronDown, CheckCircle } from 'lucide-react';
 import FunderSidebar from './components/FunderSidebar';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
-import FunderBottomNav from './components/FunderBottomNav';
 import { getFunderReportsStatsRaw, getWalletOperations, getFunderPortfolios } from '../services/funderApi';
 import * as XLSX from 'xlsx';
 import toast from 'react-hot-toast';
@@ -32,6 +31,7 @@ const CustomPieTooltip = ({ active, payload }: any) => {
 const COLORS = ['#6c11d4', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
 export default function FunderReports() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [statementRange, setStatementRange] = useState('Last 6 Months');
   const [statementYear, setStatementYear] = useState(new Date().getFullYear().toString());
   const [isLoading, setIsLoading] = useState(true);
@@ -113,7 +113,11 @@ export default function FunderReports() {
       <div className="flex h-screen overflow-hidden">
         
         {/* SIDEBAR */}
-        <FunderSidebar activePage="Reports" />
+        <FunderSidebar 
+          activePage="Reports" 
+          isOpen={mobileMenuOpen} 
+          onClose={() => setMobileMenuOpen(false)} 
+        />
 
         {/* MAIN CONTENT AREA */}
         <div className="flex-1 flex flex-col min-h-screen overflow-y-auto relative">
@@ -121,6 +125,7 @@ export default function FunderReports() {
           <FunderDashboardHeader
             user={{ fullName: 'Grace N.', role: 'supporter', avatarUrl: '' }}
             pageTitle="Reports & Analytics"
+            onMenuClick={() => setMobileMenuOpen(true)}
           />
 
           <main className="flex-1 px-4 sm:px-8 py-8 pb-32 lg:pb-12 max-w-7xl mx-auto w-full">
@@ -331,9 +336,6 @@ export default function FunderReports() {
           </main>
         </div>
       </div>
-      
-      {/* Mobile Bottom Navigation Component */}
-      <FunderBottomNav activePage="Reports" />
     </div>
   );
 }

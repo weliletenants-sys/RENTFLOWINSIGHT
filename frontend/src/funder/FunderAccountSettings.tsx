@@ -30,7 +30,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getMyRoles, requestRole, switchRole, type RoleView } from '../services/rolesApi';
 import FunderSidebar from './components/FunderSidebar';
-import FunderBottomNav from './components/FunderBottomNav';
+
 import FunderDashboardHeader from './components/FunderDashboardHeader';
 import { useKycStatus } from './hooks/useKycStatus';
 import { getFunderDashboardStats, updateFunderProfile, uploadFunderAvatar, changeFunderPassword, enableFunder2FA, verifyFunder2FA, disableFunder2FA, getSessions, revokeSession, revokeAllOtherSessions, getPayoutMethods, addPayoutMethod, setPrimaryPayoutMethod, deletePayoutMethod, getRewardMode, updateRewardMode, getPortfolios, getProxyMandates, createProxyMandate, updateProxyLimit, revokeProxyMandate, restoreProxyMandate, type PayoutMethodView, type DashboardStatsResponse } from '../services/funderApi';
@@ -78,6 +78,7 @@ const IPLocation = ({ ip }: { ip: string | null }) => {
 };
 
 export default function FunderAccountSettings() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { updateSession, user: authUser, updateUserLocally } = useAuth();
   const { status: kycStatus } = useKycStatus();
@@ -465,7 +466,11 @@ export default function FunderAccountSettings() {
       <div className="flex h-screen overflow-hidden">
         
         {/* SIDEBAR */}
-        <FunderSidebar activePage="Settings" />
+        <FunderSidebar 
+          activePage="Settings" 
+          isOpen={mobileMenuOpen} 
+          onClose={() => setMobileMenuOpen(false)} 
+        />
 
         {/* MAIN CONTENT AREA */}
         <div className="flex-1 flex flex-col min-h-screen overflow-y-auto relative">
@@ -473,6 +478,7 @@ export default function FunderAccountSettings() {
           <FunderDashboardHeader
             user={{ fullName: 'Grace N.', role: 'supporter', avatarUrl: '' }}
             pageTitle="Account Settings"
+            onMenuClick={() => setMobileMenuOpen(true)}
             onAvatarClick={() => {}}
           />
 
@@ -1270,7 +1276,7 @@ export default function FunderAccountSettings() {
             </div>
           </main>
 
-          <FunderBottomNav activePage="Account" />
+
 
         </div>
       </div>

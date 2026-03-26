@@ -3,9 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Lightbulb, ShieldAlert, ArrowRight } from 'lucide-react';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
-import FunderMobileHeader from './components/FunderMobileHeader';
 import FunderSidebar from './components/FunderSidebar';
-import FunderBottomNav from './components/FunderBottomNav';
 import FunderWalletCard from './components/FunderWalletCard';
 import FunderPortfolioList from './components/FunderPortfolioList';
 import FunderRecentActivity from './components/FunderRecentActivity';
@@ -28,6 +26,7 @@ import { useKycStatus } from './hooks/useKycStatus';
 
 export default function FunderDashboard() {
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user } = useAuth();
   const { status: kycStatus } = useKycStatus();
 
@@ -109,6 +108,8 @@ export default function FunderDashboard() {
           activePage={activePage}
           onNavigate={(page) => setActivePage(page)}
           onNewsupport={() => navigate('/funder/portfolio')}
+          isOpen={mobileMenuOpen}
+          onClose={() => setMobileMenuOpen(false)}
         />
 
         {/* ──────────── MAIN CONTENT AREA ──────────── */}
@@ -118,12 +119,7 @@ export default function FunderDashboard() {
           <FunderDashboardHeader
             user={{ fullName: displayName, role: 'supporter', avatarUrl: '' }}
             pageTitle="Dashboard"
-          />
-
-          {/* Mobile top header */}
-          <FunderMobileHeader
-            user={{ fullName: displayName }}
-            onAvatarClick={() => navigate('/funder/account')}
+            onMenuClick={() => setMobileMenuOpen(true)}
           />
 
           {/* ──────────── VERIFICATION INTERCEPTOR ──────────── */}
@@ -264,8 +260,6 @@ export default function FunderDashboard() {
         </div>
       </div>
 
-      {/* ──────────── MOBILE BOTTOM NAV ──────────── */}
-      <FunderBottomNav activePage="Home" />
     </div>
   );
 }

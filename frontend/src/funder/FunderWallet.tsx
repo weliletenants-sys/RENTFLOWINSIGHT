@@ -7,12 +7,12 @@ import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
 import FunderSidebar from './components/FunderSidebar';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
-import FunderBottomNav from './components/FunderBottomNav';
 import { Link } from 'react-router-dom';
 import { getFunderDashboardStats, getFunderActivities, fundRentPool, requestDeposit, requestWalletWithdrawal, getWalletOperations, getPayoutMethods, transferFunds, type PayoutMethodView } from '../services/funderApi';
 import type { DashboardStatsResponse } from '../services/funderApi';
 
 export default function FunderWallet() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'All' | 'Cash In' | 'Cash Out'>('All');
   
   // Pagination State
@@ -266,12 +266,17 @@ export default function FunderWallet() {
     <div className="min-h-screen font-sans" style={{ background: 'var(--color-primary-faint)' }}>
       <div className="flex h-screen overflow-hidden">
         
-        <FunderSidebar activePage="Wallet" />
+        <FunderSidebar 
+          activePage="Wallet" 
+          isOpen={mobileMenuOpen} 
+          onClose={() => setMobileMenuOpen(false)} 
+        />
 
         <div className="flex-1 flex flex-col min-h-screen overflow-y-auto relative">
           <FunderDashboardHeader
             user={{ fullName: 'Grace N.', role: 'supporter', avatarUrl: '' }}
             pageTitle="Wallet"
+            onMenuClick={() => setMobileMenuOpen(true)}
           />
 
           <main className="flex-1 px-4 sm:px-8 py-8 pb-32 lg:pb-12 max-w-5xl mx-auto w-full">
@@ -845,9 +850,6 @@ export default function FunderWallet() {
           </div>
         </div>
       )}
-
-      {/* Mobile Bottom Navigation Component */}
-      <FunderBottomNav activePage="Wallet" />
     </div>
   );
 }

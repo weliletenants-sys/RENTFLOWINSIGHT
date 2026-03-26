@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Bell, Search, CheckCircle, TrendingUp, Info, Settings, LogOut, LifeBuoy, Activity, BadgeCheck, Loader2, ShieldCheck, ArrowDownLeft, ArrowUpRight, PieChart } from 'lucide-react';
+import { Menu, Bell, Search, CheckCircle, TrendingUp, Info, Settings, LogOut, LifeBuoy, Activity, BadgeCheck, Loader2, ShieldCheck, ArrowDownLeft, ArrowUpRight, PieChart } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface FunderDashboardHeaderProps {
@@ -8,10 +8,11 @@ interface FunderDashboardHeaderProps {
   pageTitle?: string;
   onNotificationClick?: () => void;
   onAvatarClick?: () => void;
+  onMenuClick?: () => void;
 }
 
 export default function FunderDashboardHeader({
-  user, pageTitle = 'Dashboard', onNotificationClick, onAvatarClick,
+  user, pageTitle = 'Dashboard', onNotificationClick, onAvatarClick, onMenuClick
 }: FunderDashboardHeaderProps) {
   const [showNotifs, setShowNotifs] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
@@ -111,22 +112,33 @@ export default function FunderDashboardHeader({
 
   return (
     <div
-      className="hidden lg:flex sticky top-0 z-30 px-8 pb-2 h-20 items-center justify-between border-b"
+      className="flex sticky top-0 z-30 px-4 lg:px-8 pb-3 pt-3 lg:pb-2 lg:pt-0 min-h-[4rem] lg:h-20 items-center justify-between border-b w-full"
       style={{
         background: 'rgba(244,240,255,0.85)',
         backdropFilter: 'blur(12px)',
         borderColor: 'var(--color-primary-border)',
       }}
     >
-      {/* Left: page title */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">{pageTitle}</h1>
-        <p className="text-xs text-slate-500">Welcome back, {user.fullName}</p>
+      {/* Left: Hamburger & page title */}
+      <div className="flex items-center gap-3">
+        <button 
+          onClick={onMenuClick}
+          className="lg:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+        <div className="lg:hidden">
+          <img src="/welile-colored.png" alt="Welile" className="h-6 object-contain" />
+        </div>
+        <div className="hidden lg:block">
+          <h1 className="text-2xl font-bold text-slate-900">{pageTitle}</h1>
+          <p className="text-xs text-slate-500">Welcome back, {user.fullName}</p>
+        </div>
       </div>
 
       {/* Right: search + bell + avatar */}
-      <div className="flex items-center gap-6">
-        <div className="relative">
+      <div className="flex items-center gap-3 lg:gap-6">
+        <div className="relative hidden sm:block">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"

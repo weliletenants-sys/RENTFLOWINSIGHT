@@ -13,6 +13,8 @@ export default defineConfig({
   server: {
     allowedHosts: [
       '0edf-41-75-177-124.ngrok-free.app',
+      '951b-41-210-154-229.ngrok-free.app',
+      '.ngrok-free.app', // Adding wildcard helper for future sessions
     ],
     proxy: {
       '/api': {
