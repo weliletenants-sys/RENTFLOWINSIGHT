@@ -18,6 +18,7 @@ import adminRoutes from './admin/admin.routes';
 import executiveRoutes from './executive/executive.routes';
 import notificationsRoutes from './notifications/notifications.routes';
 import superadminRoutes from './superadmin/superadmin.routes';
+import managerRoutes from './manager/manager.routes';
 
 const api = Router();
 
@@ -42,5 +43,6 @@ api.use('/notifications', notificationsRoutes);
 
 // Executive Hub
 api.use('/v1/executive', executiveRoutes);
+api.use('/v1/manager', managerRoutes);
 
 export default api;

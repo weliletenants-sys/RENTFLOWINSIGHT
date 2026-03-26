@@ -56,6 +56,13 @@ export const getOverview = async (req: Request, res: Response) => {
     const totalWalletBalance = wallets._sum.balance || 0;
 
 
+    // Total Partner Capital (Funder Portfolios)
+    const portfolios = await prisma.investorPortfolios.aggregate({
+      where: { status: 'ACTIVE' },
+      _sum: { investment_amount: true, total_roi_earned: true }
+    });
+    const totalPartnerCapital = (portfolios._sum.investment_amount || 0) + (portfolios._sum.total_roi_earned || 0);
+
     // Deposits (from Ledger or Deposits table)
     const deposits = await prisma.generalLedger.aggregate({
       where: { category: 'deposit', direction: 'credit', ...dateFilter },
@@ -80,8 +87,11 @@ export const getOverview = async (req: Request, res: Response) => {
     });
     
     let pendingRepayments = 0;
+    let capitalDeployed = 0;
     for (const rr of rentRequests) {
-      const remaining = Number(rr.total_repayment) - Number(rr.amount_repaid);
+      const principal = Number(rr.total_repayment) || 0;
+      capitalDeployed += principal;
+      const remaining = principal - Number(rr.amount_repaid);
       if (remaining > 0) pendingRepayments += remaining;
     }
 
@@ -104,6 +114,9 @@ export const getOverview = async (req: Request, res: Response) => {
     res.json({
       metrics: {
         totalWalletBalance,
+        totalPartnerCapital,
+        capitalDeployed,
+        outstandingReceivables: pendingRepayments,
         deposits: deposits._sum.amount || 0,
         withdrawals: withdrawals._sum.amount || 0,
         platformFees: fees._sum.amount || 0,
@@ -112,7 +125,7 @@ export const getOverview = async (req: Request, res: Response) => {
         agentEarnings: 0,
         commissions: 0,
         bonuses: 0,
-        rentFacilitated: 0
+        rentFacilitated: capitalDeployed
       },
       counts: {
         totalUsers,
@@ -309,8 +322,16 @@ export const getStatements = async (req: Request, res: Response) => {
     const expenses = expenseSum._sum.amount || 0;
     const profit = revenue - expenses;
 
+    const portfolios = await prisma.investorPortfolios.aggregate({
+      where: { status: 'ACTIVE' },
+      _sum: { investment_amount: true, total_roi_earned: true }
+    });
+    const totalPartnerCapital = (portfolios._sum.investment_amount || 0) + (portfolios._sum.total_roi_earned || 0);
+
     const wallets = await prisma.wallets.aggregate({ _sum: { balance: true } });
-    const liab = wallets._sum.balance || 0;
+    
+    // The true operational liability base is now Company Capital raised from Funders
+    const liab = totalPartnerCapital;
     
     // Simplistic Receivables check
     const rentRequests = await prisma.rentRequests.findMany({ where: { status: 'DISBURSED' } });

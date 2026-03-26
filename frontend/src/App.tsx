@@ -33,6 +33,7 @@ import { funderRoutes } from './routes/funderRoutes';
 import { cooRoutes } from './routes/cooRoutes';
 import { executiveRoutes } from './routes/executiveRoutes';
 import { superAdminRoutes } from './routes/superAdminRoutes';
+import { managerRoutes } from './routes/managerRoutes';
 
 const queryClient = new QueryClient();
 
@@ -141,6 +142,7 @@ function App() {
                 {tenantRoutes}
                 {funderRoutes}
                 {cooRoutes}
+                {managerRoutes}
 
                 {/* Admin Routes */}
                 <Route path="/admin/login" element={<AdminLogin />} />
