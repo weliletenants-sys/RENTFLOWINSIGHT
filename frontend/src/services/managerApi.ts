@@ -68,5 +68,18 @@ export const managerApi = {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
     return response.data;
+  },
+  getTenantStatuses: async (params: { page: number; limit: number; filter?: string }) => {
+    const { page, limit, filter } = params;
+    let url = `${API_URL}/api/v1/manager/tenants/status?page=${page}&limit=${limit}`;
+    if (filter && filter !== 'all') url += `&filter=${filter}`;
+    const response = await axios.get(url, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+    return response.data;
+  },
+  triggerTenantEviction: async (id: string, legal_reason: string) => {
+    const response = await axios.post(`${API_URL}/api/v1/manager/tenants/${id}/eviction`, { legal_reason }, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    return response.data;
   }
 };
