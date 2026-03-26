@@ -18,7 +18,8 @@ import {
   updateUserProfile,
   getPendingDeposits,
   forwardDeposit,
-  rejectDeposit
+  rejectDeposit,
+  updatePortfolio
 } from '../../controllers/coo.controller';
 import { authGuard, rolesGuard } from '../../middlewares/auth.middleware';
 
@@ -54,5 +55,8 @@ router.get('/opportunities', getOpportunities);
 router.get('/deposits/pending', getPendingDeposits);
 router.post('/deposits/:id/forward', forwardDeposit);
 router.post('/deposits/:id/reject', rejectDeposit);
+
+// Portfolio Structuring
+router.patch('/portfolios/:id', updatePortfolio);
 
 export default router;

@@ -219,3 +219,16 @@ export const rejectDeposit = async (id: string, reason: string) => {
     throw new Error(error.response?.data?.message || 'Failed to reject deposit');
   }
 };
+
+export const updatePartnerPortfolio = async (id: string, updates: any) => {
+  try {
+    const response = await axios.patch(`${API}/v1/coo/portfolios/${id}`, updates, getAuthHeaders());
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.data?.type) {
+      const problem = error.response.data as ProblemDetails;
+      throw new Error(`[${problem.title}]: ${problem.detail}`);
+    }
+    throw new Error(error.response?.data?.message || 'Failed to update portfolio details');
+  }
+};

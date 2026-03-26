@@ -589,3 +589,29 @@ export const rejectDeposit = async (req: Request, res: Response) => {
     return problemResponse(res, 500, 'Internal Server Error', error.message, 'internal-error');
   }
 };
+
+// --- Portfolio Management ---
+
+export const updatePortfolio = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { investment_amount, total_roi_earned, status } = req.body;
+
+    const data: any = { updated_at: new Date().toISOString() };
+    if (investment_amount !== undefined) data.investment_amount = Number(investment_amount);
+    if (total_roi_earned !== undefined) data.total_roi_earned = Number(total_roi_earned);
+    if (status !== undefined) data.status = status;
+
+    const updated = await prisma.investorPortfolios.update({
+      where: { id },
+      data
+    });
+
+    res.json({ message: 'Portfolio updated successfully', portfolio: updated });
+  } catch (error: any) {
+    if (error.code === 'P2025') {
+       return problemResponse(res, 404, 'Not Found', 'Portfolio record not found', 'not-found');
+    }
+    return problemResponse(res, 500, 'Internal Server Error', error.message, 'internal-error');
+  }
+};
