@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { managerApi } from '../../../services/managerApi';
-import { formatMoney } from '../../../utils/formatters';
+import { formatMoney } from '../../../utils/currency';
 import { ShieldAlert, Info, Lock } from 'lucide-react';
 
 export default function SupporterPoolBalanceCard() {

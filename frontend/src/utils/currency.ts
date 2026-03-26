@@ -1,4 +1,4 @@
-﻿/**
+/**
  * currency.ts
  * Detects the user's local currency via IP geolocation (ipapi.co).
  * Falls back to UGX (platform base currency) while the request loads or on error.
@@ -97,3 +97,6 @@ export function formatCurrencyCompact(amount: number, currency: CurrencyInfo): s
   if (amount >= 1_000)     return `${sym} ${(amount / 1_000).toFixed(0)}K`;
   return `${sym} ${Math.round(amount).toLocaleString()}`;
 }
+
+/** Legacy shim mapped from formatters.ts to prevent UI crashes */
+export const formatMoney = (amount: number) => new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', minimumFractionDigits: 0 }).format(amount);

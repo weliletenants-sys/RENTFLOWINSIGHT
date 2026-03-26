@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, Search, Bell, User, LayoutDashboard, Database, Activity, MapPin } from 'lucide-react';
+import { Menu, Search, Bell, User, LayoutDashboard, Database, Activity, MapPin, Shield, Home, Building2, Network } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function ManagerLayout() {
@@ -12,6 +12,11 @@ export default function ManagerLayout() {
   const navItems = [
     { name: 'Command Center', path: '/admin/manager/dashboard', icon: LayoutDashboard },
     { name: 'Financial Ops', path: '/admin/manager/financial-ops', icon: Activity },
+    { name: 'Company Staff', path: '/admin/manager/staff', icon: Shield },
+    { name: 'Agent Ops', path: '/admin/manager/agents', icon: MapPin },
+    { name: 'Tenant Ops', path: '/admin/manager/tenants', icon: Home },
+    { name: 'Landlord Ops', path: '/admin/manager/landlords', icon: Building2 },
+    { name: 'Partner Ops', path: '/admin/manager/partners', icon: Network },
     { name: 'Field Management', path: '/admin/manager/field', icon: MapPin },
     { name: 'Ledger Audit', path: '/admin/manager/ledger', icon: Database },
   ];

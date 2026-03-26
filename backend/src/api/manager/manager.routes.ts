@@ -1,5 +1,22 @@
 import { Router } from 'express';
-import { getPoolBalance, getPendingRentRequests, deployCapitalToTenant } from '../../controllers/manager.controller';
+import { 
+  getPoolBalance, 
+  getPendingRentRequests, 
+  deployCapitalToTenant,
+  getPendingDeposits,
+  approveDeposit,
+  getLedgerRecords,
+  getAllUsers,
+  updateUserRole,
+  getAgentFloats,
+  issueAgentAdvance,
+  getTenantStatuses,
+  triggerTenantEviction,
+  getLandlordDisbursements,
+  onboardLandlord,
+  getPartnerIntegrations,
+  getServiceCompliance
+} from '../../controllers/manager.controller';
 import { authGuard, rolesGuard } from '../../middlewares/auth.middleware';
 
 const router = Router();
@@ -16,5 +33,30 @@ router.get('/rent-requests/pending', getPendingRentRequests);
 
 // Atomic State Migrations (Deployment)
 router.post('/rent-requests/:id/deploy', deployCapitalToTenant);
+
+// Financial Ops Hub
+router.get('/ops/deposits/pending', getPendingDeposits);
+router.post('/ops/deposits/:id/approve', approveDeposit);
+router.get('/ops/ledger', getLedgerRecords);
+
+// Platform User Operations matrix
+router.get('/users', getAllUsers);
+router.patch('/users/:id/role', updateUserRole);
+
+// Field Agent Operations Pipeline
+router.get('/agents/float', getAgentFloats);
+router.post('/agents/:id/advance', issueAgentAdvance);
+
+// Tenant Operations (Compliance & Evictions)
+router.get('/tenants/status', getTenantStatuses);
+router.post('/tenants/:id/eviction', triggerTenantEviction);
+
+// Landlord Operations (Disbursements & Integrations)
+router.get('/landlords/disbursements', getLandlordDisbursements);
+router.post('/landlords/onboard', onboardLandlord);
+
+// Partner Operations (Risk & System SLA)
+router.get('/partners/integrations', getPartnerIntegrations);
+router.get('/partners/compliance', getServiceCompliance);
 
 export default router;
