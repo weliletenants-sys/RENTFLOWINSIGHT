@@ -1,4 +1,4 @@
-﻿// Shared types for the Funder Dashboard activity feed and portfolio list
+// Shared types for the Funder Dashboard activity feed and portfolio list
 
 export type ActivityCategory =
   | 'reward'
@@ -38,4 +38,5 @@ export interface PortfolioItem {
   nextPayoutDate?: string;
   maturityDate?: string;
   status: PortfolioStatus;
+  todayGrowth?: number;
 }

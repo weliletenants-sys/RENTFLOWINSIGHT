@@ -248,8 +248,18 @@ export const getPortfolios = async (req: Request, res: Response) => {
 
     // Map to frontend FunderPortfolioPage specifications securely
     const portfolios = portfoliosRaw.map(p => {
-      const baseGrowth = (p.status === 'active' || p.status === 'ACTIVE') ? Math.floor(Number(p.investment_amount) * (Number(p.roi_percentage) / 100) / 30) : 0;
-      const expectedProfit = Math.floor((Number(p.roi_percentage) / 100) * Number(p.investment_amount));
+      const isCompounding = String(p.roi_mode) === 'monthly_compounding';
+      const principal = Number(p.investment_amount);
+      const rate = Number(p.roi_percentage) / 100;
+      const duration = p.duration_months;
+      
+      const expectedProfit = isCompounding
+        ? Math.floor(principal * Math.pow(1 + rate / 12, duration)) - principal
+        : Math.floor(principal * rate * (duration / 12));
+
+      const baseGrowth = (p.status === 'active' || p.status === 'ACTIVE') 
+        ? Math.floor(expectedProfit / (duration * 30)) 
+        : 0;
       
       const msElapsed = Date.now() - new Date(p.created_at).getTime();
       const daysElapsed = Math.floor(msElapsed / (1000 * 60 * 60 * 24));
@@ -465,11 +475,18 @@ export const getPortfolioDetails = async (req: Request, res: Response) => {
       return res.status(404).json({ status: 'error', message: 'Portfolio not found.' });
     }
 
+    const isCompounding = p.roi_mode === 'monthly_compounding';
+    const principal = Number(p.investment_amount);
+    const rate = Number(p.roi_percentage) / 100;
+    const duration = p.duration_months;
+    
+    const expectedProfit = isCompounding
+      ? Math.floor(principal * Math.pow(1 + rate / 12, duration)) - principal
+      : Math.floor(principal * rate * (duration / 12));
+
     const baseGrowth = (p.status === 'active' || p.status === 'ACTIVE') 
-      ? Math.floor(Number(p.investment_amount) * (Number(p.roi_percentage) / 100) / 30) 
+      ? Math.floor(expectedProfit / (duration * 30)) 
       : 0;
-      
-    const expectedProfit = Math.floor((Number(p.roi_percentage) / 100) * Number(p.investment_amount));
     const msElapsed = Date.now() - new Date(p.created_at).getTime();
     const daysElapsed = Math.floor(msElapsed / (1000 * 60 * 60 * 24));
     

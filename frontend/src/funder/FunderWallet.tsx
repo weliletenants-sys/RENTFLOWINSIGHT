@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { 
-  Download, Upload, ArrowRightLeft, Clock, 
-  CheckCircle, XCircle, AlertCircle, Plus, Loader2, Phone, Wallet, Users, Info
+  Download, Upload, ArrowRightLeft, Clock,
+  CheckCircle, XCircle, AlertCircle, Plus, Loader2, Phone, Wallet, Users, Info, ChevronLeft, ChevronRight, PieChart
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import * as XLSX from 'xlsx';
 import FunderSidebar from './components/FunderSidebar';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
 import FunderBottomNav from './components/FunderBottomNav';
@@ -14,6 +15,14 @@ import type { DashboardStatsResponse } from '../services/funderApi';
 export default function FunderWallet() {
   const [activeTab, setActiveTab] = useState<'All' | 'Cash In' | 'Cash Out'>('All');
   
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 7;
+  
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
+
   // Live State
   const [stats, setStats] = useState<DashboardStatsResponse | null>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -214,6 +223,32 @@ export default function FunderWallet() {
     ? transactions 
     : transactions.filter(tx => tx.type === activeTab);
 
+  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+  const paginatedTransactions = filteredTransactions.slice(
+    (currentPage - 1) * itemsPerPage, 
+    currentPage * itemsPerPage
+  );
+
+  const handleExport = () => {
+    if (filteredTransactions.length === 0) return toast.error('No transactions to export');
+    
+    const exportData = filteredTransactions.map(tx => ({
+      'Date & Time': tx.date,
+      'Reference ID': tx.ref,
+      'Category': tx.category,
+      'Description': tx.description,
+      'Transaction Type': tx.type,
+      'Amount (UGX)': tx.amount,
+      'Status': tx.status
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Wallet_Transactions");
+    XLSX.writeFile(wb, `RentFlowInsight_Wallet_Tx_${new Date().getTime()}.xlsx`);
+    toast.success('Transaction history downloaded successfully!');
+  };
+
   const formatStatus = (st: string) => {
     if (st.startsWith('pending')) return 'Pending';
     if (st.startsWith('approved')) return 'Approved';
@@ -359,8 +394,15 @@ export default function FunderWallet() {
               <div className="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <h3 className="text-lg font-black text-slate-900">Transaction History</h3>
                 
-                {/* Tabs */}
-                <div className="flex bg-slate-50 p-1 rounded-xl">
+                {/* Actions & Tabs */}
+                <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+                  <button
+                    onClick={handleExport}
+                    className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[var(--color-primary)] bg-[var(--color-primary-faint)] px-3 py-2 rounded-lg hover:shadow-sm transition-all border border-[var(--color-primary-border)]"
+                  >
+                    <Download className="w-3.5 h-3.5" /> Export XLSX
+                  </button>
+                  <div className="flex bg-slate-50 p-1 rounded-xl">
                   {['All', 'Cash In', 'Cash Out'].map(tab => (
                     <button
                       key={tab}
@@ -374,6 +416,7 @@ export default function FunderWallet() {
                       {tab}
                     </button>
                   ))}
+                  </div>
                 </div>
               </div>
 
@@ -401,31 +444,81 @@ export default function FunderWallet() {
                         </td>
                       </tr>
                     ) : (
-                      filteredTransactions.map((tx) => (
-                        <tr key={tx.id} className="hover:bg-slate-50 transition-colors group">
+                      paginatedTransactions.map((tx) => {
+                        const cat = String(tx.category).toLowerCase();
+                        const isRentFund = cat === 'supporter_rent_fund';
+                        const isCashIn = tx.type === 'Cash In' || cat.includes('deposit') || cat.includes('top');
+                        const isWithdraw = tx.type === 'Cash Out' || cat.includes('withdraw');
+                        
+                        let txColor = '#64748B'; // default
+                        let txBg = '#F1F5F9'; // default bg
+                        let txSymbol = '';
+                        let TxIcon = <ArrowRightLeft className="w-5 h-5" strokeWidth={2.5} />;
+
+                        if (isRentFund) {
+                          txColor = '#580CAE';
+                          txBg = '#580CAE1A';
+                          txSymbol = '-';
+                          TxIcon = <PieChart className="w-5 h-5 drop-shadow-sm" strokeWidth={2.5} />;
+                        } else if (isCashIn) {
+                          txColor = '#10B981';
+                          txBg = '#10B9811A';
+                          txSymbol = '+';
+                          TxIcon = <Download className="w-5 h-5" strokeWidth={2.5} />;
+                        } else if (isWithdraw) {
+                          txColor = '#EF4444';
+                          txBg = '#EF44441A';
+                          txSymbol = '-';
+                          TxIcon = <Upload className="w-5 h-5" strokeWidth={2.5} />;
+                        } else {
+                          // generic transfers
+                          txSymbol = tx.type === 'Cash In' ? '+' : '-';
+                          if (tx.type === 'Cash In') {
+                            txColor = '#10B981';
+                            txBg = '#10B9811A';
+                          } else {
+                            txColor = '#EF4444';
+                            txBg = '#EF44441A';
+                          }
+                        }
+
+                        return (
+                        <tr key={tx.id} className="hover:bg-slate-50/80 transition-colors group cursor-default">
                           <td className="px-6 py-4 border-b border-slate-50">
-                            <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                              tx.type === 'Cash In' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
-                            }`}>
-                              {tx.type === 'Cash In' ? <Upload className="w-5 h-5" /> : <Download className="w-5 h-5" />}
-                            </div>
+                            <div className="flex items-center gap-4">
+                              <div className={`w-10 h-10 rounded-2xl flex items-center justify-center`} style={{
+                                backgroundColor: txBg,
+                                color: txColor
+                              }}>
+                                {TxIcon}
+                              </div>
+                              
                             <div>
-                              <p className="text-sm font-bold text-slate-900">{tx.description}</p>
+                              <p className="text-sm font-semibold text-slate-900 truncate">
+                                {tx.description}
+                              </p>
                               <div className="flex items-center gap-2 mt-0.5">
-                                <span className="text-xs font-medium text-slate-500">{tx.date}</span>
+                                <span className="text-[11px] font-medium text-slate-500">{tx.date}</span>
                                 <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                                <span className="text-[10px] font-bold text-slate-400 font-mono">{tx.ref}</span>
+                                <span className="text-[10px] font-medium text-slate-400 font-mono uppercase">{tx.ref}</span>
                               </div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 border-b border-slate-50">
-                          <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md">{tx.category}</span>
+                          {isRentFund ? (
+                            <span className="text-[10px] font-bold tracking-widest uppercase bg-[#580CAE]/10 px-2.5 py-1 rounded-lg border border-[#580CAE]/20" style={{ color: '#580CAE' }}>
+                              Rent Fund
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-bold tracking-widest uppercase text-slate-500 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200" style={{ color: txColor }}>
+                              {String(tx.category).replace(/_/g, ' ')}
+                            </span>
+                          )}
                         </td>
                         <td className="px-6 py-4 border-b border-slate-50">
-                          <p className={`text-sm font-black ${tx.type === 'Cash In' ? 'text-emerald-600' : 'text-slate-900'}`}>
-                            {tx.type === 'Cash In' ? '+' : '-'} UGX {tx.amount.toLocaleString()}
+                          <p className={`text-[14px] font-bold`} style={{ color: txColor }}>
+                            {txSymbol} UGX {tx.amount.toLocaleString()}
                           </p>
                         </td>
                         <td className="px-6 py-4 border-b border-slate-50 text-right">
@@ -435,11 +528,40 @@ export default function FunderWallet() {
                           </div>
                         </td>
                       </tr>
-                      ))
+                      );
+                    })
                     )}
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50 flex-wrap gap-4">
+                  <p className="text-xs font-semibold text-slate-500">
+                    Showing <span className="font-bold text-slate-900">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-bold text-slate-900">{Math.min(currentPage * itemsPerPage, filteredTransactions.length)}</span> of <span className="font-bold text-slate-900">{filteredTransactions.length}</span> entries
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:bg-white hover:text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm bg-white"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <div className="text-[11px] font-bold text-slate-700 px-3 py-1 bg-white border border-slate-200 rounded-lg shadow-sm">
+                      Page {currentPage} of {totalPages}
+                    </div>
+                    <button 
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:bg-white hover:text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm bg-white"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
           </main>

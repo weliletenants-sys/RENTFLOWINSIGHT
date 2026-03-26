@@ -394,7 +394,11 @@ function AddPortfolioModal({ walletBalance, onClose, onSuccess }: AddPortfolioMo
 
   const numAmount = parseInt(amount.replace(/,/g, ''), 10) || 0;
   const roiRate = 15; // Locked at 15% system-wide
-  const monthlyReturn = numAmount * (roiRate / 100);
+  const isCompounding = roiMode === 'monthly_compounding';
+  const expectedProfit = isCompounding
+    ? (numAmount * Math.pow(1 + (roiRate / 100) / 12, duration)) - numAmount
+    : numAmount * (roiRate / 100) * (duration / 12);
+  const totalReturn = numAmount + expectedProfit;
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value.replace(/[^0-9]/g, '');
@@ -635,16 +639,16 @@ function AddPortfolioModal({ walletBalance, onClose, onSuccess }: AddPortfolioMo
                   <div className="h-px bg-slate-100 w-full" />
 
                   <div className="flex justify-between items-center">
-                    <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Expected Profit</span>
+                    <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Expected Profit ({isCompounding ? 'Compound' : 'Simple'})</span>
                     <span className="font-bold text-[var(--color-success)] text-sm">
-                      + UGX {(numAmount * 0.15 * (Number(duration) / 12)).toLocaleString()}
+                      + UGX {Math.round(expectedProfit).toLocaleString()}
                     </span>
                   </div>
 
                   <div className="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100 mt-1">
                     <span className="text-xs text-slate-800 font-black uppercase tracking-widest">Est. Total Return</span>
                     <span className="font-black text-[var(--color-primary)] text-lg">
-                      UGX {(numAmount + (numAmount * 0.15 * (Number(duration) / 12))).toLocaleString()}
+                      UGX {Math.round(totalReturn).toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -696,7 +700,7 @@ function AddPortfolioModal({ walletBalance, onClose, onSuccess }: AddPortfolioMo
                 Investment Confirmed!
               </h2>
               <p className="text-xs text-gray-400 mb-4">
-                Portfolio <strong>#{portfolioCode}</strong> is now active. You'll earn <strong>UGX {Math.round(monthlyReturn).toLocaleString()}</strong>/month at {roiRate}% ROI.
+                Portfolio <strong>#{portfolioCode}</strong> is now active. You are projected to earn a total profit of <strong>UGX {Math.round(expectedProfit).toLocaleString()}</strong> correctly scaled over the {duration}-month term.
               </p>
               <div className="bg-green-50 border border-green-100 rounded-xl p-3 mb-5">
                 <p className="text-[11px] text-green-600 font-bold uppercase tracking-widest">

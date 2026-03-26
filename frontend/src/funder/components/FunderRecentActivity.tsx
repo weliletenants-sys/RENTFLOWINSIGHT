@@ -58,45 +58,44 @@ export default function FunderRecentActivity({ activities, onViewAll }: FunderRe
           return (
             <div
               key={item.id}
-              className="bg-white p-3 rounded-xl border border-[var(--color-primary-border)] flex flex-col gap-2 cursor-pointer hover:border-[var(--color-primary)] hover:shadow-md transition-all group"
+              className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm flex flex-col gap-3 cursor-pointer hover:border-[var(--color-primary)] hover:shadow-md transition-all group"
             >
-              {/* Top row: Icon + Text */}
-              <div className="flex items-start gap-3">
-                {/* Icon */}
-                <div className={`w-9 h-9 ${catCfg.bg} rounded-lg flex items-center justify-center shrink-0`}>
+              {/* Row 1: Small Icon + Title */}
+              <div className="flex items-center gap-2.5">
+                <div className={`w-7 h-7 ${catCfg.bg} rounded-md flex items-center justify-center shrink-0 [&>svg]:w-4 [&>svg]:h-4`}>
                   {catCfg.icon}
                 </div>
-
-                {/* Text Area */}
-                <div className="flex-1 min-w-0 flex flex-col justify-center">
-                  <div className="flex justify-between items-start mb-1">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <h5 className="font-bold text-xs text-gray-900 truncate group-hover:text-[var(--color-primary)] transition-colors">{item.title}</h5>
-                      <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold shrink-0 ${stsCfg.classes}`}>
-                        {stsCfg.label}
-                      </span>
-                    </div>
-                  </div>
-
-                  {item.provider && (
-                    <p className="text-[10px] text-gray-500 font-semibold truncate mb-1">{item.provider}</p>
-                  )}
-
-                  <p className="text-[10px] text-gray-400 italic mb-1">{item.date}</p>
-                </div>
+                <h5 className="font-bold text-[13px] text-slate-900 truncate group-hover:text-[var(--color-primary)] transition-colors">
+                  {item.title}
+                </h5>
               </div>
 
-              {/* Bottom line: Time ago on left, Amount on right */}
-              <div className="flex justify-between items-center border-t border-slate-50 pt-2 mt-1">
-                <span className="text-[10px] font-bold text-slate-500">
-                  {item.timestamp}
-                </span>
-                <p
-                  className="font-bold text-sm whitespace-nowrap"
-                  style={{ color: item.isCredit ? 'var(--color-success)' : '#ef4444' }}
-                >
-                  {item.isCredit ? '+' : '-'} UGX {(item.amount / 1000).toFixed(0)}K
-                </p>
+              <div className="flex flex-col gap-2 relative">
+                {/* Visual Connector Line */}
+                <div className="absolute left-3.5 top-0 bottom-1 w-px bg-slate-100 -translate-x-[50%] hidden" />
+                
+                {/* Row 2: Provider ID + Status */}
+                <div className="flex justify-between items-center">
+                  <p className="text-[11px] text-slate-500 font-mono font-bold truncate">
+                    {item.provider || 'SYSTEM'}
+                  </p>
+                  <span className={`text-[9px] px-2 py-0.5 rounded font-extrabold uppercase tracking-widest shrink-0 ${stsCfg.classes}`}>
+                    {stsCfg.label}
+                  </span>
+                </div>
+
+                {/* Row 3: Date/Time + Amount */}
+                <div className="flex justify-between items-center">
+                  <p className="text-[10px] text-slate-400 font-semibold whitespace-nowrap">
+                    {item.date} <span className="mx-1 text-slate-300">•</span> {item.timestamp}
+                  </p>
+                  <p
+                    className="font-black text-[13px] whitespace-nowrap"
+                    style={{ color: item.isCredit ? 'var(--color-success)' : '#ef4444' }}
+                  >
+                    {item.isCredit ? '+' : '-'} UGX {(item.amount / 1000).toFixed(0)}K
+                  </p>
+                </div>
               </div>
             </div>
           );
