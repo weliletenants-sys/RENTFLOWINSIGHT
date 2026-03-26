@@ -94,5 +94,17 @@ export const managerApi = {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
     return response.data;
+  },
+  getPartnerIntegrations: async () => {
+    const response = await axios.get(`${API_URL}/api/v1/manager/partners/integrations`, {
+       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    return response.data;
+  },
+  getServiceCompliance: async () => {
+    const response = await axios.get(`${API_URL}/api/v1/manager/partners/compliance`, {
+       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    return response.data;
   }
 };

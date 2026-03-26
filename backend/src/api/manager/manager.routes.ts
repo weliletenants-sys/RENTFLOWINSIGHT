@@ -13,7 +13,9 @@ import {
   getTenantStatuses,
   triggerTenantEviction,
   getLandlordDisbursements,
-  onboardLandlord
+  onboardLandlord,
+  getPartnerIntegrations,
+  getServiceCompliance
 } from '../../controllers/manager.controller';
 import { authGuard, rolesGuard } from '../../middlewares/auth.middleware';
 
@@ -52,5 +54,9 @@ router.post('/tenants/:id/eviction', triggerTenantEviction);
 // Landlord Operations (Disbursements & Integrations)
 router.get('/landlords/disbursements', getLandlordDisbursements);
 router.post('/landlords/onboard', onboardLandlord);
+
+// Partner Operations (Risk & System SLA)
+router.get('/partners/integrations', getPartnerIntegrations);
+router.get('/partners/compliance', getServiceCompliance);
 
 export default router;
