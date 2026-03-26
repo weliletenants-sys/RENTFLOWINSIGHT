@@ -17,8 +17,6 @@ export default function ManagerLayout() {
     { name: 'Tenant Ops', path: '/admin/manager/tenants', icon: Home },
     { name: 'Landlord Ops', path: '/admin/manager/landlords', icon: Building2 },
     { name: 'Partner Ops', path: '/admin/manager/partners', icon: Network },
-    { name: 'Field Management', path: '/admin/manager/field', icon: MapPin },
-    { name: 'Ledger Audit', path: '/admin/manager/ledger', icon: Database },
   ];
 
   const SidebarContent = () => (

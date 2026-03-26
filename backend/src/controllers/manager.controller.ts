@@ -43,7 +43,8 @@ export const getPoolBalance = async (req: Request, res: Response) => {
       type: "https://api.rentflow.com/errors/internal-error",
       title: "Internal Server Error",
       status: 500,
-      detail: "An internal platform error occurred while evaluating Supporter Pool metrics."
+      detail: (error as Error).message || "An internal platform error occurred while evaluating Supporter Pool metrics.",
+      trace: (error as Error).stack
     });
   }
 };
