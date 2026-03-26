@@ -218,7 +218,8 @@ export const getPartners = async (req: Request, res: Response) => {
          frozen: f.is_frozen || false,
          totalInvested,
          returnsPaid,
-         activeDeals
+         activeDeals,
+         portfolios: ports
       };
     }));
 

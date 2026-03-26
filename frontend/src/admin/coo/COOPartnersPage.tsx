@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Check, Loader2, AlertTriangle, ShieldAlert } from 'lucide-react';
+import { Search, Check, Loader2, AlertTriangle, ShieldAlert, X } from 'lucide-react';
 import { fetchPartners } from '../../services/cooApi';
 
 const COOPartnersPage: React.FC = () => {
@@ -9,6 +9,8 @@ const COOPartnersPage: React.FC = () => {
   const [investors, setInvestors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const [selectedPartner, setSelectedPartner] = useState<any>(null);
 
   useEffect(() => {
     const loadPartners = async () => {
@@ -105,7 +107,7 @@ const COOPartnersPage: React.FC = () => {
                 {investors.length === 0 ? (
                    <tr><td colSpan={4} className="p-8 text-center text-slate-500 font-medium">No live organizational partners.</td></tr>
                 ) : investors.map((investor) => (
-                  <tr key={investor.id} className="hover:bg-slate-50/50 transition-colors group">
+                  <tr key={investor.id} onClick={() => setSelectedPartner(investor)} className="hover:bg-slate-50 cursor-pointer transition-colors group">
                     <td className="p-4 pl-6 font-bold text-slate-800 flex items-center gap-2">
                        {investor.name}
                        {investor.frozen && <ShieldAlert size={14} className="text-red-500" />}
@@ -149,6 +151,77 @@ const COOPartnersPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Portfolio Inspection Drawer */}
+      {selectedPartner && (
+        <>
+          <div 
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 transition-opacity"
+            onClick={() => setSelectedPartner(null)}
+          />
+          <div className="fixed inset-y-0 right-0 max-w-md w-full bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col font-inter">
+            <div className="flex items-center justify-between p-6 border-b border-slate-100 bg-slate-50/50">
+               <div>
+                  <h3 className="font-bold text-lg text-slate-800 tracking-tight">{selectedPartner.name}</h3>
+                  <p className="text-sm font-medium text-slate-500">Investment Portfolio</p>
+               </div>
+               <button onClick={() => setSelectedPartner(null)} className="p-2 hover:bg-slate-200 rounded-xl transition-colors text-slate-500 cursor-pointer">
+                  <X size={20} />
+               </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1 bg-slate-50/30">
+               {(!selectedPartner.portfolios || selectedPartner.portfolios.length === 0) ? (
+                  <div className="text-center p-8 bg-white rounded-3xl border border-slate-100 shadow-sm mt-4">
+                     <p className="text-slate-500 font-bold text-sm">No active investments found in ledger.</p>
+                  </div>
+               ) : (
+                  <div className="space-y-4 shadow-inner p-2 bg-slate-100/50 rounded-3xl">
+                     {selectedPartner.portfolios.map((port: any, idx: number) => (
+                        <div key={idx} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-[#6c11d4]/30 hover:shadow-md transition-all group">
+                           <div className="flex justify-between items-start mb-4">
+                              <h4 className="font-bold text-slate-800 text-xs tracking-widest uppercase">Deal ID: {port.id?.slice(0, 8) || 'N/A'}</h4>
+                              <span className={`px-3 py-1 text-[10px] uppercase tracking-widest font-black rounded-full ${port.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-500/20' : 'bg-slate-100 text-slate-500'}`}>
+                                 {port.status || 'PENDING'}
+                              </span>
+                           </div>
+                           <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-[#6c11d4]"></div> Capital</p>
+                                 <p className="font-black text-[#6c11d4] tracking-tight">UGX {(port.investment_amount || 0).toLocaleString()}</p>
+                              </div>
+                              <div>
+                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div> ROI Paid</p>
+                                 <p className="font-black text-emerald-600 tracking-tight">UGX {(port.total_roi_earned || 0).toLocaleString()}</p>
+                              </div>
+                           </div>
+                           {port.created_at && (
+                              <div className="mt-5 border-t border-slate-100 pt-4 flex items-center justify-between">
+                                 <p className="text-[11px] font-bold text-slate-400 tracking-wide">
+                                    Invested on {new Date(port.created_at).toLocaleDateString()}
+                                 </p>
+                              </div>
+                           )}
+                        </div>
+                     ))}
+                  </div>
+               )}
+            </div>
+            
+            <div className="p-6 border-t border-slate-100 bg-white grid grid-cols-2 gap-4 shrink-0 shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
+               <div className="bg-slate-50 p-4 rounded-2xl">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Capital</p>
+                  <p className="font-black text-[#6c11d4] text-lg tracking-tight truncate">UGX {selectedPartner.totalInvested.toLocaleString()}</p>
+               </div>
+               <div className="bg-emerald-50/50 p-4 rounded-2xl ring-1 ring-emerald-500/10">
+                  <p className="text-[10px] font-black text-emerald-600/70 uppercase tracking-widest mb-1">Total Returns</p>
+                  <p className="font-black text-emerald-600 text-lg tracking-tight truncate">UGX {selectedPartner.returnsPaid.toLocaleString()}</p>
+               </div>
+            </div>
+          </div>
+        </>
+      )}
+
     </div>
   );
 };
