@@ -10,10 +10,10 @@ export default function ManagerLayout() {
   const location = useLocation();
 
   const navItems = [
-    { name: 'Command Center', path: '/manager/dashboard', icon: LayoutDashboard },
-    { name: 'Financial Ops', path: '/manager/financial-ops', icon: Activity },
-    { name: 'Field Management', path: '/manager/field', icon: MapPin },
-    { name: 'Ledger Audit', path: '/manager/ledger', icon: Database },
+    { name: 'Command Center', path: '/admin/manager/dashboard', icon: LayoutDashboard },
+    { name: 'Financial Ops', path: '/admin/manager/financial-ops', icon: Activity },
+    { name: 'Field Management', path: '/admin/manager/field', icon: MapPin },
+    { name: 'Ledger Audit', path: '/admin/manager/ledger', icon: Database },
   ];
 
   const SidebarContent = () => (
@@ -110,10 +110,10 @@ export default function ManagerLayout() {
 
             <button className="flex items-center gap-3 p-1 pr-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
               <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-sm">
-                {user?.full_name?.charAt(0) || <User size={16} />}
+                {user?.firstName?.charAt(0) || <User size={16} />}
               </div>
               <div className="hidden md:block text-left">
-                <p className="text-sm font-semibold leading-none mb-1">{user?.full_name || 'System Manager'}</p>
+                <p className="text-sm font-semibold leading-none mb-1">{user?.firstName || 'System Manager'}</p>
                 <p className="text-xs text-gray-500 leading-none">{user?.role?.replace('_', ' ')}</p>
               </div>
             </button>

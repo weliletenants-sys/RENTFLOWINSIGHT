@@ -1,4 +1,4 @@
-import { Navigate, Route, Outlet } from 'react-router-dom';
+import { Navigate, Route } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { lazy, Suspense } from 'react';
 
@@ -23,7 +23,7 @@ function RequireManager({ children }: { children: React.ReactNode }) {
 
 export const managerRoutes = (
   <Route 
-    path="/manager" 
+    path="/admin/manager" 
     element={
       <RequireManager>
         <Suspense fallback={<CentralLoader />}>
