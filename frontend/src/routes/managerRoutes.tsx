@@ -6,6 +6,7 @@ const ManagerDashboard = lazy(() => import('../admin/manager/ManagerDashboard'))
 const ManagerLayout = lazy(() => import('../admin/manager/ManagerLayout'));
 const FinancialOps = lazy(() => import('../admin/manager/FinancialOps'));
 const CompanyStaff = lazy(() => import('../admin/manager/CompanyStaff'));
+const AgentOps = lazy(() => import('../admin/manager/AgentOps'));
 
 const CentralLoader = () => (
   <div className="flex h-[50vh] items-center justify-center">
@@ -39,5 +40,6 @@ export const managerRoutes = (
     <Route path="dashboard" element={<Suspense fallback={<CentralLoader />}><ManagerDashboard /></Suspense>} />
     <Route path="financial-ops" element={<Suspense fallback={<CentralLoader />}><FinancialOps /></Suspense>} />
     <Route path="staff" element={<Suspense fallback={<CentralLoader />}><CompanyStaff /></Suspense>} />
+    <Route path="agents" element={<Suspense fallback={<CentralLoader />}><AgentOps /></Suspense>} />
   </Route>
 );

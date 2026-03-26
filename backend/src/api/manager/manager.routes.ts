@@ -7,7 +7,11 @@ import {
   approveDeposit,
   getLedgerRecords,
   getAllUsers,
-  updateUserRole
+  updateUserRole,
+  getAgentFloats,
+  issueAgentAdvance,
+  getTenantStatuses,
+  triggerTenantEviction
 } from '../../controllers/manager.controller';
 import { authGuard, rolesGuard } from '../../middlewares/auth.middleware';
 
@@ -34,5 +38,13 @@ router.get('/ops/ledger', getLedgerRecords);
 // Platform User Operations matrix
 router.get('/users', getAllUsers);
 router.patch('/users/:id/role', updateUserRole);
+
+// Field Agent Operations Pipeline
+router.get('/agents/float', getAgentFloats);
+router.post('/agents/:id/advance', issueAgentAdvance);
+
+// Tenant Operations (Compliance & Evictions)
+router.get('/tenants/status', getTenantStatuses);
+router.post('/tenants/:id/eviction', triggerTenantEviction);
 
 export default router;

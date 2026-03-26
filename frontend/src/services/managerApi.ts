@@ -55,5 +55,18 @@ export const managerApi = {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
     return response.data;
+  },
+  getAgentFloats: async (params: { page: number; limit: number }) => {
+    const { page, limit } = params;
+    const response = await axios.get(`${API_URL}/api/v1/manager/agents/float?page=${page}&limit=${limit}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    return response.data;
+  },
+  issueAgentAdvance: async (id: string, data: { principal: number; cycle_days?: number; daily_rate?: number; note?: string }) => {
+    const response = await axios.post(`${API_URL}/api/v1/manager/agents/${id}/advance`, data, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    return response.data;
   }
 };

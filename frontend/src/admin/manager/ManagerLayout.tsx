@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, Search, Bell, User, LayoutDashboard, Database, Activity, MapPin } from 'lucide-react';
+import { Menu, Search, Bell, User, LayoutDashboard, Database, Activity, MapPin, Shield } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function ManagerLayout() {

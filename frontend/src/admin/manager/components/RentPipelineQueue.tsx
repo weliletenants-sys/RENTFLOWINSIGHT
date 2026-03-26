@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { managerApi } from '../../../services/managerApi';
-import { formatMoney } from '../../../utils/formatters';
+import { formatMoney } from '../../../utils/currency';
 import { formatDistanceToNow } from 'date-fns';
 import { Send, CheckCircle, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
