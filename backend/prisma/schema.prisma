@@ -716,7 +716,7 @@ model Profiles {
   country               String?
   country_code          String?
   created_at            String
-  email                 String
+  email                 String?
   frozen_at             String?
   frozen_reason         String?
   full_name             String
@@ -727,7 +727,7 @@ model Profiles {
   mobile_money_provider String?
   monthly_rent          Float?
   national_id           String?
-  phone                 String
+  phone                 String   @unique
   referrer_id           String?
   rent_discount_active  Boolean
   territory             String?

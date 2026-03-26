@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Phone, Mail, Lock, Eye, EyeOff, ArrowRight, User, Loader2 } from 'lucide-react';
+import { Phone, Mail, Lock, Eye, EyeOff, ArrowRight, User, Loader2, KeyRound, CheckCircle2 } from 'lucide-react';
 import PurpleBubbles from '../../components/PurpleBubbles';
-import { loginUser, registerUser } from '../../services/authApi';
+import { loginUser, registerUser, sendOTP, verifyOTP } from '../../services/authApi';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -15,20 +15,22 @@ export default function UnifiedAuth() {
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
   
   // Login State
-  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPhone, setLoginPhone] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [showLoginPassword, setShowLoginPassword] = useState(false);
 
-  // Signup State
+  // Signup State - Multi-step Wizard
+  const [signupStep, setSignupStep] = useState<1 | 2 | 3>(1);
+  const [phone, setPhone] = useState('');
+  const [otpCode, setOtpCode] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [phone, setPhone] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [rentAmount, setRentAmount] = useState('');
 
   // Global UI State
   const [error, setError] = useState('');
@@ -61,14 +63,14 @@ export default function UnifiedAuth() {
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!loginEmail || !loginPassword) {
-      setError("Please enter your email and password.");
+    if (!loginPhone || !loginPassword) {
+      setError("Please enter your registered phone number and password.");
       return;
     }
 
     try {
       setLoading(true);
-      const res = await loginUser({ email: loginEmail, password: loginPassword });
+      const res = await loginUser({ phone: loginPhone, password: loginPassword });
       
       if (res.status === 'success') {
         const { access_token, user, onboarding_url } = res.data;
@@ -95,11 +97,53 @@ export default function UnifiedAuth() {
     }
   };
 
-  const handleSignupSubmit = async (e: React.FormEvent) => {
+  // --- SIGNUP WIZARD HANDLERS ---
+  
+  const handleRequestOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (!phone || phone.length < 9) {
+      setError("Please enter a valid mobile number.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await sendOTP({ phone: phone.trim() });
+      toast.success("Verification code sent via SMS.");
+      setSignupStep(2);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || "Could not send verification code.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (!otpCode || otpCode.length < 4) {
+      setError("Please enter the verification code sent to your phone.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await verifyOTP({ phone: phone.trim(), otp_code: otpCode.trim() });
+      toast.success("Number verified successfully!");
+      setSignupStep(3);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || "Invalid or expired verification code.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignupComplete = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (!firstName || !lastName || !signupPassword || !confirmPassword || !signupEmail) {
+    if (!firstName || !lastName || !signupPassword || !confirmPassword) {
       setError("Please fill out all required fields.");
       return;
     }
@@ -112,12 +156,12 @@ export default function UnifiedAuth() {
     try {
       setLoading(true);
       const res = await registerUser({
-        email: signupEmail,
+        phone: phone.trim(),
+        email: signupEmail.trim() || undefined,
         password: signupPassword,
         firstName,
         lastName,
         role: intendedRole || 'TENANT',
-        phone,
       });
 
       if (res.status === 'success') {
@@ -164,7 +208,7 @@ export default function UnifiedAuth() {
           
           <div className="p-1.5 bg-slate-50 flex m-6 rounded-2xl relative">
             <button 
-              onClick={() => { setMode('login'); setError(''); }}
+              onClick={() => { setMode('login'); setError(''); setSignupStep(1); }}
               className={`flex-1 py-2.5 px-4 text-sm font-semibold rounded-xl transition-all duration-300 ${mode === 'login' ? 'bg-white shadow-sm text-[#6c11d4]' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
             >
                 Sign In
@@ -190,22 +234,22 @@ export default function UnifiedAuth() {
                 >
                   <div className="mb-8 text-center">
                     <h1 className="text-2xl font-bold text-slate-900 mb-2">Welcome Back</h1>
-                    <p className="text-slate-500 text-sm">Secure access to your unified portal</p>
+                    <p className="text-slate-500 text-sm">Secure access using your phone number</p>
                   </div>
 
                   <form onSubmit={handleLoginSubmit} className="space-y-5">
                     <div className="space-y-2">
-                      <label className="text-sm font-semibold text-slate-700 ml-1">Email Address</label>
+                      <label className="text-sm font-semibold text-slate-700 ml-1">Phone Number</label>
                       <div className="relative group">
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors">
-                          <Mail size={18} strokeWidth={2} />
+                          <Phone size={18} strokeWidth={2} />
                         </div>
                         <input 
-                          type="email" 
-                          placeholder="name@company.com"
-                          value={loginEmail}
-                          onChange={(e) => setLoginEmail(e.target.value)}
-                          className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-100 focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-medium" 
+                          type="tel" 
+                          placeholder="0704825473"
+                          value={loginPhone}
+                          onChange={(e) => setLoginPhone(e.target.value)}
+                          className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-100 focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-medium tracking-wide" 
                         />
                       </div>
                     </div>
@@ -254,7 +298,7 @@ export default function UnifiedAuth() {
                         </div>
                       ) : (
                         <>
-                          <span>Continue Securely</span>
+                          <span>Sign In Securely</span>
                           <ArrowRight size={18} strokeWidth={2} className="group-hover:translate-x-1 transition-transform" />
                         </>
                       )}
@@ -277,98 +321,121 @@ export default function UnifiedAuth() {
                 >
                   <div className="mb-6 text-center">
                     <h1 className="text-2xl font-bold text-slate-900 mb-2">Create Account</h1>
-                    <p className="text-slate-500 text-sm">Join the unified Welile ecosystem</p>
+                    
+                    {/* Progress Indicator */}
+                    <div className="flex items-center justify-center gap-2 mt-4">
+                      <div className={`h-1.5 w-8 rounded-full ${signupStep >= 1 ? 'bg-[#6c11d4]' : 'bg-slate-200'}`}></div>
+                      <div className={`h-1.5 w-8 rounded-full ${signupStep >= 2 ? 'bg-[#6c11d4]' : 'bg-slate-200'}`}></div>
+                      <div className={`h-1.5 w-8 rounded-full ${signupStep >= 3 ? 'bg-[#6c11d4]' : 'bg-slate-200'}`}></div>
+                    </div>
                   </div>
                   
-                  {refCode && (
+                  {refCode && signupStep === 1 && (
                     <div className="mb-6 p-3 bg-purple-50 border border-purple-100 rounded-xl text-center">
                       <p className="text-sm font-medium text-purple-700">You were invited by Agent <span className="font-bold">{refCode}</span></p>
                     </div>
                   )}
 
-                  <form onSubmit={handleSignupSubmit} className="space-y-4">
-                    <div className="flex gap-3">
-                      <div className="space-y-2 flex-1">
-                        <label className="text-sm font-semibold text-slate-700 ml-1">First Name</label>
-                        <div className="relative group">
-                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors"><User size={18} strokeWidth={2} /></div>
-                          <input type="text" placeholder="Jane" value={firstName} onChange={e => setFirstName(e.target.value)} className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-medium" />
-                        </div>
-                      </div>
-                      <div className="space-y-2 flex-1">
-                        <label className="text-sm font-semibold text-slate-700 ml-1">Last Name</label>
-                        <div className="relative group">
-                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors"><User size={18} strokeWidth={2} /></div>
-                          <input type="text" placeholder="Doe" value={lastName} onChange={e => setLastName(e.target.value)} className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-medium" />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold text-slate-700 ml-1">Phone Number</label>
-                      <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors"><Phone size={18} strokeWidth={2} /></div>
-                        <input type="tel" placeholder="0704825473" value={phone} onChange={e => setPhone(e.target.value)} className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-medium" />
-                      </div>
-                    </div>
-
-                    {intendedRole === 'TENANT' && (
+                  {/* STEP 1: PHONE COLLECTION */}
+                  {signupStep === 1 && (
+                    <form onSubmit={handleRequestOTP} className="space-y-4">
                       <div className="space-y-2">
-                        <label className="text-sm font-semibold text-slate-700 ml-1">Desired Rent Support</label>
+                        <label className="text-sm font-semibold text-slate-700 ml-1">Mobile Number</label>
+                        <p className="text-xs text-slate-500 ml-1 mb-2">We will send a secure verification code to verify your identity.</p>
                         <div className="relative group">
-                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 font-bold group-focus-within:text-[#6c11d4] transition-colors">UGX</div>
-                          <input type="number" placeholder="Monthly Rent Amount" value={rentAmount} onChange={e => setRentAmount(e.target.value)} className="w-full pl-14 pr-4 py-3 bg-slate-50 border border-slate-100 focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-medium" />
+                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors"><Phone size={18} strokeWidth={2} /></div>
+                          <input type="tel" placeholder="e.g. 0704825473" value={phone} onChange={e => setPhone(e.target.value)} required className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-100 focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-medium tracking-widest text-lg" />
                         </div>
                       </div>
-                    )}
+                      
+                      {error && <p className="text-red-500 text-center font-bold text-sm bg-red-50 py-2 rounded-xl border border-red-100">{error}</p>}
 
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold text-slate-700 ml-1">Email <span className="text-red-500">*</span></label>
-                      <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors"><Mail size={18} strokeWidth={2} /></div>
-                        <input type="email" placeholder="name@company.com" value={signupEmail} onChange={e => setSignupEmail(e.target.value)} required className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-medium" />
-                      </div>
-                    </div>
+                      <button type="submit" disabled={loading} className="w-full bg-[#6c11d4] hover:bg-[#5b21b6] disabled:opacity-70 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg shadow-[#6c11d4]/20 flex items-center justify-center gap-2 group mt-4">
+                        {loading ? <Loader2 size={18} className="animate-spin" /> : <><span>Send SMS Code</span><ArrowRight size={18} strokeWidth={2} className="group-hover:translate-x-1 transition-transform" /></>}
+                      </button>
+                    </form>
+                  )}
 
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold text-slate-700 ml-1">Password</label>
-                      <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors"><Lock size={18} strokeWidth={2} /></div>
-                        <input type={showSignupPassword ? "text" : "password"} placeholder="••••••••" value={signupPassword} onChange={e => setSignupPassword(e.target.value)} className="w-full pl-11 pr-12 py-3 bg-slate-50 border border-slate-100 focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-medium tracking-wide" />
-                        <button type="button" onClick={() => setShowSignupPassword(!showSignupPassword)} className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600">
-                          {showSignupPassword ? <EyeOff size={18} strokeWidth={2} /> : <Eye size={18} strokeWidth={2} />}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold text-slate-700 ml-1">Confirm Password</label>
-                      <div className="relative group">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors"><Lock size={18} strokeWidth={2} /></div>
-                        <input type={showConfirmPassword ? "text" : "password"} placeholder="••••••••" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full pl-11 pr-12 py-3 bg-slate-50 border border-slate-100 focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-medium tracking-wide" />
-                        <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600">
-                          {showConfirmPassword ? <EyeOff size={18} strokeWidth={2} /> : <Eye size={18} strokeWidth={2} />}
-                        </button>
-                      </div>
-                    </div>
-
-                    {error && <p className="text-red-500 text-center font-bold text-sm bg-red-50 py-2 rounded-xl border border-red-100">{error}</p>}
-
-                    <button type="submit" disabled={loading} className="w-full bg-[#6c11d4] hover:bg-[#5b21b6] disabled:opacity-70 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg shadow-[#6c11d4]/20 flex items-center justify-center gap-2 group mt-4 h-[56px] overflow-hidden">
-                      {loading ? (
-                        <div className="flex items-center gap-2 justify-center w-full">
-                          <Loader2 size={18} className="animate-spin" />
-                          <AnimatePresence mode="wait">
-                            <motion.span key={loadingTextIdx} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -20, opacity: 0 }} transition={{ duration: 0.3 }} className="whitespace-nowrap text-sm">
-                              {loadingTexts[loadingTextIdx]}
-                            </motion.span>
-                          </AnimatePresence>
+                  {/* STEP 2: OTP VERIFICATION */}
+                  {signupStep === 2 && (
+                    <form onSubmit={handleVerifyOTP} className="space-y-4">
+                      <div className="space-y-2 text-center">
+                        <div className="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-purple-100">
+                           <KeyRound className="w-8 h-8 text-[#6c11d4]" />
                         </div>
-                      ) : (
-                        <><span>Complete Registration</span><ArrowRight size={18} strokeWidth={2} className="group-hover:translate-x-1 transition-transform shrink-0" /></>
-                      )}
-                    </button>
-                  </form>
+                        <label className="text-sm font-semibold text-slate-700">Enter Verification Code</label>
+                        <p className="text-xs text-slate-500">Sent to {phone}. <span className="text-[#6c11d4] cursor-pointer hover:underline" onClick={() => setSignupStep(1)}>Wrong number?</span></p>
+                        
+                        <div className="relative group mt-4">
+                          <input type="text" placeholder="----" value={otpCode} onChange={e => setOtpCode(e.target.value)} required className="w-full text-center py-4 bg-slate-50 border border-slate-100 focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-bold tracking-[0.5em] text-2xl" maxLength={6} />
+                        </div>
+                      </div>
+
+                      {error && <p className="text-red-500 text-center font-bold text-sm bg-red-50 py-2 rounded-xl border border-red-100">{error}</p>}
+
+                      <button type="submit" disabled={loading} className="w-full bg-[#6c11d4] hover:bg-[#5b21b6] disabled:opacity-70 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg shadow-[#6c11d4]/20 flex items-center justify-center gap-2 group mt-4">
+                        {loading ? <Loader2 size={18} className="animate-spin" /> : <><span>Verify Phone Number</span><CheckCircle2 size={18} strokeWidth={2} /></>}
+                      </button>
+                    </form>
+                  )}
+
+                  {/* STEP 3: FINAL PROFILE CREATION */}
+                  {signupStep === 3 && (
+                    <form onSubmit={handleSignupComplete} className="space-y-4">
+                      <div className="flex gap-3">
+                        <div className="space-y-2 flex-1">
+                          <label className="text-sm font-semibold text-slate-700 ml-1">First Name</label>
+                          <div className="relative group">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors"><User size={18} strokeWidth={2} /></div>
+                            <input type="text" placeholder="Jane" value={firstName} onChange={e => setFirstName(e.target.value)} required className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-medium" />
+                          </div>
+                        </div>
+                        <div className="space-y-2 flex-1">
+                          <label className="text-sm font-semibold text-slate-700 ml-1">Last Name</label>
+                          <div className="relative group">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors"><User size={18} strokeWidth={2} /></div>
+                            <input type="text" placeholder="Doe" value={lastName} onChange={e => setLastName(e.target.value)} required className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-medium" />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold text-slate-700 ml-1">Email <span className="text-slate-400 font-normal">(Optional)</span></label>
+                        <div className="relative group">
+                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors"><Mail size={18} strokeWidth={2} /></div>
+                          <input type="email" placeholder="name@company.com" value={signupEmail} onChange={e => setSignupEmail(e.target.value)} className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-medium" />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold text-slate-700 ml-1">Setup Password</label>
+                        <div className="relative group">
+                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors"><Lock size={18} strokeWidth={2} /></div>
+                          <input type={showSignupPassword ? "text" : "password"} placeholder="••••••••" value={signupPassword} onChange={e => setSignupPassword(e.target.value)} required className="w-full pl-11 pr-12 py-3 bg-slate-50 border border-slate-100 focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-medium tracking-wide" />
+                          <button type="button" onClick={() => setShowSignupPassword(!showSignupPassword)} className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600">
+                            {showSignupPassword ? <EyeOff size={18} strokeWidth={2} /> : <Eye size={18} strokeWidth={2} />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold text-slate-700 ml-1">Confirm Password</label>
+                        <div className="relative group">
+                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors"><Lock size={18} strokeWidth={2} /></div>
+                          <input type={showConfirmPassword ? "text" : "password"} placeholder="••••••••" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className="w-full pl-11 pr-12 py-3 bg-slate-50 border border-slate-100 focus:border-[#6c11d4]/30 focus:bg-white focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none text-slate-900 font-medium tracking-wide" />
+                          <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600">
+                            {showConfirmPassword ? <EyeOff size={18} strokeWidth={2} /> : <Eye size={18} strokeWidth={2} />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {error && <p className="text-red-500 text-center font-bold text-sm bg-red-50 py-2 rounded-xl border border-red-100">{error}</p>}
+
+                      <button type="submit" disabled={loading} className="w-full bg-[#6c11d4] hover:bg-[#5b21b6] disabled:opacity-70 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg shadow-[#6c11d4]/20 flex items-center justify-center gap-2 group mt-4 h-[56px] overflow-hidden">
+                        {loading ? <Loader2 size={18} className="animate-spin" /> : <><span>Create Account</span><ArrowRight size={18} strokeWidth={2} className="group-hover:translate-x-1 transition-transform shrink-0" /></>}
+                      </button>
+                    </form>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -377,7 +444,7 @@ export default function UnifiedAuth() {
       </main>
 
       <footer className="relative z-10 w-full max-w-7xl mx-auto px-6 py-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <p className="text-xs text-slate-400 font-medium">© 2024 Welile Technologies Limited. All rights reserved.</p>
+        <p className="text-xs text-slate-400 font-medium">© 2026 Welile Technologies Limited. All rights reserved.</p>
         <div className="flex gap-6">
            <a className="text-xs text-slate-400 hover:text-[#6c11d4]" href="#">Privacy Policy</a>
            <a className="text-xs text-slate-400 hover:text-[#6c11d4]" href="#">Terms of Service</a>
