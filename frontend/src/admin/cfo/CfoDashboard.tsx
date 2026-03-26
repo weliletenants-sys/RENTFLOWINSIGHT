@@ -18,6 +18,8 @@ import CFODepositsTab from './components/CFODepositsTab';
 
 type TabType = 'overview' | 'statements' | 'solvency' | 'runway' | 'reconciliation' | 'ledger' | 'commissions' | 'withdrawals' | 'deposits';
 
+const API_URL = import.meta.env.VITE_API_URL || '';
+
 export default function CfoDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [dateFilter, setDateFilter] = useState('30d');
@@ -33,7 +35,7 @@ export default function CfoDashboard() {
 
   const fetchOverview = async () => {
     try {
-      const { data } = await axios.get(`/api/cfo/statistics/overview?range=${dateFilter}`);
+      const { data } = await axios.get(`${API_URL}/api/cfo/statistics/overview?range=${dateFilter}`);
       setOverviewMetrics(data);
     } catch (err) {
       console.error(err);
@@ -42,7 +44,7 @@ export default function CfoDashboard() {
 
   const fetchReconciliation = async () => {
     try {
-      const { data } = await axios.get(`/api/cfo/reconciliations?range=${dateFilter}`);
+      const { data } = await axios.get(`${API_URL}/api/cfo/reconciliations?range=${dateFilter}`);
       setReconciliation(data);
     } catch (err) {
       console.error(err);
@@ -51,7 +53,7 @@ export default function CfoDashboard() {
 
   const fetchWithdrawals = async () => {
     try {
-      const { data } = await axios.get(`/api/cfo/withdrawals/pending?range=${dateFilter}`);
+      const { data } = await axios.get(`${API_URL}/api/cfo/withdrawals/pending?range=${dateFilter}`);
       setWithdrawals(data.withdrawals || []);
     } catch (err) {
       console.error(err);
@@ -60,7 +62,7 @@ export default function CfoDashboard() {
 
   const fetchDeposits = async () => {
     try {
-      const { data } = await axios.get(`/api/cfo/deposits/forwarded`);
+      const { data } = await axios.get(`${API_URL}/api/cfo/deposits/forwarded`);
       setDeposits(data.deposits || []);
     } catch (err) {
       console.error(err);
@@ -69,7 +71,7 @@ export default function CfoDashboard() {
 
   const fetchStatements = async () => {
     try {
-      const { data } = await axios.get(`/api/cfo/statements?range=${dateFilter}`);
+      const { data } = await axios.get(`${API_URL}/api/cfo/statements?range=${dateFilter}`);
       setStatements(data);
     } catch (err) {
       console.error(err);
@@ -78,7 +80,7 @@ export default function CfoDashboard() {
 
   const fetchCommissions = async () => {
     try {
-      const { data } = await axios.get(`/api/cfo/commissions/pending?range=${dateFilter}`);
+      const { data } = await axios.get(`${API_URL}/api/cfo/commissions/pending?range=${dateFilter}`);
       setCommissions(data.commissions || []);
     } catch (err) {
       console.error(err);
@@ -87,7 +89,7 @@ export default function CfoDashboard() {
 
   const fetchRunway = async () => {
     try {
-      const { data } = await axios.get(`/api/cfo/analytics/runway`);
+      const { data } = await axios.get(`${API_URL}/api/cfo/analytics/runway`);
       setRunwayData(data);
     } catch (err) {
       console.error(err);

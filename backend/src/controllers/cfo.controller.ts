@@ -24,9 +24,8 @@ const getDateFilters = (query: any) => {
       start.setHours(0, 0, 0, 0);
     }
     
-    const toDbStr = (d: Date) => d.toISOString().replace('T', ' ').replace('Z', '+00');
-    start_date = toDbStr(start);
-    end_date = toDbStr(now);
+    start_date = start.toISOString();
+    end_date = now.toISOString();
   }
 
   const dateFilter: any = {};
