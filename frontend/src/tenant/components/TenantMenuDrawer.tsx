@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { X, FileText, Home, DollarSign, Calculator, Search, Share2, HelpCircle, Settings, FileSpreadsheet, Gift } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -34,7 +34,7 @@ export default function TenantMenuDrawer({ isOpen, onClose }: TenantMenuDrawerPr
           <div>
             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest px-2 mb-3">Payments</h3>
             <div className="bg-gray-50 rounded-2xl overflow-hidden border border-gray-100/50">
-              <MenuRow icon={<FileText />} label="My Repayment Schedule" subLabel="PDF & WhatsApp Sync" />
+              <MenuRow icon={<FileText />} label="My Repayment Schedule" subLabel="PDF & WhatsApp Sync" onClick={() => { onClose(); navigate('/payment-schedule'); }} />
               <MenuRow icon={<Home />} label="Pay Rent to Landlord" borderTop />
               <MenuRow icon={<DollarSign />} label="Pay Welile" subLabel="Via Mobile Money" borderTop />
             </div>
@@ -45,8 +45,8 @@ export default function TenantMenuDrawer({ isOpen, onClose }: TenantMenuDrawerPr
             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest px-2 mb-3">Tools</h3>
             <div className="bg-gray-50 rounded-2xl overflow-hidden border border-gray-100/50">
               <MenuRow icon={<Gift />} label="Post Shopping Receipt" subLabel="Earn limit bonuses" />
-              <MenuRow icon={<Search />} label="Marketplace" subLabel="Find loans up to 30M" borderTop />
-              <MenuRow icon={<Calculator />} label="Rent Calculator" borderTop />
+              <MenuRow icon={<Search />} label="Marketplace" subLabel="Find daily rental properties" borderTop onClick={() => { onClose(); navigate('/find-a-house'); }} />
+              <MenuRow icon={<Calculator />} label="Rent Calculator" borderTop onClick={() => { onClose(); navigate('/calculator'); }} />
             </div>
           </div>
 

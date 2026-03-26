@@ -15,11 +15,7 @@ import StaffPortal from './portals/staff/StaffPortal';
 import AgentSettings from './agent/AgentSettings';
 import CfoDashboard from './admin/cfo/CfoDashboard';
 import CrmDashboard from './admin/crm/CrmDashboard';
-import CeoDashboard from './admin/ceo/CeoDashboard';
-import CeoPerformance from './admin/ceo/CeoPerformance';
-import CeoRevenue from './admin/ceo/CeoRevenue';
-import CeoUsers from './admin/ceo/CeoUsers';
-import CeoFinancials from './admin/ceo/CeoFinancials';
+// CEO Routes now dynamically lazy-loaded by ceoRoutes.tsx
 import TenantPayments from './tenant/TenantPayments';
 import TenantProfile from './tenant/TenantProfile';
 
@@ -34,6 +30,7 @@ import { cooRoutes } from './routes/cooRoutes';
 import { executiveRoutes } from './routes/executiveRoutes';
 import { superAdminRoutes } from './routes/superAdminRoutes';
 import { managerRoutes } from './routes/managerRoutes';
+import { ceoRoutes } from './routes/ceoRoutes';
 
 const queryClient = new QueryClient();
 
@@ -143,6 +140,7 @@ function App() {
                 {funderRoutes}
                 {cooRoutes}
                 {managerRoutes}
+                {ceoRoutes}
 
                 {/* Admin Routes */}
                 <Route path="/admin/login" element={<AdminLogin />} />
@@ -150,12 +148,7 @@ function App() {
                 {/* Super Admin Control Panel */}
                 {superAdminRoutes}
 
-                {/* CEO Public Routes */}
-                <Route path="/ceo/dashboard" element={<CeoDashboard />} />
-                <Route path="/ceo/revenue" element={<CeoRevenue />} />
-                <Route path="/ceo/users" element={<CeoUsers />} />
-                <Route path="/ceo/financials" element={<CeoFinancials />} />
-                <Route path="/ceo/performance" element={<CeoPerformance />} />
+                {/* CEO Public Routes Replaced By ceoRoutes Bundle */}
 
                 {/* Protected: authenticated users only */}
                 <Route element={<ProtectedRoute />}>
