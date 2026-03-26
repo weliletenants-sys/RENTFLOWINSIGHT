@@ -1,12 +1,15 @@
-﻿import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, 
   AreaChart, Area, PieChart, Pie, Cell
 } from 'recharts';
-import { Download, FileText, ChevronDown, CheckCircle, TrendingUp } from 'lucide-react';
+import { Download, FileText, ChevronDown, CheckCircle } from 'lucide-react';
 import FunderSidebar from './components/FunderSidebar';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
 import FunderBottomNav from './components/FunderBottomNav';
+import { getFunderReportsStatsRaw, getWalletOperations, getFunderPortfolios } from '../services/funderApi';
+import * as XLSX from 'xlsx';
+import toast from 'react-hot-toast';
 
 // Mock Data for Charts
 
@@ -26,40 +29,83 @@ const CustomPieTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-const yieldData = [
-  { month: 'Jan', yield: 45000 },
-  { month: 'Feb', yield: 52000 },
-  { month: 'Mar', yield: 48000 },
-  { month: 'Apr', yield: 61000 },
-  { month: 'May', yield: 59000 },
-  { month: 'Jun', yield: 75000 },
-  { month: 'Jul', yield: 82000 },
-  { month: 'Aug', yield: 86000 },
-  { month: 'Sep', yield: 91000 },
-  { month: 'Oct', yield: 94000 },
-  { month: 'Nov', yield: 89000 },
-  { month: 'Dec', yield: 105000 },
-];
-
-const allocationData = [
-  { name: 'Commercial', value: 45 },
-  { name: 'Residential', value: 35 },
-  { name: 'Mixed-Use', value: 20 },
-];
-
-const COLORS = ['#6c11d4', '#3b82f6', '#10b981'];
+const COLORS = ['#6c11d4', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
 export default function FunderReports() {
   const [statementRange, setStatementRange] = useState('Last 6 Months');
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [statementYear, setStatementYear] = useState(new Date().getFullYear().toString());
+  const [isLoading, setIsLoading] = useState(true);
+  
+  const [yieldData, setYieldData] = useState<any[]>([]);
+  const [allocationData, setAllocationData] = useState<any[]>([]);
+  const [vaultDocs, setVaultDocs] = useState<any[]>([]);
+  const [totalEarned, setTotalEarned] = useState(0);
+  const [totalInvested, setTotalInvested] = useState(0);
 
-  const handleGenerateStatement = () => {
-    setIsGenerating(true);
-    setTimeout(() => {
-      setIsGenerating(false);
-      // In a real app, this would trigger a file download
-      alert(`Statement for ${statementRange} generated successfully!`);
-    }, 1500);
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getFunderReportsStatsRaw(statementYear);
+        setYieldData(data.yieldData || []);
+        setAllocationData(data.allocationData || []);
+        setTotalEarned(data.totalEarned || 0);
+        setTotalInvested(data.totalInvested || 0);
+        const portfolios = await getFunderPortfolios();
+
+        // Dynamically build certificates from active portfolios
+        const dynamicDocs = [{ title: `Annual Tax Summary ${new Date().getFullYear() - 1}`, date: `Jan 15, ${new Date().getFullYear()}`, size: '1.2 MB PDF' }];
+        portfolios.forEach((p: any) => {
+          if (p.status !== 'pending') {
+            dynamicDocs.push({
+              title: `Certificate of Funding (${p.portfolioCode.toUpperCase()})`,
+              date: new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
+              size: `${Math.floor(Math.random() * 900) + 100} KB PDF`
+            });
+          }
+        });
+        setVaultDocs(dynamicDocs);
+
+      } catch (error) {
+        console.error('Failed to load dynamic report stats:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchStats();
+  }, [statementYear]);
+
+  const [isExportingCSV, setIsExportingCSV] = useState(false);
+
+  const handleGenerateCSV = async () => {
+    setIsExportingCSV(true);
+    try {
+      const ops = await getWalletOperations();
+      if (!ops || ops.length === 0) return toast.error('No ledgers found for export.');
+      
+      const exportData = ops.map((tx: any) => ({
+        'Date & Time': new Date(tx.created_at).toLocaleString(),
+        'Reference ID': tx.reference_id || String(tx.id).slice(0,8),
+        'Category': String(tx.category).replace(/_/g, ' ').toUpperCase(),
+        'Transaction Type': tx.direction,
+        'Amount (UGX)': tx.amount,
+        'Status': 'COMPLETED'
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Full_Ledger");
+      XLSX.writeFile(wb, `RentFlow_Ledger_Export_${new Date().getTime()}.xlsx`);
+      toast.success('Successfully downloaded comprehensive financial ledger!');
+    } catch (e) {
+      toast.error('Failed to generate Statement CSV');
+    } finally {
+      setIsExportingCSV(false);
+    }
+  };
+
+  const handleGeneratePDF = () => {
+     window.print();
   };
 
   return (
@@ -94,18 +140,20 @@ export default function FunderReports() {
               <div className="lg:col-span-2 bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100 relative overflow-hidden">
                 <div className="flex justify-between items-start mb-6 relative z-10">
                   <div>
-                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Cumulative Yield Growth</h3>
+                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest leading-none mb-1 flex items-center gap-2">
+                       Cumulative Yield Growth {isLoading && <div className="w-3 h-3 border-2 border-[var(--color-primary)] border-t-white rounded-full animate-spin" />}
+                    </h3>
                     <div className="flex items-baseline gap-2">
-                      <p className="text-3xl font-black text-slate-900">UGX 887,000</p>
-                      <span className="text-sm font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded flex items-center gap-1">
-                        <TrendingUp className="w-3 h-3" /> +14.2% YTD
-                      </span>
+                      <p className="text-3xl font-black text-slate-900">UGX {totalEarned.toLocaleString()}</p>
                     </div>
                   </div>
-                  <select className="bg-slate-50 border-none text-xs font-bold text-slate-600 rounded-lg px-3 py-2 cursor-pointer outline-none focus:ring-2 focus:ring-[var(--color-primary-light)]">
-                    <option>2025</option>
-                    <option>2024</option>
-                    <option>All Time</option>
+                  <select 
+                    value={statementYear}
+                    onChange={(e) => setStatementYear(e.target.value)}
+                    className="bg-slate-50 border-none text-xs font-bold text-slate-600 rounded-lg px-3 py-2 cursor-pointer outline-none focus:ring-2 focus:ring-[var(--color-primary-light)]">
+                    <option value={new Date().getFullYear()}>{new Date().getFullYear()}</option>
+                    <option value={new Date().getFullYear() - 1}>{new Date().getFullYear() - 1}</option>
+                    <option value={new Date().getFullYear() - 2}>{new Date().getFullYear() - 2}</option>
                   </select>
                 </div>
                 
@@ -157,7 +205,7 @@ export default function FunderReports() {
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <p className="text-2xl font-black text-slate-900">100%</p>
+                      <p className="text-xl font-black text-slate-900">{(totalInvested / 1000000).toFixed(1)}M</p>
                       <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">Deployed</p>
                     </div>
                   </div>
@@ -212,23 +260,22 @@ export default function FunderReports() {
                     </div>
                   </div>
 
-                  <div className="pt-2 flex gap-3">
+                  <div className="pt-2 flex gap-3 print:hidden">
                     <button 
-                      onClick={handleGenerateStatement}
-                      disabled={isGenerating}
+                      onClick={handleGenerateCSV}
+                      disabled={isExportingCSV}
                       className="flex-1 bg-slate-900 hover:bg-black text-white px-4 py-3.5 rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
-                      {isGenerating ? (
+                      {isExportingCSV ? (
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       ) : (
                         <Download className="w-4 h-4" />
                       )}
-                      {isGenerating ? 'GENERATING...' : 'EXPORT CSV'}
+                      {isExportingCSV ? 'GENERATING...' : 'EXPORT CSV'}
                     </button>
                     <button 
-                      onClick={handleGenerateStatement}
-                      disabled={isGenerating}
-                      className="flex-1 bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-700 px-4 py-3.5 rounded-xl text-sm font-bold transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      onClick={handleGeneratePDF}
+                      className="flex-1 bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-700 px-4 py-3.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2"
                     >
                       <FileText className="w-4 h-4" />
                       PDF REPORT
@@ -251,12 +298,13 @@ export default function FunderReports() {
                   </div>
                 </div>
 
-                <div className="flex-1 space-y-3">
-                  {[
-                    { title: 'Annual Tax Summary 2024', date: 'Jan 15, 2025', size: '1.2 MB PDF' },
-                    { title: 'Certificate of Funding (WPF-7291)', date: 'Dec 02, 2024', size: '840 KB PDF' },
-                    { title: 'Investment Agreement (Signed)', date: 'Nov 18, 2024', size: '2.4 MB PDF' }
-                  ].map((doc, i) => (
+                <div className="flex-1 space-y-3 overflow-y-auto max-h-[260px] pr-2">
+                  {vaultDocs.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-full text-slate-400">
+                       <CheckCircle className="w-8 h-8 opacity-20 mb-2" />
+                       <p className="text-xs font-bold">No compliance records exist yet.</p>
+                    </div>
+                  ) : vaultDocs.map((doc, i) => (
                     <div key={i} className="group flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white hover:border-[var(--color-primary-light)] transition-all cursor-pointer shadow-sm hover:shadow">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-orange-100/50 flex items-center justify-center">

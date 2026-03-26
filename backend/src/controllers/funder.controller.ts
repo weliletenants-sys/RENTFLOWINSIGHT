@@ -539,3 +539,77 @@ export const getPortfolioDetails = async (req: Request, res: Response) => {
     return res.status(500).json({ status: 'error', message: 'Internal server error' });
   }
 };
+
+export const getFunderReportsStats = async (req: Request, res: Response) => {
+  try {
+    const funderId = req.user?.sub || req.user?.id;
+    const yearStr = req.query.year as string;
+    const year = yearStr ? parseInt(yearStr) : new Date().getFullYear();
+
+    // 1. Fetch all ROI payout/dividend transactions for Yield Growth
+    const ledgers = await prisma.generalLedger.findMany({
+      where: {
+        user_id: funderId,
+        category: { in: ['roi_payout', 'auto_compound', 'dividend', 'profit_share', 'capital_distribution'] },
+        created_at: {
+           gte: new Date(`${year}-01-01T00:00:00.000Z`).toISOString(),
+           lt: new Date(`${year + 1}-01-01T00:00:00.000Z`).toISOString()
+        }
+      },
+      orderBy: { created_at: 'asc' }
+    });
+
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const yieldData = months.map(m => ({ month: m, yield: 0 }));
+
+    ledgers.forEach(tx => {
+      const monthIdx = new Date(tx.created_at).getMonth();
+      yieldData[monthIdx].yield += Number(tx.amount) || 0;
+    });
+
+    // Convert to cumulative array to map exponential growth correctly
+    let runningTotal = 0;
+    const cumulativeYieldData = yieldData.map(d => {
+       runningTotal += d.yield;
+       return { month: d.month, yield: runningTotal };
+    });
+
+    // 2. Fetch Portfolios for Asset Allocation
+    const portfolios = await prisma.investorPortfolios.findMany({
+      where: { investor_id: funderId, status: { in: ['active', 'ACTIVE'] } } // Only active capital
+    });
+
+    const allocationMap: Record<string, number> = {};
+    let totalInvested = 0;
+    
+    portfolios.forEach(p => {
+       const category = `${p.duration_months}MO ${p.roi_mode === 'monthly_compounding' ? 'Compound' : 'Yield'}`;
+       allocationMap[category] = (allocationMap[category] || 0) + Number(p.investment_amount);
+       totalInvested += Number(p.investment_amount);
+    });
+
+    const allocationData = Object.entries(allocationMap).map(([name, value]) => ({
+       name,
+       value: totalInvested > 0 ? Math.round((value / totalInvested) * 100) : 0
+    })).filter(a => a.value > 0);
+
+    // If completely empty, return a default Unallocated structure so PieChart renders correctly
+    if (allocationData.length === 0) {
+      allocationData.push({ name: 'Unallocated Capital', value: 100 });
+    }
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        yieldData: cumulativeYieldData,
+        allocationData,
+        totalInvested,
+        totalEarned: runningTotal
+      }
+    });
+
+  } catch (error: any) {
+    console.error('getFunderReportsStats error:', error);
+    return res.status(500).json({ status: 'error', message: 'Failed to generate reporting metrics' });
+  }
+};

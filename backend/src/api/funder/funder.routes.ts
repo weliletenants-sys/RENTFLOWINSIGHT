@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getDashboardStats, getPortfolios, getPortfolioDetails, getRecentActivities, fundRentPool, requestWithdrawal, getOpportunities, updateProfileInfo, topupRentPool } from '../../controllers/funder.controller';
+import { getDashboardStats, getPortfolios, getPortfolioDetails, getRecentActivities, fundRentPool, requestWithdrawal, getOpportunities, updateProfileInfo, topupRentPool, getFunderReportsStats } from '../../controllers/funder.controller';
 import { uploadAvatar, uploadKycDocuments, getKycStatus } from '../../controllers/funder.kyc.controller';
 import { getPayoutMethods, addPayoutMethod, setPrimaryPayoutMethod, deletePayoutMethod, getRewardMode, updateRewardMode, getWalletOperations, requestWalletWithdrawal, requestDeposit, getPortfolios as getCapitalPortfolios, transferFunds } from '../../controllers/funder.financial.controller';
 import { uploadS3 } from '../../services/s3.service';
@@ -18,6 +18,7 @@ router.get('/portfolios', getPortfolios);
 router.get('/portfolios/:code', getPortfolioDetails);
 router.put('/portfolios/:code/topup', topupRentPool);
 router.get('/activities', getRecentActivities);
+router.get('/reports/stats', getFunderReportsStats);
 router.get('/opportunities', getOpportunities);
 
 router.post('/fund', fundRentPool);

@@ -214,3 +214,9 @@ export const topupFunderPortfolio = async (portfolio_code: string, amount: numbe
   return response.data;
 };
 
+export const getFunderReportsStatsRaw = async (year?: string | number) => {
+  const url = year ? `${API}/funder/reports/stats?year=${year}` : `${API}/funder/reports/stats`;
+  const response = await axios.get(url, getAuthHeaders());
+  return response.data.data;
+};
+

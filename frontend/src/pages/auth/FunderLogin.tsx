@@ -57,7 +57,7 @@ export default function Login() {
 
   useEffect(() => {
     if (user) {
-      navigate(user.role === 'FUNDER' ? '/funder' : '/dashboard');
+      navigate('/funder');
     }
   }, [user, navigate]);
 
@@ -142,11 +142,7 @@ export default function Login() {
             case 'CEO': navigate('/ceo/dashboard'); break;
             case 'COO': navigate('/coo/overview'); break;
             case 'CFO': navigate('/cfo/dashboard'); break;
-            case 'FUNDER': navigate('/funder'); break;
-            case 'TENANT': 
-            case 'AGENT':
-            case 'LANDLORD':
-            default: navigate('/dashboard'); break;
+            default: navigate('/funder'); break;
         }
         return;
     }
@@ -171,11 +167,7 @@ export default function Login() {
             case 'CEO': navigate('/ceo/dashboard'); break;
             case 'COO': navigate('/coo/overview'); break;
             case 'CFO': navigate('/cfo/dashboard'); break;
-            case 'FUNDER': navigate('/funder'); break;
-            case 'TENANT': 
-            case 'AGENT':
-            case 'LANDLORD':
-            default: navigate('/dashboard'); break;
+            default: navigate('/funder'); break;
           }
         }
       }
@@ -212,11 +204,7 @@ export default function Login() {
              case 'CEO': navigate('/ceo/dashboard'); break;
              case 'COO': navigate('/coo/overview'); break;
              case 'CFO': navigate('/cfo/dashboard'); break;
-             case 'FUNDER': navigate('/funder'); break;
-             case 'TENANT': 
-             case 'AGENT':
-             case 'LANDLORD':
-             default: navigate('/dashboard'); break;
+             default: navigate('/funder'); break;
            }
         }
       } else {

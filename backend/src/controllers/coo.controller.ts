@@ -750,8 +750,20 @@ export const importPartners = async (req: Request, res: Response) => {
 
       const duration = Number(p.duration) || 12;
       const createdDate = p.date ? new Date(p.date) : new Date();
-      const nextMonth = new Date(createdDate.getTime());
+      
+      // Calculate future-proof next_roi_date
+      const now = new Date();
+      const maturityDate = new Date(createdDate.getTime());
+      maturityDate.setMonth(maturityDate.getMonth() + duration);
+
+      let nextMonth = new Date(createdDate.getTime());
       nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+      // Fast-forward next payout date to the future (if importing legacy dates)
+      // but do not exceed maturity date
+      while (nextMonth < now && nextMonth < maturityDate) {
+        nextMonth.setMonth(nextMonth.getMonth() + 1);
+      }
 
       const portfolio = await prisma.investorPortfolios.create({
         data: {
@@ -828,8 +840,19 @@ export const createManualPortfolio = async (req: Request, res: Response) => {
     }
 
     const createdDate = date ? new Date(date) : new Date();
-    const nextMonth = new Date(createdDate.getTime());
+    
+    // Calculate future-proof next_roi_date
+    const now = new Date();
+    const maturityDate = new Date(createdDate.getTime());
+    maturityDate.setMonth(maturityDate.getMonth() + Number(duration));
+
+    let nextMonth = new Date(createdDate.getTime());
     nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+    // Fast-forward next payout date to the future (if creating legacy dates)
+    while (nextMonth < now && nextMonth < maturityDate) {
+      nextMonth.setMonth(nextMonth.getMonth() + 1);
+    }
 
     const portfolio = await prisma.investorPortfolios.create({
         data: {

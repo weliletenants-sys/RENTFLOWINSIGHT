@@ -76,7 +76,7 @@ export default function FunderPortfolioList({ portfolios, onViewAll, onCardClick
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-black text-slate-900 text-base sm:text-xl lg:text-2xl group-hover:text-[var(--color-primary)] transition-colors line-clamp-2 leading-tight">
+                  <h3 className="font-black text-slate-900 text-[13px] sm:text-[15px] lg:text-base group-hover:text-[var(--color-primary)] transition-colors line-clamp-2 leading-tight">
                     {p.assetName || `Portfolio ${p.portfolioCode}`}
                   </h3>
                   <div className="flex items-center gap-2 mt-1.5 flex-wrap">

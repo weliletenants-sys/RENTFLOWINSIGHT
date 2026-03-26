@@ -95,7 +95,7 @@ export default function FunderWallet() {
         rawDate: new Date(tx.created_at || tx.transaction_date || Date.now()).getTime(),
         type: tx.direction === 'cash_in' ? 'Cash In' : 'Cash Out',
         category: tx.category || 'general_transfer',
-        description: tx.description || (tx.category ? String(tx.category).replace(/_/g, ' ') : 'Transfer'),
+        description: tx.description || (tx.category === 'coo_manual_portfolio' ? 'Capital Injection' : (tx.category ? String(tx.category).replace(/_/g, ' ') : 'Transfer')),
         amount: tx.amount || 0,
         status: 'completed', // Ledger entries are inherently completed
         ref: tx.reference_id || (tx.id ? String(tx.id).slice(0, 8) : 'REF-N/A')
@@ -512,7 +512,9 @@ export default function FunderWallet() {
                             </span>
                           ) : (
                             <span className="text-[10px] font-bold tracking-widest uppercase text-slate-500 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200" style={{ color: txColor }}>
-                              {String(tx.category).replace(/_/g, ' ')}
+                              <span className="truncate">
+                                {String(tx.category) === 'coo_manual_portfolio' ? 'Capital Injection' : String(tx.category).replace(/_/g, ' ')}
+                              </span>
                             </span>
                           )}
                         </td>
