@@ -209,8 +209,8 @@ export default function FunderDashboard() {
                   {/* Recent Activity — mobile only */}
                   <div className="lg:hidden pb-32">
                     <FunderRecentActivity
-                      activities={activities}
-                      onViewAll={() => console.log('View all activity')}
+                      activities={activities.slice(0, 3)}
+                      onViewAll={() => navigate('/funder/wallet')}
                     />
                   </div>
                 </div>
@@ -228,8 +228,8 @@ export default function FunderDashboard() {
                   {/* Recent Activity */}
                   <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
                     <FunderRecentActivity
-                      activities={activities}
-                      onViewAll={() => console.log('View all activity')}
+                      activities={activities.slice(0, 3)}
+                      onViewAll={() => navigate('/funder/wallet')}
                     />
                   </div>
 
