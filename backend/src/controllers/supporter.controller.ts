@@ -295,7 +295,7 @@ export const funderOnboard = async (req: Request, res: Response) => {
     // Create SupporterInvites document acting as KYC record
     const kycRecord = await prisma.supporterInvites.create({
       data: {
-        email: profile.email,
+        email: profile.email || '',
         phone: profile.phone,
         full_name: profile.full_name,
         role: 'FUNDER',

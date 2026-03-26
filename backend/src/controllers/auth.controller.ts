@@ -105,7 +105,7 @@ export const register = async (req: Request, res: Response) => {
     await logSecurityEvent({
       event: 'REGISTER_SUCCESS',
       user_id: result.id,
-      email: result.email,
+      email: result.email || undefined,
       ip_address: req.ip,
       user_agent: req.headers['user-agent']
     });
@@ -201,7 +201,7 @@ export const login = async (req: Request, res: Response) => {
     //   }
     // });
 
-    await logSecurityEvent({ event: 'LOGIN_SUCCESS', user_id: profile.id, email: profile.email, ip_address: req.ip, user_agent: req.headers['user-agent'] });
+    await logSecurityEvent({ event: 'LOGIN_SUCCESS', user_id: profile.id, email: profile.email || undefined, ip_address: req.ip, user_agent: req.headers['user-agent'] });
 
     let onboarding_url = '/dashboard';
     if (role === 'AGENT' && profile.verified === false) onboarding_url = '/agent-onboarding';
@@ -287,7 +287,7 @@ export const ssoLogin = async (req: Request, res: Response) => {
     //   }
     // });
 
-    await logSecurityEvent({ event: 'SSO_LOGIN_SUCCESS', user_id: profile.id, email: profile.email, ip_address: req.ip, user_agent: req.headers['user-agent'] });
+    await logSecurityEvent({ event: 'SSO_LOGIN_SUCCESS', user_id: profile.id, email: profile.email || undefined, ip_address: req.ip, user_agent: req.headers['user-agent'] });
 
     let onboarding_url = '/dashboard';
     if (role === 'AGENT' && profile.verified === false) onboarding_url = '/agent-onboarding';

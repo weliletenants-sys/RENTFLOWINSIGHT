@@ -43,7 +43,7 @@ export const changePassword = async (req: Request, res: Response) => {
       await logSecurityEvent({
         event: 'PASSWORD_CHANGE_FAILED',
         user_id: userId,
-        email: profile.email,
+        email: profile.email || undefined,
         ip_address: req.ip,
         user_agent: req.headers['user-agent'],
         details: { reason: 'wrong_current_password' }
@@ -61,7 +61,7 @@ export const changePassword = async (req: Request, res: Response) => {
     await logSecurityEvent({
       event: 'PASSWORD_CHANGED',
       user_id: userId,
-      email: profile.email,
+      email: profile.email || undefined,
       ip_address: req.ip,
       user_agent: req.headers['user-agent']
     });
@@ -108,7 +108,7 @@ export const enable2FA = async (req: Request, res: Response) => {
     await logSecurityEvent({
       event: '2FA_OTP_REQUESTED',
       user_id: profile.id,
-      email: profile.email,
+      email: profile.email || undefined,
       ip_address: req.ip,
       user_agent: req.headers['user-agent']
     });
@@ -152,7 +152,7 @@ export const verify2FA = async (req: Request, res: Response) => {
       await logSecurityEvent({
         event: '2FA_VERIFY_FAILED',
         user_id: profile.id,
-        email: profile.email,
+        email: profile.email || undefined,
         ip_address: req.ip,
         user_agent: req.headers['user-agent']
       });
@@ -174,7 +174,7 @@ export const verify2FA = async (req: Request, res: Response) => {
     await logSecurityEvent({
       event: '2FA_ENABLED_SUCCESS',
       user_id: profile.id,
-      email: profile.email,
+      email: profile.email || undefined,
       ip_address: req.ip,
       user_agent: req.headers['user-agent']
     });
@@ -216,7 +216,7 @@ export const disable2FA = async (req: Request, res: Response) => {
     await logSecurityEvent({
       event: '2FA_DISABLED_SUCCESS',
       user_id: profile.id,
-      email: profile.email,
+      email: profile.email || undefined,
       ip_address: req.ip,
       user_agent: req.headers['user-agent']
     });
