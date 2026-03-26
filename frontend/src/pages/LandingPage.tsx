@@ -521,10 +521,11 @@ export default function LandingPage() {
               <div className="flex items-center gap-4">
                 <button 
                   onClick={() => navigate('/admin/login')} 
-                  className="text-[10px] sm:text-xs text-slate-300 hover:text-slate-400 transition-colors cursor-default md:cursor-pointer select-none"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 bg-slate-100 hover:bg-[#6c11d4] hover:text-white transition-all duration-300 shadow-sm"
                   aria-label="Staff Access"
                 >
-                  System Access
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Admin Gateway</span>
                 </button>
               </div>
             </div>
