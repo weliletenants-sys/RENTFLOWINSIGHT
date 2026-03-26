@@ -12,7 +12,7 @@ export const getTickets = async (req: Request, res: Response) => {
     });
 
     const enriched = await Promise.all(rawNotifications.map(async (n: any) => {
-      let profile = null;
+      let profile: any = null;
       if (n.user_id) {
         profile = await prisma.profiles.findUnique({ where: { id: n.user_id } });
       }

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { managerApi } from '../../../services/managerApi';
-import { ShieldCheck, Crosshair, Fingerprint } from 'lucide-react';
+import { ShieldCheck, Crosshair, Fingerprint, AlertTriangle } from 'lucide-react';
 
 export default function ServiceCompliance() {
   const { data: response, isLoading } = useQuery({

@@ -9,8 +9,8 @@ export const getDashboardStats = async (req: Request, res: Response) => {
     // 1. Get Wallet
     const wallet = await prisma.wallets.findFirst({ where: { user_id: funderId } });
 
-    let availableBucket = null;
-    let investedBucket = null;
+    let availableBucket: any = null;
+    let investedBucket: any = null;
 
     // 2. Extract specific buckets to prove CFO mathematical reconciliation (Total = Available + Invested)
     if (wallet) {
