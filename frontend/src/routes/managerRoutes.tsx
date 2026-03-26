@@ -4,6 +4,8 @@ import { lazy, Suspense } from 'react';
 
 const ManagerDashboard = lazy(() => import('../admin/manager/ManagerDashboard'));
 const ManagerLayout = lazy(() => import('../admin/manager/ManagerLayout'));
+const FinancialOps = lazy(() => import('../admin/manager/FinancialOps'));
+const CompanyStaff = lazy(() => import('../admin/manager/CompanyStaff'));
 
 const CentralLoader = () => (
   <div className="flex h-[50vh] items-center justify-center">
@@ -14,7 +16,7 @@ const CentralLoader = () => (
 function RequireManager({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   
-  if (!user || !['MANAGER', 'SUPER_ADMIN', 'CEO', 'COO', 'CFO'].includes(user.role)) {
+  if (!user || user.role === null || !['MANAGER', 'SUPER_ADMIN', 'CEO', 'COO', 'CFO'].includes(user.role as string)) {
     return <Navigate to="/dashboard" replace />;
   }
   
@@ -35,6 +37,7 @@ export const managerRoutes = (
   >
     <Route index element={<Navigate to="dashboard" replace />} />
     <Route path="dashboard" element={<Suspense fallback={<CentralLoader />}><ManagerDashboard /></Suspense>} />
-    <Route path="financial-ops" element={<Suspense fallback={<CentralLoader />}><ManagerDashboard /></Suspense>} />
+    <Route path="financial-ops" element={<Suspense fallback={<CentralLoader />}><FinancialOps /></Suspense>} />
+    <Route path="staff" element={<Suspense fallback={<CentralLoader />}><CompanyStaff /></Suspense>} />
   </Route>
 );

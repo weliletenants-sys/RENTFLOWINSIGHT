@@ -20,5 +20,40 @@ export const managerApi = {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
     return response.data;
+  },
+  getPendingDeposits: async () => {
+    const response = await axios.get(`${API_URL}/api/v1/manager/ops/deposits/pending`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    return response.data;
+  },
+  approveDeposit: async (id: string) => {
+    const response = await axios.post(`${API_URL}/api/v1/manager/ops/deposits/${id}/approve`, {}, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    return response.data;
+  },
+  getLedgerRecords: async () => {
+    const response = await axios.get(`${API_URL}/api/v1/manager/ops/ledger`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    return response.data;
+  },
+  getAllUsers: async (params: { page: number; limit: number; search?: string; role?: string }) => {
+    const { page, limit, search, role } = params;
+    let url = `${API_URL}/api/v1/manager/users?page=${page}&limit=${limit}`;
+    if (search) url += `&search=${search}`;
+    if (role) url += `&role=${role}`;
+    
+    const response = await axios.get(url, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    return response.data;
+  },
+  updateUserRole: async (id: string, role: string) => {
+    const response = await axios.patch(`${API_URL}/api/v1/manager/users/${id}/role`, { role }, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    return response.data;
   }
 };

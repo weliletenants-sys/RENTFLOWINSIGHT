@@ -12,6 +12,7 @@ export default function ManagerLayout() {
   const navItems = [
     { name: 'Command Center', path: '/admin/manager/dashboard', icon: LayoutDashboard },
     { name: 'Financial Ops', path: '/admin/manager/financial-ops', icon: Activity },
+    { name: 'Company Staff', path: '/admin/manager/staff', icon: Shield },
     { name: 'Field Management', path: '/admin/manager/field', icon: MapPin },
     { name: 'Ledger Audit', path: '/admin/manager/ledger', icon: Database },
   ];

@@ -146,3 +146,211 @@ export const deployCapitalToTenant = async (req: Request, res: Response) => {
     });
   }
 };
+
+/**
+ * Fetch all pending wallet deposits specifically waiting for TID verification.
+ */
+export const getPendingDeposits = async (req: Request, res: Response) => {
+  try {
+    const deposits = await prisma.pendingWalletOperations.findMany({
+      where: { status: 'PENDING', operation_type: 'cash_in' },
+      include: {
+        profiles: { select: { full_name: true, phone: true } }
+      },
+      orderBy: { created_at: 'desc' }
+    });
+
+    res.json(deposits);
+  } catch (error) {
+    console.error('[Manager API] Fetch Deposits Error:', error);
+    res.status(500).json({ error: 'Failed to retrieve deposit requests queue.' });
+  }
+};
+
+/**
+ * Approve a pending cash-in deposit and finalize the wallet credit execution.
+ */
+export const approveDeposit = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    
+    const deposit = await prisma.pendingWalletOperations.findUnique({ where: { id } });
+    if (!deposit || deposit.status !== 'PENDING') {
+      return res.status(400).json({ 
+        type: "https://api.rentflow.com/errors/validation-error",
+        title: "Invalid Deposit Target",
+        status: 400,
+        detail: "The deposit operation could not be located or has already been processed."
+      });
+    }
+
+    const { user_id, target_wallet, amount } = deposit;
+
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Mark operation as completed
+      const updatedOp = await tx.pendingWalletOperations.update({
+        where: { id },
+        data: { status: 'COMPLETED' }
+      });
+
+      // 2. Locate or create corresponding wallet
+      const walletType = target_wallet as any;
+      const wallet = await tx.wallets.upsert({
+        where: { user_id_type: { user_id, type: walletType } },
+        update: { balance: { increment: amount } },
+        create: { user_id, type: walletType, balance: amount }
+      });
+
+      // 3. Register transaction against global ledger
+      await tx.generalLedger.create({
+        data: {
+          user_id,
+          amount,
+          category: 'cash_in',
+          direction: 'credit',
+          reference_id: id,
+          status: 'COMPLETED',
+          description: `Platform deposit execution approved. Internal Ref: ${id.slice(-6).toUpperCase()}`
+        }
+      });
+      
+      return updatedOp;
+    });
+
+    res.json(result);
+  } catch (error) {
+    console.error('[Manager API] Approve Deposit Error:', error);
+    res.status(500).json({ error: 'System fault processing deposit validation ledger entry.' });
+  }
+};
+
+/**
+ * Raw tabular snapshot of the Central Platform General Ledger history.
+ */
+export const getLedgerRecords = async (req: Request, res: Response) => {
+  try {
+    const records = await prisma.generalLedger.findMany({
+      take: 100, // Explicit limit to preserve memory/forensics performance speed
+      orderBy: { created_at: 'desc' },
+      include: {
+        profiles: { select: { full_name: true, role: true } }
+      }
+    });
+
+    res.json(records);
+  } catch (error) {
+    console.error('[Manager API] Fetch Ledger Error:', error);
+    res.status(500).json({ error: 'Failed to access primary SQL Ledger stream.' });
+  }
+};
+
+/**
+ * GET /api/v1/manager/users
+ * Retrieve paginated network users aligned completely to skills/api.md standards.
+ */
+export const getAllUsers = async (req: Request, res: Response) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 25));
+    const skip = (page - 1) * limit;
+    
+    const search = req.query.search ? String(req.query.search) : undefined;
+    const roleFilter = req.query.role ? String(req.query.role) : undefined;
+    
+    // Dynamic Query Map
+    const whereClause: any = {};
+    if (search) {
+      whereClause.OR = [
+        { full_name: { contains: search, mode: 'insensitive' } },
+        { phone: { contains: search } },
+        { email: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+    
+    if (roleFilter) {
+      whereClause.role = roleFilter;
+    }
+
+    const [users, totalElements] = await Promise.all([
+      prisma.profiles.findMany({
+        where: whereClause,
+        skip,
+        take: limit,
+        orderBy: { created_at: 'desc' },
+        select: {
+          id: true,
+          full_name: true,
+          phone: true,
+          email: true,
+          role: true,
+          created_at: true,
+          status: true
+        }
+      }),
+      prisma.profiles.count({ where: whereClause })
+    ]);
+
+    const totalPages = Math.ceil(totalElements / limit);
+
+    // Strict API.md Pagination Meta Return Format
+    res.json({
+      data: users,
+      meta: {
+        page_number: page,
+        page_size: limit,
+        total_elements: totalElements,
+        total_pages: totalPages,
+        has_next: page < totalPages,
+        has_previous: page > 1
+      }
+    });
+  } catch (error) {
+    console.error('[Manager API] Fetch Users Error:', error);
+    res.status(500).json({ 
+      type: "https://api.rentflow.com/errors/internal-error",
+      title: "Query Fault",
+      status: 500,
+      detail: "Failed to dynamically query the platform user matrix."
+    });
+  }
+};
+
+/**
+ * PATCH /api/v1/manager/users/:id/role
+ * Idempotent, safe mutation of access-control designations.
+ */
+export const updateUserRole = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
+    
+    // Strict Guard: Prevent privilege escalation mapping to super tier
+    if (!role || role === 'SUPER_ADMIN') {
+       return res.status(400).json({
+         type: "https://api.rentflow.com/errors/validation-error",
+         title: "Invalid Role Assignment",
+         status: 400,
+         detail: "Role mapping failed. Attempted an empty assignment or blocked escalation to root clearance."
+       });
+    }
+
+    const updatedUser = await prisma.profiles.update({
+      where: { id },
+      data: { role },
+      select: { id: true, role: true, full_name: true }
+    });
+
+    res.json({
+      data: updatedUser,
+      meta: { timestamp: new Date().toISOString() }
+    });
+  } catch (error) {
+    console.error('[Manager API] Role Map Error:', error);
+    res.status(500).json({
+      type: "https://api.rentflow.com/errors/internal-error",
+      title: "Mutation Fault",
+      status: 500,
+      detail: "Exception trapped while attempting to bridge RBAC updates to the SQL server."
+    });
+  }
+};
