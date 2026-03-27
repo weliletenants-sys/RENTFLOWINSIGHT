@@ -121,9 +121,10 @@ const PartnerDetailsModal: React.FC<PartnerDetailsModalProps> = ({
                     <p className="text-slate-500 font-bold text-sm">No active portfolios found.</p>
                  </div>
               ) : partner.portfolios.map((port: any, idx: number) => {
-                 const isCompound = (partner.id || partner.phone || '').length % 2 === 0;
+                 const modeStr = port.roi_mode || port.roiMode || '';
+                 const isCompound = modeStr.toLowerCase().includes('compound');
                  const roiRate = port.roi_percentage || 15;
-                 const investment = port.investment_amount || 0;
+                 const investment = port.investment_amount || port.investmentAmount || 0;
                  const monthlyRoi = (investment * (roiRate / 100)) / 12;
                  const createdDate = port.created_at ? new Date(port.created_at) : new Date();
                  const payoutDate = new Date(createdDate);
@@ -177,12 +178,12 @@ const PartnerDetailsModal: React.FC<PartnerDetailsModalProps> = ({
                              <p className="text-[11px] font-medium text-slate-500 mb-1">Monthly ROI</p>
                              <p className="font-bold text-slate-900 text-[13px]">USh {monthlyRoi.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                           </div>
-                          <div>
-                             <p className="text-[11px] font-medium text-slate-500 mb-1">Mode</p>
-                             <p className="font-bold text-slate-900 text-[13px] flex items-center gap-1.5">
-                                <TrendingUp size={12} className="text-slate-400" /> {isCompound ? 'Compound' : 'Payout'}
-                             </p>
-                          </div>
+                           <div>
+                              <p className="text-[11px] font-medium text-slate-500 mb-1">Mode</p>
+                              <p className="font-bold text-slate-900 text-[13px] flex items-center gap-1.5">
+                                 <TrendingUp size={12} className="text-slate-400" /> {isCompound ? 'Compound' : 'Monthly'}
+                              </p>
+                           </div>
                           <div>
                              <p className="text-[11px] font-medium text-slate-500 mb-1">Total Earned</p>
                              <p className="font-bold text-[#6c11d4] text-[13px]">USh {(port.total_roi_earned || 0).toLocaleString()}</p>

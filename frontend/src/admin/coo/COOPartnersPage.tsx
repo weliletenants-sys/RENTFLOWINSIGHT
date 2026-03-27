@@ -326,9 +326,6 @@ const COOPartnersPage: React.FC = () => {
                    <div className="flex justify-center items-center gap-1.5">DEALS <ChevronsUpDown size={10} className="text-slate-300 opacity-60 group-hover:opacity-100 transition-opacity" /></div>
                 </th>
                 <th className="px-4 py-3 pr-6 text-center cursor-pointer hover:bg-slate-50 transition-colors group">
-                   <div className="flex justify-center items-center gap-1.5">ROI <ChevronsUpDown size={10} className="text-slate-300 opacity-60 group-hover:opacity-100 transition-opacity" /></div>
-                </th>
-                <th className="px-4 py-3 pr-6 text-center cursor-pointer hover:bg-slate-50 transition-colors group">
                    <div className="flex justify-center items-center gap-1.5">MODE <ChevronsUpDown size={10} className="text-slate-300 opacity-60 group-hover:opacity-100 transition-opacity" /></div>
                 </th>
                 <th className="px-4 py-3 pr-6 cursor-pointer hover:bg-slate-50 transition-colors group">
@@ -341,8 +338,9 @@ const COOPartnersPage: React.FC = () => {
                  <tr><td colSpan={9} className="p-10 text-center text-slate-500 font-medium">No partners match your criteria.</td></tr>
               ) : paginatedInvestors.map((investor, idx) => {
                 const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + idx + 1;
-                const isCompound = (investor.id || investor.phone || '').length % 2 === 0;
-                const roiRate = investor.portfolios?.[0]?.roi_percentage || 15;
+                const activePort = investor.portfolios?.find((p: any) => p.status === 'active' || p.status === 'ACTIVE') || investor.portfolios?.[0];
+                const modeStr = activePort?.roi_mode || activePort?.roiMode || '';
+                const isCompound = modeStr.toLowerCase().includes('compound');
                 const payoutDay = investor.payoutDay || ((idx % 28) + 1);
                 
                 return (
@@ -365,10 +363,9 @@ const COOPartnersPage: React.FC = () => {
                     USh {investor.totalInvested?.toLocaleString() || '0'}
                   </td>
                   <td className="px-4 py-4 pr-6 text-[13px] font-bold text-slate-600 text-center">{investor.activeDeals || 0}</td>
-                  <td className="px-4 py-4 pr-6 text-[13px] font-bold text-[#6c11d4] text-center">{roiRate}%</td>
                   <td className="px-4 py-4 pr-6 text-center">
                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${isCompound ? 'bg-[#fcfaff] border-[#eae5ff] text-[#6c11d4]' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
-                       {isCompound ? 'Compound' : 'Payout'}
+                       {isCompound ? 'Compound' : 'Monthly'}
                      </span>
                   </td>
                   <td className="px-4 py-4 pr-6 text-[13px] font-medium text-slate-500">

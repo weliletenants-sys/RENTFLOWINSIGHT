@@ -218,7 +218,7 @@ export const getPartners = async (req: Request, res: Response) => {
       let walletBalance = 0;
       if (wallet) {
          const bucket = await prisma.walletBuckets.findFirst({ where: { wallet_id: wallet.id, bucket_type: 'available' } });
-         walletBalance = bucket ? bucket.balance : wallet.balance;
+         walletBalance = bucket ? Number(bucket.balance) : Math.max(0, Number(wallet.balance || 0) - totalInvested);
       }
 
       return {
