@@ -1,22 +1,41 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import axios from 'axios';
 import { ArrowLeft, Home, TrendingUp, Flame, Trophy, Key, Target, Sparkles, ChevronRight } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
-const savingsData = [
-  { month: 'Jan', savings: 500000, projected: 500000 },
-  { month: 'Feb', savings: 1200000, projected: 1200000 },
-  { month: 'Mar', savings: 2400000, projected: 2500000 },
-  { month: 'Apr', savings: 3600000, projected: 4000000 },
-  { month: 'May', savings: 4800000, projected: 5500000 },
-  { month: 'Jun', savings: null, projected: 7000000 },
-];
-
 export default function TenantWelileHomes() {
   const navigate = useNavigate();
-  const targetGoal = 50000000;
-  const currentSavings = 4800000;
+  const { user } = useAuth();
   
-  const progressPercent = Math.round((currentSavings / targetGoal) * 100);
+  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    axios.get(`/api/v1/welile-homes/tenant/${user.id}/dashboard`)
+      .then(res => {
+         setDashboardData(res.data);
+         setLoading(false);
+      })
+      .catch(err => {
+         console.error('Gamification mount failed:', err);
+         setLoading(false);
+      });
+  }, [user]);
+
+  if (loading || !dashboardData) {
+     return (
+       <div className="min-h-screen font-sans bg-slate-50 dark:bg-slate-900 pb-20 flex flex-col items-center justify-center transition-colors">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent mb-4"></div>
+          <p className="text-sm font-bold text-slate-500 uppercase tracking-widest animate-pulse">Syncing Engine...</p>
+       </div>
+     );
+  }
+
+  const { target_goal, current_savings, payment_streak_months, next_milestone, trophies, historical_data } = dashboardData;
+  const progressPercent = Math.round((current_savings / target_goal) * 100);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 font-sans text-slate-900 dark:text-slate-100 pb-20 selection:bg-purple-100 transition-colors duration-300">
@@ -53,7 +72,7 @@ export default function TenantWelileHomes() {
             <div className="flex justify-between items-end mb-6">
                <div>
                  <p className="text-[12px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 transition-colors">Total Savings</p>
-                 <h3 className="text-[32px] font-black text-slate-800 dark:text-white leading-none transition-colors">UGX {(currentSavings/1e6).toFixed(1)}M</h3>
+                 <h3 className="text-[32px] font-black text-slate-800 dark:text-white leading-none transition-colors">UGX {(current_savings/1e6).toFixed(1)}M</h3>
                </div>
                <div className="text-right pb-1">
                   <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/20 px-2 py-1.5 rounded-lg inline-flex items-center gap-1 transition-colors"><TrendingUp size={14}/> +12% this month</p>
@@ -64,7 +83,7 @@ export default function TenantWelileHomes() {
             <div className="mb-8 bg-slate-50 dark:bg-slate-700/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-600 transition-colors">
                <div className="flex justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-2.5 transition-colors">
                  <span className="text-indigo-600 dark:text-indigo-400 transition-colors">{progressPercent}% to Goal</span>
-                 <span>Target: UGX {(targetGoal/1e6).toFixed(0)}M</span>
+                 <span>Target: UGX {(target_goal/1e6).toFixed(0)}M</span>
                </div>
                <div className="w-full h-2.5 bg-slate-200/60 dark:bg-slate-600 rounded-full overflow-hidden transition-colors">
                  <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400 rounded-full relative transition-colors" style={{width: `${progressPercent}%`}}>
@@ -77,7 +96,7 @@ export default function TenantWelileHomes() {
             <h3 className="text-[13px] font-bold text-slate-800 dark:text-white mb-4 px-1 transition-colors">Growth Projection</h3>
             <div className="h-44 w-full mt-2">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={savingsData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <AreaChart data={historical_data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorSavings" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
@@ -115,7 +134,7 @@ export default function TenantWelileHomes() {
                  <Flame size={20} className="text-white" />
                </div>
                <p className="text-white/80 text-[10px] font-extrabold uppercase tracking-widest mb-1.5 transition-colors">Payment Streak</p>
-               <h3 className="text-2xl font-black transition-colors">4 Months</h3>
+               <h3 className="text-2xl font-black transition-colors">{payment_streak_months} Months</h3>
                <p className="text-amber-100 dark:text-orange-200 text-[11px] mt-2 font-semibold bg-black/10 dark:bg-black/20 inline-block px-2 py-1 rounded-md transition-colors">Bonus yields active!</p>
             </div>
 
@@ -128,7 +147,7 @@ export default function TenantWelileHomes() {
                  <Key size={18} className="text-indigo-600 dark:text-indigo-400 transition-colors" />
                </div>
                <p className="text-slate-400 text-[10px] font-extrabold uppercase tracking-widest mb-1.5 transition-colors">Next Milestone</p>
-               <h3 className="text-[19px] font-black text-slate-800 dark:text-white leading-tight transition-colors">10% Deposit</h3>
+               <h3 className="text-[19px] font-black text-slate-800 dark:text-white leading-tight transition-colors">{next_milestone?.title || 'Unknown'}</h3>
                <div className="flex items-center text-[11px] font-bold text-indigo-600 dark:text-indigo-400 mt-2.5 opacity-80 group-hover:opacity-100 transition-all">
                  View Property Options <ChevronRight strokeWidth={2.5} size={14} className="ml-0.5 group-hover:translate-x-1 transition-transform" />
                </div>
@@ -145,13 +164,7 @@ export default function TenantWelileHomes() {
             </div>
             
             <div className="flex gap-3 overflow-x-auto pb-4 -mx-2 px-2 snap-x hide-scrollbar">
-               {[
-                 { id: 1, title: 'Early Bird', desc: 'First deposit', icon: '🥚', unlocked: true },
-                 { id: 2, title: 'Consistent', desc: '3 months streak', icon: '🔥', unlocked: true },
-                 { id: 3, title: 'Halfway', desc: '5% of goal', icon: '🎯', unlocked: true },
-                 { id: 4, title: 'Investor', desc: '10M UGX saved', icon: '💎', unlocked: false },
-                 { id: 5, title: 'Master', desc: 'Approved Loan', icon: '🏆', unlocked: false },
-               ].map(badge => (
+               {trophies.map((badge: any) => (
                  <div key={badge.id} className={`shrink-0 w-[105px] border rounded-2xl flex flex-col items-center justify-center text-center p-3.5 snap-center transition-all ${badge.unlocked ? 'bg-indigo-50/50 dark:bg-indigo-500/10 border-indigo-100 dark:border-indigo-500/20 shadow-sm' : 'bg-slate-50 dark:bg-slate-700/50 border-slate-100 dark:border-slate-600 grayscale opacity-60'}`}>
                     <span className="text-3xl mb-2.5 drop-shadow-sm">{badge.icon}</span>
                     <p className="text-[12px] font-bold text-slate-800 dark:text-white leading-tight transition-colors">{badge.title}</p>

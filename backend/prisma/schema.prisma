@@ -1671,3 +1671,39 @@ model FunderProxyMandates {
   @@index([funder_id])
   @@map("funder_proxy_mandates")
 }
+
+model TenantGamification {
+  id                    String  @id @default(uuid())
+  tenant_id             String  @unique
+  target_goal           Float
+  current_savings       Float
+  payment_streak_months Float
+  created_at            String
+  updated_at            String
+
+  @@map("tenant_gamification")
+}
+
+model GamificationTrophies {
+  id          String  @id @default(uuid())
+  tenant_id   String
+  title       String
+  description String
+  icon        String
+  unlocked    Boolean
+  unlocked_at String?
+  
+  @@map("gamification_trophies")
+}
+
+model SavingsHistory {
+  id        String  @id @default(uuid())
+  tenant_id String
+  month     String
+  savings   Float?
+  projected Float
+  
+  @@map("savings_history")
+}
+
+
