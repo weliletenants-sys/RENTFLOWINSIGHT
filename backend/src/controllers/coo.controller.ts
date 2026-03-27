@@ -210,9 +210,9 @@ export const getPartners = async (req: Request, res: Response) => {
          where: { investor_id: f.id }
       });
       
-      const totalInvested = ports.reduce((sum: number, p: any) => sum + (p.investment_amount || 0), 0);
-      const activeDeals = ports.filter((p: any) => p.status === 'ACTIVE').length;
-      const returnsPaid = ports.reduce((sum: number, p: any) => sum + (p.total_roi_earned || 0), 0);
+      const totalInvested = ports.reduce((sum: number, p: any) => sum + Number(p.investment_amount || p.investmentAmount || 0), 0);
+      const activeDeals = ports.filter((p: any) => (p.status || '').toUpperCase() === 'ACTIVE').length;
+      const returnsPaid = ports.reduce((sum: number, p: any) => sum + Number(p.total_roi_earned || p.totalRoiEarned || 0), 0);
       
       const wallet = await prisma.wallets.findFirst({ where: { user_id: f.id } });
       let walletBalance = 0;

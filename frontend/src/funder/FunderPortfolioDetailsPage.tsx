@@ -119,9 +119,10 @@ export default function FunderPortfolioDetailsPage() {
       doc.text(`Total Accumulation: UGX ${portfolioInfo.totalEarned.toLocaleString()}`, 14, 52);
       doc.text(`Expected Total: UGX ${portfolioInfo.expectedTotal.toLocaleString()}`, 14, 59);
       doc.text(`Maturity Date: ${portfolioInfo.maturityDate}`, 14, 66);
+      doc.text(`Next Payout: ${portfolioInfo.nextPayout || 'N/A'}`, 14, 73);
       
       const isGrowthPositive = portfolioInfo.todayGrowth > 0;
-      doc.text(`Daily Yield Pace: ${isGrowthPositive ? '+' : ''}${portfolioInfo.todayGrowth.toLocaleString()} UGX / Day`, 14, 73);
+      doc.text(`Daily Yield Pace: ${isGrowthPositive ? '+' : ''}${portfolioInfo.todayGrowth.toLocaleString()} UGX / Day`, 14, 80);
 
       const tableData = payoutHistory.map((tx: any) => [
          new Date(tx.date).toLocaleDateString(),
@@ -222,7 +223,7 @@ export default function FunderPortfolioDetailsPage() {
         </div>
 
         {/* Analytics Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
           <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-sm flex flex-col items-center text-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
               <Target className="w-5 h-5" />
@@ -234,22 +235,22 @@ export default function FunderPortfolioDetailsPage() {
           </div>
 
           <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-sm flex flex-col items-center text-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-              <Clock className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight mb-1">Lock Cycle</p>
-              <p className="font-bold text-slate-900 text-sm">{portfolioInfo.durationLeft}</p>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-sm flex flex-col items-center text-center gap-2">
             <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">
               <Calendar className="w-5 h-5" />
             </div>
             <div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight mb-1">Next Payout</p>
+              <p className="font-bold text-slate-900 text-sm whitespace-nowrap overflow-hidden text-ellipsis">{portfolioInfo.nextPayout || 'N/A'}</p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-sm flex flex-col items-center text-center gap-2">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+              <Clock className="w-5 h-5" />
+            </div>
+            <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight mb-1">Matures On</p>
-              <p className="font-bold text-slate-900 text-sm">{portfolioInfo.maturityDate}</p>
+              <p className="font-bold text-slate-900 text-sm whitespace-nowrap overflow-hidden text-ellipsis">{portfolioInfo.maturityDate}</p>
             </div>
           </div>
 
@@ -259,7 +260,7 @@ export default function FunderPortfolioDetailsPage() {
             </div>
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight mb-1">Auto-Renew</p>
-              <p className={`font-bold text-sm ${portfolioInfo.autoRenew ? 'text-emerald-600' : 'text-slate-500'}`}>
+              <p className={`font-bold text-sm whitespace-nowrap overflow-hidden text-ellipsis ${portfolioInfo.autoRenew ? 'text-emerald-600' : 'text-slate-500'}`}>
                 {portfolioInfo.autoRenew ? 'Enabled' : 'Disabled'}
               </p>
             </div>
@@ -270,14 +271,14 @@ export default function FunderPortfolioDetailsPage() {
               <DollarSign className="w-5 h-5" />
             </div>
             <div className="flex w-full justify-between items-center text-left">
-               <div>
-                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight mb-0.5">Total Profit</p>
-                 <p className="font-black text-emerald-600 text-sm tracking-tight">+ UGX {portfolioInfo.totalEarned.toLocaleString()}</p>
+               <div className="min-w-0 pr-1">
+                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight mb-0.5 whitespace-nowrap overflow-hidden text-ellipsis">Total Profit</p>
+                 <p className="font-black text-emerald-600 text-[13px] sm:text-sm tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">+ UGX {portfolioInfo.totalEarned.toLocaleString()}</p>
                </div>
-               <div className="w-px h-8 bg-slate-100 mx-2" />
-               <div className="text-right">
-                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight mb-0.5">Expected Est.</p>
-                 <p className="font-bold text-slate-900 text-sm tracking-tight">UGX {portfolioInfo.expectedTotal.toLocaleString()}</p>
+               <div className="w-px h-8 bg-slate-100 mx-1 lg:mx-2 shrink-0" />
+               <div className="text-right min-w-0 pl-1">
+                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight mb-0.5 whitespace-nowrap overflow-hidden text-ellipsis">Expected Est.</p>
+                 <p className="font-bold text-slate-900 text-[13px] sm:text-sm tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">UGX {portfolioInfo.expectedTotal.toLocaleString()}</p>
                </div>
             </div>
           </div>
