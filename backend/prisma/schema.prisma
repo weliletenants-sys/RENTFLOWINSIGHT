@@ -677,6 +677,8 @@ model ProductOrders {
   status_updated_at       String?
   total_price             Float
   unit_price              Float
+  user_id                 String?
+  product_id              String?
 
   @@map("product_orders")
 }
