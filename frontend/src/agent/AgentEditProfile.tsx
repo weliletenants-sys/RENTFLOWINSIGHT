@@ -1,8 +1,9 @@
-﻿import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useState } from 'react';
 import { toast, Toaster } from 'react-hot-toast';
+import ProfileRoleSwitcher from '../components/role-switcher/ProfileRoleSwitcher';
 
 export default function AgentEditProfile() {
   const navigate = useNavigate();
@@ -96,6 +97,10 @@ export default function AgentEditProfile() {
               Save Changes
             </button>
           </form>
+
+          {/* Role Switcher Native Node Render */}
+          <ProfileRoleSwitcher />
+          
         </div>
       </div>
     </div>

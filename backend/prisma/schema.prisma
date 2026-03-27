@@ -1235,12 +1235,15 @@ model WalletDeposits {
 }
 
 model WalletTransactions {
-  amount       Float
-  created_at   String
-  description  String?
-  id           String  @id @default(uuid())
-  recipient_id String?
-  sender_id    String?
+  amount         Float
+  balance_before Float?   // Injected for Triple-State Ledger Tracking
+  balance_after  Float?   // Injected for Triple-State Ledger Tracking
+  created_at     String
+  description    String?
+  id             String  @id @default(uuid())
+  recipient_id   String?
+  sender_id      String?
+  status         String  @default("COMPLETED")
 
   @@map("wallet_transactions")
 }

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../../prisma/prisma.client';
+import { problemResponse } from '../../utils/problem';
 
 export const getCtoMetrics = async (req: Request, res: Response) => {
   try {
@@ -109,6 +110,6 @@ export const getCtoMetrics = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Failed to fetch CTO metrics:', error);
-    res.status(500).json({ error: 'Internal server error while fetching CTO data.' });
+    return problemResponse(res, 500, 'Internal Server Error', 'Engine failed computing infrastructure telemetry thresholds.', 'internal-server-error');
   }
 };

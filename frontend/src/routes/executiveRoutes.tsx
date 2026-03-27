@@ -8,8 +8,8 @@ import { lazy, Suspense } from 'react';
 const CeoDashboard = lazy(() => import('../admin/ceo/CeoDashboard'));
 const CfoDashboard = lazy(() => import('../admin/cfo/CfoDashboard'));
 const CooDashboard = lazy(() => import('../admin/coo/COOOverview'));
-// We will build these two next
 const CtoDashboard = lazy(() => import('../admin/cto/CtoDashboard'));
+const CmoDashboard = lazy(() => import('../admin/cmo/CmoDashboard'));
 
 const CentralLoader = () => (
   <div className="flex h-[50vh] items-center justify-center">
@@ -51,7 +51,7 @@ export const executiveRoutes = (
       path="cmo" 
       element={
         <RequireRole allowedRoles={['CMO']}>
-          <Suspense fallback={<CentralLoader />}>{/* Upcoming CMO Dashboard */}</Suspense>
+          <Suspense fallback={<CentralLoader />}><CmoDashboard /></Suspense>
         </RequireRole>
       } 
     />

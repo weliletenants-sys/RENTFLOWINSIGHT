@@ -12,12 +12,16 @@ const TenantPropertyExplorer  = lazy(() => import('../tenant/TenantPropertyExplo
 const TenantCalculator        = lazy(() => import('../tenant/TenantCalculator'));
 const TenantPaymentSchedule   = lazy(() => import('../tenant/TenantPaymentSchedule'));
 
+// Universal Services
+const CentralWalletView       = lazy(() => import('../pages/wallet/CentralWalletView'));
+
 /**
  * Tenant role routes — all pages are lazy-loaded.
  * Exported as a JSX array so React Router v6 can see each <Route> directly.
  */
 export const tenantRoutes = [
-  <Route key="tenant-dashboard"   path="/dashboard"          element={<TenantDashboard />} />,
+  <Route key="tenant-wallet"      path="wallet"              element={<CentralWalletView />} />,
+  <Route key="tenant-dashboard"   path="dashboard"          element={<TenantDashboard />} />,
   <Route key="find-a-house"       path="/find-a-house"       element={<TenantPropertyExplorer />} />,
   <Route key="tenant-calculator"  path="/calculator"         element={<TenantCalculator />} />,
   <Route key="payment-schedule"   path="/payment-schedule"   element={<TenantPaymentSchedule />} />,

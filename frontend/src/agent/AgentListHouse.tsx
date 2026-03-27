@@ -1,10 +1,11 @@
-﻿import { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ChevronLeft, MapPin, Camera, User, CheckCircle2, 
   Map as MapIcon, AlertTriangle, ShieldCheck 
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 
 export default function AgentListHouse() {
   const navigate = useNavigate();
@@ -102,12 +103,21 @@ export default function AgentListHouse() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     
-    // Simulate Backend Verify & duplicate detection processing
+    // Natively hit the Express backend
     try {
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      const response = await axios.post('/api/v1/properties', {
+        ...formData,
+        gpsLocation,
+        photos
+      });
       setIsSuccess(true);
-    } catch (e) {
-      toast.error('Submission failed. Try again.');
+      toast.success('Property verified and structurally mounted.');
+    } catch (e: any) {
+      if (e.response && e.response.data && e.response.data.detail) {
+        toast.error(`Submission Rejection: ${e.response.data.detail}`);
+      } else {
+        toast.error('Fatal network anomaly submitting Property map.');
+      }
     } finally {
       setIsSubmitting(false);
     }

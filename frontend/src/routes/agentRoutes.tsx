@@ -11,7 +11,7 @@ const AgentDeposit        = lazy(() => import('../agent/AgentDeposit'));
 const AgentInvestForPartner = lazy(() => import('../agent/AgentInvestForPartner'));
 const AgentRegisterTenant = lazy(() => import('../agent/AgentRegisterTenant'));
 
-const AgentWallet         = lazy(() => import('../agent/AgentWallet'));
+const CentralWalletView   = lazy(() => import('../pages/wallet/CentralWalletView'));
 const AgentAnalytics      = lazy(() => import('../agent/AgentAnalytics'));
 const AgentEditProfile    = lazy(() => import('../agent/AgentEditProfile'));
 const AgentNotificationSettings = lazy(() => import('../agent/AgentNotificationSettings'));
@@ -56,7 +56,7 @@ export const agentRoutes = [
   <Route key="agent-invest-partner"  path="/agent-invest-partner"  element={<AgentInvestForPartner />} />,
   <Route key="agent-register-tenant" path="/agent-register-tenant" element={<AgentRegisterTenant />} />,
   <Route key="agent-analytics"       path="/agent-analytics"       element={<AgentAnalytics />} />,
-  <Route key="agent-wallet"          path="/agent-wallet"          element={<AgentWallet />} />,
+  <Route key="agent-wallet"          path="/agent-wallet"          element={<CentralWalletView />} />,
   <Route key="agent-edit-profile"    path="/agent-edit-profile"    element={<AgentEditProfile />} />,
   <Route key="agent-notification-settings" path="/agent-notification-settings" element={<AgentNotificationSettings />} />,
   <Route key="agent-security"        path="/agent-security"        element={<AgentSecurity />} />,
