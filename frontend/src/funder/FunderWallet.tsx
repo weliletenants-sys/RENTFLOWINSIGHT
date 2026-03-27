@@ -89,17 +89,24 @@ export default function FunderWallet() {
         ref: op.reference_id || 'PENDING-...'
       }));
 
-      const mappedTx = (liveTx || []).map((tx: any) => ({
-        id: tx.id || `tx-${Math.random()}`,
-        date: new Date(tx.created_at || tx.transaction_date || Date.now()).toLocaleString(),
-        rawDate: new Date(tx.created_at || tx.transaction_date || Date.now()).getTime(),
-        type: tx.direction === 'cash_in' ? 'Cash In' : 'Cash Out',
-        category: tx.category || 'general_transfer',
-        description: tx.description || (tx.category === 'coo_manual_portfolio' ? 'Capital Injection' : (tx.category ? String(tx.category).replace(/_/g, ' ') : 'Transfer')),
-        amount: tx.amount || 0,
-        status: 'completed', // Ledger entries are inherently completed
-        ref: tx.reference_id || (tx.id ? String(tx.id).slice(0, 8) : 'REF-N/A')
-      }));
+      const mappedTx = (liveTx || []).map((tx: any) => {
+        let niceDesc = tx.description || 'Transfer';
+        if (tx.category === 'coo_manual_portfolio') niceDesc = 'Emergency Capital Injection';
+        else if (tx.category === 'coo_wallet_fund') niceDesc = 'System Wallet Top-Up';
+        else if (tx.category) niceDesc = String(tx.category).replace(/_/g, ' ').toUpperCase();
+        
+        return {
+          id: tx.id || `tx-${Math.random()}`,
+          date: new Date(tx.created_at || tx.transaction_date || Date.now()).toLocaleString(),
+          rawDate: new Date(tx.created_at || tx.transaction_date || Date.now()).getTime(),
+          type: tx.direction === 'cash_in' ? 'Cash In' : 'Cash Out',
+          category: tx.category || 'general_transfer',
+          description: niceDesc,
+          amount: tx.amount || 0,
+          status: 'completed',
+          ref: tx.reference_id || (tx.id ? String(tx.id).slice(0, 8) : 'REF-N/A')
+        };
+      });
 
       // Combine and sort intelligently descending
       const combined = [...pendingOps, ...mappedTx].sort((a, b) => b.rawDate - a.rawDate);

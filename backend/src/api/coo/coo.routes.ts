@@ -23,7 +23,12 @@ import {
   importPartners,
   createManualPortfolio,
   investForPartner,
-  validatePartnersImport
+  validatePartnersImport,
+  fundPartnerWallet,
+  suspendPartnerAccount,
+  topUpPortfolio,
+  renewPortfolio,
+  deletePortfolio
 } from '../../controllers/coo.controller';
 import { authGuard, rolesGuard } from '../../middlewares/auth.middleware';
 
@@ -68,5 +73,11 @@ router.post('/partners/import/validate', validatePartnersImport);
 router.post('/partners/import', importPartners);
 router.post('/partners/:id/portfolios', createManualPortfolio);
 router.post('/partners/:id/invest', investForPartner);
+router.post('/partners/:id/fund', fundPartnerWallet);
+router.post('/partners/:id/suspend', suspendPartnerAccount);
+
+router.post('/portfolios/:id/topup', topUpPortfolio);
+router.post('/portfolios/:id/renew', renewPortfolio);
+router.delete('/portfolios/:id', deletePortfolio);
 
 export default router;

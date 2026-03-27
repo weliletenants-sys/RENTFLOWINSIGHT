@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Users, Briefcase, TrendingUp, AlertTriangle, ArrowUpRight, ArrowDownRight, UserCheck, Wallet, PieChart, Activity, Loader2 } from 'lucide-react';
+import { Users, Briefcase, TrendingUp, AlertTriangle, ArrowUpRight, ArrowDownRight, UserCheck, Wallet, Activity, Calendar, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { fetchOverviewMetrics, type COOOverviewMetrics } from '../../services/cooApi';
 import CooTransactionReview from './components/CooTransactionReview';
@@ -27,20 +27,23 @@ const COOOverview: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-96">
-        <Loader2 className="w-10 h-10 text-[#6c11d4] animate-spin mb-4" />
-        <p className="text-slate-500 font-medium">Aggregating platform operations...</p>
+      <div className="flex flex-col items-center justify-center h-full min-h-[500px]">
+        <div 
+          className="w-12 h-12 rounded-full border-4 animate-spin mb-4" 
+          style={{ borderColor: 'var(--color-primary-light, #EAE5FF)', borderTopColor: 'var(--color-primary, #6c11d4)' }} 
+        />
+        <p className="text-slate-500 font-medium text-sm">Aggregating platform operations...</p>
       </div>
     );
   }
 
   if (error || !metrics) {
     return (
-      <div className="p-6 bg-red-50 text-red-600 rounded-3xl border border-red-100 flex items-center shadow-sm">
-        <AlertTriangle className="w-8 h-8 mr-4" />
+      <div className="p-6 bg-red-50 text-red-600 rounded-xl border border-red-100 flex items-center shadow-sm max-w-2xl mt-8">
+        <AlertTriangle className="w-8 h-8 mr-4 shrink-0" />
         <div>
           <h3 className="font-bold text-lg mb-1">Failed to Load Dashboard</h3>
-          <p className="text-sm">{error || 'Unknown rendering error'}</p>
+          <p className="text-sm opacity-90">{error || 'Unknown rendering error'}</p>
         </div>
       </div>
     );
@@ -53,226 +56,206 @@ const COOOverview: React.FC = () => {
     if (amount >= 1000000000) return `${(amount / 1000000000).toFixed(1)}B`;
     if (amount >= 1000000) return `${(amount / 1000000).toFixed(1)}M`;
     if (amount >= 1000) return `${(amount / 1000).toFixed(1)}K`;
-    return amount.toString();
+    return amount.toLocaleString();
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto font-inter">
-      
-      {/* 1. Financial Metrics Cards (KPIs) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
-          <div className="flex justify-between items-start mb-4">
-            <span className="text-slate-500 text-sm font-bold">Total Investors</span>
-            <div className="p-2 bg-[#EAE5FF] text-[#6c11d4] rounded-full">
-              <Users size={18} />
-            </div>
-          </div>
-          <h3 className="text-3xl font-bold font-outfit text-slate-900 mb-2">{metrics.totalInvestors}</h3>
-          <div className="inline-flex items-center text-green-600 text-xs font-bold">
-            <ArrowUpRight size={14} className="mr-1" /> Active
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
-          <div className="flex justify-between items-start mb-4">
-            <span className="text-slate-500 text-sm font-bold">Total Investments</span>
-            <div className="p-2 bg-[#EAE5FF] text-[#6c11d4] rounded-full">
-              <Briefcase size={18} />
-            </div>
-          </div>
-          <h3 className="text-3xl font-bold font-outfit text-slate-900 mb-2">{formatMoney(metrics.totalInvestments)} <span className="text-sm text-slate-400 font-medium">UGX</span></h3>
-          <div className="inline-flex items-center text-green-600 text-xs font-bold">
-            <ArrowUpRight size={14} className="mr-1" /> Seeded Portfolios
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
-          <div className="flex justify-between items-start mb-4">
-            <span className="text-slate-500 text-sm font-bold">Daily Collections</span>
-            <div className="p-2 bg-green-50 text-green-600 rounded-full">
-              <TrendingUp size={18} />
-            </div>
-          </div>
-          <h3 className="text-3xl font-bold font-outfit text-slate-900 mb-2">{formatMoney(metrics.dailyCollections)} <span className="text-sm text-slate-400 font-medium">UGX</span></h3>
-          <div className="inline-flex items-center text-slate-500 text-xs font-bold">
-            Platform Inflows
-          </div>
-        </div>
-
-        <div 
-          className="bg-white p-6 rounded-3xl border-2 border-red-100 shadow-sm relative overflow-hidden cursor-pointer hover:bg-slate-50 transition-colors flex flex-col justify-between"
-          onClick={() => navigate('/coo/withdrawals')}
-        >
-          <div className="absolute top-0 right-0 w-24 h-24 bg-red-50 rounded-bl-full -mr-4 -mt-4"></div>
-          <div className="flex justify-between items-start mb-4 relative z-10">
-            <span className="text-slate-600 text-sm font-bold">Pending Withdrawals</span>
-            <div className="p-2 bg-red-100 text-red-600 rounded-full">
-              <AlertTriangle size={18} />
-            </div>
-          </div>
-          <h3 className="text-3xl font-bold font-outfit text-red-600 mb-2 relative z-10">{formatMoney(metrics.pendingWithdrawalsAmount)} <span className="text-sm opacity-70 font-medium">UGX</span></h3>
-          <div className="inline-flex items-center text-red-500 text-xs font-bold relative z-10">
-            Requires Action ({metrics.pendingWithdrawalsCount} requests)
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* Main Content Area (Left 2 columns) */}
-        <div className="lg:col-span-2 space-y-6">
+        {/* ── LEFT / MAIN COLUMN ── */}
+        <div className="lg:col-span-8 flex flex-col gap-8">
           
-          {/* 3. Agent Collections Context */}
-          <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-slate-800">Operational Overview</h3>
-              <button onClick={() => navigate('/coo/collections')} className="text-xs font-bold text-[#6c11d4] bg-[#EAE5FF] px-3 py-1.5 rounded-full hover:bg-purple-100 transition-colors">
-                 Full Matrix
+          {/* Main KPI Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between relative overflow-hidden group">
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-[length:100%_100%] transition-all" style={{ backgroundColor: 'var(--color-primary, #6c11d4)' }}></div>
+              <div className="flex justify-between items-start mb-6">
+                <span className="text-slate-500 text-sm font-bold uppercase tracking-wide">Total Investment</span>
+                <div className="p-2 rounded-lg bg-slate-50 text-[var(--color-primary)]">
+                  <Briefcase size={20} />
+                </div>
+              </div>
+              <div>
+                 <h3 className="text-3xl font-bold font-sans text-slate-900 mb-1 flex items-baseline gap-1">
+                   {formatMoney(metrics.totalInvestments)} 
+                   <span className="text-sm text-slate-400 font-medium">UGX</span>
+                 </h3>
+                 <div className="inline-flex items-center text-emerald-600 text-xs font-bold">
+                   <ArrowUpRight size={14} className="mr-1" /> Active Capital
+                 </div>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between relative overflow-hidden group">
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>
+              <div className="flex justify-between items-start mb-6">
+                <span className="text-slate-500 text-sm font-bold uppercase tracking-wide">Daily Collections</span>
+                <div className="p-2 rounded-lg bg-slate-50 text-blue-600">
+                  <TrendingUp size={20} />
+                </div>
+              </div>
+              <div>
+                 <h3 className="text-3xl font-bold font-sans text-slate-900 mb-1 flex items-baseline gap-1">
+                   {formatMoney(metrics.dailyCollections)} 
+                   <span className="text-sm text-slate-400 font-medium">UGX</span>
+                 </h3>
+                 <div className="inline-flex items-center text-blue-600 text-xs font-bold mt-1">
+                   Platform Inflows Today
+                 </div>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div className="flex justify-between items-start mb-6">
+                <span className="text-slate-500 text-sm font-bold uppercase tracking-wide">Active Investors</span>
+                <div className="p-2 rounded-lg bg-slate-50 text-slate-600">
+                  <Users size={20} />
+                </div>
+              </div>
+              <div className="flex items-end justify-between">
+                 <h3 className="text-3xl font-bold font-sans text-slate-900 leading-none">{metrics.totalInvestors}</h3>
+                 <div className="text-xs font-bold text-slate-500 uppercase">Seeded Portfolios</div>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div className="flex justify-between items-start mb-6">
+                <span className="text-slate-500 text-sm font-bold uppercase tracking-wide">Field Agents</span>
+                <div className="p-2 rounded-lg bg-slate-50 text-slate-600">
+                  <UserCheck size={20} />
+                </div>
+              </div>
+              <div className="flex items-end justify-between">
+                 <h3 className="text-3xl font-bold font-sans text-slate-900 leading-none">{metrics.activeAgents}</h3>
+                 <div className="text-xs font-bold text-slate-500 uppercase">Currently Active</div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Wallet Monitoring Section */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                 <h3 className="text-xl font-bold text-slate-900 mb-1">Treasury Reserves</h3>
+                 <p className="text-sm text-slate-500">Live operational wallet float and escrow bounds</p>
+              </div>
+              <button 
+                onClick={() => navigate('/coo/wallets')} 
+                className="hidden sm:flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 text-sm font-bold rounded-lg transition-colors"
+              >
+                Manage Wallets <ChevronRight size={16} />
               </button>
             </div>
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-              <div className="p-4 bg-slate-50 rounded-2xl flex flex-col justify-center">
-                <p className="text-sm text-slate-500 font-bold mb-1">Active Agents</p>
-                <div className="flex items-center space-x-2">
-                   <div className="w-8 h-8 rounded-full bg-[#EAE5FF] flex items-center justify-center text-[#6c11d4]">
-                     <UserCheck size={16} />
-                   </div>
-                   <p className="text-2xl font-bold text-slate-900">{metrics.activeAgents}</p>
-                </div>
-              </div>
-              <div className="p-4 bg-slate-50 rounded-2xl flex flex-col justify-center">
-                <p className="text-sm text-slate-500 font-bold mb-1">Total Users</p>
-                <div className="flex items-center space-x-2">
-                   <div className="w-8 h-8 rounded-full bg-[#EAE5FF] flex items-center justify-center text-[#6c11d4]">
-                     <Users size={16} />
-                   </div>
-                   <p className="text-2xl font-bold text-slate-900">{metrics.activeAccounts}</p>
-                </div>
-              </div>
-              <div 
-                className="p-4 bg-red-50 rounded-2xl flex flex-col justify-center cursor-pointer hover:bg-red-100 transition-colors"
-                onClick={() => navigate('/coo/users')}
-              >
-                <p className="text-sm text-red-700 font-bold mb-1">Pending KYC</p>
-                <div className="flex items-center space-x-2">
-                   <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600">
-                     <AlertTriangle size={16} />
-                   </div>
-                   <p className="text-xl font-bold text-red-600">{metrics.pendingAccounts}</p>
-                </div>
-              </div>
-              <div className="p-4 bg-orange-50 rounded-2xl flex flex-col justify-center">
-                <p className="text-sm text-orange-700 font-bold mb-1">Missed Records</p>
-                <div className="flex items-center space-x-2">
-                   <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
-                     <ArrowDownRight size={16} />
-                   </div>
-                   <p className="text-xl font-bold text-orange-600">{metrics.missedPaymentsCount} <span className="text-sm font-medium">Tenants</span></p>
-                </div>
-              </div>
-              <div className="p-4 bg-[#EAE5FF] rounded-2xl flex flex-col justify-center">
-                <p className="text-sm text-[#6c11d4] font-bold mb-1">Today's Visits</p>
-                <div className="flex items-center space-x-2">
-                   <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#6c11d4]">
-                     <Activity size={16} />
-                   </div>
-                   <p className="text-xl font-bold text-[#6c11d4]">{metrics.todaysVisits}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 4 & 5. Wallet Monitoring & Analytics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => navigate('/coo/wallets')}>
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="p-2 bg-[#EAE5FF] text-[#6c11d4] rounded-full"><Wallet size={20} /></div>
-                <h3 className="text-lg font-bold text-slate-800">Wallet Monitoring</h3>
-              </div>
-              <div className="space-y-5">
-                <div>
-                  <div className="flex justify-between items-center text-sm mb-2">
-                    <span className="font-bold text-slate-600">Main Operating Float</span>
-                    <span className="font-bold text-green-600 px-2 py-0.5 bg-green-50 rounded-md">{formatMoney(metrics.walletMonitoring?.mainFloat)}</span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-2">
-                    <div className="bg-green-500 h-2 rounded-full" style={{ width: '85%' }}></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between items-center text-sm mb-2">
-                    <span className="font-bold text-slate-600">Agent Float Escrow</span>
-                    <span className="font-bold text-orange-500 px-2 py-0.5 bg-orange-50 rounded-md">{formatMoney(metrics.walletMonitoring?.agentEscrow)}</span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-2">
-                    <div className="bg-orange-400 h-2 rounded-full" style={{ width: '12%' }}></div>
-                  </div>
-                </div>
-              </div>
-            </div>
             
-            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => navigate('/coo/analytics')}>
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="p-2 bg-[#EAE5FF] text-[#6c11d4] rounded-full"><PieChart size={20} /></div>
-                <h3 className="text-lg font-bold text-slate-800">Payment Modes</h3>
-              </div>
-              <div className="space-y-4">
-                {/* Visual UI Demo pending backend tracking vectors */}
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center space-x-3">
-                     <span className="w-3 h-3 rounded-full bg-[#6c11d4]"></span>
-                     <span className="font-bold text-slate-600">Mobile Money</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+               <div className="p-5 bg-slate-50 rounded-xl border border-slate-100 relative">
+                  <div className="flex justify-between items-center mb-4">
+                     <div className="flex items-center gap-2">
+                        <Wallet size={18} className="text-emerald-600" />
+                        <span className="font-bold text-slate-700">Main Float</span>
+                     </div>
+                     <span className="text-xs font-bold bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md">Operational</span>
                   </div>
-                  <span className="font-bold text-slate-900 bg-slate-50 px-2 py-1 rounded-md">65%</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center space-x-3">
-                     <span className="w-3 h-3 rounded-full bg-slate-800"></span>
-                     <span className="font-bold text-slate-600">Bank Transfer</span>
+                  <h4 className="text-2xl font-bold text-slate-900 mb-4 font-sans">
+                    UGX {formatMoney(metrics.walletMonitoring?.mainFloat)}
+                  </h4>
+                  <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                    <div className="bg-emerald-500 h-full rounded-full" style={{ width: '85%' }}></div>
                   </div>
-                  <span className="font-bold text-slate-900 bg-slate-50 px-2 py-1 rounded-md">28%</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center space-x-3">
-                     <span className="w-3 h-3 rounded-full bg-slate-300"></span>
-                     <span className="font-bold text-slate-600">Cash (Agency)</span>
+               </div>
+
+               <div className="p-5 bg-slate-50 rounded-xl border border-slate-100 relative">
+                  <div className="flex justify-between items-center mb-4">
+                     <div className="flex items-center gap-2">
+                        <Wallet size={18} className="text-amber-600" />
+                        <span className="font-bold text-slate-700">Agent Escrow</span>
+                     </div>
+                     <span className="text-xs font-bold bg-amber-100 text-amber-700 px-2 py-1 rounded-md">Locked</span>
                   </div>
-                  <span className="font-bold text-slate-900 bg-slate-50 px-2 py-1 rounded-md">7%</span>
-                </div>
-              </div>
+                  <h4 className="text-2xl font-bold text-slate-900 mb-4 font-sans">
+                    UGX {formatMoney(metrics.walletMonitoring?.agentEscrow)}
+                  </h4>
+                  <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                    <div className="bg-amber-500 h-full rounded-full" style={{ width: '22%' }}></div>
+                  </div>
+               </div>
             </div>
           </div>
 
         </div>
 
-        {/* 7. Risk & Alerts (Right Column) */}
-        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col h-full">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold text-slate-800">Risk & Alerts</h3>
-            <button onClick={() => navigate('/coo/alerts')} className="text-xs font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-full hover:bg-red-100 transition-colors">
-               View Feed
-            </button>
-          </div>
+        {/* ── RIGHT PANEL ── */}
+        <aside className="lg:col-span-4 flex flex-col gap-6">
           
-          <div className="space-y-4 flex-1">
-            <div 
-              className="p-4 bg-white border border-red-100 rounded-2xl shadow-sm cursor-pointer hover:border-red-300 transition-all relative overflow-hidden"
-              onClick={() => navigate('/coo/withdrawals')}
-            >
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-500"></div>
-              <h4 className="text-sm font-bold text-slate-800 mb-1">Pending Withdrawals</h4>
-              <p className="text-xs text-slate-500 leading-relaxed">{metrics.pendingWithdrawalsCount} requests totaling <strong className="text-slate-700">UGX {formatMoney(metrics.pendingWithdrawalsAmount)}</strong> waiting for COO approval before disbursement.</p>
+          {/* Critical Alerts (Replacing Pending Withdrawals large card) */}
+          <div className="bg-white rounded-xl border-t-4 border-t-red-500 border-x border-b border-slate-200 shadow-sm p-6">
+             <div className="flex items-center space-x-3 mb-4">
+               <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-600 shrink-0">
+                 <AlertTriangle size={20} />
+               </div>
+               <div>
+                  <h3 className="font-bold text-slate-900">Requires Approval</h3>
+                  <p className="text-xs font-semibold text-red-500">{metrics.pendingWithdrawalsCount} pending requests</p>
+               </div>
+             </div>
+             <p className="text-sm text-slate-600 mb-6 leading-relaxed">
+               You have <strong className="text-slate-800">UGX {formatMoney(metrics.pendingWithdrawalsAmount)}</strong> in pending withdrawal payouts awaiting your authorization before disbursement.
+             </p>
+             <button 
+                onClick={() => navigate('/coo/withdrawals')}
+                className="w-full py-2.5 bg-red-50 hover:bg-red-100 text-red-700 font-bold text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
+             >
+                Review Requests <ChevronRight size={16} />
+             </button>
+          </div>
+
+          {/* System Check / Operations */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+            <div className="p-5 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+               <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                 <Activity size={18} className="text-slate-500"/> Pulse
+               </h3>
+               <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">Live Stats</span>
             </div>
-            
-            <div className="p-4 bg-white border border-orange-100 rounded-2xl shadow-sm cursor-pointer hover:border-orange-300 transition-all relative overflow-hidden">
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-400"></div>
-              <h4 className="text-sm font-bold text-slate-800 mb-1">Delinquent Payments</h4>
-              <p className="text-xs text-slate-500 leading-relaxed">{metrics.missedPaymentsCount} tenants have unfulfilled structural profiles.</p>
+            <div className="p-0">
+               
+               <div className="flex items-center justify-between p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => navigate('/coo/users')}>
+                  <div className="flex items-center gap-3">
+                     <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
+                        <UserCheck size={14} />
+                     </div>
+                     <span className="text-sm font-semibold text-slate-700">Pending KYC Profiles</span>
+                  </div>
+                  <span className="text-sm font-bold text-amber-600">{metrics.pendingAccounts}</span>
+               </div>
+
+               <div className="flex items-center justify-between p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer">
+                  <div className="flex items-center gap-3">
+                     <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-orange-600">
+                        <ArrowDownRight size={14} />
+                     </div>
+                     <span className="text-sm font-semibold text-slate-700">Missed Tenant Payments</span>
+                  </div>
+                  <span className="text-sm font-bold text-orange-600">{metrics.missedPaymentsCount}</span>
+               </div>
+
+               <div className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors cursor-pointer">
+                  <div className="flex items-center gap-3">
+                     <div className="w-8 h-8 rounded-full bg-[var(--color-primary-faint,#f4f0ff)] flex items-center justify-center text-[var(--color-primary)]">
+                        <Calendar size={14} />
+                     </div>
+                     <span className="text-sm font-semibold text-slate-700">Today's Visits</span>
+                  </div>
+                  <span className="text-sm font-bold text-[var(--color-primary)]">{metrics.todaysVisits}</span>
+               </div>
+
             </div>
           </div>
-        </div>
 
+        </aside>
       </div>
 
       {/* 8. Level 1 Transaction Verification Queue (Injection) */}

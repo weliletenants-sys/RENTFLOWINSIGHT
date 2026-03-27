@@ -47,17 +47,23 @@ export default function FunderDashboard() {
         setStats(liveStats);
         setPortfolios(livePortfolios);
 
-        const formattedActivities = rawActivities.map((item: any) => ({
-          id: item.id,
-          title: item.category ? item.category.replace(/_/g, ' ').toUpperCase() : 'TRANSACTION',
-          category: item.category?.includes('fund') ? 'investment' : item.category?.includes('reward') ? 'reward' : 'withdrawal',
-          status: 'COMPLETED',
-          provider: item.reference_id || 'SYSTEM',
-          date: new Date(item.transaction_date).toLocaleDateString(),
-          timestamp: new Date(item.transaction_date).toLocaleTimeString(),
-          amount: Number(item.amount),
-          isCredit: item.direction === 'cash_in' || item.direction === 'wallet_in'
-        }));
+        const formattedActivities = rawActivities.map((item: any) => {
+          let rawTitle = item.category ? item.category.replace(/_/g, ' ').toUpperCase() : 'TRANSACTION';
+          if (item.category === 'coo_wallet_fund') rawTitle = 'SYSTEM WALLET TOP-UP';
+          if (item.category === 'coo_portfolio_topup') rawTitle = 'PORTFOLIO CAPITAL TOP-UP';
+          
+          return {
+            id: item.id,
+            title: rawTitle,
+            category: item.category?.includes('fund') ? 'investment' : item.category?.includes('topup') ? 'investment' : item.category?.includes('reward') ? 'reward' : 'withdrawal',
+            status: 'COMPLETED',
+            provider: item.reference_id || 'SYSTEM ADMIN',
+            date: new Date(item.transaction_date).toLocaleDateString(),
+            timestamp: new Date(item.transaction_date).toLocaleTimeString(),
+            amount: Number(item.amount),
+            isCredit: item.direction === 'cash_in' || item.direction === 'wallet_in'
+          };
+        });
         setActivities(formattedActivities);
       } catch (error) {
         console.error("Failed to load dashboard stats", error);
