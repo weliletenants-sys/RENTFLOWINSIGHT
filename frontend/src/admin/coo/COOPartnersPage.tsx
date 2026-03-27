@@ -11,17 +11,6 @@ import TopUpPortfolioDialog from './components/TopUpPortfolioDialog';
 import RenewPortfolioDialog from './components/RenewPortfolioDialog';
 import PartnerDetailsModal from './components/PartnerDetailsModal';
 
-const getPayoutSuffix = (day: number | string | undefined | null) => {
-    if (!day) return 'N/A';
-    const numDay = Number(day);
-    if (isNaN(numDay)) return day.toString();
-    const j = numDay % 10, k = numDay % 100;
-    if (j === 1 && k !== 11) return numDay + "st";
-    if (j === 2 && k !== 12) return numDay + "nd";
-    if (j === 3 && k !== 13) return numDay + "rd";
-    return numDay + "th";
-};
-
 const COOPartnersPage: React.FC = () => {
   const [investors, setInvestors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -341,7 +330,27 @@ const COOPartnersPage: React.FC = () => {
                 const activePort = investor.portfolios?.find((p: any) => p.status === 'active' || p.status === 'ACTIVE') || investor.portfolios?.[0];
                 const modeStr = activePort?.roi_mode || activePort?.roiMode || '';
                 const isCompound = modeStr.toLowerCase().includes('compound');
-                const payoutDay = investor.payoutDay || ((idx % 28) + 1);
+                
+                let remainingDaysText = 'N/A';
+                if (activePort?.next_roi_date) {
+                   const nextDate = new Date(activePort.next_roi_date);
+                   const today = new Date();
+                   const diffMs = nextDate.getTime() - today.getTime();
+                   const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+                   if (diffDays < 0) remainingDaysText = 'Overdue';
+                   else if (diffDays === 0) remainingDaysText = 'Today';
+                   else remainingDaysText = `${diffDays} days`;
+                } else if (investor.payoutDay) {
+                   // Fallback logic for legacy profiles missing next_roi_date
+                   const pDay = Number(investor.payoutDay);
+                   const today = new Date();
+                   let nextD = new Date(today.getFullYear(), today.getMonth(), pDay);
+                   if (nextD < today) {
+                      nextD.setMonth(nextD.getMonth() + 1);
+                   }
+                   const diffDays = Math.ceil((nextD.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                   remainingDaysText = diffDays === 0 ? 'Today' : `${diffDays} days`;
+                }
                 
                 return (
                 <tr key={investor.id} className="hover:bg-[#fcfaff] transition-colors border-b border-slate-100/40 last:border-0 group">
@@ -368,8 +377,10 @@ const COOPartnersPage: React.FC = () => {
                        {isCompound ? 'Compound' : 'Monthly'}
                      </span>
                   </td>
-                  <td className="px-4 py-4 pr-6 text-[13px] font-medium text-slate-500">
-                     {getPayoutSuffix(payoutDay)}
+                  <td className="px-4 py-4 pr-6 text-[13px] font-medium text-slate-500 text-center">
+                     <span className="bg-slate-50 px-2.5 py-1 rounded text-[11px] font-bold border border-slate-100/60">
+                       {remainingDaysText}
+                     </span>
                   </td>
                 </tr>
               )})}
