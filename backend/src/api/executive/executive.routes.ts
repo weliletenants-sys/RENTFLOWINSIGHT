@@ -4,6 +4,7 @@ import ceoRoutes from './ceo.routes';
 import ctoRoutes from './cto.routes';
 
 import crmRoutes from './crm.routes';
+import cmoRoutes from './cmo.routes';
 
 const router = Router();
 
@@ -11,5 +12,6 @@ const router = Router();
 router.use('/ceo', ceoRoutes);
 router.use('/cto', ctoRoutes);
 router.use('/crm', crmRoutes);
+router.use('/cmo', cmoRoutes);
 
 export default router;

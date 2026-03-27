@@ -15,6 +15,7 @@ import CommissionPayoutsTab from './components/CommissionPayoutsTab';
 import WithdrawalsTab from './components/WithdrawalsTab';
 import RunwayAnalyticsTab from './components/RunwayAnalyticsTab';
 import CFODepositsTab from './components/CFODepositsTab';
+import CfoTransactionVerification from './components/CfoTransactionVerification';
 
 type TabType = 'overview' | 'statements' | 'solvency' | 'runway' | 'reconciliation' | 'ledger' | 'commissions' | 'withdrawals' | 'deposits';
 
@@ -132,6 +133,11 @@ export default function CfoDashboard() {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
         <CFOHeader pageTitle={pageInfo.title} pageSubtitle={pageInfo.subtitle} dateFilter={dateFilter} setDateFilter={setDateFilter} />
+
+        {/* Global Priority Verification Overlay */}
+        <div className="px-4 md:px-6 lg:px-8 mt-6">
+           <CfoTransactionVerification />
+        </div>
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto w-full max-w-7xl mx-auto p-4 md:p-6 lg:p-8 pb-20 md:pb-8">

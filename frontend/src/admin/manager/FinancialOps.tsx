@@ -3,6 +3,7 @@ import { Layers, ArrowDown, RefreshCw } from 'lucide-react';
 
 const DepositRequestsManager = lazy(() => import('./components/DepositRequestsManager'));
 const ManagerBankingLedger = lazy(() => import('./components/ManagerBankingLedger'));
+const WithdrawalRequestsManager = lazy(() => import('./components/WithdrawalRequestsManager'));
 
 const Loader = () => (
   <div className="h-64 flex items-center justify-center bg-white rounded-xl border border-gray-100 shadow-sm animate-pulse">
@@ -67,15 +68,7 @@ export default function FinancialOps() {
         <Suspense fallback={<Loader />}>
           {activeTab === 'deposits' && <DepositRequestsManager />}
           {activeTab === 'ledger' && <ManagerBankingLedger />}
-          {activeTab === 'withdrawals' && (
-            <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center shadow-sm">
-              <RefreshCw size={48} className="mx-auto text-indigo-300 mb-4" />
-              <h3 className="text-lg font-bold tracking-tight text-gray-900">Withdrawal Queue Locked</h3>
-              <p className="text-gray-500 mt-1 max-w-sm mx-auto">
-                Outbound capital extraction module is scheduled for the subsequent phase compilation.
-              </p>
-            </div>
-          )}
+          {activeTab === 'withdrawals' && <WithdrawalRequestsManager />}
         </Suspense>
       </div>
 

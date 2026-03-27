@@ -4,20 +4,42 @@ import { problemResponse } from '../utils/problem';
 
 export const getMyWallet = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.sub;
+    const userId = req.user?.sub || req.user?.id; // Allow dual role support
     if (!userId) {
       return problemResponse(res, 401, 'Unauthorized', `Unauthorized`, 'unauthorized');
     }
 
-    const wallet = await prisma.wallets.findFirst({
+    let wallet = await prisma.wallets.findFirst({
       where: { user_id: userId },
     });
 
     if (!wallet) {
-      return problemResponse(res, 404, 'Not Found', `Wallet not found`, 'not-found');
+      wallet = await prisma.wallets.create({
+        data: {
+          user_id: userId,
+          balance: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      });
     }
 
-    return res.status(200).json(wallet);
+    // Extended Section: Extract mathematically-tracked Wallet Transactions (Triple-State Ledger)
+    const transactions = await prisma.walletTransactions.findMany({
+      where: {
+        OR: [{ sender_id: userId }, { recipient_id: userId }],
+      },
+      orderBy: { created_at: 'desc' },
+      take: 50,
+    });
+
+    return res.status(200).json({
+       ...wallet,
+       ledger: transactions.map((t) => ({
+          ...t,
+          type: t.sender_id === userId ? 'DEBIT' : 'CREDIT'
+       }))
+    });
   } catch (error) {
     console.error('Get wallet error:', error);
     return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
@@ -26,7 +48,7 @@ export const getMyWallet = async (req: Request, res: Response) => {
 
 export const deposit = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.sub;
+    const userId = req.user?.sub || req.user?.id;
     const { amount } = req.body;
 
     if (!userId) return problemResponse(res, 401, 'Unauthorized', `Unauthorized`, 'unauthorized');
@@ -36,15 +58,19 @@ export const deposit = async (req: Request, res: Response) => {
     if (!wallet) return problemResponse(res, 404, 'Not Found', `Wallet not found`, 'not-found');
 
     const now = new Date().toISOString();
+    const balanceBefore = wallet.balance;
+    const balanceAfter = wallet.balance + amount;
 
     const [updatedWallet, tx] = await prisma.$transaction([
       prisma.wallets.update({
         where: { id: wallet.id },
-        data: { balance: { increment: amount }, updated_at: now }
+        data: { balance: balanceAfter, updated_at: now }
       }),
       prisma.walletTransactions.create({
         data: {
           amount,
+          balance_before: balanceBefore,
+          balance_after: balanceAfter,
           description: 'Wallet Deposit',
           recipient_id: userId,
           created_at: now
@@ -61,7 +87,7 @@ export const deposit = async (req: Request, res: Response) => {
 
 export const withdraw = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.sub;
+    const userId = req.user?.sub || req.user?.id;
     const { amount } = req.body;
 
     if (!userId) return problemResponse(res, 401, 'Unauthorized', `Unauthorized`, 'unauthorized');
@@ -75,15 +101,19 @@ export const withdraw = async (req: Request, res: Response) => {
     }
 
     const now = new Date().toISOString();
+    const balanceBefore = wallet.balance;
+    const balanceAfter = wallet.balance - amount;
 
     const [updatedWallet, tx] = await prisma.$transaction([
       prisma.wallets.update({
         where: { id: wallet.id },
-        data: { balance: { decrement: amount }, updated_at: now }
+        data: { balance: balanceAfter, updated_at: now }
       }),
       prisma.walletTransactions.create({
         data: {
           amount,
+          balance_before: balanceBefore,
+          balance_after: balanceAfter,
           description: 'Wallet Withdrawal',
           sender_id: userId,
           created_at: now
@@ -100,7 +130,7 @@ export const withdraw = async (req: Request, res: Response) => {
 
 export const transfer = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.sub;
+    const userId = req.user?.sub || req.user?.id;
     const { amount, recipientId } = req.body;
 
     if (!userId) return problemResponse(res, 401, 'Unauthorized', `Unauthorized`, 'unauthorized');
@@ -119,21 +149,41 @@ export const transfer = async (req: Request, res: Response) => {
     }
 
     const now = new Date().toISOString();
+    
+    // Explicit Triple-State Tracking
+    const senderBefore = senderWallet.balance;
+    const senderAfter = senderWallet.balance - amount;
+    
+    const receiverBefore = recipientWallet.balance;
+    const receiverAfter = recipientWallet.balance + amount;
 
-    const [updatedSenderWallet, updatedRecipientWallet, tx] = await prisma.$transaction([
+    const [updatedSenderWallet, updatedRecipientWallet, tx1, tx2] = await prisma.$transaction([
       prisma.wallets.update({
         where: { id: senderWallet.id },
-        data: { balance: { decrement: amount }, updated_at: now }
+        data: { balance: senderAfter, updated_at: now }
       }),
       prisma.wallets.update({
         where: { id: recipientWallet.id },
-        data: { balance: { increment: amount }, updated_at: now }
+        data: { balance: receiverAfter, updated_at: now }
       }),
       prisma.walletTransactions.create({
         data: {
           amount,
-          description: 'Wallet Transfer',
+          balance_before: senderBefore,
+          balance_after: senderAfter,
+          description: 'Wallet Transfer Sent',
           sender_id: userId,
+          recipient_id: recipientId,
+          created_at: now
+        }
+      }),
+      prisma.walletTransactions.create({
+        data: {
+          amount,
+          balance_before: receiverBefore,
+          balance_after: receiverAfter,
+          description: 'Wallet Transfer Received',
+          sender_id: userId, // Logged as originating from sender
           recipient_id: recipientId,
           created_at: now
         }
@@ -149,7 +199,7 @@ export const transfer = async (req: Request, res: Response) => {
 
 export const requestDeposit = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.sub;
+    const userId = req.user?.sub || req.user?.id;
     const { amount, provider, transactionId, notes } = req.body;
 
     if (!userId) return problemResponse(res, 401, 'Unauthorized', `Unauthorized`, 'unauthorized');

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Users, Briefcase, TrendingUp, AlertTriangle, ArrowUpRight, ArrowDownRight, UserCheck, Wallet, Activity, Calendar, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { fetchOverviewMetrics, type COOOverviewMetrics } from '../../services/cooApi';
+import CooTransactionReview from './components/CooTransactionReview';
 
 const COOOverview: React.FC = () => {
   const navigate = useNavigate();
@@ -255,6 +256,11 @@ const COOOverview: React.FC = () => {
           </div>
 
         </aside>
+      </div>
+
+      {/* 8. Level 1 Transaction Verification Queue (Injection) */}
+      <div className="mt-8">
+         <CooTransactionReview />
       </div>
     </div>
   );

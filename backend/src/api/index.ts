@@ -19,6 +19,9 @@ import executiveRoutes from './executive/executive.routes';
 import notificationsRoutes from './notifications/notifications.routes';
 import superadminRoutes from './superadmin/superadmin.routes';
 import managerRoutes from './manager/manager.routes';
+import propertiesRoutes from './properties/properties.routes';
+import welileHomesRoutes from './welile-homes/welile-homes.routes';
+import marketplaceRoutes from './marketplace/marketplace.routes';
 
 const api = Router();
 
@@ -40,6 +43,9 @@ api.use('/v1/admin', adminRoutes);
 api.use('/superadmin', superadminRoutes);
 
 api.use('/notifications', notificationsRoutes);
+api.use('/properties', propertiesRoutes);
+api.use('/welile-homes', welileHomesRoutes);
+api.use('/marketplace', marketplaceRoutes);
 
 // Executive Hub
 api.use('/v1/executive', executiveRoutes);

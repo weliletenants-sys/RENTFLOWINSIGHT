@@ -1,4 +1,4 @@
-﻿import { Clock, CheckCircle } from 'lucide-react';
+import { Clock, CheckCircle } from 'lucide-react';
 
 interface RentRequest {
   status: 'pending' | 'approved' | 'funded' | 'disbursed' | 'completed';
@@ -15,12 +15,12 @@ interface SubscriptionStatusCardProps {
 export default function SubscriptionStatusCard({ activeRent, daysRemaining, amountPaid, totalRepayment }: SubscriptionStatusCardProps) {
   if (!activeRent) {
     return (
-      <div className="bg-gray-50 border border-gray-200 p-6 rounded-[2rem] text-center">
-        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-          <Clock className="text-gray-400" size={28} />
+      <div className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700/50 p-6 rounded-[2rem] text-center transition-colors">
+        <div className="w-16 h-16 bg-gray-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-3 transition-colors">
+          <Clock className="text-gray-400 dark:text-slate-500" size={28} />
         </div>
-        <h4 className="font-bold text-gray-900 mb-1">No Active Rent Request</h4>
-        <p className="text-sm text-gray-500">You currently do not have an active rent financing subscription. Tap "New Request" to get started.</p>
+        <h4 className="font-bold text-gray-900 dark:text-white mb-1 transition-colors">No Active Rent Request</h4>
+        <p className="text-sm text-gray-500 dark:text-slate-400 transition-colors">You currently do not have an active rent financing subscription. Tap "New Request" to get started.</p>
       </div>
     );
   }

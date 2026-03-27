@@ -8,9 +8,11 @@ const AgentKYC            = lazy(() => import('../agent/AgentKYC'));
 const AgentKYCReview      = lazy(() => import('../agent/AgentKYCReview'));
 const AgentWithdraw       = lazy(() => import('../agent/AgentWithdraw'));
 const AgentDeposit        = lazy(() => import('../agent/AgentDeposit'));
+const AgentInvestForPartner = lazy(() => import('../agent/AgentInvestForPartner'));
 const AgentRegisterTenant = lazy(() => import('../agent/AgentRegisterTenant'));
 
-const AgentWallet         = lazy(() => import('../agent/AgentWallet'));
+const CentralWalletView   = lazy(() => import('../pages/wallet/CentralWalletView'));
+const AgentAnalytics      = lazy(() => import('../agent/AgentAnalytics'));
 const AgentEditProfile    = lazy(() => import('../agent/AgentEditProfile'));
 const AgentNotificationSettings = lazy(() => import('../agent/AgentNotificationSettings'));
 const AgentSecurity       = lazy(() => import('../agent/AgentSecurity'));
@@ -26,6 +28,9 @@ const AgentReceipt        = lazy(() => import('../agent/AgentReceipt'));
 const AgentReferral       = lazy(() => import('../agent/AgentReferral'));
 const AgentDailyOps       = lazy(() => import('../agent/AgentDailyOps'));
 const AgentRequestAdvance = lazy(() => import('../agent/AgentRequestAdvance'));
+const AgentAdvanceDetails = lazy(() => import('../agent/AgentAdvanceDetails'));
+const AgentCashPayouts    = lazy(() => import('../agent/AgentCashPayouts'));
+const AgentLandlordPayout = lazy(() => import('../agent/AgentLandlordPayout'));
 const AgentRentRequests   = lazy(() => import('../agent/AgentRentRequests'));
 
 // Marketplace Suite
@@ -48,8 +53,10 @@ export const agentRoutes = [
   <Route key="agent-kyc-review"      path="/agent-kyc-review"      element={<AgentKYCReview />} />,
   <Route key="agent-withdraw"        path="/agent-withdraw"        element={<AgentWithdraw />} />,
   <Route key="agent-deposit"         path="/agent-deposit"         element={<AgentDeposit />} />,
+  <Route key="agent-invest-partner"  path="/agent-invest-partner"  element={<AgentInvestForPartner />} />,
   <Route key="agent-register-tenant" path="/agent-register-tenant" element={<AgentRegisterTenant />} />,
-  <Route key="agent-wallet"          path="/agent-wallet"          element={<AgentWallet />} />,
+  <Route key="agent-analytics"       path="/agent-analytics"       element={<AgentAnalytics />} />,
+  <Route key="agent-wallet"          path="/agent-wallet"          element={<CentralWalletView />} />,
   <Route key="agent-edit-profile"    path="/agent-edit-profile"    element={<AgentEditProfile />} />,
   <Route key="agent-notification-settings" path="/agent-notification-settings" element={<AgentNotificationSettings />} />,
   <Route key="agent-security"        path="/agent-security"        element={<AgentSecurity />} />,
@@ -62,6 +69,9 @@ export const agentRoutes = [
   <Route key="agent-visit-detail"      path="/agent-visit/:tenantId"   element={<AgentVisitDetail />} />,
   <Route key="agent-list-house"        path="/agent-list-house"        element={<AgentListHouse />} />,
   <Route key="agent-advance-request"   path="/agent-advance-request"   element={<AgentRequestAdvance />} />,
+  <Route key="agent-advance-details"   path="/agent-advances/:id"      element={<AgentAdvanceDetails />} />,
+  <Route key="agent-cash-payouts"      path="/agent/cash-payouts"      element={<AgentCashPayouts />} />,
+  <Route key="agent-landlord-payout"   path="/agent/landlord-payout"   element={<AgentLandlordPayout />} />,
   <Route key="agent-rent-requests"     path="/agent-rent-requests"     element={<AgentRentRequests />} />,
   <Route key="agent-receipt"           path="/agent-receipt"           element={<AgentReceipt />} />,
   <Route key="agent-referral"          path="/agent-referral"          element={<AgentReferral />} />,
