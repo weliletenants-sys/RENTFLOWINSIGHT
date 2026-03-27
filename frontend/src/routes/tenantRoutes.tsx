@@ -11,6 +11,16 @@ const TenantDashboard         = lazy(() => import('../tenant/TenantDashboard'));
 const TenantPropertyExplorer  = lazy(() => import('../tenant/TenantPropertyExplorer'));
 const TenantCalculator        = lazy(() => import('../tenant/TenantCalculator'));
 const TenantPaymentSchedule   = lazy(() => import('../tenant/TenantPaymentSchedule'));
+const TenantLoans             = lazy(() => import('../tenant/TenantLoans'));
+const TenantPayLandlord       = lazy(() => import('../tenant/TenantPayLandlord'));
+const TenantPayWelile         = lazy(() => import('../tenant/TenantPayWelile'));
+const TenantReceipts          = lazy(() => import('../tenant/TenantReceipts'));
+const TenantWelileHomes       = lazy(() => import('../tenant/TenantWelileHomes'));
+const TenantReferrals         = lazy(() => import('../tenant/TenantReferrals'));
+const TenantFinancialStatement= lazy(() => import('../tenant/TenantFinancialStatement'));
+const TenantSettings          = lazy(() => import('../tenant/TenantSettings'));
+const TenantEditProfile       = lazy(() => import('../tenant/TenantEditProfile'));
+const TenantSecurity          = lazy(() => import('../tenant/TenantSecurity'));
 
 // Universal Services
 const CentralWalletView       = lazy(() => import('../pages/wallet/CentralWalletView'));
@@ -25,6 +35,16 @@ export const tenantRoutes = [
   <Route key="find-a-house"       path="/find-a-house"       element={<TenantPropertyExplorer />} />,
   <Route key="tenant-calculator"  path="/calculator"         element={<TenantCalculator />} />,
   <Route key="payment-schedule"   path="/payment-schedule"   element={<TenantPaymentSchedule />} />,
+  <Route key="tenant-loans"       path="/my-loans"           element={<TenantLoans />} />,
+  <Route key="pay-landlord"       path="/pay-landlord"       element={<TenantPayLandlord />} />,
+  <Route key="pay-welile"         path="/pay-welile"         element={<TenantPayWelile />} />,
+  <Route key="my-receipts"        path="/my-receipts"        element={<TenantReceipts />} />,
+  <Route key="welile-homes"       path="/welile-homes"       element={<TenantWelileHomes />} />,
+  <Route key="referrals"          path="/referrals"          element={<TenantReferrals />} />,
+  <Route key="financial-statement"path="/financial-statement"element={<TenantFinancialStatement />} />,
+  <Route key="settings"           path="/settings"           element={<TenantSettings />} />,
+  <Route key="edit-profile"       path="/settings/profile"   element={<TenantEditProfile />} />,
+  <Route key="security"           path="/settings/security"  element={<TenantSecurity />} />,
   
   <Route key="tenant-agreement"   path="/tenant-agreement"   element={<TenantAgreement />} />,
   <Route key="tenant-onboarding"  path="/tenant-onboarding"  element={<TenantOnboarding />} />,

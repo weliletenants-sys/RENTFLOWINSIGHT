@@ -14,6 +14,7 @@ export const getRentProgress = async (req: Request, res: Response) => {
 
     if (!latestActiveRent) {
       return res.status(200).json({
+        activeRent: null,
         amountPaid: 0,
         totalRent: 0,
         daysLeft: 0,
@@ -31,6 +32,10 @@ export const getRentProgress = async (req: Request, res: Response) => {
     const daysLeft = Math.max(0, Math.ceil((endDate.getTime() - new Date().getTime()) / (1000 * 3600 * 24)));
 
     return res.status(200).json({
+      activeRent: {
+        status: latestActiveRent.status.toLowerCase(),
+        rentFinanced: latestActiveRent.rent_amount || 0
+      },
       amountPaid,
       totalRent,
       daysLeft,
