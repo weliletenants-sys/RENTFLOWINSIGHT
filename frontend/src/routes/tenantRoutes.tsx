@@ -22,6 +22,8 @@ const TenantSettings          = lazy(() => import('../tenant/TenantSettings'));
 const TenantEditProfile       = lazy(() => import('../tenant/TenantEditProfile'));
 const TenantSecurity          = lazy(() => import('../tenant/TenantSecurity'));
 
+// [DEV ONLY] Inject Agent Dashboard for UI review.
+const AgentDashboard          = lazy(() => import('../agent/AgentDashboard'));
 // Universal Services
 const CentralWalletView       = lazy(() => import('../pages/wallet/CentralWalletView'));
 
@@ -31,7 +33,8 @@ const CentralWalletView       = lazy(() => import('../pages/wallet/CentralWallet
  */
 export const tenantRoutes = [
   <Route key="tenant-wallet"      path="wallet"              element={<CentralWalletView />} />,
-  <Route key="tenant-dashboard"   path="dashboard"          element={<TenantDashboard />} />,
+  // [DEV ONLY] Auto-force AgentDashboard for UI review.
+  <Route key="tenant-dashboard"   path="dashboard"          element={<AgentDashboard />} />,
   <Route key="find-a-house"       path="/find-a-house"       element={<TenantPropertyExplorer />} />,
   <Route key="tenant-calculator"  path="/calculator"         element={<TenantCalculator />} />,
   <Route key="payment-schedule"   path="/payment-schedule"   element={<TenantPaymentSchedule />} />,

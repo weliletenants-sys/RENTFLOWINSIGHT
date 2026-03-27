@@ -39,9 +39,8 @@ export default function RootDashboard() {
   };
 
   // Agent uses a custom full-screen layout, bypass standard DashboardLayout
-  if (role === 'AGENT') {
-    return <AgentDashboard />;
-  }
+  // [DEV ONLY] Auto-force Agent view for UI review regardless of actual DB roles assigned.
+  return <AgentDashboard />;
 
   return (
     <DashboardLayout title={`${role ? role.charAt(0) + role.slice(1).toLowerCase() : ''} Dashboard`}>
