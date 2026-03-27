@@ -11,7 +11,7 @@ export const getLandlordSubscriptions = async (req: Request, res: Response) => {
 
     const subscriptions = await prisma.welileHomesSubscriptions.findMany({
         where: { landlord_id },
-        orderBy: { joined_at: 'desc' }
+        orderBy: { created_at: 'desc' }
     });
 
     return res.status(200).json({
@@ -42,12 +42,14 @@ export const createSubscription = async (req: Request, res: Response) => {
     const newSub = await prisma.welileHomesSubscriptions.create({
         data: {
              landlord_id,
-             tier: tier, 
-             status: 'active',
-             joined_at: transactionTime,
-             daily_roi_percentage: parseFloat(roi_percentage || '0')
-             // NOTE: Our current schema doesn't explicitly link property_id mapping into the Welile table, 
-             // but we successfully register the Landlord into the Homes program seamlessly.
+             landlord_registered: true,
+             monthly_rent: 0,
+             months_enrolled: 0,
+             total_savings: 0,
+             subscription_status: 'active',
+             created_at: transactionTime,
+             updated_at: transactionTime,
+             tenant_id: null
         }
     });
 

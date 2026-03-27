@@ -33,7 +33,7 @@ export const getRentProgress = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       activeRent: {
-        status: latestActiveRent.status.toLowerCase(),
+        status: latestActiveRent.status?.toLowerCase() || 'unknown',
         rentFinanced: latestActiveRent.rent_amount || 0
       },
       amountPaid,

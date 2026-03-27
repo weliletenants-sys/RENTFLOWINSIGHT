@@ -39,10 +39,10 @@ export const getCmoMetrics = async (req: Request, res: Response) => {
         if (!leader.referrer_id) continue;
         const profile = await prisma.profiles.findUnique({
             where: { id: leader.referrer_id },
-            select: { name: true, phone: true }
+            select: { full_name: true, phone: true }
         });
         if (profile) {
-            leaderboardSet.push({ name: profile.name || profile.phone, count: leader._count.referred_id });
+            leaderboardSet.push({ name: profile.full_name || profile.phone, count: leader._count.referred_id });
         }
     }
 
