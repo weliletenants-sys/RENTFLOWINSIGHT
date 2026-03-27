@@ -194,6 +194,63 @@ export const getPendingDeposits = async () => {
   }
 };
 
+export const freezePartnerAccount = async (id: string, is_frozen: boolean) => {
+  // reusing the existing update endpoint
+  return updateGlobalUserProfile(id, { is_frozen });
+};
+
+export const fundPartnerWallet = async (id: string, data: any) => {
+  try {
+    const response = await axios.post(`${API}/v1/coo/partners/${id}/fund`, data, getAuthHeaders());
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.data?.type) {
+      const problem = error.response.data as ProblemDetails;
+      throw new Error(`[${problem.title}]: ${problem.detail}`);
+    }
+    throw new Error(error.response?.data?.message || 'Failed to fund wallet');
+  }
+};
+
+export const suspendPartnerAccount = async (id: string, reason: string) => {
+  try {
+    const response = await axios.post(`${API}/v1/coo/partners/${id}/suspend`, { reason }, getAuthHeaders());
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.data?.type) {
+      const problem = error.response.data as ProblemDetails;
+      throw new Error(`[${problem.title}]: ${problem.detail}`);
+    }
+    throw new Error(error.response?.data?.message || 'Failed to suspend partner');
+  }
+};
+
+export const topUpPortfolio = async (portfolioId: string, data: any) => {
+  try {
+    const response = await axios.post(`${API}/v1/coo/portfolios/${portfolioId}/topup`, data, getAuthHeaders());
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.data?.type) {
+      const problem = error.response.data as ProblemDetails;
+      throw new Error(`[${problem.title}]: ${problem.detail}`);
+    }
+    throw new Error(error.response?.data?.message || 'Failed to top up portfolio');
+  }
+};
+
+export const renewPortfolio = async (portfolioId: string) => {
+  try {
+    const response = await axios.post(`${API}/v1/coo/portfolios/${portfolioId}/renew`, {}, getAuthHeaders());
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.data?.type) {
+      const problem = error.response.data as ProblemDetails;
+      throw new Error(`[${problem.title}]: ${problem.detail}`);
+    }
+    throw new Error(error.response?.data?.message || 'Failed to renew portfolio');
+  }
+};
+
 export const forwardDeposit = async (id: string) => {
   try {
     const response = await axios.post(`${API}/v1/coo/deposits/${id}/forward`, {}, getAuthHeaders());
@@ -206,6 +263,7 @@ export const forwardDeposit = async (id: string) => {
     throw new Error(error.response?.data?.message || 'Failed to forward deposit to CFO');
   }
 };
+
 export const rejectDeposit = async (id: string, reason: string) => {
   try {
     const response = await axios.post(`${API}/v1/coo/deposits/${id}/reject`, { reason }, getAuthHeaders());
@@ -232,6 +290,19 @@ export const updatePartnerPortfolio = async (id: string, updates: any) => {
   }
 };
 
+export const deletePartnerPortfolio = async (id: string) => {
+  try {
+    const response = await axios.delete(`${API}/v1/coo/portfolios/${id}`, getAuthHeaders());
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.data?.type) {
+      const problem = error.response.data as ProblemDetails;
+      throw new Error(`[${problem.title}]: ${problem.detail}`);
+    }
+    throw new Error(error.response?.data?.message || 'Failed to delete portfolio');
+  }
+};
+
 export const validatePartnersImport = async (partners: any[]) => {
   try {
     const response = await axios.post(`${API}/v1/coo/partners/import/validate`, { partners }, getAuthHeaders());
@@ -244,7 +315,6 @@ export const validatePartnersImport = async (partners: any[]) => {
     throw new Error(error.response?.data?.message || 'Failed to validate partners');
   }
 };
-
 
 export const importPartners = async (partners: any[]) => {
   try {
@@ -271,9 +341,3 @@ export const createPartnerPortfolio = async (id: string, data: any) => {
     throw new Error(error.response?.data?.message || 'Failed to create manual portfolio');
   }
 };
-
-export const freezePartnerAccount = async (id: string, is_frozen: boolean) => {
-  // reusing the existing update endpoint
-  return updateGlobalUserProfile(id, { is_frozen });
-};
-

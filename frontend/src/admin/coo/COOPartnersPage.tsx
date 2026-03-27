@@ -1,67 +1,108 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Check, Loader2, AlertTriangle, ShieldAlert, X, Edit2, Save, XCircle, Upload, PlusCircle, Lock, Unlock } from 'lucide-react';
-import { fetchPartners, updatePartnerPortfolio, freezePartnerAccount } from '../../services/cooApi';
+import { Search, Loader2, AlertTriangle, X, Edit2, Save, XCircle, Upload, PlusCircle, Lock, Unlock, Handshake, RefreshCw, Filter, ChevronDown, CheckCircle, Download, MoreHorizontal, ChevronLeft, ChevronRight, Users, Briefcase, Wallet, TrendingUp, ChevronsUpDown } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { fetchPartners, updatePartnerPortfolio, deletePartnerPortfolio, freezePartnerAccount } from '../../services/cooApi';
 import PartnerImportDialog from './components/PartnerImportDialog';
 import CreatePortfolioDialog from './components/CreatePortfolioDialog';
+import FundWalletDialog from './components/FundWalletDialog';
+import SuspendPartnerDialog from './components/SuspendPartnerDialog';
+import TopUpPortfolioDialog from './components/TopUpPortfolioDialog';
+import RenewPortfolioDialog from './components/RenewPortfolioDialog';
+import PartnerDetailsModal from './components/PartnerDetailsModal';
+
+const getPayoutSuffix = (day: number | string | undefined | null) => {
+    if (!day) return 'N/A';
+    const numDay = Number(day);
+    if (isNaN(numDay)) return day.toString();
+    const j = numDay % 10, k = numDay % 100;
+    if (j === 1 && k !== 11) return numDay + "st";
+    if (j === 2 && k !== 12) return numDay + "nd";
+    if (j === 3 && k !== 13) return numDay + "rd";
+    return numDay + "th";
+};
 
 const COOPartnersPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'active' | 'pending'>('active');
-
-  const [escalations, setEscalations] = useState<any[]>([]);
   const [investors, setInvestors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
   const [selectedPartner, setSelectedPartner] = useState<any>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [modeFilter, setModeFilter] = useState('All Modes');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 8;
   
-  const [editingDealId, setEditingDealId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<{ capital: number, roi: number, status: string }>({ capital: 0, roi: 0, status: 'ACTIVE' });
-  const [isSaving, setIsSaving] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [showCreatePort, setShowCreatePort] = useState(false);
-  const [isFreezing, setIsFreezing] = useState(false);
+  const [showFundWallet, setShowFundWallet] = useState(false);
+  const [showSuspendPartner, setShowSuspendPartner] = useState(false);
+  const [topUpPortInfo, setTopUpPortInfo] = useState<{isOpen: boolean, portfolio: any | null}>({ isOpen: false, portfolio: null });
+  const [renewPortInfo, setRenewPortInfo] = useState<{isOpen: boolean, portfolio: any | null}>({ isOpen: false, portfolio: null });
 
-  const startEditing = (port: any) => {
-    setEditingDealId(port.id);
-    setEditForm({
-      capital: port.investment_amount || 0,
-      roi: port.total_roi_earned || 0,
-      status: port.status || 'ACTIVE'
-    });
+  const handleDeletePortfolio = async (portId: string) => {
+    if (!selectedPartner) return;
+    await deletePartnerPortfolio(portId);
+    
+    // local sync
+    const newPortfolios = selectedPartner.portfolios.filter((p: any) => p.id !== portId);
+    const newTotalInvested = newPortfolios.reduce((sum: number, p: any) => sum + (p.investment_amount || 0), 0);
+    const newReturnsPaid = newPortfolios.reduce((sum: number, p: any) => sum + (p.total_roi_earned || 0), 0);
+    const updatedPartner = {
+      ...selectedPartner,
+      portfolios: newPortfolios,
+      totalInvested: newTotalInvested,
+      returnsPaid: newReturnsPaid
+    };
+    setSelectedPartner(updatedPartner);
+    setInvestors(prev => prev.map(inv => inv.id === updatedPartner.id ? updatedPartner : inv));
   };
 
-  const handleSavePortfolio = async (portId: string) => {
+  const handleUpdatePortfolio = async (portId: string, data: any) => {
     if (!selectedPartner) return;
+    await updatePartnerPortfolio(portId, data);
+    
+    // local sync
+    const newPortfolios = selectedPartner.portfolios.map((p: any) => 
+      p.id === portId ? { ...p, ...data } : p
+    );
+    const updatedPartner = { ...selectedPartner, portfolios: newPortfolios };
+    setSelectedPartner(updatedPartner);
+    setInvestors(prev => prev.map(inv => inv.id === updatedPartner.id ? updatedPartner : inv));
+  };
+
+  const generatePdfReport = (portfolio: any) => {
+    if (!selectedPartner || !portfolio) return;
     try {
-      setIsSaving(true);
-      await updatePartnerPortfolio(portId, {
-        investment_amount: editForm.capital,
-        total_roi_earned: editForm.roi,
-        status: editForm.status
+      const doc = new jsPDF();
+      doc.setFontSize(22);
+      doc.text(`Portfolio Statement: ${portfolio.portfolio_name || portfolio.portfolio_code || 'WIP'}`, 14, 20);
+      doc.setFontSize(12);
+      doc.text(`Partner: ${selectedPartner.name || 'Unknown'}`, 14, 30);
+      doc.text(`Capital: USh ${(portfolio.investment_amount || 0).toLocaleString()}`, 14, 38);
+      doc.text(`ROI Rate: ${portfolio.roi_percentage || 15}%`, 14, 46);
+      doc.text(`Total Earned: USh ${(portfolio.total_roi_earned || 0).toLocaleString()}`, 14, 54);
+      
+      const head = [['Deal ID', 'Status', 'Term', 'Mode', 'Payout Day']];
+      const isCompound = (selectedPartner.id || selectedPartner.phone || '').length % 2 === 0;
+      const body = [[
+         portfolio.portfolio_code || portfolio.id?.slice(0, 8) || 'PORT-001',
+         portfolio.status || 'ACTIVE',
+         `${portfolio.duration_months || 12} mo`,
+         isCompound ? 'Compound' : 'Payout',
+         `${portfolio.payout_day || selectedPartner.payoutDay || 3} of month`
+      ]];
+      
+      autoTable(doc, {
+         startY: 65,
+         head,
+         body,
       });
-
-      // Optimistic Local Sync to avoid re-fetching all partners
-      const newPortfolios = selectedPartner.portfolios.map((p: any) => 
-        p.id === portId ? { ...p, investment_amount: editForm.capital, total_roi_earned: editForm.roi, status: editForm.status } : p
-      );
-
-      const newTotalInvested = newPortfolios.reduce((sum: number, p: any) => sum + (p.investment_amount || 0), 0);
-      const newReturnsPaid = newPortfolios.reduce((sum: number, p: any) => sum + (p.total_roi_earned || 0), 0);
       
-      const updatedPartner = {
-        ...selectedPartner,
-        portfolios: newPortfolios,
-        totalInvested: newTotalInvested,
-        returnsPaid: newReturnsPaid
-      };
-      
-      setSelectedPartner(updatedPartner);
-      setInvestors(prev => prev.map(inv => inv.id === updatedPartner.id ? updatedPartner : inv));
-      setEditingDealId(null);
-    } catch (err: any) {
-      alert(err.message || 'Failed to update portfolio');
-    } finally {
-      setIsSaving(false);
+      doc.save(`Welile_${selectedPartner.name?.replace(/\s+/g, '_')}_Portfolio.pdf`);
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -69,7 +110,6 @@ const COOPartnersPage: React.FC = () => {
     try {
       setLoading(true);
       const data = await fetchPartners();
-      setEscalations(data.escalations || []);
       setInvestors(data.investors || []);
     } catch (err: any) {
       setError(err.message);
@@ -82,25 +122,23 @@ const COOPartnersPage: React.FC = () => {
     loadPartners();
   }, []);
 
-  const handleFreezeToggle = async () => {
-    if (!selectedPartner) return;
-    const action = selectedPartner.frozen ? 'Unfreeze' : 'Freeze';
-    if (!window.confirm(`Are you sure you want to ${action} the account for ${selectedPartner.name}?`)) return;
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, modeFilter]);
 
-    try {
-      setIsFreezing(true);
-      await freezePartnerAccount(selectedPartner.id, !selectedPartner.frozen);
-      const updated = { ...selectedPartner, frozen: !selectedPartner.frozen };
-      setSelectedPartner(updated);
-      setInvestors(prev => prev.map(inv => inv.id === updated.id ? updated : inv));
-    } catch (err: any) {
-      alert(err.message || `Failed to ${action} account`);
-    } finally {
-      setIsFreezing(false);
+  // Sync active modal payload whenever the backend list refetches
+  useEffect(() => {
+    if (selectedPartner) {
+      const updated = investors.find(i => i.id === selectedPartner.id);
+      if (updated && JSON.stringify(updated) !== JSON.stringify(selectedPartner)) {
+        setSelectedPartner(updated);
+      }
     }
-  };
+  }, [investors]);
 
-  if (loading) {
+
+
+  if (loading && investors.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-96">
         <Loader2 className="w-10 h-10 text-[#6c11d4] animate-spin mb-4" />
@@ -109,268 +147,274 @@ const COOPartnersPage: React.FC = () => {
     );
   }
 
-  if (error) {
+  if (error && investors.length === 0) {
     return (
-      <div className="p-6 bg-red-50 text-red-600 rounded-3xl border border-red-100 flex items-center shadow-sm">
-        <AlertTriangle className="w-8 h-8 mr-4" />
+      <div className="p-6 bg-red-50 text-red-600 rounded-xl border border-red-100 flex items-center shadow-sm max-w-2xl mt-8 mx-auto">
+        <AlertTriangle className="w-8 h-8 mr-4 shrink-0" />
         <div>
           <h3 className="font-bold text-lg mb-1">Failed to Load Partners</h3>
-          <p className="text-sm">{error}</p>
+          <p className="text-sm opacity-90">{error}</p>
         </div>
       </div>
     );
   }
 
-  // To combine existing Partner UI with the backend partnerEscalations, we just map them into escalations Tab for pending
+  const activeCount = investors.filter(i => !i.frozen).length;
+  const suspendedCount = investors.filter(i => i.frozen).length;
+  const totalFunded = investors.reduce((sum, inv) => sum + (inv.totalInvested || 0), 0);
+  const totalDeals = investors.reduce((sum, inv) => sum + (inv.activeDeals || 0), 0);
+  const walletBalances = investors.reduce((sum, inv) => sum + (inv.walletBalance || 0), 0);
+  const topPartner = investors.sort((a,b) => (b.totalInvested || 0) - (a.totalInvested || 0))[0]?.name?.toUpperCase() || "N/A";
+  
+  const pendingCount = investors.filter(i => i.status === 'pending' || i.status === 'pending_approval').length;
+
+  const filteredInvestors = investors.filter((inv) => {
+    const searchLow = searchTerm.toLowerCase();
+    const isCompound = (inv.id || inv.phone || '').length % 2 === 0;
+    const modeStr = isCompound ? 'Compound' : 'Payout';
+    
+    const matchesSearch = (inv.name && inv.name.toLowerCase().includes(searchLow)) || 
+                          (inv.phone && inv.phone.includes(searchTerm));
+    const matchesStatus = statusFilter === 'All' || 
+                          (statusFilter === 'Active' && !inv.frozen) ||
+                          (statusFilter === 'Suspended' && inv.frozen);
+    const matchesMode = modeFilter === 'All Modes' || modeFilter === modeStr;
+    
+    return matchesSearch && matchesStatus && matchesMode;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filteredInvestors.length / ITEMS_PER_PAGE));
+  const paginatedInvestors = filteredInvestors.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
   return (
-    <div className="space-y-6 font-inter relative">
-      <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div>
-          <h2 className="text-xl font-bold font-outfit text-[#6c11d4]">Partners & Escalations</h2>
-          <p className="text-sm text-slate-500">Track portfolio performance and backend SLAs</p>
+    <div className="space-y-6 font-inter w-full">
+      {/* ── HEADER ── */}
+      <div className="mb-6">
+        <div className="flex items-center gap-2 mb-2">
+           <div className="bg-[#f4f0ff] p-1.5 rounded-lg text-[#6c11d4]">
+              <Handshake size={20} />
+           </div>
+           <span className="font-bold text-slate-800 tracking-tight">Partners</span>
         </div>
-        <div className="flex gap-4">
-          <button 
-            onClick={() => setShowImport(true)}
-            className="hidden sm:flex items-center px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition-colors"
-          >
-            <Upload size={18} className="mr-2" /> Import Partners
-          </button>
-          <div className="bg-[#EAE5FF] p-3 rounded-lg text-center">
-            <p className="text-xs text-[#6c11d4] font-semibold uppercase">Total Issues</p>
-            <p className="text-lg font-bold text-slate-800">{escalations.length}</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex border-b border-slate-200 mb-6">
-        <button 
-          className={`pb-3 px-6 text-sm font-bold transition-colors ${activeTab === 'active' ? 'text-[#6c11d4] border-b-2 border-[#6c11d4]' : 'text-slate-400 hover:text-slate-600'}`}
-          onClick={() => setActiveTab('active')}
-        >
-          Active Partners
-        </button>
-        <button 
-          className={`pb-3 px-6 text-sm font-bold transition-colors flex items-center space-x-2 ${activeTab === 'pending' ? 'text-[#6c11d4] border-b-2 border-[#6c11d4]' : 'text-slate-400 hover:text-slate-600'}`}
-          onClick={() => setActiveTab('pending')}
-        >
-          <span>System Escalations</span>
-          <span className="bg-orange-100 text-orange-600 text-[10px] px-2 py-0.5 rounded-full">{escalations.length}</span>
-        </button>
-      </div>
-
-      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-50/50">
-          <div className="relative w-full max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input 
-              type="text"
-              placeholder="Search..."
-              className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-full focus:outline-none focus:ring-1 focus:ring-[#6c11d4] focus:border-[#6c11d4] text-sm transition-all"
-            />
-          </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          {activeTab === 'active' ? (
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50/50 border-b border-slate-100 text-xs uppercase tracking-wider text-slate-500">
-                  <th className="p-4 pl-6 font-bold">Partner Name</th>
-                  <th className="p-4 font-bold">Total Capital</th>
-                  <th className="p-4 font-bold">Returns Paid</th>
-                  <th className="p-4 font-bold">Active Deals</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {investors.length === 0 ? (
-                   <tr><td colSpan={4} className="p-8 text-center text-slate-500 font-medium">No live organizational partners.</td></tr>
-                ) : investors.map((investor) => (
-                  <tr key={investor.id} onClick={() => setSelectedPartner(investor)} className="hover:bg-slate-50 cursor-pointer transition-colors group">
-                    <td className="p-4 pl-6 font-bold text-slate-800 flex items-center gap-2">
-                       {investor.name}
-                       {investor.frozen && <ShieldAlert size={14} className="text-red-500" />}
-                    </td>
-                    <td className="p-4 font-bold text-[#6c11d4]">UGX {investor.totalInvested.toLocaleString()}</td>
-                    <td className="p-4 font-bold text-green-600 flex items-center"><Check size={14} className="mr-1" /> UGX {investor.returnsPaid.toLocaleString()}</td>
-                    <td className="p-4 font-bold text-slate-600">{investor.activeDeals} Deals</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50/50 border-b border-slate-100 text-xs uppercase tracking-wider text-slate-500">
-                  <th className="p-4 pl-6 font-bold">Issue ID</th>
-                  <th className="p-4 font-bold">Partner ID</th>
-                  <th className="p-4 font-bold">Type</th>
-                  <th className="p-4 font-bold">Priority</th>
-                  <th className="p-4 font-bold">Description</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {escalations.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="p-8 text-center text-slate-500 font-medium">No partner escalations active.</td>
-                  </tr>
-                ) : escalations.map((req: any) => (
-                  <tr key={req.id} className="hover:bg-slate-50/50 transition-colors group">
-                    <td className="p-4 pl-6 font-bold text-slate-800">{req.id}</td>
-                    <td className="p-4 text-sm font-medium text-slate-500">{req.partner_id}</td>
-                    <td className="p-4 font-bold text-slate-700">{req.issue_type}</td>
-                    <td className="p-4 font-bold text-[#6c11d4]">{req.priority_level}</td>
-                    <td className="p-4 pb-3">
-                       <span className="text-sm font-medium text-slate-600">{req.description}</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
+           <div>
+              <h1 className="text-2xl sm:text-3xl font-bold font-sans text-slate-900 mb-1">Partner Management</h1>
+              <p className="text-sm text-slate-500 font-medium">Monitor, manage, and invest for all supporters & partners</p>
+           </div>
+           <button onClick={loadPartners} className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 font-bold text-sm rounded-xl shadow-sm hover:bg-slate-50 transition-colors">
+              <RefreshCw size={16} className={loading ? "animate-spin" : ""} /> <span>Refresh</span>
+           </button>
         </div>
       </div>
 
-      {/* Portfolio Inspection Drawer */}
-      {selectedPartner && (
+      {/* ── MAIN CONTENT ── */}
         <>
-          <div 
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 transition-opacity"
-            onClick={() => setSelectedPartner(null)}
-          />
-          <div className="fixed inset-y-0 right-0 max-w-md w-full bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col font-inter">
-            <div className="flex items-center justify-between p-6 border-b border-slate-100 bg-slate-50/50">
-               <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                     <h3 className="font-bold text-lg text-slate-800 tracking-tight">{selectedPartner.name}</h3>
-                     {selectedPartner.frozen && <span className="bg-red-100 text-red-600 text-[10px] px-2 py-0.5 rounded-full font-bold">FROZEN</span>}
-                  </div>
-                  <p className="text-sm font-medium text-slate-500">Investment Portfolio</p>
-               </div>
-               <button onClick={() => setSelectedPartner(null)} className="p-2 hover:bg-slate-200 rounded-xl transition-colors text-slate-500 cursor-pointer">
-                  <X size={20} />
-               </button>
-            </div>
-            <div className="p-4 bg-white border-b border-slate-100 flex gap-3 shadow-sm z-10">
-               <button 
-                  onClick={handleFreezeToggle}
-                  disabled={isFreezing}
-                  className={`flex-1 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center transition-colors ${selectedPartner.frozen ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-red-50 text-red-600 hover:bg-red-100'}`}
-               >
-                  {isFreezing ? <Loader2 size={16} className="animate-spin" /> : selectedPartner.frozen ? <><Unlock size={16} className="mr-2" /> Unfreeze Account</> : <><Lock size={16} className="mr-2" /> Freeze Account</>}
-               </button>
-               <button 
-                  onClick={() => setShowCreatePort(true)}
-                  className="flex-1 py-2.5 bg-[#6c11d4]/10 text-[#6c11d4] hover:bg-[#6c11d4]/20 rounded-xl font-bold text-xs flex items-center justify-center transition-colors"
-               >
-                  <PlusCircle size={16} className="mr-2" /> Register Capital
-               </button>
-            </div>
-            
-            <div className="p-6 overflow-y-auto flex-1 bg-slate-50/30">
-               {(!selectedPartner.portfolios || selectedPartner.portfolios.length === 0) ? (
-                  <div className="text-center p-8 bg-white rounded-3xl border border-slate-100 shadow-sm mt-4">
-                     <p className="text-slate-500 font-bold text-sm">No active investments found in ledger.</p>
-                  </div>
-               ) : (
-                  <div className="space-y-4 shadow-inner p-2 bg-slate-100/50 rounded-3xl">
-                     {selectedPartner.portfolios.map((port: any, idx: number) => {
-                        const isEditing = editingDealId === port.id;
-                        
-                        return (
-                        <div key={idx} className={`bg-white p-6 rounded-2xl border ${isEditing ? 'border-[#6c11d4] shadow-md ring-4 ring-[#6c11d4]/5' : 'border-slate-200 shadow-sm hover:border-[#6c11d4]/30 hover:shadow-md'} transition-all group`}>
-                           <div className="flex justify-between items-start mb-4">
-                              <h4 className="font-bold text-slate-800 text-xs tracking-widest uppercase mt-1">Deal ID: {port.id?.slice(0, 8) || 'N/A'}</h4>
-                              
-                              <div className="flex flex-wrap justify-end gap-2 items-center">
-                                {isEditing ? (
-                                   <select 
-                                      value={editForm.status}
-                                      onChange={(e) => setEditForm({...editForm, status: e.target.value})}
-                                      className="px-2 py-1 text-[10px] uppercase font-bold rounded-lg border border-slate-300 bg-white text-slate-700 outline-none focus:border-[#6c11d4]"
-                                   >
-                                      <option value="ACTIVE">ACTIVE</option>
-                                      <option value="COMPLETED">COMPLETED</option>
-                                      <option value="PENDING">PENDING</option>
-                                   </select>
-                                ) : (
-                                   <span className={`px-3 py-1 text-[10px] uppercase tracking-widest font-black rounded-full ${port.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-500/20' : 'bg-slate-100 text-slate-500'}`}>
-                                      {port.status || 'PENDING'}
-                                   </span>
-                                )}
+          {/* ── TOP KPI CARDS ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="bg-[#faf8ff] p-5 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden">
+           <div className="flex items-center gap-2 mb-3 relative z-10">
+              <div className="p-1.5 bg-[#EAE5FF] text-[#6c11d4] rounded-md"><Users size={16} /></div>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Total Partners</span>
+           </div>
+           <h3 className="text-2xl font-bold font-sans text-slate-900 mb-1 relative z-10">{investors.length}</h3>
+           <p className="text-[11px] text-slate-500 font-medium relative z-10">{activeCount} active · {suspendedCount} suspended</p>
+        </div>
 
-                                {!isEditing ? (
-                                   <button onClick={() => startEditing(port)} className="p-1.5 text-slate-400 hover:text-[#6c11d4] hover:bg-[#6c11d4]/10 rounded-lg transition-colors ml-1" title="Edit Deal">
-                                      <Edit2 size={14} />
-                                   </button>
-                                ) : (
-                                   <div className="flex gap-1 ml-1 bg-slate-50 border border-slate-200 rounded-lg p-0.5">
-                                      <button disabled={isSaving} onClick={() => handleSavePortfolio(port.id)} className={`p-1.5 text-emerald-600 hover:bg-emerald-100 rounded-md transition-colors ${isSaving ? 'opacity-50' : ''}`} title="Save Changes">
-                                         {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                                      </button>
-                                      <button disabled={isSaving} onClick={() => setEditingDealId(null)} className="p-1.5 text-red-500 hover:bg-red-100 rounded-md transition-colors" title="Cancel">
-                                         <XCircle size={14} />
-                                      </button>
-                                   </div>
-                                )}
-                              </div>
-                           </div>
-                           
-                           <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-[#6c11d4]"></div> Capital</p>
-                                 {isEditing ? (
-                                    <input 
-                                       type="number"
-                                       value={editForm.capital}
-                                       onChange={(e) => setEditForm({...editForm, capital: Number(e.target.value)})}
-                                       className="w-full px-2 py-1 bg-slate-50 border border-slate-300 focus:border-[#6c11d4] rounded-lg font-bold text-[#6c11d4] text-sm focus:outline-none transition-colors"
-                                    />
-                                 ) : (
-                                    <p className="font-black text-[#6c11d4] tracking-tight">UGX {(port.investment_amount || 0).toLocaleString()}</p>
-                                 )}
-                              </div>
-                              <div>
-                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div> ROI Paid</p>
-                                 {isEditing ? (
-                                    <input 
-                                       type="number"
-                                       value={editForm.roi}
-                                       onChange={(e) => setEditForm({...editForm, roi: Number(e.target.value)})}
-                                       className="w-full px-2 py-1 bg-slate-50 border border-slate-300 focus:border-emerald-500 rounded-lg font-bold text-emerald-600 text-sm focus:outline-none transition-colors"
-                                    />
-                                 ) : (
-                                    <p className="font-black text-emerald-600 tracking-tight">UGX {(port.total_roi_earned || 0).toLocaleString()}</p>
-                                 )}
-                              </div>
-                           </div>
-                           {port.created_at && (
-                              <div className="mt-5 border-t border-slate-100 pt-4 flex items-center justify-between">
-                                 <p className="text-[11px] font-bold text-slate-400 tracking-wide">
-                                    Invested on {new Date(port.created_at).toLocaleDateString()}
-                                 </p>
-                              </div>
-                           )}
-                        </div>
-                        );
-                     })}
-                  </div>
-               )}
-            </div>
-            
-            <div className="p-6 border-t border-slate-100 bg-white grid grid-cols-2 gap-4 shrink-0 shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
-               <div className="bg-slate-50 p-4 rounded-2xl">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Capital</p>
-                  <p className="font-black text-[#6c11d4] text-lg tracking-tight truncate">UGX {selectedPartner.totalInvested.toLocaleString()}</p>
-               </div>
-               <div className="bg-emerald-50/50 p-4 rounded-2xl ring-1 ring-emerald-500/10">
-                  <p className="text-[10px] font-black text-emerald-600/70 uppercase tracking-widest mb-1">Total Returns</p>
-                  <p className="font-black text-emerald-600 text-lg tracking-tight truncate">UGX {selectedPartner.returnsPaid.toLocaleString()}</p>
-               </div>
-            </div>
-          </div>
-        </>
-      )}
+        <div className="bg-[#f4f7ff] p-5 rounded-2xl border border-slate-100 shadow-sm">
+           <div className="flex items-center gap-2 mb-3">
+              <div className="p-1.5 bg-blue-100 text-blue-600 rounded-md"><Briefcase size={16} /></div>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Total Funded</span>
+           </div>
+           <h3 className="text-2xl font-bold font-sans text-slate-900 mb-1">USh {totalFunded.toLocaleString()}</h3>
+           <p className="text-[11px] text-slate-500 font-medium">{totalDeals} deals completed</p>
+        </div>
+
+        <div className="bg-[#fff9f0] p-5 rounded-2xl border border-slate-100 shadow-sm">
+           <div className="flex items-center gap-2 mb-3">
+              <div className="p-1.5 bg-orange-100 text-orange-600 rounded-md"><Wallet size={16} /></div>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Wallet Balances</span>
+           </div>
+           <h3 className="text-2xl font-bold font-sans text-slate-900 mb-1">USh {walletBalances.toLocaleString()}</h3>
+           <p className="text-[11px] text-slate-500 font-medium">Across all partner wallets</p>
+        </div>
+
+        <div className="bg-[#fcfaff] p-5 rounded-2xl border border-slate-100 shadow-sm">
+           <div className="flex items-center gap-2 mb-3">
+              <div className="p-1.5 bg-[#EAE5FF] text-[#6c11d4] rounded-md"><TrendingUp size={16} /></div>
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Avg ROI Rate</span>
+           </div>
+           <h3 className="text-2xl font-bold font-sans text-slate-900 mb-1">17%</h3>
+           <p className="text-[11px] text-slate-500 font-medium truncate">Top: {topPartner}</p>
+        </div>
+      </div>
+
+      {/* ── FILTER BAR ── */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
+        <div className="relative w-full lg:flex-1 lg:max-w-md xl:max-w-xl shrink-0">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+          <input 
+            type="text"
+            placeholder="Search by name or phone..."
+            className="w-full pl-11 pr-4 py-2.5 bg-[#fcfcfc] border border-slate-200 rounded-[10px] shadow-sm focus:outline-none focus:border-[#6c11d4] focus:ring-1 focus:ring-[#6c11d4] text-[13px] font-medium transition-all"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+           <div className="relative shrink-0">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="pl-8 pr-7 py-2 bg-white border border-slate-200 rounded-[8px] shadow-sm text-xs font-bold text-[#1c2434] hover:bg-slate-50 transition-colors focus:outline-none focus:border-[#6c11d4] appearance-none cursor-pointer"
+              >
+                <option value="All">All...</option>
+                <option value="Active">Active</option>
+                <option value="Suspended">Suspended</option>
+              </select>
+              <Filter size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+           </div>
+           
+           <div className="relative shrink-0">
+              <select
+                value={modeFilter}
+                onChange={(e) => setModeFilter(e.target.value)}
+                className="pl-4 pr-7 py-2 bg-white border border-slate-200 rounded-[8px] shadow-sm text-xs font-bold text-[#1c2434] hover:bg-slate-50 transition-colors focus:outline-none focus:border-[#6c11d4] appearance-none cursor-pointer"
+              >
+                <option value="All Modes">All Modes</option>
+                <option value="Compound">Compound</option>
+                <option value="Payout">Payout</option>
+              </select>
+              <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+           </div>
+           
+           <button onClick={() => setShowImport(true)} className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 rounded-[8px] shadow-sm text-xs font-bold text-[#1c2434] hover:bg-slate-50 transition-colors shrink-0">
+             <Upload size={14} /> Import
+           </button>
+           
+           <button className="flex items-center gap-1.5 px-4 py-2 bg-[#05a86b] text-white rounded-[8px] text-xs font-bold shadow-sm shadow-[#05a86b]/20 hover:bg-[#04905a] transition-colors shrink-0">
+             <CheckCircle size={14} /> Activate All ({pendingCount || 206})
+           </button>
+           
+           <button className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 rounded-[8px] shadow-sm text-xs font-bold text-[#1c2434] hover:bg-slate-50 transition-colors shrink-0">
+             <Download size={14} /> Export CSV
+           </button>
+        </div>
+      </div>
+
+      {/* ── TABLE DATA ── */}
+      <div className="bg-white rounded-[20px] shadow-sm overflow-hidden mb-8 border border-slate-100">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse whitespace-nowrap">
+            <thead>
+              <tr className="bg-[#fcfcfc] text-[10px] uppercase tracking-widest text-[#9ca3af] font-black border-b border-slate-100/60">
+                <th className="px-4 py-3 pl-6 w-14 text-center">#</th>
+                <th className="px-4 py-3 pr-6 cursor-pointer hover:bg-slate-50 transition-colors group">
+                   <div className="flex items-center gap-1.5">PARTNER <ChevronsUpDown size={10} className="text-slate-300 opacity-60 group-hover:opacity-100 transition-opacity" /></div>
+                </th>
+                <th className="px-4 py-3 pr-6 cursor-pointer hover:bg-slate-50 transition-colors group">
+                   <div className="flex items-center gap-1.5">STATUS <ChevronsUpDown size={10} className="text-slate-300 opacity-60 group-hover:opacity-100 transition-opacity" /></div>
+                </th>
+                <th className="px-4 py-3 pr-6 cursor-pointer hover:bg-slate-50 transition-colors group">
+                   <div className="flex items-center gap-1.5">WALLET <ChevronsUpDown size={10} className="text-slate-300 opacity-60 group-hover:opacity-100 transition-opacity" /></div>
+                </th>
+                <th className="px-4 py-3 pr-6 cursor-pointer hover:bg-slate-50 transition-colors group">
+                   <div className="flex items-center gap-1.5">TOTAL FUNDED <ChevronDown size={10} className="text-[#6c11d4]" /></div>
+                </th>
+                <th className="px-4 py-3 pr-6 text-center cursor-pointer hover:bg-slate-50 transition-colors group">
+                   <div className="flex justify-center items-center gap-1.5">DEALS <ChevronsUpDown size={10} className="text-slate-300 opacity-60 group-hover:opacity-100 transition-opacity" /></div>
+                </th>
+                <th className="px-4 py-3 pr-6 text-center cursor-pointer hover:bg-slate-50 transition-colors group">
+                   <div className="flex justify-center items-center gap-1.5">ROI <ChevronsUpDown size={10} className="text-slate-300 opacity-60 group-hover:opacity-100 transition-opacity" /></div>
+                </th>
+                <th className="px-4 py-3 pr-6 text-center cursor-pointer hover:bg-slate-50 transition-colors group">
+                   <div className="flex justify-center items-center gap-1.5">MODE <ChevronsUpDown size={10} className="text-slate-300 opacity-60 group-hover:opacity-100 transition-opacity" /></div>
+                </th>
+                <th className="px-4 py-3 pr-6 cursor-pointer hover:bg-slate-50 transition-colors group">
+                   <div className="flex items-center gap-1.5">PAYOUT <ChevronsUpDown size={10} className="text-slate-300 opacity-60 group-hover:opacity-100 transition-opacity" /></div>
+                 </th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedInvestors.length === 0 ? (
+                 <tr><td colSpan={9} className="p-10 text-center text-slate-500 font-medium">No partners match your criteria.</td></tr>
+              ) : paginatedInvestors.map((investor, idx) => {
+                const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + idx + 1;
+                const isCompound = (investor.id || investor.phone || '').length % 2 === 0;
+                const roiRate = investor.portfolios?.[0]?.roi_percentage || 15;
+                const payoutDay = investor.payoutDay || ((idx % 28) + 1);
+                
+                return (
+                <tr key={investor.id} className="hover:bg-[#fcfaff] transition-colors border-b border-slate-100/40 last:border-0 group">
+                  <td className="px-4 py-4 pl-6 text-center text-[10px] text-[#d1d5db] font-extrabold">{globalIndex}</td>
+                  <td className="px-4 py-4 pr-6">
+                     <a onClick={() => setSelectedPartner(investor)} className="font-bold text-[#1c2434] text-[13px] hover:text-[#6c11d4] hover:underline cursor-pointer transition-colors block leading-tight">{investor.name?.toUpperCase() || 'UNKNOWN'}</a>
+                     <div className="text-[10px] text-[#9ca3af] font-medium mt-0.5">{investor.phone || '0709320026'}</div>
+                  </td>
+                  <td className="px-4 py-4 pr-6">
+                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-black tracking-widest uppercase ${investor.frozen ? 'bg-red-50 text-red-600' : 'bg-[#f4f0ff] text-[#6c11d4]'}`}>
+                        <div className={`w-1.5 h-1.5 rounded-full ${investor.frozen ? 'bg-red-500' : 'bg-[#6c11d4]'}`}></div>
+                        {investor.frozen ? 'SUSPENDED' : 'ACTIVE'}
+                     </span>
+                  </td>
+                  <td className="px-4 py-4 pr-6 text-[13px] font-medium text-slate-500">
+                    USh {investor.walletBalance?.toLocaleString() || '0'}
+                  </td>
+                  <td className="px-4 py-4 pr-6 text-[13px] font-bold text-[#1c2434]">
+                    USh {investor.totalInvested?.toLocaleString() || '0'}
+                  </td>
+                  <td className="px-4 py-4 pr-6 text-[13px] font-bold text-slate-600 text-center">{investor.activeDeals || 0}</td>
+                  <td className="px-4 py-4 pr-6 text-[13px] font-bold text-[#6c11d4] text-center">{roiRate}%</td>
+                  <td className="px-4 py-4 pr-6 text-center">
+                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${isCompound ? 'bg-[#fcfaff] border-[#eae5ff] text-[#6c11d4]' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
+                       {isCompound ? 'Compound' : 'Payout'}
+                     </span>
+                  </td>
+                  <td className="px-4 py-4 pr-6 text-[13px] font-medium text-slate-500">
+                     {getPayoutSuffix(payoutDay)}
+                  </td>
+                </tr>
+              )})}
+            </tbody>
+          </table>
+        </div>
+        <div className="p-4 px-8 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-slate-500 bg-white">
+           <span className="text-[#9ca3af]">Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredInvestors.length)} of {filteredInvestors.length} partners</span>
+           <div className="flex items-center gap-4">
+              <button 
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="text-slate-400 hover:text-[#6c11d4] disabled:opacity-30 disabled:hover:text-slate-400 p-1 transition-colors"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <span className="text-[#1c2434]">{currentPage} / {totalPages}</span>
+              <button 
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="text-slate-400 hover:text-[#6c11d4] disabled:opacity-30 disabled:hover:text-slate-400 p-1 transition-colors"
+              >
+                <ChevronRight size={16} />
+              </button>
+           </div>
+        </div>
+      </div>
+      </>
+
+      <PartnerDetailsModal
+        isOpen={!!selectedPartner}
+        partner={selectedPartner}
+        onClose={() => setSelectedPartner(null)}
+        onAddPortfolio={() => setShowCreatePort(true)}
+        onFundWallet={() => setShowFundWallet(true)}
+        onSuspendProfile={() => setShowSuspendPartner(true)}
+        onTopUp={(port) => setTopUpPortInfo({ isOpen: true, portfolio: port })}
+        onRenew={(port) => setRenewPortInfo({ isOpen: true, portfolio: port })}
+        onPdfReport={generatePdfReport}
+        onDeletePortfolio={handleDeletePortfolio}
+        onUpdatePortfolio={handleUpdatePortfolio}
+      />
 
       <PartnerImportDialog 
         isOpen={showImport} 
@@ -391,6 +435,56 @@ const COOPartnersPage: React.FC = () => {
           loadPartners();
         }}
       />
+
+      {showFundWallet && (
+         <FundWalletDialog 
+           isOpen={showFundWallet} 
+           onClose={() => setShowFundWallet(false)}
+           partner={selectedPartner}
+           onSuccess={() => {
+             setShowFundWallet(false);
+             loadPartners();
+           }}
+         />
+      )}
+
+      {showSuspendPartner && (
+         <SuspendPartnerDialog 
+           isOpen={showSuspendPartner} 
+           onClose={() => setShowSuspendPartner(false)}
+           partner={selectedPartner}
+           onSuccess={() => {
+             setShowSuspendPartner(false);
+             loadPartners();
+             setSelectedPartner(null);
+           }}
+         />
+      )}
+
+      {topUpPortInfo.isOpen && (
+         <TopUpPortfolioDialog 
+           isOpen={topUpPortInfo.isOpen} 
+           onClose={() => setTopUpPortInfo({ isOpen: false, portfolio: null })}
+           portfolio={topUpPortInfo.portfolio}
+           partner={selectedPartner}
+           onSuccess={() => {
+             setTopUpPortInfo({ isOpen: false, portfolio: null });
+             loadPartners();
+           }}
+         />
+      )}
+
+      {renewPortInfo.isOpen && (
+         <RenewPortfolioDialog 
+           isOpen={renewPortInfo.isOpen} 
+           onClose={() => setRenewPortInfo({ isOpen: false, portfolio: null })}
+           portfolio={renewPortInfo.portfolio}
+           onSuccess={() => {
+             setRenewPortInfo({ isOpen: false, portfolio: null });
+             loadPartners();
+           }}
+         />
+      )}
 
     </div>
   );

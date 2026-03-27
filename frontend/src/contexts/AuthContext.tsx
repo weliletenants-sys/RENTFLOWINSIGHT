@@ -1,5 +1,6 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import axios from 'axios';
 import { logoutUser } from '../services/authApi';
 
 export type Role = 'TENANT' | 'AGENT' | 'LANDLORD' | 'FUNDER' | 'SUPER_ADMIN' | 'CEO' | 'CFO' | 'COO' | 'CTO' | 'CMO' | 'CRM' | 'ADMIN' | null;
@@ -72,6 +73,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const [intendedRole, setIntendedRole] = useState<Role>('TENANT');
   const [rentAmount, setRentAmount] = useState<string>('');
+
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response && error.response.status === 401) {
+          console.error("Session expired or unauthorized, redirecting to login...");
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('user_data');
+          setUser(null);
+          
+          if (window.location.pathname.startsWith('/funder') && window.location.pathname !== '/funder/login') {
+            window.location.replace('/funder/login');
+          } else if (!window.location.pathname.startsWith('/funder') && window.location.pathname !== '/login') {
+            window.location.replace('/login');
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
+  }, []);
 
   const login = (userData: User) => setUser(userData);
   

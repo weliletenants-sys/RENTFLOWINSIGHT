@@ -4,7 +4,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 
 interface COOHeaderProps {
   pageTitle: string;
-  pageSubtitle: string;
+  pageSubtitle?: string;
   onMenuClick: () => void;
 }
 
@@ -12,47 +12,42 @@ const COOHeader: React.FC<COOHeaderProps> = ({ pageTitle, pageSubtitle, onMenuCl
   const { user } = useAuth();
   
   return (
-    <header className="pt-8 pb-4 bg-transparent flex items-center justify-between px-4 sm:px-6 md:px-8 z-10">
+    <header className="bg-white border-b border-slate-200 sticky top-0 z-10 px-4 sm:px-6 md:px-8 py-4 flex items-center justify-between">
       <div className="flex items-center">
-         <button onClick={onMenuClick} className="lg:hidden mr-3 p-2 -ml-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800 rounded-lg transition-colors">
+         <button onClick={onMenuClick} className="lg:hidden mr-4 p-2 -ml-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800 rounded-xl transition-colors">
            <Menu size={24} />
          </button>
          <div>
-            <h2 className="text-2xl sm:text-3xl font-bold font-outfit text-slate-900 mb-1">{pageTitle}</h2>
-            <p className="text-xs sm:text-sm text-slate-400 font-medium font-inter">{pageSubtitle}</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">{pageTitle}</h2>
+            {pageSubtitle && <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">{pageSubtitle}</p>}
          </div>
       </div>
       
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-3 sm:space-x-4">
         {/* Circle Actions */}
         <div className="flex items-center space-x-2">
-           <button className="w-10 h-10 rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors flex items-center justify-center">
+           <button className="w-10 h-10 rounded-full bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-800 border border-slate-200 transition-colors flex items-center justify-center">
              <Search size={18} />
            </button>
-           <button className="relative w-10 h-10 rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors flex items-center justify-center">
+           <button className="relative w-10 h-10 rounded-full bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-800 border border-slate-200 transition-colors flex items-center justify-center">
              <Bell size={18} />
-             <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+             <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
            </button>
         </div>
         
-        {/* Profile Pill */}
-        <div className="hidden md:flex items-center space-x-3 bg-white border border-slate-200 rounded-full pl-2 pr-4 py-1.5 shadow-sm">
-          <div className="w-8 h-8 rounded-full bg-[#EAE5FF] overflow-hidden flex items-center justify-center text-[#6c11d4] font-bold">
-            {user?.role === 'CEO' ? user?.firstName?.charAt(0) || 'C' : 'C'}
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-bold text-slate-800 leading-tight">
+        {/* Profile Details */}
+        <div className="flex items-center pl-4 border-l border-slate-200">
+          <div className="hidden sm:flex flex-col text-right mr-3">
+            <span className="text-sm font-bold text-slate-800">
               {user?.role === 'CEO' ? `${user.firstName || 'Chief'} ${user.lastName || 'Executive'}` : 'Chief Officer'}
             </span>
-            <span className="text-[10px] text-slate-400 font-medium">
+            <span className="text-xs text-slate-500 font-medium font-sans">
               {user?.role === 'CEO' ? 'Executive Terminal' : 'Operations'}
             </span>
           </div>
-        </div>
-
-        {/* Mobile Profile Avatar */}
-        <div className="md:hidden w-10 h-10 rounded-full border border-slate-200 bg-white text-[#6c11d4] flex items-center justify-center font-bold">
-          A
+          <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center text-[var(--color-primary)] font-bold text-lg shadow-sm">
+            {user?.role === 'CEO' ? user?.firstName?.charAt(0) || 'C' : 'C'}
+          </div>
         </div>
       </div>
     </header>

@@ -213,6 +213,13 @@ export const getPartners = async (req: Request, res: Response) => {
       const totalInvested = ports.reduce((sum: number, p: any) => sum + (p.investment_amount || 0), 0);
       const activeDeals = ports.filter((p: any) => p.status === 'ACTIVE').length;
       const returnsPaid = ports.reduce((sum: number, p: any) => sum + (p.total_roi_earned || 0), 0);
+      
+      const wallet = await prisma.wallets.findFirst({ where: { user_id: f.id } });
+      let walletBalance = 0;
+      if (wallet) {
+         const bucket = await prisma.walletBuckets.findFirst({ where: { wallet_id: wallet.id, bucket_type: 'available' } });
+         walletBalance = bucket ? bucket.balance : wallet.balance;
+      }
 
       return {
          id: f.id,
@@ -221,6 +228,7 @@ export const getPartners = async (req: Request, res: Response) => {
          totalInvested,
          returnsPaid,
          activeDeals,
+         walletBalance,
          portfolios: ports
       };
     }));
@@ -993,3 +1001,194 @@ export const investForPartner = async (req: Request, res: Response) => {
   }
 };
 
+export const fundPartnerWallet = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { amount, sourceReference, reason } = req.body;
+    
+    if (!amount || amount <= 0) return problemResponse(res, 400, "Validation Error", "Valid amount required", "wallet-validation");
+    if (!reason || reason.trim().length < 10) return problemResponse(res, 400, "Validation Error", "Valid audit reason required", "wallet-validation");
+
+    let wallet = await prisma.wallets.findFirst({ where: { user_id: id } });
+    if (!wallet) {
+      wallet = await prisma.wallets.create({
+        data: { user_id: id, balance: 0, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+      });
+    }
+
+    let availableBucket = await prisma.walletBuckets.findFirst({
+        where: { wallet_id: wallet.id, bucket_type: 'available' }
+    });
+
+    if (availableBucket) {
+        await prisma.walletBuckets.update({
+          where: { id: availableBucket.id },
+          data: { balance: { increment: Number(amount) }, updated_at: new Date() }
+        });
+    } else {
+        await prisma.walletBuckets.create({
+          data: { wallet_id: wallet.id, bucket_type: 'available', balance: Number(amount) }
+        });
+    }
+
+    await prisma.wallets.update({
+        where: { id: wallet.id },
+        data: { balance: { increment: Number(amount) }, updated_at: new Date().toISOString() }
+    });
+
+    await prisma.generalLedger.create({
+        data: {
+          user_id: id,
+          amount: Number(amount),
+          direction: 'cash_in',
+          category: 'coo_wallet_fund',
+          transaction_date: new Date().toISOString(),
+          description: `Manual funding by Admin ${req.user?.id || 'Unknown'}. Reason: ${reason}. Ref: ${sourceReference}`,
+          source_table: 'wallets',
+          created_at: new Date().toISOString()
+        }
+    });
+
+    res.json({ message: 'Wallet funded' });
+  } catch (error: any) {
+    return problemResponse(res, 500, "Internal Server Error", error.message, "internal-error");
+  }
+};
+
+export const suspendPartnerAccount = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+    
+    if (!reason || reason.trim().length < 10) return problemResponse(res, 400, "Validation Error", "Valid audit reason required", "suspend-validation");
+
+    await prisma.profiles.update({
+      where: { id },
+      data: { is_frozen: true, frozen_at: new Date().toISOString(), frozen_reason: reason }
+    });
+
+    await prisma.systemEvents.create({
+      data: {
+        event_type: 'partner_suspended',
+        related_entity_type: 'profile',
+        related_entity_id: id,
+        user_id: req.user?.id,
+        metadata: { description: `Partner suspended by Admin. Reason: ${reason}` },
+        created_at: new Date().toISOString()
+      }
+    });
+
+    res.json({ message: 'Partner suspended' });
+  } catch (error: any) {
+    return problemResponse(res, 500, "Internal Server Error", error.message, "internal-error");
+  }
+};
+
+export const topUpPortfolio = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params; // Portfolio ID
+    const { amount, source, reason } = req.body;
+    
+    if (!amount || amount <= 0) return problemResponse(res, 400, "Validation Error", "Valid amount required", "topup-validation");
+    if (!reason || reason.trim().length < 10) return problemResponse(res, 400, "Validation Error", "Valid audit reason required", "topup-validation");
+
+    const portfolio = await prisma.investorPortfolios.findUnique({ where: { id } });
+    if (!portfolio) return problemResponse(res, 404, "Not Found", "Portfolio not found", "not-found");
+
+    if (source === 'wallet') {
+      const wallet = await prisma.wallets.findFirst({ where: { user_id: portfolio.investor_id } });
+      if (!wallet || wallet.balance < amount) {
+        return problemResponse(res, 400, "Validation Error", "Insufficient wallet balance", "topup-validation");
+      }
+      await prisma.wallets.update({
+        where: { id: wallet.id },
+        data: { balance: { decrement: Number(amount) }, updated_at: new Date().toISOString() }
+      });
+    }
+
+    await prisma.investorPortfolios.update({
+      where: { id },
+      data: { investment_amount: { increment: Number(amount) } }
+    });
+
+    await prisma.generalLedger.create({
+      data: {
+        user_id: portfolio.investor_id,
+        amount: Number(amount),
+        direction: 'cash_in',
+        category: 'coo_portfolio_topup',
+        description: `Top-up from ${source} by Admin ${req.user?.id || 'Unknown'}. Reason: ${reason}`,
+        transaction_date: new Date().toISOString(),
+        source_table: 'investor_portfolios',
+        reference_id: portfolio.id,
+        created_at: new Date().toISOString()
+      }
+    });
+
+    res.json({ message: 'Portfolio topped up' });
+  } catch (error: any) {
+    return problemResponse(res, 500, "Internal Server Error", error.message, "internal-error");
+  }
+};
+
+export const renewPortfolio = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    
+    const portfolio = await prisma.investorPortfolios.findUnique({ where: { id } });
+    if (!portfolio) return problemResponse(res, 404, "Not Found", "Portfolio not found", "not-found");
+
+    const nextDate = new Date(portfolio.next_roi_date || new Date());
+    nextDate.setMonth(nextDate.getMonth() + 12);
+
+    await prisma.investorPortfolios.update({
+      where: { id },
+      data: { duration_months: { increment: 12 }, total_roi_earned: 0, next_roi_date: nextDate.toISOString() }
+    });
+
+    await prisma.systemEvents.create({
+      data: {
+        event_type: 'portfolio_renewed',
+        related_entity_type: 'portfolio',
+        related_entity_id: id,
+        user_id: req.user?.id,
+        metadata: { description: `Portfolio renewed for 12 months by Admin.` },
+        created_at: new Date().toISOString()
+      }
+    });
+
+    res.json({ message: 'Portfolio renewed' });
+  } catch (error: any) {
+    return problemResponse(res, 500, "Internal Server Error", error.message, "internal-error");
+  }
+};
+
+export const deletePortfolio = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    
+    const portfolio = await prisma.investorPortfolios.findUnique({ where: { id } });
+    if (!portfolio) {
+      return problemResponse(res, 404, "Not Found", "Portfolio not found", "not-found");
+    }
+
+    await prisma.investorPortfolios.delete({
+      where: { id }
+    });
+
+    await prisma.systemEvents.create({
+      data: {
+        event_type: 'portfolio_deleted',
+        related_entity_type: 'portfolio',
+        related_entity_id: id,
+        user_id: req.user?.id,
+        metadata: { description: `Portfolio ${id} was deleted by Admin.` },
+        created_at: new Date().toISOString()
+      }
+    });
+
+    res.json({ message: 'Portfolio successfully deleted' });
+  } catch (error: any) {
+    return problemResponse(res, 500, "Internal Server Error", error.message, "internal-error");
+  }
+};
