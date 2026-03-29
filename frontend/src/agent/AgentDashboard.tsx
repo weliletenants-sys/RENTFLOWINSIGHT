@@ -32,6 +32,10 @@ import AgentRegisterDialog from './components/dialogs/AgentRegisterDialog';
 import AgentTopUpTenantDialog from './components/dialogs/AgentTopUpTenantDialog';
 import AgentMenuDrawer from './components/AgentMenuDrawer';
 import { default as FullScreenWalletSheet } from '../tenant/components/FullScreenWalletSheet';
+import PrimaryVisitTenantCTA from './components/PrimaryVisitTenantCTA';
+import AgentRentPaymentGuide from './components/AgentRentPaymentGuide';
+import ApprovedRentRequestsWidget from './components/ApprovedRentRequestsWidget';
+import VisitPaymentWizard from './components/VisitPaymentWizard';
 
 export default function AgentDashboard() {
   const { user } = useAuth();
@@ -40,6 +44,7 @@ export default function AgentDashboard() {
   const [isTopUpDialogOpen, setIsTopUpDialogOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isWalletOpen, setIsWalletOpen] = useState(false);
+  const [isVisitWizardOpen, setIsVisitWizardOpen] = useState(false);
   const [summary, setSummary] = useState<any>({
     visits_today: 0,
     collections_count: 0,
@@ -107,7 +112,7 @@ export default function AgentDashboard() {
                 <h2 className="text-base font-bold leading-tight shadow-sm">{userName}</h2>
               </div>
             </div>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 transition-colors" onClick={(e) => { e.stopPropagation(); /* AI ID trigger logic here */ }}>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 transition-colors" onClick={(e) => { e.stopPropagation(); navigate('/agent-edit-profile'); }}>
               <Fingerprint size={14} className="text-white shadow-sm" />
               <span className="text-xs font-bold text-white tracking-wide shadow-sm">AI ID</span>
             </button>
@@ -169,7 +174,7 @@ export default function AgentDashboard() {
         </div>
 
         {/* 4. Verification Progress Bar */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-700 flex items-center justify-between cursor-pointer">
+        <div onClick={() => navigate('/agent-kyc')} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-700 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-transform">
           <div className="flex items-center gap-3">
              <Award size={20} className="text-slate-400 dark:text-slate-500" />
              <span className="font-bold text-sm text-slate-900 dark:text-white">Ordinary User</span>
@@ -179,7 +184,7 @@ export default function AgentDashboard() {
         </div>
 
         {/* 5. Daily Rent Expected */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-700 flex items-center gap-4">
+        <div onClick={() => navigate('/agent-daily-ops')} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-700 flex items-center gap-4 cursor-pointer active:scale-[0.98] transition-transform mt-4">
            <div className="size-12 rounded-xl bg-orange-50 dark:bg-orange-900/30 flex items-center justify-center text-orange-400">
               <Calendar size={24} strokeWidth={1.5} />
            </div>
@@ -193,7 +198,7 @@ export default function AgentDashboard() {
         </div>
 
         {/* 6. Streak Card */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-700 space-y-2 relative overflow-hidden">
+        <div onClick={() => setIsVisitWizardOpen(true)} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-700 space-y-2 relative overflow-hidden cursor-pointer active:scale-[0.98] transition-transform mt-4">
            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                  <Star size={20} className="text-slate-400 dark:text-slate-500" />
@@ -219,6 +224,8 @@ export default function AgentDashboard() {
            <AlertTriangle size={20} className="text-red-500" />
         </div>
 
+        <ApprovedRentRequestsWidget />
+
         {/* 8. Landlord Float Widget */}
         <div className="bg-orange-50/50 dark:bg-orange-900/10 rounded-2xl border border-orange-100 dark:border-orange-900/40 overflow-hidden mt-6">
            <div className="p-4 relative">
@@ -231,38 +238,32 @@ export default function AgentDashboard() {
                     <h4 className="font-bold text-sm text-slate-900 dark:text-white">Pay Landlord via MoMo</h4>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-snug">Withdraw from float → Pay landlord → Upload receipt + GPS</p>
                  </div>
-                 <button className="flex items-center gap-1 text-orange-500 font-bold text-sm mt-1">
+                 <button onClick={(e) => { e.stopPropagation(); navigate('/agent/landlord-payout'); }} className="flex items-center gap-1 text-orange-500 font-bold text-sm mt-1">
                     Pay <ArrowRight size={16} />
                  </button>
               </div>
            </div>
            
            <div className="grid grid-cols-3 divide-x divide-orange-100 dark:divide-orange-900/40 border-t border-orange-100 dark:border-orange-900/40">
-              <button className="py-3 flex items-center justify-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors">
+              <button onClick={() => navigate('/transactions')} className="py-3 flex items-center justify-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors">
                  <TrendingUp size={14} /> Recovery
               </button>
-              <button className="py-3 flex items-center justify-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors">
+              <button onClick={() => navigate('/agent/landlord-payout')} className="py-3 flex items-center justify-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors">
                  <ShieldCheck size={14} /> Status
               </button>
-              <button className="py-3 flex items-center justify-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors">
+              <button onClick={() => navigate('/agent/landlord-payout')} className="py-3 flex items-center justify-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors">
                  <History size={14} /> History
               </button>
            </div>
         </div>
 
+        <AgentRentPaymentGuide />
+
 
       </main>
 
-      {/* 10. Floating 'Verify & Earn' Button */}
-      <div className="fixed bottom-24 right-4 z-40">
-         <button className="bg-gradient-to-r from-[#9333ea] to-[#7e22ce] text-white rounded-full px-5 py-3 shadow-[0_8px_30px_rgb(147,51,234,0.3)] flex items-center gap-2 hover:scale-105 active:scale-95 transition-all outline-none">
-            <ShieldCheck size={20} className="fill-white/20" />
-            <span className="text-sm font-bold tracking-wide">Verify & Earn</span>
-            <div className="size-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-bold ml-1">
-               0
-            </div>
-         </button>
-      </div>
+        {/* 10. Primary Visit Tenant CTA */}
+        <PrimaryVisitTenantCTA onClick={() => setIsVisitWizardOpen(true)} />
 
       {/* 11. Mobile Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#1e1e1e] border-t border-slate-100 dark:border-slate-800 px-6 py-2 pb-safe">
@@ -319,6 +320,11 @@ export default function AgentDashboard() {
         isOpen={isWalletOpen}
         onClose={() => setIsWalletOpen(false)}
         balance={summary.wallet_balance || 0}
+      />
+
+      <VisitPaymentWizard 
+        isOpen={isVisitWizardOpen}
+        onClose={() => setIsVisitWizardOpen(false)}
       />
     </div>
   );
