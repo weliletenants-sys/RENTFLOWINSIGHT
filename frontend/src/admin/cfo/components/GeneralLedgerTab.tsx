@@ -8,8 +8,8 @@ export default function GeneralLedgerTab() {
   const [mockLedger, setLedger] = useState<any[]>([]);
 
   useEffect(() => {
-    axios.get('/api/cfo/ledger')
-      .then(res => setLedger(res.data))
+    axios.get(`${import.meta.env.VITE_API_URL || ''}/api/cfo/ledger`)
+      .then(res => setLedger(res.data.ledger || []))
       .catch(console.error);
   }, []);
 
@@ -67,12 +67,12 @@ export default function GeneralLedgerTab() {
             <tbody className="divide-y divide-slate-50">
               {mockLedger.map((tx, idx) => (
                 <tr key={idx} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-4 font-mono font-bold text-xs text-slate-400 bg-slate-50/50">{tx.id}</td>
-                  <td className="px-6 py-4 text-slate-500 font-medium">{tx.date}</td>
-                  <td className="px-6 py-4 font-bold text-slate-800">{tx.description}</td>
+                  <td className="px-6 py-4 font-mono font-bold text-xs text-slate-400 bg-slate-50/50" title={tx.id}>{String(tx.id).substring(0, 8)}...</td>
+                  <td className="px-6 py-4 text-slate-500 font-medium">{new Date(tx.transaction_date).toLocaleDateString()}</td>
+                  <td className="px-6 py-4 font-bold text-slate-800">{tx.description || 'System Entry'}</td>
                   <td className="px-6 py-4">
                     <span className="px-2.5 py-1 rounded bg-slate-100 text-slate-600 text-[10px] uppercase font-bold tracking-widest border border-slate-200 shadow-sm">
-                      {tx.category.replace('_', ' ')}
+                      {tx.category ? tx.category.replace('_', ' ') : 'N/A'}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
@@ -82,10 +82,15 @@ export default function GeneralLedgerTab() {
                       <span className="text-red-700 font-bold bg-red-50 border border-red-100 px-3 py-1 rounded-full text-[10px] uppercase tracking-wider shadow-sm">Debit</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-right font-bold text-slate-700">UGX {tx.amount.toLocaleString()}</td>
-                  <td className="px-6 py-4 text-right font-black font-outfit text-slate-900 bg-slate-50/30">UGX {tx.balance.toLocaleString()}</td>
+                  <td className="px-6 py-4 text-right font-bold text-slate-700">UGX {Number(tx.amount || 0).toLocaleString()}</td>
+                  <td className="px-6 py-4 text-right font-black font-outfit text-slate-900 bg-slate-50/30">UGX {Number(tx.running_balance || 0).toLocaleString()}</td>
                 </tr>
               ))}
+              {mockLedger.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-6 py-8 text-center text-slate-400 font-medium">No ledger transactions found in current system.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

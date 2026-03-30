@@ -6,16 +6,10 @@ interface ReconciliationTabProps {
 }
 
 export default function ReconciliationTab({ reconciliationData }: ReconciliationTabProps) {
-  // Use backend data if valid, otherwise fallback to mock data
+  // STRICT PRISMA DATA ENFORCEMENT: Fallback to zeroes to prevent mock visual leaks
   const data = reconciliationData?.summary ? reconciliationData : {
-    summary: { totalUsers: 1250, matched: 1238, mismatched: 12, totalGap: 450000 },
-    results: [
-      { name: 'John Doe', phone: '0771234567', wallet_balance: 150000, ledger_balance: 150000, status: 'Matched', gap: 0 },
-      { name: 'Jane Smith', phone: '0751234567', wallet_balance: 50000, ledger_balance: 30000, status: 'Mismatched', gap: 20000 },
-      { name: 'Alex K', phone: '0781234567', wallet_balance: 0, ledger_balance: 0, status: 'Matched', gap: 0 },
-      { name: 'Sarah M', phone: '0701234567', wallet_balance: 1250000, ledger_balance: 1250000, status: 'Matched', gap: 0 },
-      { name: 'Peter B', phone: '0791234567', wallet_balance: 850000, ledger_balance: 420000, status: 'Mismatched', gap: 430000 },
-    ]
+    summary: { totalUsers: 0, matched: 0, mismatched: 0, totalGap: 0 },
+    results: []
   };
 
   return (
@@ -64,14 +58,19 @@ export default function ReconciliationTab({ reconciliationData }: Reconciliation
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
+              {data.results && data.results.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-slate-400 font-medium">No reconciliation data available.</td>
+                </tr>
+              )}
               {data.results?.map((r: any, idx: number) => {
                 const isMatched = r.status === 'Matched';
                 return (
                   <tr key={idx} className={`hover:bg-slate-50 transition-colors ${!isMatched ? 'bg-red-50/20' : ''}`}>
                     <td className="px-6 py-4 font-bold text-slate-900">{r.name}</td>
                     <td className="px-6 py-4 text-slate-500 font-medium">{r.phone}</td>
-                    <td className="px-6 py-4 text-right font-bold text-slate-700">UGX {r.wallet_balance.toLocaleString()}</td>
-                    <td className="px-6 py-4 text-right font-bold text-slate-700">UGX {r.ledger_balance.toLocaleString()}</td>
+                    <td className="px-6 py-4 text-right font-bold text-slate-700">UGX {Number(r.wallet_balance || 0).toLocaleString()}</td>
+                    <td className="px-6 py-4 text-right font-bold text-slate-700">UGX {Number(r.ledger_balance || 0).toLocaleString()}</td>
                     <td className="px-6 py-4 text-right flex justify-end">
                       {isMatched ? (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-green-50 text-green-700">

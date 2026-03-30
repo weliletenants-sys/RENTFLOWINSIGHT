@@ -174,17 +174,65 @@ export const getWithdrawals = async (req: Request, res: Response) => {
 
 export const getAnalytics = async (req: Request, res: Response) => {
   try {
+    // 1. Fetch Payment Methods Breakthrough
+    const collections = await prisma.agentCollections.groupBy({
+      by: ['payment_method'],
+      _count: { payment_method: true },
+      _sum: { amount: true }
+    });
+
+    const totalCollectionsDesc = await prisma.agentCollections.aggregate({ _count: true });
+    const totalCount = totalCollectionsDesc._count || 1;
+
+    const paymentMethods = collections.map(c => ({
+      name: c.payment_method || 'Unknown',
+      value: Math.round((c._count.payment_method / totalCount) * 100)
+    }));
+
+    if (paymentMethods.length === 0) {
+       paymentMethods.push({ name: 'Awaiting Data', value: 100 });
+    }
+
+    // 2. Fetch trailing Revenue Trends (Last 3 months approximation via Collections)
+    const now = new Date();
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(now.getMonth() - 3);
+
+    const recentCollections = await prisma.agentCollections.findMany({
+      where: { created_at: { gte: threeMonthsAgo.toISOString() } },
+      select: { amount: true, created_at: true }
+    });
+
+    const monthlyAggregation: Record<string, number> = {};
+    recentCollections.forEach(c => {
+       const date = new Date(c.created_at);
+       const monthName = date.toLocaleString('default', { month: 'short' });
+       if (!monthlyAggregation[monthName]) monthlyAggregation[monthName] = 0;
+       monthlyAggregation[monthName] += c.amount;
+    });
+
+    const revenueTrends = Object.keys(monthlyAggregation).map(month => ({
+       month,
+       value: monthlyAggregation[month]
+    }));
+
+    if (revenueTrends.length === 0) {
+       revenueTrends.push(
+          { month: 'Prev', value: 0 },
+          { month: 'Curr', value: 0 }
+       );
+    }
+
+    // Collection growth comparison
+    const collectionGrowth = revenueTrends.length >= 2 
+        ? Math.round(((revenueTrends[revenueTrends.length - 1].value - revenueTrends[revenueTrends.length - 2].value) / (revenueTrends[revenueTrends.length - 2].value || 1)) * 100)
+        : 0;
+
     res.json({
-      revenueTrends: [
-        { month: 'Jan', value: 1200000 },
-        { month: 'Feb', value: 1900000 },
-        { month: 'Mar', value: 2400000 }
-      ],
-      paymentMethods: [
-        { name: 'Mobile Money', value: 65 },
-        { name: 'Bank Transfer', value: 28 },
-        { name: 'Cash', value: 7 }
-      ]
+      revenueTrends,
+      paymentMethods,
+      collectionGrowth,
+      topProvider: 'MTN Mobile Money'
     });
   } catch (error: any) {
     return problemResponse(res, 500, 'Internal Server Error', error.message, 'https://api.rentflow.com/errors/internal-error');
