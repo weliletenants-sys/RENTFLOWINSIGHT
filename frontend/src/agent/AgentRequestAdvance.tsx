@@ -1,6 +1,6 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { getAdvances, requestAdvance } from '../services/agentApi';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   ArrowLeft, 
@@ -41,8 +41,8 @@ const AgentRequestAdvance = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get('/api/agent/advances');
-        if (res.data.maxLimit) setMaxLimit(res.data.maxLimit);
+        const data = await getAdvances();
+        if (data && data.maxLimit) setMaxLimit(data.maxLimit);
       } catch (err) {
         console.warn("Failed to fetch advance limits dynamically, using defaults");
       }
@@ -80,7 +80,7 @@ const AgentRequestAdvance = () => {
     }
 
     try {
-      await axios.post('/api/agent/advances/request', payload);
+      await requestAdvance(payload);
       setSuccess(true);
     } catch (err: any) {
       console.error(err);

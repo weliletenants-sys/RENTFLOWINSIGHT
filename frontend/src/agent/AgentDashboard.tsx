@@ -1,17 +1,50 @@
 import { useAuth } from '../contexts/AuthContext';
-import { useEffect } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getDashboardSummary, getTransactions } from '../services/agentApi';
+import { getDashboardSummary } from '../services/agentApi';
 import toast from 'react-hot-toast';
-import { MapPin, Home, UserCheck, FileText, UserPlus, Store, Wallet, PlusCircle, ArrowRightLeft, BadgeCheck, LineChart, CreditCard, ClipboardCheck, Download, Upload, Users, Settings } from 'lucide-react';
+import { 
+  Bell, 
+  Menu, 
+  Users, 
+  ChevronDown, 
+  User, 
+  Fingerprint, 
+  Wallet, 
+  Award, 
+  ChevronRight, 
+  Calendar, 
+  Star, 
+  Target, 
+  AlertTriangle, 
+  Landmark, 
+  ArrowRight, 
+  TrendingUp, 
+  ShieldCheck, 
+  History, 
+  Banknote, 
+  FileText, 
+  Home, 
+  WalletCards, 
+  Building2 
+} from 'lucide-react';
 import AgentRegisterDialog from './components/dialogs/AgentRegisterDialog';
-
+import AgentTopUpTenantDialog from './components/dialogs/AgentTopUpTenantDialog';
+import AgentMenuDrawer from './components/AgentMenuDrawer';
+import { default as FullScreenWalletSheet } from '../tenant/components/FullScreenWalletSheet';
+import PrimaryVisitTenantCTA from './components/PrimaryVisitTenantCTA';
+import AgentRentPaymentGuide from './components/AgentRentPaymentGuide';
+import ApprovedRentRequestsWidget from './components/ApprovedRentRequestsWidget';
+import VisitPaymentWizard from './components/VisitPaymentWizard';
 
 export default function AgentDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isRegisterDialogOpen, setIsRegisterDialogOpen] = useState(false);
+  const [isTopUpDialogOpen, setIsTopUpDialogOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isWalletOpen, setIsWalletOpen] = useState(false);
+  const [isVisitWizardOpen, setIsVisitWizardOpen] = useState(false);
   const [summary, setSummary] = useState<any>({
     visits_today: 0,
     collections_count: 0,
@@ -20,7 +53,6 @@ export default function AgentDashboard() {
     collected_today: 0,
     wallet_balance: 0
   });
-  const [transactions, setTransactions] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchSummary = async () => {
@@ -28,249 +60,272 @@ export default function AgentDashboard() {
          const data = await getDashboardSummary();
          setSummary(data);
       } catch (err: any) {
-         toast.error(err.isProblemDetail ? err.detail : 'Failed to fetch dashboard metrics');
-      }
-    };
-    const fetchTransactionsList = async () => {
-      try {
-         const data = await getTransactions();
-         setTransactions(data.transactions || []);
-      } catch (err: any) {
-         toast.error(err.isProblemDetail ? err.detail : 'Failed to fetch transactions');
+         console.error('Failed to fetch stats', err);
       }
     };
     fetchSummary();
-    fetchTransactionsList();
   }, []);
 
-  // Load Material Symbols
-  useEffect(() => {
-    const link1 = document.createElement('link');
-    link1.rel = 'stylesheet';
-    link1.href = 'https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap';
-    document.head.appendChild(link1);
-
-    return () => {
-      document.head.removeChild(link1);
-    };
-  }, []);
-
-  const userName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : "John Kamau";
+  const userName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : "Joshua Wanda";
 
   return (
-    <div className="bg-[#f8f6f6] dark:bg-[#221610] text-slate-900 dark:text-slate-100 antialiased min-h-screen font-['Public_Sans']">
-      <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
-        <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#221610]/80 backdrop-blur-md px-4 lg:px-10 py-3">
-          <div className="max-w-5xl mx-auto flex items-center justify-center">
-              <div className="flex items-center gap-4">
-                <div 
-                  className="size-12 rounded-2xl bg-cover bg-center border-2 border-white dark:border-slate-800 shadow-sm" 
-                  style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBQTaHq2htnni0azJBOc28l79u6IOxJfpmoafjut_SSogJqisHgVAvHMF2lXYmd31AZLDrS2v4ITMNTAMujrRfGT_u-VjsAvofRZeQ_c8aI4bXr8uU0lLpOZbw_o_xR1ak6lH1S13PweioqgsRs-Ds4AfOnULfSoPpAtXcjFirtj_F30ETs0v-29_UMOC_yEm2c_bkhAJQ_oBlyBej6r5FOa_fD-CMkCR1DgeLIMZ-YbfFQw1UVEa8In31RilbPnMSCBMzpqrr-OX2X")' }}
-                ></div>
-                <div>
-                    <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                      {userName}
-                      <BadgeCheck size={20} className="text-[#1d9bf0]" fill="#1d9bf0" stroke="white" strokeWidth={1.5} />
-                    </h1>
-                  <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">Senior Agent • Nairobi Central</p>
-                </div>
-              </div>
-          </div>
-        </header>
-
-        <main className="flex-1 w-full max-w-5xl mx-auto px-4 pt-24 pb-24 space-y-6">
-
-
-          <section className="relative overflow-hidden rounded-2xl bg-[#6c11d4] p-6 text-white shadow-xl shadow-[#6c11d4]/20">
-
-            <div className="relative z-10 space-y-6">
-              <div>
-                <p className="text-white/80 text-sm font-medium opacity-80 uppercase tracking-widest">Wallet Balance</p>
-                <h2 className="text-4xl font-extrabold tracking-tight mt-1">UGX {(summary.wallet_balance || 0).toLocaleString()}</h2>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                <button onClick={() => navigate('/agent-withdraw')} className="flex flex-col items-center justify-center gap-2 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/10">
-                  <Wallet size={24} />
-                  <span className="text-xs font-bold uppercase">Withdraw</span>
-                </button>
-                <button onClick={() => navigate('/agent-deposit')} className="flex flex-col items-center justify-center gap-2 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/10">
-                  <PlusCircle size={24} />
-                  <span className="text-xs font-bold uppercase">Deposit</span>
-                </button>
-                <button onClick={() => navigate('/agent-transfer')} className="flex flex-col items-center justify-center gap-2 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/10">
-                  <ArrowRightLeft size={24} />
-                  <span className="text-xs font-bold uppercase">Transfer</span>
-                </button>
-              </div>
-            </div>
-          </section>
-
-          <section className="space-y-4">
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Quick Actions</h3>
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-              <div onClick={() => navigate('/agent-visit')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6c11d4]/50 transition-all">
-                <div className="size-12 flex items-center justify-center rounded-xl bg-[#6c11d4]/10 text-[#6c11d4] group-hover:bg-[#6c11d4] group-hover:text-white transition-colors">
-                  <MapPin size={24} />
-                </div>
-                <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Visit</span>
-              </div>
-              <div onClick={() => navigate('/agent-list-house')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6c11d4]/50 transition-all">
-                <div className="size-12 flex items-center justify-center rounded-xl bg-[#6c11d4]/10 text-[#6c11d4] group-hover:bg-[#6c11d4] group-hover:text-white transition-colors">
-                  <Home size={24} />
-                </div>
-                <span className="text-xs font-bold text-slate-600 dark:text-slate-400">List House</span>
-              </div>
-              <div onClick={() => setIsRegisterDialogOpen(true)} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6c11d4]/50 transition-all">
-                <div className="size-12 flex items-center justify-center rounded-xl bg-[#6c11d4]/10 text-[#6c11d4] group-hover:bg-[#6c11d4] group-hover:text-white transition-colors">
-                  <UserCheck size={24} />
-                </div>
-                <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Register</span>
-              </div>
-              <div onClick={() => navigate('/agent-receipt')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6c11d4]/50 transition-all">
-                <div className="size-12 flex items-center justify-center rounded-xl bg-[#6c11d4]/10 text-[#6c11d4] group-hover:bg-[#6c11d4] group-hover:text-white transition-colors">
-                  <FileText size={24} />
-                </div>
-                <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Receipt</span>
-              </div>
-              <div onClick={() => navigate('/agent-referral')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6c11d4]/50 transition-all">
-                <div className="size-12 flex items-center justify-center rounded-xl bg-[#6c11d4]/10 text-[#6c11d4] group-hover:bg-[#6c11d4] group-hover:text-white transition-colors">
-                  <UserPlus size={24} />
-                </div>
-                <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Refer</span>
-              </div>
-              <div onClick={() => navigate('/agent-shop')} className="group cursor-pointer flex flex-col items-center gap-2 p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-[#6c11d4]/50 transition-all">
-                <div className="size-12 flex items-center justify-center rounded-xl bg-[#6c11d4]/10 text-[#6c11d4] group-hover:bg-[#6c11d4] group-hover:text-white transition-colors">
-                  <Store size={24} />
-                </div>
-                <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Shop</span>
-              </div>
-            </div>
-          </section>
-
-          <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div onClick={() => navigate('/agent-daily-ops')} className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between h-full cursor-pointer hover:border-[#6c11d4]/50 transition-all group">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider group-hover:text-[#6c11d4] transition-colors">Daily Operations</h4>
-                <LineChart className="text-[#6c11d4]" size={24} />
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-700 dark:text-slate-300 font-medium">Visits Today</span>
-                  <span className="text-xl font-bold text-slate-900 dark:text-white">{summary.visits_today || 0}</span>
-                </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-1.5">
-                  <div className="bg-[#6c11d4] h-1.5 rounded-full" style={{ width: `${Math.min(((summary.visits_today || 0) / 20) * 100, 100)}%` }}></div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-700 dark:text-slate-300 font-medium">Collections</span>
-                  <span className="text-xl font-bold text-slate-900 dark:text-white">{summary.collections_count || 0}</span>
-                </div>
-              </div>
-            </div>
-            <div className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between h-full">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Credit Access</h4>
-                <CreditCard className="text-[#6c11d4]" size={24} />
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Available Limit</p>
-                  <p className="text-xl font-bold text-slate-900 dark:text-white mt-0.5">UGX {Math.max(0, (summary.float_limit || 0) - (summary.collected_today || 0)).toLocaleString()}</p>
-                </div>
-                <button 
-                  onClick={() => navigate('/agent-advance-request')}
-                  className="w-full py-2.5 rounded-xl bg-[#6c11d4]/10 text-[#6c11d4] text-sm font-bold hover:bg-[#6c11d4]/20 transition-colors"
-                >
-                  Request for Advance
-                </button>
-              </div>
+    <div className="bg-[#f8f9fa] dark:bg-[#121212] min-h-screen text-slate-900 dark:text-slate-100 pb-24 font-['Public_Sans']">
+      
+      {/* 1. Header (Fixed Purple Bar) */}
+      <header className="fixed top-0 left-0 right-0 z-40 bg-[#8b5cf6] dark:bg-[#6d28d9] px-4 py-4 rounded-b-3xl shadow-md">
+        <div className="flex items-center justify-between max-w-md mx-auto">
+          {/* Logo */}
+          <h1 className="text-white text-xl font-bold tracking-wide">Welile</h1>
+          
+          {/* Action Icons */}
+          <div className="flex items-center gap-3">
+            <div className="relative cursor-pointer">
+              <Bell size={22} className="text-white" />
+              <div className="absolute top-0 right-0 w-2 h-2 rounded-full bg-red-500 border border-[#8b5cf6]"></div>
             </div>
             <div 
-              onClick={() => navigate('/agent-rent-requests')} 
-              className="p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between h-full cursor-pointer hover:border-[#6c11d4]/50 transition-all group"
+              onClick={() => setIsMenuOpen(true)}
+              className="p-1.5 bg-white/10 rounded-full cursor-pointer hover:bg-white/20 transition-colors"
             >
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider group-hover:text-[#6c11d4] transition-colors">Rent Requests</h4>
-                <ClipboardCheck className="text-[#6c11d4]" size={24} />
+              <Menu size={20} className="text-white" />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="pt-24 px-4 max-w-md mx-auto space-y-4">
+        
+        {/* Consolidated Profile & Wallet Card */}
+        <div className="bg-gradient-to-br from-[#9333ea] to-[#6d28d9] rounded-[28px] p-6 shadow-[0_8px_30px_rgb(147,51,234,0.3)] text-white relative overflow-hidden cursor-pointer active:scale-95 transition-transform" onClick={() => setIsWalletOpen(true)}>
+          {/* Decorative background glow */}
+          <div className="absolute -right-8 -top-8 size-40 bg-white/10 rounded-full blur-2xl"></div>
+          <div className="absolute -left-8 -bottom-8 size-32 bg-purple-400/20 rounded-full blur-2xl"></div>
+          
+          <div className="flex items-center justify-between mb-8 relative z-10">
+            <div className="flex items-center gap-3">
+              <div className="size-11 rounded-full bg-white/10 flex items-center justify-center border border-white/20 backdrop-blur-md">
+                <User size={20} className="fill-white/80" />
               </div>
-              <div className="flex items-center gap-4">
-                <div className="size-14 rounded-full border-4 border-[#6c11d4]/20 flex items-center justify-center text-[#6c11d4] font-bold text-xl">
-                  14
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-slate-900 dark:text-white">Approved Requests</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Past 30 days</p>
-                </div>
-              </div>
-              <div className="mt-4 flex -space-x-2">
-                <div className="size-8 rounded-full border-2 border-white dark:border-slate-800 bg-cover bg-center" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDd9fIr1AdxcgnuB-H5-daGvGGH-JRnwFkGnlPvEvlZJWzxibwW2ZGaC19mZevaQKsBI_cI93eyHjlz9hSik9XZ77lxPeDAN-fKkVVX984ArmLwRVRmdlt0gnCVEfjdAEfN6tGgLWp2RP0G4crGouMO50VO4iBwdfqVvpO9Tnc0k8ecw3XgPoI9IuFDc4vQtXEivONj5venxaqK6hMLO-uMpqm5QO-6ROSadfk1zf4VMhF3E8u9uangKjQAcFsRwdnw8Ivz_YQohryd")' }}></div>
-                <div className="size-8 rounded-full border-2 border-white dark:border-slate-800 bg-cover bg-center" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBQ75Yrmw14sukSUDItwqynyBUp9fZeKLjjmkKOiaTAgER1Yknws-D2ZAUCZwdRVHjgdzkf0InjK1vOM9K5gyAHOCSZCbDC4rkhhHBlG_tSZEPANjNV2ZDH3gPFHFfKyW6gi5wNXdkveDvksoQScq-dQcXgV7w22l9Os3FUWePRss2iHdqJVV11_atT0rP8bi0o5tY8aSZ4bNmXc6y_eU0_xLypNMp8tZiD0t6K4O9bKS5K3aB1thQTgsa4sGvCn0oMHkF6JAMXggtf")' }}></div>
-                <div className="size-8 rounded-full border-2 border-white dark:border-slate-800 bg-cover bg-center" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBpFm0yPE3l6GOJbGuAHqNL1BmTnKXUNt2ZFbLr8H8yA1N8lNTBU9kowwi5oKazAPyAvs6N3wywxKdqecLbgqnSw68f0WKEk-6-BLxntaoJWVr0sUyIjs52k3-KZj9BpZviohgjzOsIDJTuwiDo7JddCrHKWyeqpvgfM20KlAr6Wavl16_ApCqBeineC51z7VNbyLwLZvlifNHMSz6aZCCh_ySVEOMiUe2EzM1UYI4Qektyl5zV31MAxxDuUEL0yneWHrCjSn3Tq5Pn")' }}></div>
-                <div className="size-8 rounded-full bg-slate-100 dark:bg-slate-700 border-2 border-white dark:border-slate-800 flex items-center justify-center text-[10px] font-bold">+11</div>
+              <div className="text-left">
+                <p className="text-[11px] text-white/70 font-medium tracking-wide">Welcome back,</p>
+                <h2 className="text-base font-bold leading-tight shadow-sm">{userName}</h2>
               </div>
             </div>
-          </section>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 transition-colors" onClick={(e) => { e.stopPropagation(); navigate('/agent-edit-profile'); }}>
+              <Fingerprint size={14} className="text-white shadow-sm" />
+              <span className="text-xs font-bold text-white tracking-wide shadow-sm">AI ID</span>
+            </button>
+          </div>
 
-          <section className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 pb-20 md:pb-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Recent Transactions</h3>
-              <button className="text-sm font-bold text-[#6c11d4]">View All</button>
+          <div className="grid grid-cols-2 gap-4 relative z-10 items-end">
+            <div>
+               <p className="text-[9px] text-white/70 font-bold uppercase tracking-[0.15em] mb-1.5">Withdrawable</p>
+               <h3 className="text-3xl font-black tracking-tighter drop-shadow-sm">UGX {(summary.wallet_balance || 0).toLocaleString()}</h3>
             </div>
-            <div className="space-y-4">
-              {transactions.length === 0 ? (
-                <p className="text-sm text-center text-slate-500 py-4">No recent transactions found.</p>
-              ) : (
-                transactions.slice(0, 5).map((tx) => {
-                  const isCredit = tx.direction === 'cash_in';
-                  return (
-                    <div key={tx.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className={`size-10 rounded-full flex items-center justify-center ${isCredit ? 'bg-green-100 dark:bg-green-900/30 text-green-600' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'}`}>
-                          {isCredit ? <Download size={20} /> : <Upload size={20} />}
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-slate-900 dark:text-white capitalize">{tx.category.replace(/_/g, ' ')}</p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">
-                            {new Date(tx.transaction_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} • {new Date(tx.transaction_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </p>
-                        </div>
-                      </div>
-                      <p className={`text-sm font-bold ${isCredit ? 'text-green-600' : 'text-slate-900 dark:text-white'}`}>
-                        {isCredit ? '+' : '-'} UGX {tx.amount.toLocaleString()}
-                      </p>
-                    </div>
-                  );
-                })
-              )}
+            <div className="pl-4 border-l border-white/20">
+               <p className="text-[9px] text-white/70 font-bold uppercase tracking-[0.15em] mb-1.5">Commission Earned</p>
+               <h3 className="text-xl font-bold tracking-tight drop-shadow-sm">UGX {(summary.commission_earned || 0).toLocaleString()}</h3>
             </div>
-          </section>
-        </main>
+          </div>
+        </div>
 
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-white dark:bg-[#221610] border-t border-slate-200 dark:border-slate-800 px-6 py-3 flex items-center justify-between z-50">
-          <button onClick={() => navigate('/dashboard')} className="flex flex-col items-center gap-1 text-[#6c11d4]">
-            <Home size={24} />
-            <span className="text-[10px] font-bold">Home</span>
-          </button>
-          <button onClick={() => navigate('/agent-wallet')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6c11d4] transition-colors">
-            <Wallet size={24} />
-            <span className="text-[10px] font-bold">Wallet</span>
-          </button>
-          <button onClick={() => navigate('/dashboard/agent/clients')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6c11d4] transition-colors">
-            <Users size={24} />
-            <span className="text-[10px] font-bold">Clients</span>
-          </button>
-          <button onClick={() => navigate('/dashboard/agent/settings')} className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6c11d4] transition-colors">
-            <Settings size={24} />
-            <span className="text-[10px] font-bold">Settings</span>
-          </button>
-        </nav>
+        {/* 9. Action Map Grids */}
+        <div className="grid grid-cols-3 gap-y-8 gap-x-2 py-6 px-2">
+           {/* Row 1 */}
+           <div onClick={() => setIsTopUpDialogOpen(true)} className="flex flex-col items-center gap-2 cursor-pointer group">
+              <div className="text-[#8b5cf6] dark:text-[#a78bfa] group-hover:scale-110 transition-transform">
+                 <Banknote size={26} strokeWidth={1.5} />
+              </div>
+              <span className="text-[11px] font-bold text-[#8b5cf6] dark:text-[#a78bfa]">Pay Rent</span>
+           </div>
+           <div onClick={() => navigate('/agent-rent-requests')} className="flex flex-col items-center gap-2 cursor-pointer group">
+              <div className="text-emerald-500 dark:text-emerald-400 group-hover:scale-110 transition-transform">
+                 <FileText size={26} strokeWidth={1.5} />
+              </div>
+              <span className="text-[11px] font-bold text-emerald-500 dark:text-emerald-400">Post Request</span>
+           </div>
+           <div onClick={() => navigate('/dashboard/agent/clients')} className="flex flex-col items-center gap-2 cursor-pointer group">
+              <div className="text-[#8b5cf6] dark:text-[#a78bfa] group-hover:scale-110 transition-transform">
+                 <Users size={26} strokeWidth={1.5} />
+              </div>
+              <span className="text-[11px] font-bold text-[#8b5cf6] dark:text-[#a78bfa]">Tenants</span>
+           </div>
 
-        {/* Dialogs */}
-        <AgentRegisterDialog 
-          isOpen={isRegisterDialogOpen} 
-          onClose={() => setIsRegisterDialogOpen(false)} 
-        />
-      </div>
+           {/* Row 2 */}
+           <div onClick={() => navigate('/agent-list-house')} className="flex flex-col items-center gap-2 cursor-pointer group">
+              <div className="text-orange-500 dark:text-orange-400 group-hover:scale-110 transition-transform">
+                 <Home size={26} strokeWidth={1.5} />
+              </div>
+              <span className="text-[11px] font-bold text-orange-500 dark:text-orange-400">List House</span>
+           </div>
+           <div onClick={() => navigate('/agent-advance-request')} className="flex flex-col items-center gap-2 cursor-pointer group">
+              <div className="text-orange-500 dark:text-orange-400 group-hover:scale-110 transition-transform">
+                 <TrendingUp size={26} strokeWidth={1.5} />
+              </div>
+              <span className="text-[11px] font-bold text-orange-500 dark:text-orange-400">Credit</span>
+           </div>
+           <div onClick={() => setIsMenuOpen(true)} className="flex flex-col items-center gap-2 cursor-pointer group">
+              <div className="text-slate-600 dark:text-slate-400 group-hover:scale-110 transition-transform">
+                 <Menu size={26} strokeWidth={1.5} />
+              </div>
+              <span className="text-[11px] font-bold text-slate-800 dark:text-slate-300">Agent Hub</span>
+           </div>
+        </div>
+
+        {/* 4. Verification Progress Bar */}
+        <div onClick={() => navigate('/agent-kyc')} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-700 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-transform">
+          <div className="flex items-center gap-3">
+             <Award size={20} className="text-slate-400 dark:text-slate-500" />
+             <span className="font-bold text-sm text-slate-900 dark:text-white">Ordinary User</span>
+             <span className="text-sm text-slate-500 dark:text-slate-400">0/4 verified</span>
+          </div>
+          <ChevronRight size={18} className="text-slate-400" />
+        </div>
+
+        {/* 5. Daily Rent Expected */}
+        <div onClick={() => navigate('/agent-daily-ops')} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-700 flex items-center gap-4 cursor-pointer active:scale-[0.98] transition-transform mt-4">
+           <div className="size-12 rounded-xl bg-orange-50 dark:bg-orange-900/30 flex items-center justify-center text-orange-400">
+              <Calendar size={24} strokeWidth={1.5} />
+           </div>
+           <div>
+              <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Daily Rent Expected</p>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">USh 0</h3>
+                 <span className="text-xs text-slate-500 dark:text-slate-400">/day</span>
+              </div>
+           </div>
+        </div>
+
+        {/* 6. Streak Card */}
+        <div onClick={() => setIsVisitWizardOpen(true)} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-700 space-y-2 relative overflow-hidden cursor-pointer active:scale-[0.98] transition-transform mt-4">
+           <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                 <Star size={20} className="text-slate-400 dark:text-slate-500" />
+                 <h3 className="font-bold text-sm text-slate-900 dark:text-white">Start Collecting!</h3>
+              </div>
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">7 days to go</span>
+           </div>
+           <p className="text-xs text-slate-400 dark:text-slate-500">Best: 0 days</p>
+           <p className="text-xs text-slate-600 dark:text-slate-300 font-medium mt-1">Collect from any tenant today to start your streak!</p>
+        </div>
+
+        {/* 7. Priority Collections Widget */}
+        <div className="bg-red-50 dark:bg-red-900/20 rounded-2xl p-4 border border-red-100 dark:border-red-900/50 flex items-center justify-between cursor-pointer" onClick={() => navigate('/agent-daily-ops')}>
+           <div className="flex items-center gap-4">
+              <div className="size-10 rounded-xl bg-red-100 dark:bg-red-900/50 flex items-center justify-center text-red-500">
+                 <Target size={20} />
+              </div>
+              <div>
+                 <h4 className="font-bold text-sm text-slate-900 dark:text-white">Priority Collections</h4>
+                 <p className="text-xs text-red-500 dark:text-red-400">Tap to see who needs collection first</p>
+              </div>
+           </div>
+           <AlertTriangle size={20} className="text-red-500" />
+        </div>
+
+        <ApprovedRentRequestsWidget />
+
+        {/* 8. Landlord Float Widget */}
+        <div className="bg-orange-50/50 dark:bg-orange-900/10 rounded-2xl border border-orange-100 dark:border-orange-900/40 overflow-hidden mt-6">
+           <div className="p-4 relative">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-1 relative z-10">Landlord Float</p>
+              <div className="flex items-start gap-3 relative z-10">
+                 <div className="size-10 rounded-xl bg-orange-100 dark:bg-orange-900/50 flex justify-center items-center text-orange-500 shrink-0 mt-1">
+                    <Landmark size={20} />
+                 </div>
+                 <div className="flex-1">
+                    <h4 className="font-bold text-sm text-slate-900 dark:text-white">Pay Landlord via MoMo</h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-snug">Withdraw from float → Pay landlord → Upload receipt + GPS</p>
+                 </div>
+                 <button onClick={(e) => { e.stopPropagation(); navigate('/agent/landlord-payout'); }} className="flex items-center gap-1 text-orange-500 font-bold text-sm mt-1">
+                    Pay <ArrowRight size={16} />
+                 </button>
+              </div>
+           </div>
+           
+           <div className="grid grid-cols-3 divide-x divide-orange-100 dark:divide-orange-900/40 border-t border-orange-100 dark:border-orange-900/40">
+              <button onClick={() => navigate('/transactions')} className="py-3 flex items-center justify-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors">
+                 <TrendingUp size={14} /> Recovery
+              </button>
+              <button onClick={() => navigate('/agent/landlord-payout')} className="py-3 flex items-center justify-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors">
+                 <ShieldCheck size={14} /> Status
+              </button>
+              <button onClick={() => navigate('/agent/landlord-payout')} className="py-3 flex items-center justify-center gap-1.5 text-xs text-slate-600 dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors">
+                 <History size={14} /> History
+              </button>
+           </div>
+        </div>
+
+        <AgentRentPaymentGuide />
+
+
+      </main>
+
+        {/* 10. Primary Visit Tenant CTA */}
+        <PrimaryVisitTenantCTA onClick={() => setIsVisitWizardOpen(true)} />
+
+      {/* 11. Mobile Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#1e1e1e] border-t border-slate-100 dark:border-slate-800 px-6 py-2 pb-safe">
+         <div className="flex items-center justify-between max-w-md mx-auto">
+            {/* Tenant Tab */}
+            <button onClick={() => navigate('/dashboard')} className="flex flex-col items-center gap-1.5 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+               <Home size={22} />
+               <span className="text-[10px] font-medium">Tenant</span>
+            </button>
+            
+            {/* Agent Tab (Active) */}
+            <button className="flex flex-col items-center justify-center bg-purple-50 dark:bg-purple-900/30 px-6 py-2 rounded-2xl">
+               <div className="relative">
+                  <span className="absolute -top-1 -right-1.5 flex h-2 w-2">
+                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                     <span className="relative inline-flex rounded-full h-2 w-2 bg-[#8b5cf6]"></span>
+                  </span>
+                  <Users size={22} className="text-[#8b5cf6] dark:text-purple-400" />
+               </div>
+               <div className="w-5 h-1 bg-[#8b5cf6] rounded-full mt-2"></div>
+            </button>
+
+            {/* Funder Tab */}
+            <button className="flex flex-col items-center gap-1.5 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+               <WalletCards size={22} />
+               <span className="text-[10px] font-medium">Funder</span>
+            </button>
+
+            {/* Owner Tab */}
+            <button className="flex flex-col items-center gap-1.5 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+               <Building2 size={22} />
+               <span className="text-[10px] font-medium">Owner</span>
+            </button>
+         </div>
+      </nav>
+
+      <AgentRegisterDialog 
+        isOpen={isRegisterDialogOpen} 
+        onClose={() => setIsRegisterDialogOpen(false)} 
+      />
+
+      <AgentTopUpTenantDialog
+        isOpen={isTopUpDialogOpen}
+        onClose={() => setIsTopUpDialogOpen(false)}
+      />
+
+      <AgentMenuDrawer 
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        onOpenRegister={() => setIsRegisterDialogOpen(true)}
+      />
+
+      <FullScreenWalletSheet 
+        isOpen={isWalletOpen}
+        onClose={() => setIsWalletOpen(false)}
+        balance={summary.wallet_balance || 0}
+      />
+
+      <VisitPaymentWizard 
+        isOpen={isVisitWizardOpen}
+        onClose={() => setIsVisitWizardOpen(false)}
+      />
     </div>
   );
 }

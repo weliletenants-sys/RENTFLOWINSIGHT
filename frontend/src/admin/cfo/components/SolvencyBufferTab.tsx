@@ -6,13 +6,13 @@ interface SolvencyBufferTabProps {
 }
 
 export default function SolvencyBufferTab({ solvencyData }: SolvencyBufferTabProps) {
-  // Use provided data or fallback to mock
+  // STRICT PRISMA DATA ENFORCEMENT
   const data = solvencyData || {
-    coverageRatio: 1.45,
+    coverageRatio: 0,
     targetRatio: 1.2,
-    bufferHealth: 'Healthy',
-    liquidity: { available: 85000000, obligations: 58500000 },
-    breakdown: { totalFunded: 450000000, totalRepaid: 315000000, outstandingBalance: 135000000 }
+    bufferHealth: 'Pending Calculation',
+    liquidity: { available: 0, obligations: 0 },
+    breakdown: { totalFunded: 0, totalRepaid: 0, outstandingBalance: 0 }
   };
 
   const isHealthy = data.coverageRatio >= data.targetRatio;
@@ -56,20 +56,21 @@ export default function SolvencyBufferTab({ solvencyData }: SolvencyBufferTabPro
             <div>
               <div className="flex justify-between items-end mb-3">
                 <span className="text-sm font-bold text-slate-600">Available Liquid Flow</span>
-                <span className="text-2xl font-black font-outfit text-[#6c11d4]">UGX {data.liquidity.available.toLocaleString()}</span>
+                <span className="text-2xl font-black font-outfit text-[#6c11d4]">UGX {Number(data.liquidity.available || 0).toLocaleString()}</span>
               </div>
-              <div className="h-4 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                <div className="bg-[#6c11d4] h-full rounded-full" style={{ width: '100%' }}></div>
+              <div className="h-4 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner flex items-center justify-center">
+                {data.liquidity.available === 0 && <span className="text-[10px] uppercase font-bold text-slate-400">Awaiting Ledgers</span>}
+                {data.liquidity.available > 0 && <div className="bg-[#6c11d4] h-full rounded-full" style={{ width: '100%' }}></div>}
               </div>
             </div>
 
             <div>
               <div className="flex justify-between items-end mb-3">
                 <span className="text-sm font-bold text-slate-600">Immediate Obligations</span>
-                <span className="text-2xl font-black font-outfit text-orange-500">UGX {data.liquidity.obligations.toLocaleString()}</span>
+                <span className="text-2xl font-black font-outfit text-orange-500">UGX {Number(data.liquidity.obligations || 0).toLocaleString()}</span>
               </div>
               <div className="h-4 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                <div className="bg-orange-500 h-full rounded-full" style={{ width: `${(data.liquidity.obligations / data.liquidity.available) * 100}%` }}></div>
+                <div className="bg-orange-500 h-full rounded-full" style={{ width: `${Math.min(100, (data.liquidity.obligations / (data.liquidity.available || 1)) * 100)}%` }}></div>
               </div>
             </div>
           </div>

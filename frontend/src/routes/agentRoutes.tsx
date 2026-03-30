@@ -10,6 +10,7 @@ const AgentWithdraw       = lazy(() => import('../agent/AgentWithdraw'));
 const AgentDeposit        = lazy(() => import('../agent/AgentDeposit'));
 const AgentInvestForPartner = lazy(() => import('../agent/AgentInvestForPartner'));
 const AgentRegisterTenant = lazy(() => import('../agent/AgentRegisterTenant'));
+const TenantPropertyExplorer = lazy(() => import('../tenant/TenantPropertyExplorer'));
 
 const CentralWalletView   = lazy(() => import('../pages/wallet/CentralWalletView'));
 const AgentAnalytics      = lazy(() => import('../agent/AgentAnalytics'));
@@ -68,6 +69,7 @@ export const agentRoutes = [
   <Route key="agent-visit"             path="/agent-visit"             element={<AgentVisit />} />,
   <Route key="agent-visit-detail"      path="/agent-visit/:tenantId"   element={<AgentVisitDetail />} />,
   <Route key="agent-list-house"        path="/agent-list-house"        element={<AgentListHouse />} />,
+  <Route key="agent-find-rentals"      path="/find-rentals"            element={<TenantPropertyExplorer />} />,
   <Route key="agent-advance-request"   path="/agent-advance-request"   element={<AgentRequestAdvance />} />,
   <Route key="agent-advance-details"   path="/agent-advances/:id"      element={<AgentAdvanceDetails />} />,
   <Route key="agent-cash-payouts"      path="/agent/cash-payouts"      element={<AgentCashPayouts />} />,
