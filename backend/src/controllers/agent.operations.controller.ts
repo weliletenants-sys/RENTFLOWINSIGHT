@@ -64,13 +64,13 @@ export const recordCollection = async (req: Request, res: Response) => {
       instance: req.originalUrl
     });
 
-    // Validate against Float Limit securely without allowing frontend spoofing
     const floatRecord = await prisma.agentFloatLimits.findFirst({
       orderBy: { created_at: 'desc' }
     });
 
     let currentCollected = floatRecord?.collected_today || 0;
-    let limit = floatRecord?.float_limit || 1000000; // Mock default
+    const SYSTEM_DEFAULT_FLOAT_LIMIT = 1000000;
+    let limit = floatRecord?.float_limit || SYSTEM_DEFAULT_FLOAT_LIMIT;
 
     if (numAmount + currentCollected > limit) {
        return res.status(400).json({
@@ -99,7 +99,6 @@ export const recordCollection = async (req: Request, res: Response) => {
       }
     });
 
-    // Optimistically update the mock float limit
     if (floatRecord) {
         await prisma.agentFloatLimits.update({
             where: { id: floatRecord.id },

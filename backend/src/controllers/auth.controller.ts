@@ -70,11 +70,12 @@ export const register = async (req: Request, res: Response) => {
         },
       });
 
-      await tx.userPersonas.create({
+      await tx.userRoles.create({
         data: {
           user_id: profile.id,
-          persona: role.toLowerCase(),
-          is_default: true,
+          role: role.toUpperCase(),
+          enabled: true,
+          created_at: now
         }
       });
 
@@ -176,7 +177,9 @@ export const login = async (req: Request, res: Response) => {
     // Auth Validation
     if (!profile || !profile.password_hash) {
       // Intentional delay to avoid timing leaks
-      await bcrypt.compare('dummy', '$2b$12$dummyhashstings12345678');
+      try {
+        await bcrypt.compare(password, '$2b$12$LQv3c1tyKcgcgfpUX6m4wOEvB/P/4qE3F.qB0bZ3m6vE0bZ3m6vE0');
+      } catch (e) {}
       await logSecurityEvent({ event: 'LOGIN_FAILED', ip_address: req.ip, user_agent: req.headers['user-agent'], details: { reason: 'user_not_found_or_no_password', phone: phoneTrimmed } });
       return problemResponse(res, 401, 'Unauthorized', 'Invalid phone number or password', 'invalid-credentials');
     }
@@ -187,8 +190,8 @@ export const login = async (req: Request, res: Response) => {
       return problemResponse(res, 401, 'Unauthorized', 'Invalid phone number or password', 'invalid-credentials');
     }
 
-    const userPersona = await prisma.userPersonas.findFirst({ where: { user_id: profile.id, is_default: true } }) || await prisma.userPersonas.findFirst({ where: { user_id: profile.id }, orderBy: { created_at: 'desc' } });
-    const role = userPersona ? userPersona.persona.toUpperCase() : 'TENANT';
+    const userRoleRecord = await prisma.userRoles.findFirst({ where: { user_id: profile.id, enabled: true }, orderBy: { created_at: 'desc' } }) || await prisma.userRoles.findFirst({ where: { user_id: profile.id }, orderBy: { created_at: 'desc' } });
+    const role = userRoleRecord ? userRoleRecord.role.toUpperCase() : (profile.role ? profile.role.toUpperCase() : 'TENANT');
     const firstName = profile.full_name?.split(' ')[0] || 'User';
 
     const payload = { phone: profile.phone, email: profile.email, sub: profile.id, role, firstName };
@@ -273,8 +276,8 @@ export const ssoLogin = async (req: Request, res: Response) => {
       });
     }
 
-    const userPersona = await prisma.userPersonas.findFirst({ where: { user_id: profile.id, is_default: true } }) || await prisma.userPersonas.findFirst({ where: { user_id: profile.id }, orderBy: { created_at: 'desc' } });
-    const role = userPersona ? userPersona.persona.toUpperCase() : 'TENANT';
+    const userRoleRecord = await prisma.userRoles.findFirst({ where: { user_id: profile.id, enabled: true }, orderBy: { created_at: 'desc' } }) || await prisma.userRoles.findFirst({ where: { user_id: profile.id }, orderBy: { created_at: 'desc' } });
+    const role = userRoleRecord ? userRoleRecord.role.toUpperCase() : (profile.role ? profile.role.toUpperCase() : 'TENANT');
 
     // We reached here? The email exists. We grant access.
     const jwtPayload = { email: profile.email, sub: profile.id, role };

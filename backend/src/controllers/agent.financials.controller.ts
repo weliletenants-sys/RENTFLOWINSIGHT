@@ -14,22 +14,65 @@ export const requestDeposit = async (req: Request, res: Response) => {
     });
 
     const { target_user_id, amount, provider, transition_id, notes } = req.body;
-    
-    // TODO: Verify if Agent deposits into the app should also deduct from their Agent Wallet here.
-    // Currently, deposit requests rely on external payment gateways or manual Admin approval 
-    // without locking/decrementing the agent's internal float beforehand.
+    const depositAmount = Number(amount);
+
+    if (depositAmount <= 0) {
+      return res.status(400).json({
+        type: 'https://api.welile.com/errors/bad-request',
+        title: 'Invalid Amount',
+        status: 400,
+        detail: 'Deposit amount must be greater than zero.',
+        instance: req.originalUrl
+      });
+    }
+
+    const now = new Date().toISOString();
+    const effectiveTargetId = target_user_id || userId;
+    const isSelfDeposit = effectiveTargetId === userId;
+
+    // Conditionally deduct from Agent Wallet if depositing on behalf of a tenant or partner
+    if (!isSelfDeposit) {
+      const wallet = await prisma.wallets.findFirst({ where: { user_id: userId } });
+      if (!wallet || wallet.balance < depositAmount) {
+        return res.status(400).json({
+          type: 'https://api.welile.com/errors/payment-required',
+          title: 'Insufficient Funds',
+          status: 400,
+          detail: 'Insufficient wallet balance to fund this user request.',
+          instance: req.originalUrl
+        });
+      }
+
+      await prisma.wallets.update({
+        where: { id: wallet.id },
+        data: { balance: { decrement: depositAmount }, updated_at: now }
+      });
+      
+      await prisma.generalLedger.create({
+        data: {
+          user_id: userId,
+          amount: depositAmount,
+          direction: 'cash_out',
+          category: 'wallet_transfer',
+          source_table: 'wallets',
+          transaction_date: now,
+          created_at: now,
+          description: `Internal transfer deduction to fund deposit request for user ${effectiveTargetId}`
+        }
+      });
+    }
 
     const request = await prisma.depositRequests.create({
       data: {
         agent_id: userId,
-        user_id: target_user_id || 'unlinked',
-        amount: Number(amount),
+        user_id: effectiveTargetId,
+        amount: depositAmount,
         provider,
         transaction_id: transition_id,
         notes,
         status: 'PENDING',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        created_at: now,
+        updated_at: now
       }
     });
 

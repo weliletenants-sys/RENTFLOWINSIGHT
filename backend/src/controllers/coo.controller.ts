@@ -55,7 +55,17 @@ export const getOverviewMetrics = async (req: Request, res: Response) => {
     // 7. Wallet Monitoring
     const wallets = await prisma.wallets.aggregate({ _sum: { balance: true }});
     const mainFloat = wallets._sum.balance || 0;
-    const agentEscrow = mainFloat * 0.12; // Static mock slice matching frontend for now
+    
+    const agents = await prisma.profiles.findMany({
+        where: { role: { in: ['AGENT', 'agent', 'partner'] } },
+        select: { id: true }
+    });
+    
+    const agentEscrowSum = await prisma.wallets.aggregate({
+        where: { user_id: { in: agents.map(a => a.id) } },
+        _sum: { balance: true }
+    });
+    const agentEscrow = agentEscrowSum._sum.balance || 0;
 
     res.json({
         totalInvestors,
@@ -761,19 +771,19 @@ export const importPartners = async (req: Request, res: Response) => {
     const defaultPasswordHash = await bcrypt.hash('Partner@welile', 12);
 
     for (const p of partners) {
-      if (!p.phone && !p.email) continue;
+      if (!p.phone) continue; // Phone numbers are strictly required for authentication
       
       let user = await prisma.profiles.findFirst({
-        where: p.phone && p.email 
+        where: p.email 
           ? { OR: [{ phone: p.phone }, { email: p.email }] }
-          : p.phone ? { phone: p.phone } : { email: p.email }
+          : { phone: p.phone }
       });
 
       if (!user) {
         user = await prisma.profiles.create({
           data: {
             full_name: p.name || 'Unnamed Partner',
-            phone: p.phone || `mock_${crypto.randomUUID().slice(0, 8)}`,
+            phone: p.phone,
             email: p.email || null,
             role: 'FUNDER',
             password_hash: defaultPasswordHash,
