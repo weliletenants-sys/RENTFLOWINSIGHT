@@ -67,6 +67,7 @@ export default function Signup() {
         lastName,
         role: intendedRole || 'TENANT',
         phone,
+        referrer_id: refCode || undefined,
       });
 
       if (res.status === 'success') {

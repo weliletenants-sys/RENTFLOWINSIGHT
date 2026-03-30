@@ -59,11 +59,11 @@ export default function FunderReferralsPage() {
             <div className="absolute top-0 right-0 w-64 h-64 bg-purple-600 rounded-full mix-blend-screen filter blur-3xl opacity-20 pointer-events-none" />
             <div className="relative z-10 w-full text-center sm:text-left">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800 text-purple-300 text-[10px] font-bold uppercase tracking-widest mb-4">
-                    <Users className="w-3.5 h-3.5" /> Funder Rewards Program
+                    <Users className="w-3.5 h-3.5" /> Funder Ambassador Network
                 </div>
-                <h2 className="text-3xl font-black tracking-tight mb-2">Invite Peers. Earn Bonus Yield.</h2>
+                <h2 className="text-3xl font-black tracking-tight mb-2">Grow Your Network. Lead The Pool.</h2>
                 <p className="text-slate-400 text-sm leading-relaxed mb-6 max-w-2xl">
-                    Share your secure invitation link with verified investors. When they deploy capital into a rent pool, your next portfolio cycle will receive an automatic <span className="text-white font-bold">+2.5% ROI multiplier boost.</span>
+                    Share your secure invitation link with partners. Unlock priority early-access to premium real-estate rent pools by expanding your elite Funder Ambassador Network.
                 </p>
 
                 <div className="flex w-full max-w-xl items-center bg-white/10 rounded-xl p-1.5 border border-white/20 backdrop-blur">
