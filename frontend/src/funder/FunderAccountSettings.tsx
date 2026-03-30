@@ -23,7 +23,12 @@ import {
   Camera,
   User,
   Info,
-  Phone
+  Phone,
+  Copy,
+  Check,
+  TrendingUp,
+  Search,
+  Loader2
 } from 'lucide-react';
 
 import { useNavigate } from 'react-router-dom';
@@ -33,7 +38,7 @@ import FunderSidebar from './components/FunderSidebar';
 
 import FunderDashboardHeader from './components/FunderDashboardHeader';
 import { useKycStatus } from './hooks/useKycStatus';
-import { getFunderDashboardStats, updateFunderProfile, uploadFunderAvatar, changeFunderPassword, enableFunder2FA, verifyFunder2FA, disableFunder2FA, getSessions, revokeSession, revokeAllOtherSessions, getPayoutMethods, addPayoutMethod, setPrimaryPayoutMethod, deletePayoutMethod, getRewardMode, updateRewardMode, getPortfolios, getProxyMandates, createProxyMandate, updateProxyLimit, revokeProxyMandate, restoreProxyMandate, type PayoutMethodView, type DashboardStatsResponse } from '../services/funderApi';
+import { getFunderDashboardStats, updateFunderProfile, uploadFunderAvatar, changeFunderPassword, enableFunder2FA, verifyFunder2FA, disableFunder2FA, getSessions, revokeSession, revokeAllOtherSessions, getPayoutMethods, addPayoutMethod, setPrimaryPayoutMethod, deletePayoutMethod, getRewardMode, updateRewardMode, getPortfolios, getProxyMandates, createProxyMandate, updateProxyLimit, revokeProxyMandate, restoreProxyMandate, getFunderReferralStats, type PayoutMethodView, type DashboardStatsResponse } from '../services/funderApi';
 
 const parseUserAgent = (ua: string | null) => {
   if (!ua) return 'Unknown Device';
@@ -211,7 +216,7 @@ export default function FunderAccountSettings() {
       fetchProxyData();
     } catch { toast.error('Failed to restore access.', { id: tId }); }
   };
-  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'financial' | 'proxy' | 'reporting' | 'roles'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'financial' | 'proxy' | 'network' | 'reporting' | 'roles'>('profile');
   const [newPassword, setNewPassword] = useState('');
   
   // Real user data fallback
@@ -568,6 +573,7 @@ export default function FunderAccountSettings() {
                   { id: 'security', label: 'Security & Auth', icon: <Lock className="w-4 h-4" /> },
                   { id: 'financial', label: 'Capital & Escrow', icon: <Landmark className="w-4 h-4" /> },
                   { id: 'proxy', label: 'Proxy Relations', icon: <Users className="w-4 h-4" /> },
+                  { id: 'network', label: 'Ambassador Network', icon: <TrendingUp className="w-4 h-4" /> },
                   { id: 'reporting', label: 'Reporting & Compliance', icon: <FileText className="w-4 h-4" /> },
                   { id: 'roles', label: 'Role Management', icon: <Building2 className="w-4 h-4" /> },
                 ].map((tab) => (
@@ -1170,6 +1176,11 @@ export default function FunderAccountSettings() {
                   </div>
                 )}
 
+                {/* TAB: NETWORK & REFERRALS */}
+                {activeTab === 'network' && (
+                  <AmbassadorNetworkTab />
+                )}
+
                 {/* TAB 4: REPORTING & COMPLIANCE */}
                 {activeTab === 'reporting' && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -1480,6 +1491,157 @@ function RoleManagementTab({ platformRoles, rolesLoading, activeRole, onFetchRol
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─────────── AMBASSADOR NETWORK TAB SUB-COMPONENT ───────────
+
+function AmbassadorNetworkTab() {
+  const [copied, setCopied] = useState(false);
+  const [stats, setStats] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Mock invite link, replace with dynamic authUser code later
+  const inviteLink = 'https://invest.rentflowinsight.com/join/funder?ref=w_902A';
+
+  useEffect(() => {
+    const fetchGamificationData = async () => {
+       try {
+          const statsData = await getFunderReferralStats();
+          setStats(statsData);
+       } catch (error) {
+          console.error('Failed to load referral data:', error);
+       } finally {
+          setIsLoading(false);
+       }
+    };
+    fetchGamificationData();
+  }, []);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(inviteLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="bg-slate-50 min-h-[400px] rounded-[24px] flex items-center justify-center border border-slate-100">
+        <Loader2 className="w-8 h-8 text-[var(--color-primary)] animate-spin" />
+      </div>
+    );
+  }
+
+  const recentInvites = stats?.recentInvites || [];
+
+  return (
+    <div className="flex flex-col space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="bg-slate-900 rounded-[24px] p-6 lg:p-8 text-white relative flex flex-col sm:flex-row justify-between items-center sm:items-start overflow-hidden shadow-xl border border-slate-800">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-purple-600 rounded-full mix-blend-screen filter blur-3xl opacity-20 pointer-events-none" />
+            <div className="relative z-10 w-full text-center sm:text-left">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800 text-purple-300 text-[10px] font-bold uppercase tracking-widest mb-4">
+                    <Users className="w-3.5 h-3.5" /> Funder Ambassador Network
+                </div>
+                <h2 className="text-3xl font-black tracking-tight mb-2">Grow Your Network. Lead The Pool.</h2>
+                <p className="text-slate-400 text-sm leading-relaxed mb-6 max-w-2xl">
+                    Share your secure invitation link with partners. Unlock priority early-access to premium real-estate rent pools by expanding your elite Funder Ambassador Network.
+                </p>
+
+                <div className="flex w-full max-w-xl items-center bg-white/10 rounded-xl p-1.5 border border-white/20 backdrop-blur mx-auto sm:mx-0">
+                   <div className="flex-1 px-4 text-xs font-medium text-slate-300 truncate">
+                      {inviteLink}
+                   </div>
+                   <button 
+                      onClick={handleCopy}
+                      className="flex shrink-0 items-center justify-center gap-1.5 bg-white text-slate-900 rounded-lg px-4 py-2 font-bold text-xs hover:bg-slate-100 transition-all cursor-pointer"
+                   >
+                      {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                      {copied ? 'Copied' : 'Copy'}
+                   </button>
+                </div>
+            </div>
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex flex-col items-center sm:items-start text-center sm:text-left gap-2">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <Users className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight mb-1">Total Invites Sent</p>
+                <p className="font-black text-slate-900 text-xl tracking-tight">{stats?.totalInvited || 0}</p>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex flex-col items-center sm:items-start text-center sm:text-left gap-2">
+              <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight mb-1">Fully Verified</p>
+                <p className="font-black text-slate-900 text-xl tracking-tight">{stats?.activeJoined || 0}</p>
+              </div>
+            </div>
+
+            <div className="col-span-2 bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex flex-col items-center sm:items-start text-center sm:text-left gap-2">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <TrendingUp className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight mb-1">Network Capital Deployed</p>
+                <p className="font-black text-slate-900 text-xl tracking-tight flex items-center justify-center sm:justify-start gap-2">
+                    UGX {((stats?.capitalDeployed || 0) * 1000000).toLocaleString()}
+                    <span className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full font-bold">Estimated</span>
+                </p>
+              </div>
+            </div>
+        </div>
+
+        <div className="border border-slate-200 bg-white rounded-[24px] shadow-sm overflow-hidden flex flex-col mt-4">
+           <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+               <div>
+                  <h3 className="font-black text-slate-900 tracking-tight flex items-center gap-2">
+                     <Users className="w-5 h-5 text-[var(--color-primary)]" /> 
+                     Referred Users
+                  </h3>
+                  <p className="font-medium text-[11px] text-slate-400 mt-0.5">Your personal network</p>
+               </div>
+           </div>
+           
+           <div className="w-full">
+               <div className="divide-y divide-slate-100 w-full">
+                 {recentInvites.length === 0 ? (
+                    <div className="p-12 text-center text-slate-400 flex flex-col items-center justify-center">
+                        <Search className="w-8 h-8 mb-3 opacity-20" />
+                        <p className="text-sm font-bold">You haven't referred anyone yet.</p>
+                    </div>
+                 ) : (
+                    recentInvites.map((user: any, idx: number) => (
+                      <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-4 hover:bg-slate-50 transition-colors gap-4">
+                          <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-sm uppercase shrink-0">
+                                  {user.name.substring(0, 2)}
+                              </div>
+                              <div>
+                                  <p className="font-bold text-sm text-slate-800">{user.name}</p>
+                                  <p className="text-xs text-slate-500 font-medium">Joined: {user.date}</p>
+                              </div>
+                          </div>
+                          
+                          <div className="shrink-0 flex items-center gap-1 sm:self-center self-start pl-14 sm:pl-0">
+                             <span className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${
+                                 user.status === 'Active' ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600'
+                             }`}>
+                                 {user.status}
+                             </span>
+                          </div>
+                      </div>
+                    ))
+                 )}
+               </div>
+           </div>
+        </div>
     </div>
   );
 }

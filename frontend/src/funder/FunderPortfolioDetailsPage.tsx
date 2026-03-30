@@ -580,9 +580,9 @@ export default function FunderPortfolioDetailsPage() {
                 </div>
               ) : (
                 <>
-                  <div className="mb-4 bg-amber-50 p-4 rounded-2xl border border-amber-100 flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-                    <p className="text-xs font-bold text-amber-900 leading-relaxed">
+                  <div className="mb-4 bg-amber-50 p-3 sm:p-4 rounded-xl border border-amber-100 flex items-start gap-2 sm:gap-3">
+                    <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 shrink-0 mt-0.5" />
+                    <p className="text-[10px] sm:text-xs font-bold text-amber-900 leading-normal">
                       Withdrawing capital early triggers a strict 90-day liquidity lock. Your portfolio will stop generating ROI immediately, and funds will be released to your wallet on {new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toLocaleDateString()}.
                     </p>
                   </div>
@@ -617,8 +617,9 @@ export default function FunderPortfolioDetailsPage() {
                         ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-inner'
                         : (!withdrawAmount || Number(withdrawAmount) <= 0 || Number(withdrawAmount) > portfolioInfo.investedAmount)
                           ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                          : 'bg-slate-900 text-white shadow-md hover:-translate-y-[1px] hover:shadow-lg'
+                          : 'text-white shadow-md hover:-translate-y-[1px] hover:shadow-lg'
                       }`}
+                    style={(!isSubmittingWithdraw && withdrawAmount && Number(withdrawAmount) > 0 && Number(withdrawAmount) <= portfolioInfo.investedAmount) ? { background: 'var(--color-primary)' } : undefined}
                   >
                     {isSubmittingWithdraw ? (
                       <>
