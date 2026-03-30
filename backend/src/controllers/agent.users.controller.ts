@@ -210,19 +210,36 @@ export const getAssignedTenants = async (req: Request, res: Response) => {
       orderBy: { created_at: 'desc' }
     });
 
-    // Map to the shape expected by AgentVisit and AgentReceipt mock UI layer
-    const mapped = tenants.map(t => ({
-      id: t.id,
-      name: t.full_name,
-      property: 'Generic Property (Unassigned)',
-      phone: t.phone,
-      location: t.city || 'Location unavailable',
-      distance: (Math.random() * 5).toFixed(1) + ' km',
-      rentStatus: Math.random() > 0.5 ? 'paid' : 'overdue',
-      outstandingBalance: Math.random() > 0.5 ? 0 : Math.floor(Math.random() * 500000),
-      dailyAmount: 15000,
-      lastPaymentDate: t.updated_at
-    }));
+    const tenantIds = tenants.map(t => t.id);
+    const rentRequests = await prisma.rentRequests.findMany({
+      where: { tenant_id: { in: tenantIds }, status: 'funded' }
+    });
+
+    const rentMap = rentRequests.reduce((acc, curr) => {
+      if (curr.tenant_id) {
+        acc[curr.tenant_id] = curr;
+      }
+      return acc;
+    }, {} as Record<string, any>);
+
+    // Map to the shape expected by AgentVisit and AgentReceipt UI layer using live data
+    const mapped = tenants.map(t => {
+      const req = rentMap[t.id];
+      const outstandingBalance = req ? Math.max(0, req.total_repayment - req.amount_repaid) : 0;
+      
+      return {
+        id: t.id,
+        name: t.full_name,
+        property: req ? `${req.house_category || 'Active Property'}` : 'Generic Property (Unassigned)',
+        phone: t.phone,
+        location: t.city || 'Location unavailable',
+        distance: '0 km',
+        rentStatus: req ? (outstandingBalance > 0 ? 'overdue' : 'paid') : 'paid',
+        outstandingBalance: outstandingBalance,
+        dailyAmount: req ? req.daily_repayment : 0,
+        lastPaymentDate: req ? req.updated_at : t.updated_at
+      };
+    });
 
     return res.status(200).json({ tenants: mapped });
   } catch (error) {

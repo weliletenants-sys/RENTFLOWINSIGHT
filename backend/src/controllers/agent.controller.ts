@@ -82,10 +82,11 @@ export const getRecruitmentStats = async (req: Request, res: Response) => {
     });
 
     const totalClients = await prisma.profiles.count({ where: { referrer_id: userId } });
+    const verifiedClients = await prisma.profiles.count({ where: { referrer_id: userId, verified: true } });
     
-    // For demo purposes, we mock pendingPayments and conversionRate
-    const pendingPayments = Math.floor(totalClients * 0.3);
-    const conversionRate = totalClients === 0 ? 0 : Math.round(((totalClients - pendingPayments) / totalClients) * 100);
+    // Live metrics replacing the previous hard-coded ratio
+    const pendingPayments = totalClients - verifiedClients;
+    const conversionRate = totalClients === 0 ? 0 : Math.round((verifiedClients / totalClients) * 100);
 
     return res.status(200).json({
       totalClients,

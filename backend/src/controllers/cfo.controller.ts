@@ -103,13 +103,46 @@ export const getOverview = async (req: Request, res: Response) => {
       prisma.profiles.count({ where: { role: { in: ['FUNDER', 'funder', 'SUPPORTER', 'supporter'] } } })
     ]);
 
-    // Financial Charts (last 7 days by default here for mock logic)
-    // Normally we'd group by Date(transaction_date) but prisma string dates are tricky.
-    // For now we'll send empty array to fulfill interface, or mocked trends
-    const trends = [
-      { date: '2023-10-01', profit: 12000, inflow: 50000, outflow: 30000 },
-      { date: '2023-10-02', profit: 15000, inflow: 60000, outflow: 40000 }
-    ];
+    // Live Financial Charts derived from the General Ledger
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    const recentLedger = await prisma.generalLedger.findMany({
+      where: { created_at: { gte: sevenDaysAgo.toISOString() } },
+      select: {
+        amount: true,
+        direction: true,
+        category: true,
+        created_at: true
+      }
+    });
+
+    const trendMap: Record<string, { profit: number; inflow: number; outflow: number }> = {};
+    
+    recentLedger.forEach(entry => {
+      // safely slice the ISO string to just YYYY-MM-DD
+      const day = entry.created_at.split('T')[0];
+      if (!trendMap[day]) {
+        trendMap[day] = { profit: 0, inflow: 0, outflow: 0 };
+      }
+      
+      const val = entry.amount || 0;
+      if (entry.direction === 'credit') {
+        trendMap[day].inflow += val;
+        if (entry.category === 'platform_fee' || entry.category === 'commission') {
+          trendMap[day].profit += val;
+        }
+      } else if (entry.direction === 'debit') {
+        trendMap[day].outflow += val;
+      }
+    });
+
+    const trends = Object.keys(trendMap).sort().map(date => ({
+      date,
+      profit: trendMap[date].profit,
+      inflow: trendMap[date].inflow,
+      outflow: trendMap[date].outflow
+    }));
 
     res.json({
       metrics: {

@@ -418,14 +418,24 @@ export const issueAgentAdvance = async (req: Request, res: Response) => {
     }
 
     const result = await prisma.$transaction(async (tx: any) => {
+      const now = new Date();
+      const expirationDate = new Date(now.getTime() + (cycle_days || 14) * 24 * 60 * 60 * 1000);
+
       // 1. Create advance formalization sequence
-      const advance = await tx.agentAdvances?.create({
+      const advance = await tx.agentAdvances.create({
         data: {
           agent_id: agentId,
           principal,
+          outstanding_balance: principal,
+          advance_type: 'Operational',
+          reason: note || 'Standard issuance',
+          expected_date: expirationDate.toISOString(),
+          status: 'ISSUED',
           daily_rate: daily_rate || 500,
           cycle_days: cycle_days || 14,
-          status: 'ISSUED',
+          issued_by: 'MANAGER',
+          issued_at: now.toISOString(),
+          expires_at: expirationDate.toISOString()
         }
       });
 
@@ -443,13 +453,13 @@ export const issueAgentAdvance = async (req: Request, res: Response) => {
           amount: principal,
           category: 'cash_advance',
           direction: 'credit',
-          reference_id: advance?.id || `ADV_MOCK_${Date.now()}`,
+          reference_id: advance.id,
           status: 'COMPLETED',
           description: `Field Advance deployed. Note: ${note || 'Standard issuance'}`
         }
       });
 
-      return advance || { id: `MOCK_ADVANCE`, agent_id: agentId, principal };
+      return advance;
     });
 
     res.json({ data: result });
