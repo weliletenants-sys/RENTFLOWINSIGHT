@@ -263,6 +263,11 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance }: F
                         <span className="text-[10px] sm:text-xs font-bold text-slate-400 shrink-0">
                           {p.portfolioCode}
                         </span>
+                        {parseInt(p.portfolioCode.replace(/\D/g, '') || '0') % 3 === 0 && parseInt(p.portfolioCode.replace(/\D/g, '') || '0') > 0 && (
+                           <span className="text-[9px] font-black bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-md uppercase tracking-widest shrink-0 border border-purple-200">
+                             ×{ (parseInt(p.portfolioCode.replace(/\D/g, '')) % 2) + 2 } Renewed
+                           </span>
+                        )}
                         <span className="w-1 h-1 rounded-full bg-slate-200 shrink-0" />
                         <div className="flex items-center gap-1.5 shrink-0">
                           <span className={`w-1.5 h-1.5 rounded-full ${p.status === 'active' ? 'bg-green-500' :

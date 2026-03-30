@@ -36,7 +36,7 @@ export default function FunderPortfolioList({ portfolios, onViewAll, onCardClick
 
       {/* ── Active Supports - Vertical Card Layout ── */}
       <div className="grid grid-cols-1 gap-4">
-        {portfolios.slice(0, 2).map((p, idx) => {
+        {portfolios.map((p, idx) => {
           const stsCfg = statusConfig[p.status];
           const currentValue = p.investedAmount + p.totalEarned;
           const growth = p.todayGrowth || 0;

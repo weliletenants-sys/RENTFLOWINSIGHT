@@ -14,6 +14,7 @@ const FunderWallet        = lazy(() => import('../funder/FunderWallet'));
 const FunderPortfolioPage = lazy(() => import('../funder/FunderPortfolioPage'));
 const FunderPortfolioDetailsPage = lazy(() => import('../funder/FunderPortfolioDetailsPage'));
 const FunderOpportunitiesPage = lazy(() => import('../funder/FunderOpportunitiesPage'));
+const FunderReferralsPage = lazy(() => import('../funder/FunderReferralsPage'));
 
 /**
  * Funder role routes — all pages are lazy-loaded.
@@ -38,4 +39,5 @@ export const funderRoutes = [
   <Route key="funder-portfolio"      path="/funder/portfolio"      element={<ProtectedRoute><FunderLayout activePage="Portfolio" pageTitle="My Portfolio"><FunderPortfolioPage /></FunderLayout></ProtectedRoute>} />,
   <Route key="funder-portfolio-details" path="/funder/portfolio/:id" element={<ProtectedRoute><FunderLayout activePage="Portfolio" pageTitle="Portfolio Details"><FunderPortfolioDetailsPage /></FunderLayout></ProtectedRoute>} />,
   <Route key="funder-opportunities"  path="/funder/opportunities"  element={<ProtectedRoute><FunderLayout activePage="Opportunities" pageTitle="Opportunities"><FunderOpportunitiesPage /></FunderLayout></ProtectedRoute>} />,
+  <Route key="funder-referrals"  path="/funder/referrals"  element={<ProtectedRoute><FunderLayout activePage="Network" pageTitle="Network & Referrals"><FunderReferralsPage /></FunderLayout></ProtectedRoute>} />,
 ];

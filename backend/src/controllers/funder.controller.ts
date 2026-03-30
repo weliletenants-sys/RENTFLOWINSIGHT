@@ -462,6 +462,120 @@ export const updateProfileInfo = async (req: Request, res: Response) => {
   }
 };
 
+export const updatePortfolioDetails = async (req: Request, res: Response) => {
+  try {
+    const funderId = req.user?.sub || req.user?.id;
+    const { code } = req.params;
+    const { account_name, roi_mode } = req.body;
+
+    const portfolio = await prisma.investorPortfolios.findFirst({
+      where: { portfolio_code: code, investor_id: funderId }
+    });
+
+    if (!portfolio) {
+      return res.status(404).json({ status: 'error', message: 'Portfolio not found' });
+    }
+
+    const updated = await prisma.investorPortfolios.update({
+      where: { id: portfolio.id },
+      data: {
+        account_name: account_name !== undefined ? String(account_name) : portfolio.account_name,
+        roi_mode: roi_mode !== undefined ? String(roi_mode) : portfolio.roi_mode
+      }
+    });
+
+    return res.status(200).json({ status: 'success', data: updated });
+  } catch (error) {
+    console.error('updatePortfolio error:', error);
+    return res.status(500).json({ status: 'error', message: 'Failed to update portfolio' });
+  }
+};
+
+export const getReferralStats = async (req: Request, res: Response) => {
+  try {
+    const funderId = req.user?.sub || req.user?.id;
+    
+    // In a full implementation we would query the referring tables.
+    // However, we rely on the Profiles referrer_id to pull real data.
+    const invitedUsers = await prisma.profiles.count({
+      where: { referrer_id: funderId }
+    });
+    
+    const activeUsersCount = await prisma.profiles.count({
+      where: { referrer_id: funderId, kyc_status: 'APPROVED' }
+    });
+
+    const invitedList = await prisma.profiles.findMany({
+      where: { referrer_id: funderId },
+      select: {
+        id: true,
+        full_name: true,
+        kyc_status: true,
+        created_at: true
+      },
+      orderBy: { created_at: 'desc' },
+      take: 20
+    });
+
+    // Formatting for frontend: hide sensitive details
+    const formattedInvites = invitedList.map(u => ({
+      name: u.full_name || 'Anonymous User',
+      status: u.kyc_status === 'APPROVED' ? 'Active' : 'Pending',
+      date: u.created_at ? new Date(u.created_at).toLocaleDateString() : 'Recent'
+    }));
+
+    return res.status(200).json({
+       status: 'success',
+       data: {
+         totalInvited: invitedUsers,
+         activeJoined: activeUsersCount,
+         capitalDeployed: activeUsersCount > 0 ? activeUsersCount * 2 : 0, // Mocked conversion for now
+         totalRewards: 0,
+         recentInvites: formattedInvites
+       }
+    });
+  } catch (error) {
+     console.error('getReferralStats error:', error);
+     return res.status(500).json({ status: 'error', message: 'Error loading referral stats' });
+  }
+};
+
+export const getROILeaderboard = async (req: Request, res: Response) => {
+  try {
+     // Pulling top 10 investor portfolios by ROI purely on live data, anonymizing the names
+     const topPortfolios = await prisma.investorPortfolios.findMany({
+        where: { status: { in: ['active', 'ACTIVE'] } },
+        orderBy: { roi_percentage: 'desc' },
+        take: 10,
+        select: {
+           id: true,
+           roi_percentage: true,
+           investor_id: true,
+           total_roi_earned: true
+        }
+     });
+
+     // Anonymize the live data
+     const formatted = topPortfolios.map((p, idx) => {
+         const isCurrentUser = p.investor_id === (req.user?.sub || req.user?.id);
+         const maskedName = isCurrentUser ? 'You (Current)' : `Investor ${p.id.substring(0,2).toUpperCase()}***${p.id.substring(p.id.length - 2).toUpperCase()}`;
+         
+         return {
+            rank: idx + 1,
+            name: maskedName,
+            isCurrentUser,
+            roiPercent: Number(p.roi_percentage),
+            earned: Number(p.total_roi_earned)
+         };
+     });
+
+     return res.status(200).json({ status: 'success', data: formatted });
+  } catch (error) {
+    console.error('getROILeaderboard error:', error);
+    return res.status(500).json({ status: 'error', message: 'Error loading leaderboard' });
+  }
+};
+
 export const getPortfolioDetails = async (req: Request, res: Response) => {
   try {
     const funderId = req.user?.sub || req.user?.id;

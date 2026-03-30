@@ -10,6 +10,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { getFunderOpportunities } from '../services/funderApi';
+import VirtualHouseCard from './components/VirtualHouseCard';
 
 /* ═══════════ TYPES ═══════════ */
 
@@ -199,66 +200,22 @@ export default function FunderOpportunitiesPage({ onSupport }: FunderOpportuniti
           <p className="text-sm text-slate-400">Try adjusting your search or filters.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filtered.map((p) => {
-            const sts = statusConfig[p.status];
-
-            return (
-              <div
-                key={p.id}
-                className={`bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-all group overflow-hidden cursor-pointer ${p.status === 'taken' ? 'opacity-60' : ''
-                  }`}
-                onClick={() => setSelectedProperty(p)}
-              >
-                {/* Image */}
-                <div className="relative h-36 overflow-hidden">
-                  <img
-                    src={p.image}
-                    alt={p.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <span className={`absolute top-2.5 right-2.5 text-[8px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest ${sts.bg} ${sts.text}`}>
-                    {sts.label}
-                  </span>
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent p-3 pt-8">
-                    <h3 className="font-bold text-white text-sm truncate">{p.name}</h3>
-                    <div className="flex items-center gap-1 text-white/70 text-[10px] mt-0.5">
-                      <MapPin className="w-3 h-3" />
-                      {p.location}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Body */}
-                <div className="p-3.5">
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Rent Required</p>
-                      <p className="text-base font-black text-slate-900">UGX {p.rentRequired.toLocaleString()}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Payment</p>
-                      <p className="text-xs font-bold text-slate-500">One-time</p>
-                    </div>
-                  </div>
-
-                  {/* Footer */}
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-50 text-[10px] text-slate-400">
-                    <div className="flex items-center gap-2">
-                      <span className="flex items-center gap-1"><Home className="w-3 h-3" />{p.bedrooms} bed</span>
-                      <span>{p.postedDate}</span>
-                    </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setSelectedProperty(p); }}
-                      className="flex items-center gap-1 font-bold hover:text-[var(--color-primary)] transition"
-                    >
-                      <Eye className="w-3 h-3" /> View
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filtered.map((p) => (
+            <div key={p.id} onClick={() => setSelectedProperty(p)} className="h-full">
+              <VirtualHouseCard
+                id={p.id}
+                name={p.name}
+                location={p.location}
+                image={p.image}
+                rentRequired={p.rentRequired}
+                bedrooms={p.bedrooms}
+                status={p.status}
+                postedDate={p.postedDate}
+                onFundClick={(id) => onSupport?.(id)}
+              />
+            </div>
+          ))}
         </div>
       )}
     </div>
