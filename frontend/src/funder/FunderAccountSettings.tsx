@@ -486,18 +486,18 @@ export default function FunderAccountSettings() {
             
             {/* ──────────────── HEADER ──────────────── */}
             <div 
-              className="w-full h-[240px] sm:h-[280px] relative px-6 sm:px-12 pt-8 overflow-hidden"
+              className="w-full min-h-[260px] sm:min-h-[300px] md:min-h-[320px] relative px-4 sm:px-8 md:px-12 pt-10 sm:pt-12 md:pt-16 pb-12 md:pb-16 overflow-hidden bg-cover bg-center bg-no-repeat flex flex-col justify-end"
               style={{
-                background: 'linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%)',
-                boxShadow: '0 4px 24px var(--color-primary-shadow)'
+                backgroundImage: 'url(/images/urban_luxury_real_estate.png)',
+                boxShadow: '0 4px 30px rgba(0,0,0,0.1)'
               }}
             >
-              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 pointer-events-none mix-blend-overlay"></div>
-              <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
+              <div className="absolute inset-0 bg-purple-900/60 pointer-events-none mix-blend-multiply transition-all duration-700"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-purple-900/50 to-transparent pointer-events-none"></div>
 
-              <div className="relative z-10 max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 h-full">
-                <div className="flex items-center gap-6">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-slate-100 border-4 border-white/20 shadow-2xl flex items-center justify-center overflow-hidden flex-shrink-0 relative group">
+              <div className="relative z-10 max-w-5xl w-full mx-auto flex flex-col md:flex-row items-center md:items-end justify-between gap-8 h-full">
+                <div className="flex flex-col sm:flex-row items-center text-center sm:text-left gap-6 w-full md:w-auto">
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-slate-100 border-[4px] border-white/20 backdrop-blur-md shadow-2xl flex items-center justify-center overflow-hidden flex-shrink-0 relative group">
                      <img src={avatarPreview} alt="Avatar" className={`w-full h-full object-cover transition-all duration-300 ${isUploadingAvatar ? 'opacity-30 blur-[2px]' : 'group-hover:opacity-50'}`} />
                      
                      {isUploadingAvatar ? (
@@ -524,7 +524,7 @@ export default function FunderAccountSettings() {
                      
                      <input type="file" id="avatar-upload" className="hidden" accept="image/*" onChange={handleAvatarSelect} disabled={isUploadingAvatar} />
                   </div>
-                  <div className="text-center md:text-left">
+                  <div className="text-center sm:text-left mt-2 sm:mt-0">
                     <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight drop-shadow-sm mb-1">
                       {firstName} {lastName ? lastName.charAt(0) + '.' : ''}
                     </h1>
