@@ -22,7 +22,10 @@ export const startApplication = async (req: Request, res: Response) => {
         total_repayment: Number(data.amount) || 0,
         amount_repaid: 0,
         daily_repayment: 0,
-        repayment_duration_days: 30,
+        duration_days: 30,
+        access_fee: 0,
+        lc1_id: 'pending',
+        tenant_no_smartphone: false,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }

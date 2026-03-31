@@ -94,7 +94,7 @@ export default function AgentRentRequests() {
       {/* Top Bar */}
       <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 h-20 flex items-center justify-between px-8">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate('/dashboard/agent')} className="p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+          <button onClick={() => navigate('/dashboard')} className="p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
             <ArrowLeft size={24} />
           </button>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Rent Requests</h1>
