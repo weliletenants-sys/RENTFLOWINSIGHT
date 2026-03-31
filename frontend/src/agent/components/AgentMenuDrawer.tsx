@@ -12,11 +12,12 @@ interface AgentMenuDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onOpenRegister?: () => void;
+  onOpenTopUp?: () => void;
 }
 
 const CATEGORIES = ['Actions', 'Property', 'People', 'Earnings', 'Tools', 'More'];
 
-export default function AgentMenuDrawer({ isOpen, onClose, onOpenRegister }: AgentMenuDrawerProps) {
+export default function AgentMenuDrawer({ isOpen, onClose, onOpenRegister, onOpenTopUp }: AgentMenuDrawerProps) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('Actions');
 
@@ -25,6 +26,8 @@ export default function AgentMenuDrawer({ isOpen, onClose, onOpenRegister }: Age
     if (item.action === 'register' && onOpenRegister) {
       // Delay slightly to let the drawer sliding animation finish smoothly before mounting the dialog
       setTimeout(() => onOpenRegister(), 300);
+    } else if (item.action === 'topup' && onOpenTopUp) {
+      setTimeout(() => onOpenTopUp(), 300);
     } else if (item.path) {
       navigate(item.path);
     }
@@ -32,7 +35,7 @@ export default function AgentMenuDrawer({ isOpen, onClose, onOpenRegister }: Age
 
   const menuData: Record<string, { label: string, icon: React.ReactNode, path?: string, action?: string, badge?: string, colorClass?: string }[]> = {
     'Actions': [
-      { label: 'Pay Rent', icon: <Banknote size={24} />, path: '/agent-topup-tenant', badge: '★', colorClass: 'text-purple-500 bg-purple-50 dark:bg-purple-900/20' },
+      { label: 'Pay Rent', icon: <Banknote size={24} />, action: 'topup', badge: '★', colorClass: 'text-purple-500 bg-purple-50 dark:bg-purple-900/20' },
       { label: 'Register User', icon: <UserPlus size={24} />, action: 'register', colorClass: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20' },
       { label: 'Deposit', icon: <ArrowDownCircle size={24} />, path: '/agent-deposit', colorClass: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' },
       { label: 'Post Rent', icon: <FileText size={24} />, path: '/agent-rent-requests', colorClass: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20' },
@@ -70,7 +73,7 @@ export default function AgentMenuDrawer({ isOpen, onClose, onOpenRegister }: Age
       { label: 'Referrals', icon: <Users size={24} />, path: '/referrals', colorClass: 'text-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' },
     ],
     'Tools': [
-      { label: 'Shop', icon: <Store size={24} />, path: '/shop', colorClass: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20' },
+      { label: 'Shop', icon: <Store size={24} />, path: '/agent-shop', colorClass: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20' },
       { label: 'Receipts', icon: <Receipt size={24} />, path: '/my-receipts', colorClass: 'text-slate-500 bg-slate-50 dark:bg-slate-800' },
       { label: 'My Loans', icon: <Banknote size={24} />, path: '/my-loans', colorClass: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' },
       { label: 'Transactions', icon: <History size={24} />, path: '/transactions', colorClass: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20' },

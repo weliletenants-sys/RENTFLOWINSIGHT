@@ -3,6 +3,7 @@ import { getWidgetsForUser } from '../../core/utils/widgetResolver';
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
+import AgentDashboard from '../../agent/AgentDashboard';
 
 export default function AdaptiveConsumerDashboard() {
   const { user } = useAuth();
@@ -16,6 +17,11 @@ export default function AdaptiveConsumerDashboard() {
 
   if (!isConsumer) {
     return <Navigate to="/staff" replace />;
+  }
+
+  // Explicit bypass for AGENT role -> completely skip Adaptive framework
+  if (user?.role === 'AGENT') {
+    return <AgentDashboard />;
   }
 
   const widgets = getWidgetsForUser();

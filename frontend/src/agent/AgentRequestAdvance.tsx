@@ -333,7 +333,7 @@ const AgentRequestAdvance = () => {
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
               <button onClick={() => navigate('/agent/history')} className="flex-1 bg-[#6c11d4] text-white font-bold py-4 rounded-2xl shadow-lg transition-all">View History</button>
-              <button onClick={() => navigate('/dashboard/agent')} className="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold py-4 rounded-2xl transition-all">Return Home</button>
+              <button onClick={() => navigate('/dashboard')} className="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold py-4 rounded-2xl transition-all">Return Home</button>
             </div>
           </div>
         </div>
