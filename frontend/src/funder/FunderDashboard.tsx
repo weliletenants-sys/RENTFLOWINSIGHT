@@ -12,6 +12,7 @@ import type { PortfolioItem, ActivityItem } from './types';
 import FunderActionButtons from './components/FunderActionButtons';
 import FunderPortfolioPage from './FunderPortfolioPage';
 import FunderOpportunitiesPage from './FunderOpportunitiesPage';
+import InvestmentCalculator from './components/InvestmentCalculator';
 import { getFunderDashboardStats, getFunderPortfolios, getFunderActivities } from '../services/funderApi';
 import type { DashboardStatsResponse } from '../services/funderApi';
 import { useKycStatus } from './hooks/useKycStatus';
@@ -197,7 +198,7 @@ export default function FunderDashboard() {
                   </div>
                   {/* Portfolio list */}
                   <FunderPortfolioList
-                    portfolios={portfolios}
+                    portfolios={portfolios.slice(0, 3)}
                     onViewAll={() => navigate('/funder/portfolio')}
                     onCardClick={(code) => handleVerificationCheck(() => navigate(`/funder/portfolio/${code}`))}
                     onAddAsset={() => handleVerificationCheck(() => navigate('/funder/portfolio'))}
@@ -233,6 +234,11 @@ export default function FunderDashboard() {
                       activities={activities.slice(0, 3)}
                       onViewAll={() => navigate('/funder/wallet')}
                     />
+                  </div>
+
+                  {/* Interactive Financial Tools */}
+                  <div className="relative w-full">
+                    <InvestmentCalculator />
                   </div>
 
                   {/* Investor Insights (Interactive Yield Projection) */}

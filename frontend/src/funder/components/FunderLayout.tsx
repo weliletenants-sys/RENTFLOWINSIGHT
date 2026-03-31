@@ -28,7 +28,7 @@ export default function FunderLayout({ children, activePage = 'Dashboard', pageT
       : user?.firstName || (user as any)?.name || 'Rentflow Funder';
 
   return (
-    <div className="min-h-screen font-sans" style={{ background: 'var(--color-primary-faint)' }}>
+    <div className="min-h-screen font-sans bg-slate-50">
       <div className="flex h-screen overflow-hidden">
 
         {/* ──────────── DESKTOP SIDEBAR ──────────── */}

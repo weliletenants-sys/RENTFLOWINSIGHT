@@ -19,6 +19,7 @@ export const registerUser = async (userData: {
   lastName: string;
   role: string;
   email?: string;
+  referrer_id?: string;
 }) => {
   const response = await api.post('/registrations', userData);
   return response.data;

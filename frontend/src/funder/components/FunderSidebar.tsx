@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { X, LayoutDashboard, Rocket, FileText, Settings, LogOut, Building2, Wallet, Loader2 } from 'lucide-react';
+import { X, LayoutDashboard, Rocket, FileText, Settings, LogOut, Building2, Wallet, Loader2, Users, TrendingUp } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface FunderSidebarProps {
@@ -17,6 +17,7 @@ const navItems = [
   { label: 'Opportunities', icon: <Rocket className="w-5 h-5" />, path: '/funder/opportunities' },
   { label: 'Wallet', icon: <Wallet className="w-5 h-5" />, path: '/funder/wallet' },
   { label: 'Reports', icon: <FileText className="w-5 h-5" />, path: '/funder/reports' },
+  { label: 'Projections', icon: <TrendingUp className="w-5 h-5" />, path: '/funder/projections' },
 ];
 
 export default function FunderSidebar({ activePage = 'Dashboard', onNavigate, isOpen, onClose }: FunderSidebarProps) {

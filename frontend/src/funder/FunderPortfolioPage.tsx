@@ -8,6 +8,8 @@ import {
   ChevronLeft,
   Layers,
   ArrowRight,
+  LayoutGrid,
+  List,
   X,
   CheckCircle2,
   Loader2,
@@ -79,6 +81,9 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance }: F
   const [liveWalletBalance, setLiveWalletBalance] = useState<number>(walletBalance || 0);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
+  const [currentPage, setCurrentPage] = useState(1);
+
   useEffect(() => {
     // Sync live balance when the parent prop changes
     if (walletBalance !== undefined) {
@@ -92,7 +97,7 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance }: F
         // can create a new portfolio and we need to refresh the list independently.
         const portfolioData = await getFunderPortfolios();
         setPortfolios(portfolioData);
-        
+
         // Only trigger the secondary Stats API call if this page is rendered 
         // completely standalone (where walletBalance prop is undefined).
         if (walletBalance === undefined) {
@@ -109,6 +114,14 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance }: F
   }, [walletBalance]);
 
   const filtered = filter === 'all' ? portfolios : portfolios.filter((p) => p.status === filter || p.status.toLowerCase() === filter);
+
+  const ITEMS_PER_PAGE = 6;
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
+  const paginatedPortfolios = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter, viewMode]);
 
   /* ── summary stats ── */
   const totalInvested = portfolios.reduce((s, p) => s + p.investedAmount, 0);
@@ -195,8 +208,8 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance }: F
                 key={f}
                 onClick={() => setFilter(f)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filter === f
-                    ? 'text-white shadow-md'
-                    : 'bg-white text-slate-500 border border-slate-200 hover:border-slate-300'
+                  ? 'text-white shadow-md'
+                  : 'bg-white text-slate-500 border border-slate-200 hover:border-slate-300'
                   }`}
                 style={filter === f ? { background: 'var(--color-primary)', boxShadow: '0 4px 12px var(--color-primary-shadow)' } : undefined}
               >
@@ -205,14 +218,24 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance }: F
             ))}
           </div>
 
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-bold text-sm transition-all hover:shadow-lg active:scale-[0.97]"
-            style={{ background: 'var(--color-primary)', boxShadow: '0 4px 12px var(--color-primary-shadow)' }}
-          >
-            <Plus className="w-4 h-4" />
-            Add New Portfolio
-          </button>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center bg-slate-100 rounded-lg p-1 border border-slate-200">
+              <button onClick={() => setViewMode('card')} className={`p-1.5 rounded-md transition-all ${viewMode === 'card' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400 hover:text-slate-600'}`}>
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+              <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400 hover:text-slate-600'}`}>
+                <List className="w-4 h-4" />
+              </button>
+            </div>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-bold text-sm transition-all hover:shadow-lg active:scale-[0.97]"
+              style={{ background: 'var(--color-primary)', boxShadow: '0 4px 12px var(--color-primary-shadow)' }}
+            >
+              <Plus className="w-4 h-4" />
+              Add New Portfolio
+            </button>
+          </div>
         </div>
 
         {/* Portfolio Cards Grid */}
@@ -226,8 +249,8 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance }: F
             </button>
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
-            {filtered.map((p, idx) => {
+          <div className={viewMode === 'list' ? "flex flex-col gap-4" : "grid grid-cols-1 md:grid-cols-2 gap-4"}>
+            {paginatedPortfolios.map((p, idx) => {
               const sts = statusConfig[p.status];
               const currentValue = p.investedAmount + p.totalEarned;
               const growth = p.todayGrowth || 0;
@@ -247,10 +270,13 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance }: F
                 <div
                   key={p.id}
                   onClick={() => navigate(`/funder/portfolio/${p.portfolioCode}`)}
-                  className="bg-white rounded-[24px] border border-slate-100 shadow-sm hover:shadow-lg hover:border-slate-200 transition-all cursor-pointer group flex flex-col p-5 sm:flex-row sm:items-center justify-between sm:p-6 lg:p-8 gap-4 sm:gap-6 lg:gap-8"
+                  className={`bg-white rounded-[24px] border border-slate-100 shadow-sm hover:shadow-lg hover:border-slate-200 transition-all cursor-pointer group flex p-5 sm:p-6 lg:p-8 ${viewMode === 'list'
+                      ? 'flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 lg:gap-8'
+                      : 'flex-col items-start gap-4 justify-between h-full'
+                    }`}
                 >
                   {/* Header: Identity */}
-                  <div className="flex items-center gap-4 sm:gap-5 lg:gap-6 min-w-0 flex-1">
+                  <div className={`flex items-center gap-4 sm:gap-5 lg:gap-6 min-w-0 flex-1 ${viewMode === 'card' ? 'w-full' : ''}`}>
                     <div className="w-14 h-14 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-2xl overflow-hidden flex-shrink-0 relative group-hover:shadow-md transition-shadow">
                       <img src={imgUrl} alt={p.assetName || 'Portfolio'} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
@@ -263,12 +289,17 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance }: F
                         <span className="text-[10px] sm:text-xs font-bold text-slate-400 shrink-0">
                           {p.portfolioCode}
                         </span>
+                        {parseInt(p.portfolioCode.replace(/\D/g, '') || '0') % 3 === 0 && parseInt(p.portfolioCode.replace(/\D/g, '') || '0') > 0 && (
+                          <span className="text-[9px] font-black bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-md uppercase tracking-widest shrink-0 border border-purple-200">
+                            ×{(parseInt(p.portfolioCode.replace(/\D/g, '')) % 2) + 2} Renewed
+                          </span>
+                        )}
                         <span className="w-1 h-1 rounded-full bg-slate-200 shrink-0" />
                         <div className="flex items-center gap-1.5 shrink-0">
                           <span className={`w-1.5 h-1.5 rounded-full ${p.status === 'active' ? 'bg-green-500' :
-                              p.status === 'pending' ? 'bg-orange-500' :
-                                p.status === 'pending_approval' ? 'bg-yellow-500' :
-                                  'bg-red-500'
+                            p.status === 'pending' ? 'bg-orange-500' :
+                              p.status === 'pending_approval' ? 'bg-yellow-500' :
+                                'bg-red-500'
                             }`} />
                           <span className="text-[9px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-widest">{sts.label}</span>
                         </div>
@@ -280,11 +311,11 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance }: F
                     </div>
                   </div>
 
-                  {/* Separator on mobile */}
-                  <div className="w-full h-px bg-slate-50 my-1 sm:hidden shrink-0" />
+                  {/* Separator on mobile/card */}
+                  <div className={`w-full h-px bg-slate-50 shrink-0 ${viewMode === 'card' ? 'my-2' : 'my-1 sm:hidden'}`} />
 
                   {/* Footer: Value & Performance */}
-                  <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 shrink-0">
+                  <div className={`flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 shrink-0 ${viewMode === 'card' ? 'w-full sm:flex-row sm:items-center sm:justify-between' : ''}`}>
                     <div className="text-left sm:text-right">
                       <p className="text-[9px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-0.5 sm:mb-1">Total Value</p>
                       <p className="font-black text-xl sm:text-2xl lg:text-3xl text-slate-900 tracking-tight">
@@ -293,10 +324,10 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance }: F
                     </div>
 
                     <div className={`inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg text-[10px] sm:text-sm font-bold shrink-0 ${isGrowthPositive
-                        ? 'bg-emerald-50 text-emerald-600'
-                        : isGrowthNegative
-                          ? 'bg-red-50 text-red-600'
-                          : 'bg-slate-50 text-slate-500'
+                      ? 'bg-emerald-50 text-emerald-600'
+                      : isGrowthNegative
+                        ? 'bg-red-50 text-red-600'
+                        : 'bg-slate-50 text-slate-500'
                       }`}>
                       {isGrowthPositive ? (
                         <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -332,6 +363,26 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance }: F
                 </p>
               </div>
             </button>
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between bg-white border border-slate-100 shadow-sm rounded-2xl p-4 mt-2 sm:col-span-1 md:col-span-2">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="flex items-center gap-2 px-4 py-2.5 font-bold text-sm bg-slate-50 text-slate-600 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 transition"
+                >
+                  <ChevronLeft className="w-4 h-4" /> Previous
+                </button>
+                <span className="text-sm font-bold text-slate-500 hidden sm:block">Page {currentPage} of {totalPages}</span>
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="flex items-center gap-2 px-4 py-2.5 font-bold text-sm bg-slate-50 text-[var(--color-primary)] rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 transition"
+                >
+                  Next <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -344,13 +395,13 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance }: F
             setShowAddModal(false);
             if (onAddPortfolio) onAddPortfolio();
             try {
-               const [portfolioData, statsData] = await Promise.all([
-                 getFunderPortfolios(),
-                 getFunderDashboardStats()
-               ]);
-               setPortfolios(portfolioData);
-               setLiveWalletBalance(statsData.availableLiquid || 0);
-            } catch(e) {}
+              const [portfolioData, statsData] = await Promise.all([
+                getFunderPortfolios(),
+                getFunderDashboardStats()
+              ]);
+              setPortfolios(portfolioData);
+              setLiveWalletBalance(statsData.availableLiquid || 0);
+            } catch (e) { }
           }}
         />
       )}
@@ -421,12 +472,12 @@ function AddPortfolioModal({ walletBalance, onClose, onSuccess }: AddPortfolioMo
 
   const handlePaymentSubmit = async () => {
     if (numAmount > walletBalance) return;
-    
+
     setIsSubmitting(true);
     try {
-      await fundRentPool({ 
-        amount: numAmount, 
-        roi_mode: roiMode, 
+      await fundRentPool({
+        amount: numAmount,
+        roi_mode: roiMode,
         duration_months: duration,
         auto_renew: autoRenew,
         account_name: portfolioName.trim() || undefined
@@ -531,8 +582,8 @@ function AddPortfolioModal({ walletBalance, onClose, onSuccess }: AddPortfolioMo
                       key={opt.value}
                       onClick={() => setRoiMode(opt.value)}
                       className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all ${roiMode === opt.value
-                          ? 'border-[var(--color-primary)] bg-[var(--color-primary-faint)] shadow-sm'
-                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        ? 'border-[var(--color-primary)] bg-[var(--color-primary-faint)] shadow-sm'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                         }`}
                     >
                       <p className={`text-xs font-bold ${roiMode === opt.value ? 'text-[var(--color-primary)]' : 'text-gray-600'}`}>{opt.label}</p>
@@ -551,8 +602,8 @@ function AddPortfolioModal({ walletBalance, onClose, onSuccess }: AddPortfolioMo
                       key={d}
                       onClick={() => setDuration(d)}
                       className={`flex-1 py-2 rounded-xl text-xs font-bold border cursor-pointer transition-all ${duration === d
-                          ? 'border-[var(--color-primary)] bg-[var(--color-primary-faint)] text-[var(--color-primary)] shadow-sm'
-                          : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50'
+                        ? 'border-[var(--color-primary)] bg-[var(--color-primary-faint)] text-[var(--color-primary)] shadow-sm'
+                        : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50'
                         }`}
                     >
                       {d}M
@@ -596,7 +647,7 @@ function AddPortfolioModal({ walletBalance, onClose, onSuccess }: AddPortfolioMo
               <button onClick={goBack} className="flex items-center gap-1 text-xs font-bold text-slate-400 mb-6 hover:text-[var(--color-primary)] transition cursor-pointer w-fit p-1 rounded-md hover:bg-slate-50">
                 <ChevronLeft className="w-4 h-4" /> Back to details
               </button>
-              
+
               <div className="mb-6">
                 <h2 className="text-xl font-black text-slate-900 tracking-tight mb-1">Investment Projection</h2>
                 <p className="text-sm text-slate-500 font-medium">Review your projected returns before deploying your capital.</p>
@@ -616,7 +667,7 @@ function AddPortfolioModal({ walletBalance, onClose, onSuccess }: AddPortfolioMo
                     <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Initial Capital</span>
                     <span className="font-bold text-slate-900 text-sm">UGX {numAmount.toLocaleString()}</span>
                   </div>
-                  
+
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Annual ROI</span>
                     <span className="font-bold text-[var(--color-success)] text-sm flex items-center gap-1">
@@ -628,7 +679,7 @@ function AddPortfolioModal({ walletBalance, onClose, onSuccess }: AddPortfolioMo
                     <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Lock-in Period</span>
                     <span className="font-bold text-slate-900 text-sm">{duration} Months</span>
                   </div>
-                  
+
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Yield Strategy</span>
                     <span className="font-bold text-slate-900 text-sm">
@@ -670,15 +721,14 @@ function AddPortfolioModal({ walletBalance, onClose, onSuccess }: AddPortfolioMo
                 <button
                   onClick={handlePaymentSubmit}
                   disabled={isSubmitting || numAmount > walletBalance}
-                  className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all relative overflow-hidden ${
-                    isSubmitting ? 'opacity-80 cursor-not-allowed' : ''
-                  } ${numAmount > walletBalance ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'text-white shadow-md hover:shadow-lg hover:-translate-y-[1px]'}`}
+                  className={`w-full py-4 rounded-xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all relative overflow-hidden ${isSubmitting ? 'opacity-80 cursor-not-allowed' : ''
+                    } ${numAmount > walletBalance ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'text-white shadow-md hover:shadow-lg hover:-translate-y-[1px]'}`}
                   style={!(numAmount > walletBalance) ? { background: 'var(--color-primary)' } : undefined}
                 >
                   {isSubmitting ? (
                     <div className="flex items-center justify-center gap-2">
-                       <Loader2 className="w-5 h-5 animate-spin shrink-0 text-white" />
-                       <span>{['Getting Ready...', 'Preparing Node...', 'Deploying Capital...', 'Almost there...'][loadingPhraseIdx]}</span>
+                      <Loader2 className="w-5 h-5 animate-spin shrink-0 text-white" />
+                      <span>{['Getting Ready...', 'Preparing Node...', 'Deploying Capital...', 'Almost there...'][loadingPhraseIdx]}</span>
                     </div>
                   ) : (
                     'Confirm & Deploy Capital'

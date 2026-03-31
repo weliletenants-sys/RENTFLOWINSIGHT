@@ -220,3 +220,18 @@ export const getFunderReportsStatsRaw = async (year?: string | number) => {
   return response.data.data;
 };
 
+export const updatePortfolioDetails = async (code: string, data: { account_name?: string, roi_mode?: string }) => {
+  const response = await axios.patch(`${API}/funder/portfolios/${code}`, data, getAuthHeaders());
+  return response.data;
+};
+
+export const getFunderReferralStats = async () => {
+  const response = await axios.get(`${API}/funder/referrals/stats`, getAuthHeaders());
+  return response.data.data;
+};
+
+export const getFunderROILeaderboard = async () => {
+  const response = await axios.get(`${API}/funder/referrals/leaderboard`, getAuthHeaders());
+  return response.data.data;
+};
+

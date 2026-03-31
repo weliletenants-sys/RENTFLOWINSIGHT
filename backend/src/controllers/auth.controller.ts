@@ -10,7 +10,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
 // Standard RFC 7807 Error Response wrapper matching api.md
 export const register = async (req: Request, res: Response) => {
   try {
-    const { phone, password, firstName, lastName, role, email } = req.body;
+    const { phone, password, firstName, lastName, role, email, referrer_id } = req.body;
 
     // 1. Strict Input Validation (backend.md)
     if (!phone || phone.trim().length === 0) {
@@ -62,6 +62,7 @@ export const register = async (req: Request, res: Response) => {
           phone: phoneTrimmed,
           password_hash,
           role: role.toUpperCase(),
+          referrer_id: referrer_id ? String(referrer_id).trim() : null,
           is_frozen: false,
           verified: false,
           rent_discount_active: false,
