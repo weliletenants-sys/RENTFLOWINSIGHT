@@ -4,7 +4,9 @@ import {
   Wallet,
   ChevronDown,
   BarChart2,
-  X
+  X,
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import FunderSidebar from './components/FunderSidebar';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
@@ -37,9 +39,77 @@ const fmtM = (v: number) =>
     ? `UGX ${(v / 1_000_000).toFixed(1)}M`
     : `UGX ${(v / 1_000).toFixed(0)}K`;
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// ─── Custom Dropdown Component ───────────────────────────────────────────────
+interface SelectOption {
+  value: string;
+  label: string;
+}
+
+// Custom select using a simulated blur delay to allow clicks to register
+const CustomSelect = ({ 
+  value, 
+  onChange, 
+  options, 
+  placeholder,
+  hasError = false
+}: { 
+  value: string, 
+  onChange: (val: string) => void, 
+  options: SelectOption[], 
+  placeholder: string,
+  hasError?: boolean
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectedObj = options.find((o) => o.value === value);
+
+  return (
+    <div className="relative w-full">
+      <button
+        type="button"
+        onMouseDown={(e) => { e.preventDefault(); setIsOpen(!isOpen); }}
+        onBlur={() => setIsOpen(false)}
+        className="w-full flex items-center justify-between rounded-xl px-4 py-3 text-xs font-bold bg-slate-50 border outline-none transition-all"
+        style={{
+          borderColor: hasError ? '#ef4444' : value ? 'var(--color-primary)' : '#e2e8f0',
+          color: value ? '#1e293b' : hasError ? '#ef4444' : '#94a3b8',
+        }}
+      >
+        <span>{selectedObj ? selectedObj.label : placeholder}</span>
+        <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''} ${hasError && !value ? 'text-red-400' : 'text-slate-400'}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-[calc(100%+8px)] left-0 w-full z-[9999] bg-white border rounded-xl shadow-xl overflow-y-auto max-h-60"
+             style={{ borderColor: 'var(--color-primary-border)' }}>
+          <div className="p-1.5 flex flex-col gap-1">
+            {options.map((opt) => (
+              <div
+                key={opt.value}
+                onMouseDown={(e) => { 
+                  e.preventDefault(); 
+                  onChange(opt.value); 
+                  setIsOpen(false); 
+                }}
+                className="px-3 py-2.5 rounded-lg text-xs font-bold text-slate-800 cursor-pointer transition-colors"
+                onMouseEnter={e => e.currentTarget.style.background = 'var(--color-primary-light)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              >
+                {opt.label}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── Main Component ──────────────────────────────────────────────────────────
 export default function FunderProjectionsPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Fake Wallet Balance for testing
+  const MOCKED_WALLET_BALANCE = 15000000;
 
   const [params, setParams] = useState<Params>({
     principal: '',
@@ -49,19 +119,54 @@ export default function FunderProjectionsPage() {
     targetApy: '',
   });
 
-  const [simulated, setSimulated] = useState<Params>({
-    principal: '',
-    durationPreset: '',
-    customMonths: '',
-    payoutMode: '',
-    targetApy: '',
-  });
-
+  const [simulated, setSimulated] = useState<Params>({ ...params });
   const [hasSimulated, setHasSimulated] = useState(false);
+  const [showErrors, setShowErrors] = useState(false);
 
-  const handleCalculate = () => {
-    setSimulated({ ...params });
-    setHasSimulated(true);
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeploying, setIsDeploying] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [portfolioName, setPortfolioName] = useState('');
+
+  // If user edits parameters, invalidate the previous simulation
+  const handleSetParam = (key: keyof Params, val: string) => {
+    setParams(prev => ({ ...prev, [key]: val }));
+    if (hasSimulated) setHasSimulated(false);
+    if (showErrors) setShowErrors(false);
+  };
+
+  const handleMainAction = () => {
+    if (!hasSimulated) {
+      // Validate inputs
+      const isDurationValid = params.durationPreset === 'Custom' ? !!params.customMonths : !!params.durationPreset;
+      if (!params.principal || !isDurationValid || !params.payoutMode || !params.targetApy) {
+        setShowErrors(true);
+        return;
+      }
+      
+      setShowErrors(false);
+      setSimulated({ ...params });
+      setHasSimulated(true);
+    } else {
+      setIsModalOpen(true);
+    }
+  };
+
+  const simulateDeployment = () => {
+    setIsDeploying(true);
+    setTimeout(() => {
+       setIsDeploying(false);
+       setIsSuccess(true);
+    }, 1500); // UI illusion of processing smart contract / ledger
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setTimeout(() => {
+      setIsSuccess(false);
+      setPortfolioName('');
+    }, 300); // Reset after closing animation
   };
 
   // ── Derived math ────────────────────────────────────────────────────────────
@@ -98,7 +203,6 @@ export default function FunderProjectionsPage() {
           Rewards:   Math.round(cumRewards),
         });
       } else {
-        // monthly_payout — principal stays flat
         cumRewards += reward;
         data.push({
           month: `Mo ${m}`,
@@ -112,14 +216,15 @@ export default function FunderProjectionsPage() {
   }, [simulated]);
 
   const last          = chartData[chartData.length - 1];
-  const totalYield    = simulated.payoutMode === 'monthly_compounding'
-    ? last.Portfolio
-    : last.Principal + last.Rewards;
   const inputPrincipal = Math.max(0, Number(simulated.principal) || 0);
-  const totalRewards   = last.Rewards;
+  const totalRewards   = last?.Rewards || 0;
+  const totalYield    = simulated.payoutMode === 'monthly_compounding'
+    ? (last?.Portfolio || 0)
+    : (last?.Principal || 0) + (last?.Rewards || 0);
 
   const isCompounding = simulated.payoutMode === 'monthly_compounding';
   const isPayout      = simulated.payoutMode === 'monthly_payout';
+  const hasSufficientFunds = MOCKED_WALLET_BALANCE >= inputPrincipal;
 
   // ─── Custom Tooltip ────────────────────────────────────────────────────────
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -148,8 +253,120 @@ export default function FunderProjectionsPage() {
 
   return (
     <div className="min-h-screen font-sans" style={{ background: 'var(--color-primary-faint)' }}>
-      <div className="flex h-screen overflow-hidden">
+      
+      {/* ─── MODAL OVERLAY ──────────────────────────────────────────────── */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+           <div className="bg-white rounded-3xl max-w-sm w-full shadow-2xl overflow-hidden relative" style={{ border: '1px solid var(--color-primary-border)' }}>
+              
+              {!isSuccess ? (
+                <>
+                  <div className="p-6 pb-0 flex items-center justify-between border-b border-slate-100 pb-4">
+                     <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Confirm Deployment</h3>
+                     <button onClick={closeModal} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition-colors">
+                        <X className="w-4 h-4 text-slate-500" />
+                     </button>
+                  </div>
 
+                  <div className="p-6 flex flex-col gap-6">
+                     <div className="flex items-center justify-between gap-4 p-4 rounded-xl border" style={{ background: 'var(--color-primary-faint)', borderColor: 'var(--color-primary-light)' }}>
+                         <div className="flex flex-col gap-1">
+                            <span className="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Capital Output</span>
+                            <span className="text-xl font-black text-slate-900">{fmt(inputPrincipal)}</span>
+                         </div>
+                         <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--color-primary-light)' }}>
+                            <TrendingUp className="w-5 h-5" style={{ color: 'var(--color-primary)' }} />
+                         </div>
+                     </div>
+
+                     <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-1.5 mb-2">
+                           <label className="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Name Your Portfolio</label>
+                           <input 
+                              type="text" 
+                              value={portfolioName}
+                              onChange={(e) => setPortfolioName(e.target.value)}
+                              placeholder="e.g. Retirement Goal 2026"
+                              className="w-full rounded-xl px-4 py-3 text-sm font-bold text-slate-800 bg-slate-50 border outline-none transition-all"
+                              style={{ borderColor: portfolioName.trim() ? 'var(--color-primary)' : '#e2e8f0' }}
+                              onFocus={e => e.currentTarget.style.borderColor = 'var(--color-primary)'}
+                              onBlur={e => e.currentTarget.style.borderColor = portfolioName.trim() ? 'var(--color-primary)' : '#e2e8f0'}
+                           />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                           <span className="text-xs font-bold text-slate-500">Duration</span>
+                           <span className="text-xs font-black text-slate-900">{simulated.durationPreset === 'Custom' ? `${simulated.customMonths} Months` : simulated.durationPreset}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                           <span className="text-xs font-bold text-slate-500">Target Strategy</span>
+                           <span className="text-xs font-black text-slate-900">{simulated.targetApy}% / month</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                           <span className="text-xs font-bold text-slate-500">Mode</span>
+                           <span className="text-xs font-black text-slate-900">{isCompounding ? 'Compounding' : 'Liquid Payout'}</span>
+                        </div>
+                     </div>
+
+                     {/* Wallet Balance Verification */}
+                     <div className={`p-4 rounded-xl border flex flex-col gap-2 ${hasSufficientFunds ? 'bg-emerald-50 border-emerald-100' : 'bg-red-50 border-red-100'}`}>
+                        <div className="flex items-center justify-between">
+                           <div className="flex items-center gap-1.5">
+                              {hasSufficientFunds ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <AlertCircle className="w-4 h-4 text-red-600" />}
+                              <span className={`text-[11px] font-bold uppercase tracking-widest ${hasSufficientFunds ? 'text-emerald-700' : 'text-red-700'}`}>
+                                 Wallet Balance
+                              </span>
+                           </div>
+                           <span className={`text-sm font-black ${hasSufficientFunds ? 'text-emerald-900' : 'text-red-900'}`}>
+                             {fmt(MOCKED_WALLET_BALANCE)}
+                           </span>
+                        </div>
+                        {!hasSufficientFunds && (
+                           <p className="text-[10px] font-bold text-red-600 mt-1">
+                              Insufficient funds to deploy this projection. Please deposit capital into your wallet first.
+                           </p>
+                        )}
+                     </div>
+
+                     <button 
+                        onClick={simulateDeployment}
+                        disabled={!hasSufficientFunds || isDeploying || !portfolioName.trim()}
+                        className={`w-full py-4 rounded-xl text-xs uppercase font-black tracking-widest transition-all ${
+                          !hasSufficientFunds || !portfolioName.trim()
+                            ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                            : isDeploying 
+                            ? 'opacity-80 cursor-wait'
+                            : 'hover:shadow-lg hover:scale-[0.98]'
+                        }`}
+                        style={hasSufficientFunds && portfolioName.trim() ? { background: 'var(--color-primary)', color: 'var(--color-on-primary)' } : {}}
+                     >
+                        {isDeploying ? 'Deploying...' : !portfolioName.trim() && hasSufficientFunds ? 'Enter Portfolio Name' : hasSufficientFunds ? 'Confirm Deployment' : 'Deposit First'}
+                     </button>
+                  </div>
+                </>
+              ) : (
+                <div className="p-10 flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-300">
+                   <div className="w-24 h-24 rounded-full bg-emerald-100 flex items-center justify-center mb-6">
+                      <CheckCircle2 className="w-12 h-12 text-emerald-500" />
+                   </div>
+                   <h3 className="text-xl font-black text-slate-900 mb-2">Capital Deployed</h3>
+                   <p className="text-xs font-bold text-slate-500 mb-8 leading-relaxed">
+                      Your projection of {fmt(inputPrincipal)} has been successfully deployed onto the Rent Management Pool.
+                   </p>
+                   <button 
+                      onClick={closeModal}
+                      className="w-full py-3 rounded-xl text-xs uppercase font-black tracking-widest bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+                   >
+                     Done
+                   </button>
+                </div>
+              )}
+
+           </div>
+        </div>
+      )}
+
+      <div className="flex h-screen overflow-hidden">
         <FunderSidebar
           activePage="Projections"
           isOpen={mobileMenuOpen}
@@ -157,7 +374,6 @@ export default function FunderProjectionsPage() {
         />
 
         <div className="flex-1 flex flex-col overflow-y-auto">
-
           <FunderDashboardHeader
             user={{ fullName: 'Grace N.', role: 'supporter', avatarUrl: '' }}
             pageTitle="Projections"
@@ -168,11 +384,10 @@ export default function FunderProjectionsPage() {
           <main className="flex-1 px-4 sm:px-6 py-8 space-y-6 max-w-7xl mx-auto w-full">
 
             {/* ── CALCULATOR BAR ───────────────────────────────────────────── */}
-            <div className="bg-white rounded-2xl border shadow-sm overflow-hidden"
+            <div className="bg-white rounded-2xl border shadow-sm relative z-40"
                  style={{ borderColor: 'var(--color-primary-border)' }}>
 
-              {/* Header band */}
-              <div className="px-6 py-4 flex items-center gap-3"
+              <div className="px-6 py-4 flex items-center gap-3 rounded-t-2xl"
                    style={{ background: 'var(--color-primary-light)' }}>
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center"
                      style={{ background: 'var(--color-primary)' }}>
@@ -180,7 +395,7 @@ export default function FunderProjectionsPage() {
                 </div>
                 <div>
                   <h2 className="text-sm font-black text-slate-900 tracking-tight">Investment Projection Engine</h2>
-                  <p className="text-[11px] text-slate-500">Configure your inputs and hit Calculate to see your trajectory.</p>
+                  <p className="text-[11px] text-slate-500">Configure your inputs and lock your trajectory.</p>
                 </div>
               </div>
 
@@ -189,7 +404,7 @@ export default function FunderProjectionsPage() {
 
                 {/* Principal */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--color-primary)' }}>
+                  <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: showErrors && !params.principal ? '#ef4444' : 'var(--color-primary)' }}>
                     Initial Principal (UGX)
                   </label>
                   <input
@@ -198,19 +413,17 @@ export default function FunderProjectionsPage() {
                     step="100000"
                     placeholder="e.g. 5,000,000"
                     value={params.principal}
-                    onChange={e => setParams({ ...params, principal: e.target.value })}
+                    onChange={e => handleSetParam('principal', e.target.value)}
                     className="w-full rounded-xl px-4 py-3 text-sm font-bold text-slate-800 bg-slate-50 border outline-none transition-all"
-                    style={{
-                      borderColor: params.principal ? 'var(--color-primary)' : '#e2e8f0',
-                    }}
+                    style={{ borderColor: showErrors && !params.principal ? '#ef4444' : params.principal ? 'var(--color-primary)' : '#e2e8f0' }}
                     onFocus={e => e.currentTarget.style.borderColor = 'var(--color-primary)'}
-                    onBlur={e => e.currentTarget.style.borderColor = params.principal ? 'var(--color-primary)' : '#e2e8f0'}
+                    onBlur={e => e.currentTarget.style.borderColor = showErrors && !params.principal ? '#ef4444' : params.principal ? 'var(--color-primary)' : '#e2e8f0'}
                   />
                 </div>
 
                 {/* Duration */}
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--color-primary)' }}>
+                <div className="flex flex-col gap-1.5 relative z-30">
+                  <label className={`text-[10px] font-bold uppercase tracking-widest ${showErrors && (!params.durationPreset && !params.customMonths) ? 'text-red-500' : ''}`} style={{ color: showErrors && (!params.durationPreset && !params.customMonths) ? '#ef4444' : 'var(--color-primary)' }}>
                     Investment Duration
                   </label>
                   {params.durationPreset === 'Custom' ? (
@@ -218,62 +431,50 @@ export default function FunderProjectionsPage() {
                       <input
                         type="number"
                         min="1"
-                        placeholder="Number of months..."
+                        placeholder="# of months"
                         value={params.customMonths}
-                        onChange={e => setParams({ ...params, customMonths: e.target.value })}
+                        onChange={e => handleSetParam('customMonths', e.target.value)}
                         className="w-full rounded-xl px-4 py-3 text-sm font-bold text-slate-800 bg-slate-50 border outline-none"
-                        style={{ borderColor: 'var(--color-primary)' }}
+                        style={{ borderColor: showErrors && !params.customMonths ? '#ef4444' : 'var(--color-primary)' }}
                       />
                       <button
-                        onClick={() => setParams({ ...params, durationPreset: '', customMonths: '' })}
+                        onClick={() => { handleSetParam('durationPreset', ''); handleSetParam('customMonths', ''); }}
                         className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center hover:bg-slate-200 transition-colors"
                       >
                         <X className="w-3 h-3 text-slate-500" />
                       </button>
                     </div>
                   ) : (
-                    <div className="relative">
-                      <select
-                        value={params.durationPreset}
-                        onChange={e => setParams({ ...params, durationPreset: e.target.value })}
-                        className="w-full rounded-xl px-4 py-3 text-sm font-bold bg-slate-50 border appearance-none outline-none transition-all"
-                        style={{
-                          borderColor: params.durationPreset ? 'var(--color-primary)' : '#e2e8f0',
-                          color: params.durationPreset ? '#1e293b' : '#94a3b8',
-                        }}
-                      >
-                        <option value="" disabled>Select Duration...</option>
-                        <option value="1 Year">1 Year (12 months)</option>
-                        <option value="2 Years">2 Years (24 months)</option>
-                        <option value="3 Years">3 Years (36 months)</option>
-                        <option value="Custom">Custom...</option>
-                      </select>
-                      <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    </div>
+                    <CustomSelect 
+                      value={params.durationPreset} 
+                      onChange={(val) => handleSetParam('durationPreset', val)}
+                      placeholder="Select Duration..."
+                      hasError={showErrors && !params.durationPreset}
+                      options={[
+                        { value: '1 Year', label: '1 Year (12 months)' },
+                        { value: '2 Years', label: '2 Years (24 months)' },
+                        { value: '3 Years', label: '3 Years (36 months)' },
+                        { value: 'Custom', label: 'Custom Length...' }
+                      ]}
+                    />
                   )}
                 </div>
 
                 {/* Payout Strategy */}
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--color-primary)' }}>
+                <div className="flex flex-col gap-1.5 relative z-20">
+                  <label className={`text-[10px] font-bold uppercase tracking-widest ${showErrors && !params.payoutMode ? 'text-red-500' : ''}`} style={{ color: showErrors && !params.payoutMode ? '#ef4444' : 'var(--color-primary)' }}>
                     Payout Strategy
                   </label>
-                  <div className="relative">
-                    <select
-                      value={params.payoutMode}
-                      onChange={e => setParams({ ...params, payoutMode: e.target.value as PayoutMode })}
-                      className="w-full rounded-xl px-4 py-3 text-sm font-bold bg-slate-50 border appearance-none outline-none transition-all"
-                      style={{
-                        borderColor: params.payoutMode ? 'var(--color-primary)' : '#e2e8f0',
-                        color: params.payoutMode ? '#1e293b' : '#94a3b8',
-                      }}
-                    >
-                      <option value="" disabled>Select Strategy...</option>
-                      <option value="monthly_compounding">Monthly Compounding</option>
-                      <option value="monthly_payout">Monthly Cash Payout</option>
-                    </select>
-                    <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  </div>
+                  <CustomSelect 
+                      value={params.payoutMode} 
+                      onChange={(val) => handleSetParam('payoutMode', val as any)}
+                      placeholder="Select Strategy..."
+                      hasError={showErrors && !params.payoutMode}
+                      options={[
+                        { value: 'monthly_compounding', label: 'Monthly Compounding' },
+                        { value: 'monthly_payout', label: 'Monthly Cash Payout' },
+                      ]}
+                  />
                 </div>
 
                 {/* ROI Plan */}
@@ -281,37 +482,29 @@ export default function FunderProjectionsPage() {
                   <label className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--color-primary)' }}>
                     ROI Plan
                   </label>
-                  <div className="relative">
-                    <select
-                      value={params.targetApy}
-                      onChange={e => setParams({ ...params, targetApy: e.target.value })}
-                      className="w-full rounded-xl px-4 py-3 text-sm font-bold bg-slate-50 border appearance-none outline-none transition-all"
-                      style={{
-                        borderColor: params.targetApy ? 'var(--color-primary)' : '#e2e8f0',
-                        color: params.targetApy ? '#1e293b' : '#94a3b8',
-                      }}
-                    >
-                      <option value="" disabled>Select Plan...</option>
-                      <option value="15">Standard — 15% / month</option>
-                      <option value="20">Premium — 20% / month</option>
-                    </select>
-                    <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  </div>
+                  <CustomSelect 
+                      value={params.targetApy} 
+                      onChange={(val) => handleSetParam('targetApy', val)}
+                      placeholder="Select Plan..."
+                      options={[
+                        { value: '15', label: 'Standard — 15% / month' },
+                        { value: '20', label: 'Premium — 20% / month' }
+                      ]}
+                  />
                 </div>
 
-                {/* CALCULATE CTA */}
+                {/* DYNAMIC CTA BUTTON */}
                 <button
-                  onClick={handleCalculate}
-                  className="w-full rounded-xl py-3 px-6 text-xs font-black uppercase tracking-widest transition-all active:scale-95"
-                  style={{
-                    background: 'var(--color-primary)',
-                    color: 'var(--color-on-primary)',
-                    boxShadow: '0 4px 14px var(--color-primary-shadow)',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-primary-dark)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-primary)')}
+                  onClick={handleMainAction}
+                  className="w-full rounded-xl py-3 px-6 text-xs font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2"
+                  style={
+                    !hasSimulated 
+                      ? { background: 'var(--color-primary)', color: 'var(--color-on-primary)', boxShadow: '0 4px 14px var(--color-primary-shadow)' }
+                      : { background: 'var(--color-success)', color: 'white', boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)' }
+                  }
                 >
-                  Calculate
+                  {hasSimulated && <CheckCircle2 className="w-4 h-4" />}
+                  {!hasSimulated ? 'Calculate' : 'Deploy Capital'}
                 </button>
 
               </div>
@@ -404,7 +597,6 @@ export default function FunderProjectionsPage() {
                       />
                       <Tooltip content={<CustomTooltip />} />
 
-                      {/* Compounding Mode */}
                       {isCompounding && <>
                         <Area
                           type="monotone"
@@ -429,7 +621,6 @@ export default function FunderProjectionsPage() {
                         />
                       </>}
 
-                      {/* Monthly Payout Mode */}
                       {isPayout && <>
                         <Area
                           type="monotone"
@@ -461,8 +652,6 @@ export default function FunderProjectionsPage() {
               {/* ── SMALL STAT CARDS (Inside Graph Section) ───────────────── */}
               <div className="px-6 pb-6 w-full">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  
-                  {/* Principal Card */}
                   <div className="flex items-center gap-4 p-4 rounded-xl border bg-slate-50" style={{ borderColor: 'var(--color-primary-light)' }}>
                     <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
                          style={{ background: 'var(--color-primary-light)' }}>
@@ -474,7 +663,6 @@ export default function FunderProjectionsPage() {
                     </div>
                   </div>
 
-                  {/* Estimated Rewards Card */}
                   <div className="flex items-center gap-4 p-4 rounded-xl border bg-slate-50" style={{ borderColor: '#D1FAE5' }}>
                     <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
                          style={{ background: '#ECFDF5' }}>
@@ -486,7 +674,6 @@ export default function FunderProjectionsPage() {
                     </div>
                   </div>
 
-                  {/* Total Future Value Card */}
                   <div className="flex items-center gap-4 p-4 rounded-xl border" style={{ background: 'var(--color-primary-faint)', borderColor: 'var(--color-primary-light)' }}>
                     <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
                          style={{ background: 'var(--color-primary)' }}>
@@ -497,7 +684,6 @@ export default function FunderProjectionsPage() {
                       <p className="text-lg font-black tracking-tight text-slate-900 leading-tight">{fmt(totalYield)}</p>
                     </div>
                   </div>
-
                 </div>
               </div>
 
