@@ -24,7 +24,7 @@ export default function AgentFloatManager() {
     <div className="bg-white border border-slate-200 shadow-sm rounded-2xl overflow-hidden font-inter">
       <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
         <div>
-          <h3 className="font-bold text-slate-800 flex items-center gap-2">
+          <h3 className="font-bold text-[#9234eb] flex items-center gap-2">
             <ShieldCheck className="text-purple-600" size={18} />
             Field Float Exposure
           </h3>

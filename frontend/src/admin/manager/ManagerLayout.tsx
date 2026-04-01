@@ -96,7 +96,7 @@ export default function ManagerLayout() {
             >
               <Menu size={24} />
             </button>
-            <h1 className="text-xl font-bold tracking-tight hidden sm:block">
+            <h1 className="text-xl font-black text-[#9234eb] tracking-tight hidden sm:block uppercase">
               {navItems.find((vi) => location.pathname.includes(vi.path))?.name || 'Operations Command'}
             </h1>
           </div>

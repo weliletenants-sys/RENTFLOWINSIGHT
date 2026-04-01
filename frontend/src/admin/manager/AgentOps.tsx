@@ -17,7 +17,7 @@ export default function AgentOps() {
     <div className="space-y-6 animate-in fade-in duration-500 font-inter">
       {/* Module Header */}
       <div>
-        <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+        <h1 className="text-3xl font-black text-[#9234eb] tracking-tight flex items-center gap-3">
           <MapPin className="text-purple-600" size={32} />
           Agent Field Operations
         </h1>
@@ -32,7 +32,7 @@ export default function AgentOps() {
           onClick={() => setActiveTab('float')}
           className={`px-5 py-2.5 rounded-lg text-sm font-bold tracking-wide transition-all min-w-max flex items-center gap-2 ${
             activeTab === 'float'
-              ? 'bg-purple-600 text-white shadow-md'
+              ? 'bg-[#9234eb] text-white shadow-md'
               : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
           }`}
         >
@@ -43,7 +43,7 @@ export default function AgentOps() {
           onClick={() => setActiveTab('advance')}
           className={`px-5 py-2.5 rounded-lg text-sm font-bold tracking-wide transition-all min-w-max flex items-center gap-2 ${
             activeTab === 'advance'
-              ? 'bg-purple-600 text-white shadow-md'
+              ? 'bg-[#9234eb] text-white shadow-md'
               : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
           }`}
         >
