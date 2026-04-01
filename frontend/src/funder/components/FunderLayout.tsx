@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import FunderSidebar from './FunderSidebar';
 import FunderDashboardHeader from './FunderDashboardHeader';
+import FunderBottomNav from './FunderBottomNav';
 
 interface FunderLayoutProps {
   children: ReactNode;
@@ -52,6 +53,7 @@ export default function FunderLayout({ children, activePage = 'Dashboard', pageT
           {children}
         </div>
       </div>
+      <FunderBottomNav activePage={activePage} />
     </div>
   );
 }

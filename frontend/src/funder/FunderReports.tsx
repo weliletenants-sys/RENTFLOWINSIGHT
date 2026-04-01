@@ -6,6 +6,7 @@ import {
 import { Download, FileText, ChevronDown, CheckCircle } from 'lucide-react';
 import FunderSidebar from './components/FunderSidebar';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
+import FunderBottomNav from './components/FunderBottomNav';
 import { getFunderReportsStatsRaw, getWalletOperations, getFunderPortfolios } from '../services/funderApi';
 import * as XLSX from 'xlsx';
 import toast from 'react-hot-toast';
@@ -336,6 +337,7 @@ export default function FunderReports() {
           </main>
         </div>
       </div>
+      <FunderBottomNav activePage="Reports" />
     </div>
   );
 }

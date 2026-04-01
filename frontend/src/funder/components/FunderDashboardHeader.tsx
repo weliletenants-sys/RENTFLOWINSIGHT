@@ -122,12 +122,7 @@ export default function FunderDashboardHeader({
     >
       {/* Left: Hamburger & page title */}
       <div className="flex items-center gap-3">
-        <button 
-          onClick={onMenuClick}
-          className="lg:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
-        >
-          <Menu className="w-6 h-6" />
-        </button>
+
         <div className="lg:hidden">
           <img src="/welile-colored.png" alt="Welile" className="h-6 object-contain" />
         </div>

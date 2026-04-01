@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import FunderSidebar from './components/FunderSidebar';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
+import FunderBottomNav from './components/FunderBottomNav';
 import { getFunderDashboardStats, fundRentPool } from '../services/funderApi';
 import {
   AreaChart,
@@ -779,6 +780,7 @@ export default function FunderProjectionsPage() {
           </main>
         </div>
       </div>
+      <FunderBottomNav activePage="Projections" />
     </div>
   );
 }

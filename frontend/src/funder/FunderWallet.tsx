@@ -6,6 +6,7 @@ import {
 import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
 import FunderSidebar from './components/FunderSidebar';
+import FunderBottomNav from './components/FunderBottomNav';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
 import { Link } from 'react-router-dom';
 import { getFunderDashboardStats, getFunderActivities, fundRentPool, requestDeposit, requestWalletWithdrawal, getWalletOperations, getPayoutMethods, transferFunds, type PayoutMethodView } from '../services/funderApi';
@@ -857,6 +858,7 @@ export default function FunderWallet() {
           </div>
         </div>
       )}
+      <FunderBottomNav activePage="Wallet" />
     </div>
   );
 }

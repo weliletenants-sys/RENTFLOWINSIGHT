@@ -40,7 +40,7 @@ export default function FunderSidebar({ activePage = 'Dashboard', onNavigate, is
         />
       )}
       
-      <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-[var(--color-primary-border)] flex-col min-h-screen h-[100dvh] transform transition-transform duration-300 ease-in-out lg:sticky lg:top-0 lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'} flex`}>
+      <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-[var(--color-primary-border)] flex-col min-h-screen h-[100dvh] transform transition-transform duration-300 ease-in-out lg:sticky lg:top-0 lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'} hidden lg:flex`}>
         {/* Logo */}
         <div className="p-6 flex items-center justify-between">
           <img src="/welile-colored.png" alt="Welile Logo" className="h-8 object-contain" />

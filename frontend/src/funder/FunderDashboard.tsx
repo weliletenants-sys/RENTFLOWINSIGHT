@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Lightbulb, ShieldAlert, ArrowRight } from 'lucide-react';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
 import FunderSidebar from './components/FunderSidebar';
+import FunderBottomNav from './components/FunderBottomNav';
 import FunderWalletCard from './components/FunderWalletCard';
 import FunderPortfolioList from './components/FunderPortfolioList';
 import FunderRecentActivity from './components/FunderRecentActivity';
@@ -271,7 +272,7 @@ export default function FunderDashboard() {
           )}
         </div>
       </div>
-
+      <FunderBottomNav activePage={activePage} />
     </div>
   );
 }
