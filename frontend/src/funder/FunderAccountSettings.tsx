@@ -89,6 +89,14 @@ export default function FunderAccountSettings() {
   const { status: kycStatus } = useKycStatus();
   const [stats, setStats] = useState<DashboardStatsResponse | null>(null);
 
+  const generateAIID = (identifier: string | undefined): string => {
+    if (!identifier) return 'WEL-------';
+    const hash = Array.from(identifier).reduce((s, c) => Math.imul(31, s) + c.charCodeAt(0) | 0, 0);
+    const hex = Math.abs(hash).toString(16).toUpperCase().padStart(6, '0').slice(0, 6);
+    return `WEL-${hex}`;
+  };
+  const aiId = generateAIID(authUser?.id || authUser?.email);
+
   const [sessionsList, setSessionsList] = useState<{ id: string; device_info: string | null; ip_address: string | null; created_at: string; expires_at: string; is_current: boolean; }[]>([]);
 
   const fetchSessions = async () => {
@@ -534,9 +542,17 @@ export default function FunderAccountSettings() {
                       {firstName} {lastName ? lastName.charAt(0) + '.' : ''}
                     </h1>
                     <div className="flex items-center justify-center md:justify-start gap-3">
-                      <span className="bg-white/20 text-white border border-white/30 px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase backdrop-blur-md">
-                        SUPPORTER
-                      </span>
+                      <button 
+                        onClick={() => {
+                          navigator.clipboard.writeText(aiId);
+                          toast.success('AI ID copied to clipboard!');
+                        }}
+                        className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white border border-white/30 px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase backdrop-blur-md cursor-pointer transition-colors"
+                        title="Click to copy"
+                      >
+                        <Fingerprint className="w-3.5 h-3.5 opacity-80" />
+                        {aiId}
+                      </button>
                       <span className="flex items-center gap-1.5 text-emerald-100 text-sm font-semibold">
                         <ShieldCheck className="w-4 h-4 text-emerald-300" />
                         Grade-A Verified
