@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   TrendingUp,
   Wallet,
@@ -6,10 +6,14 @@ import {
   BarChart2,
   X,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
 import FunderSidebar from './components/FunderSidebar';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
+import { getFunderDashboardStats, fundRentPool } from '../services/funderApi';
 import {
   AreaChart,
   Area,
@@ -108,8 +112,26 @@ const CustomSelect = ({
 export default function FunderProjectionsPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
-  // Fake Wallet Balance for testing
-  const MOCKED_WALLET_BALANCE = 15000000;
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [loadingStep, setLoadingStep] = useState(0);
+  
+  const fetchWalletBalance = useCallback(async () => {
+    try {
+      const stats = await getFunderDashboardStats();
+      setWalletBalance(stats.availableLiquid || 0);
+    } catch (error) {
+      console.error('Failed to fetch wallet:', error);
+      toast.error('Unable to verify wallet balance');
+    }
+  }, []);
+
+  useEffect(() => {
+    // Simple debounce to prevent rapid double-fetches
+    const timeoutId = setTimeout(() => {
+      fetchWalletBalance();
+    }, 300);
+    return () => clearTimeout(timeoutId);
+  }, [fetchWalletBalance]);
 
   const [params, setParams] = useState<Params>({
     principal: '',
@@ -153,12 +175,47 @@ export default function FunderProjectionsPage() {
     }
   };
 
-  const simulateDeployment = () => {
+  const loadingTexts = [
+    "Getting ready...",
+    "Adding to pool...",
+    "Allocating capital...",
+    "Almost done..."
+  ];
+
+  const simulateDeployment = async () => {
+    if (!hasSufficientFunds || !portfolioName.trim()) return;
+
     setIsDeploying(true);
-    setTimeout(() => {
-       setIsDeploying(false);
-       setIsSuccess(true);
-    }, 1500); // UI illusion of processing smart contract / ledger
+    setLoadingStep(0);
+
+    const textInterval = setInterval(() => {
+      setLoadingStep(prev => prev < loadingTexts.length - 1 ? prev + 1 : prev);
+    }, 800);
+
+    try {
+      await fundRentPool({
+        amount: inputPrincipal,
+        duration_months: simulated.durationPreset === 'Custom' ? Number(simulated.customMonths) : parseInt(simulated.durationPreset),
+        roi_mode: simulated.payoutMode,
+        auto_renew: false,
+        account_name: portfolioName.trim()
+      });
+
+      clearInterval(textInterval);
+      setLoadingStep(loadingTexts.length - 1);
+      
+      setTimeout(() => {
+        setIsDeploying(false);
+        setIsSuccess(true);
+        fetchWalletBalance();
+      }, 500);
+
+    } catch (error: any) {
+      clearInterval(textInterval);
+      setIsDeploying(false);
+      closeModal();
+      toast.error(error?.response?.data?.message || 'Failed to deploy capital. Please try again.');
+    }
   };
 
   const closeModal = () => {
@@ -224,7 +281,7 @@ export default function FunderProjectionsPage() {
 
   const isCompounding = simulated.payoutMode === 'monthly_compounding';
   const isPayout      = simulated.payoutMode === 'monthly_payout';
-  const hasSufficientFunds = MOCKED_WALLET_BALANCE >= inputPrincipal;
+  const hasSufficientFunds = walletBalance >= inputPrincipal;
 
   // ─── Custom Tooltip ────────────────────────────────────────────────────────
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -318,7 +375,7 @@ export default function FunderProjectionsPage() {
                               </span>
                            </div>
                            <span className={`text-sm font-black ${hasSufficientFunds ? 'text-emerald-900' : 'text-red-900'}`}>
-                             {fmt(MOCKED_WALLET_BALANCE)}
+                             {fmt(walletBalance)}
                            </span>
                         </div>
                         {!hasSufficientFunds && (
@@ -331,7 +388,7 @@ export default function FunderProjectionsPage() {
                      <button 
                         onClick={simulateDeployment}
                         disabled={!hasSufficientFunds || isDeploying || !portfolioName.trim()}
-                        className={`w-full py-4 rounded-xl text-xs uppercase font-black tracking-widest transition-all ${
+                        className={`w-full h-[52px] rounded-xl text-xs uppercase font-black tracking-widest transition-all overflow-hidden flex items-center justify-center ${
                           !hasSufficientFunds || !portfolioName.trim()
                             ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                             : isDeploying 
@@ -340,7 +397,25 @@ export default function FunderProjectionsPage() {
                         }`}
                         style={hasSufficientFunds && portfolioName.trim() ? { background: 'var(--color-primary)', color: 'var(--color-on-primary)' } : {}}
                      >
-                        {isDeploying ? 'Deploying...' : !portfolioName.trim() && hasSufficientFunds ? 'Enter Portfolio Name' : hasSufficientFunds ? 'Confirm Deployment' : 'Deposit First'}
+                        {isDeploying ? (
+                          <div className="flex items-center gap-2">
+                             <Loader2 className="w-4 h-4 animate-spin" />
+                             <div className="relative h-4 w-32 overflow-hidden flex flex-col justify-center">
+                               <AnimatePresence mode="popLayout">
+                                 <motion.span
+                                    key={loadingStep}
+                                    initial={{ y: 20, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    exit={{ y: -20, opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="absolute left-0 top-0 bottom-0 flex items-center"
+                                 >
+                                   {loadingTexts[loadingStep]}
+                                 </motion.span>
+                               </AnimatePresence>
+                             </div>
+                          </div>
+                        ) : !portfolioName.trim() && hasSufficientFunds ? 'Enter Portfolio Name' : hasSufficientFunds ? 'Confirm Deployment' : 'Deposit First'}
                      </button>
                   </div>
                 </>
