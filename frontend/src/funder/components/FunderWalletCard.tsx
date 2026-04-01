@@ -44,7 +44,7 @@ export default function FunderWalletCard({
           <div className="bg-white/10 border border-white/20 px-3 py-1 rounded text-[10px] font-mono tracking-wider mt-1">
             {cardId}
           </div>
-          <img src="/welile-logo-white.png" alt="Welile Logo" className="h-12 object-contain" />
+          <img src="/welile-logo-white.png" alt="Welile Logo" className="h-5 object-contain" />
         </div>
 
         {/* Middle Section: Values */}
