@@ -1,62 +1,93 @@
 import { useState, Suspense, lazy } from 'react';
-import { Network, ShieldCheck, Activity } from 'lucide-react';
+import { Briefcase, Activity, AlertTriangle, Contact } from 'lucide-react';
 
-const PartnerIntegrationHub = lazy(() => import('./components/PartnerIntegrationHub'));
-const ServiceCompliance = lazy(() => import('./components/ServiceCompliance'));
+const PartnerDirectory = lazy(() => import('./components/PartnerDirectory'));
+const PartnerCapitalFlow = lazy(() => import('./components/PartnerCapitalFlow'));
+const PartnerChurnAlerts = lazy(() => import('./components/PartnerChurnAlerts'));
+
+// Legacy fallback components
+const SupporterPoolBalanceCard = lazy(() => import('./components/SupporterPoolBalanceCard'));
+const UserProfilesTable = lazy(() => import('./components/UserProfilesTable'));
 
 const Loader = () => (
   <div className="flex h-[40vh] items-center justify-center">
-    <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+    <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
   </div>
 );
 
 export default function PartnerOps() {
-  const [activeTab, setActiveTab] = useState<'integrations' | 'compliance'>('integrations');
+  const [activeTab, setActiveTab] = useState<'directory' | 'capital' | 'churn' | 'pool' | 'lookup'>('directory');
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 font-inter">
+    <div className="space-y-8 animate-in fade-in duration-500 font-inter">
       {/* Module Header */}
       <div>
-        <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-          <Network className="text-indigo-600" size={32} />
-          Partner & System Analytics
+        <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3 font-outfit">
+          <Briefcase className="text-emerald-600" size={32} />
+          Partner Operations Center
         </h1>
         <p className="text-slate-500 font-medium mt-1 text-sm md:text-base">
-          Audit global KYC coverage percentages and verify external SLA latencies across major third-party webhook integrations.
+          Command hub for tracking supporter engagement, capital deployments, and automated churn risk.
         </p>
       </div>
 
-      {/* Tab Navigators */}
-      <div className="bg-white p-1.5 rounded-xl border border-slate-200 inline-flex shadow-sm overflow-x-auto max-w-full">
-        <button
-          onClick={() => setActiveTab('integrations')}
-          className={`px-5 py-2.5 rounded-lg text-sm font-bold tracking-wide transition-all min-w-max flex items-center gap-2 ${
-            activeTab === 'integrations'
-              ? 'bg-indigo-600 text-white shadow-md'
-              : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
-          }`}
+      {/* Modern Card Navigators */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {/* KPI Card 1 */}
+        <div 
+          onClick={() => setActiveTab('directory')}
+          className={`p-6 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between h-32 ${activeTab === 'directory' ? 'border-emerald-500 bg-emerald-50 shadow-sm' : 'border-slate-100 hover:border-slate-200 bg-white'}`}
         >
-          <Activity size={16} />
-          Third-Party Data Hooks
-        </button>
-        <button
-          onClick={() => setActiveTab('compliance')}
-          className={`px-5 py-2.5 rounded-lg text-sm font-bold tracking-wide transition-all min-w-max flex items-center gap-2 ${
-            activeTab === 'compliance'
-              ? 'bg-indigo-600 text-white shadow-md'
-              : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
-          }`}
+           <div className="flex justify-between items-start">
+              <span className={`text-sm font-bold tracking-wide ${activeTab === 'directory' ? 'text-emerald-800' : 'text-slate-600'}`}>VIP Directory</span>
+              <Contact size={18} className={activeTab === 'directory' ? 'text-emerald-600' : 'text-slate-400'} />
+           </div>
+           <div className="font-black text-3xl font-outfit text-slate-800">892</div>
+        </div>
+
+        {/* KPI Card 2 */}
+        <div 
+          onClick={() => setActiveTab('capital')}
+          className={`p-6 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between h-32 ${activeTab === 'capital' ? 'border-[var(--color-primary)] bg-[var(--color-primary-faint,#f4f0ff)] shadow-sm' : 'border-slate-100 hover:border-slate-200 bg-white'}`}
         >
-          <ShieldCheck size={16} />
-          KYC / AML Service Audits
-        </button>
+           <div className="flex justify-between items-start">
+              <span className={`text-sm font-bold tracking-wide ${activeTab === 'capital' ? 'text-[var(--color-primary-darker)]' : 'text-slate-600'}`}>Capital Flow</span>
+              <Activity size={18} className={activeTab === 'capital' ? 'text-[var(--color-primary)]' : 'text-slate-400'} />
+           </div>
+           <div className="font-black text-3xl font-outfit text-slate-800 flex items-baseline gap-2">
+               UGX 8.5M <span className="text-xs font-bold text-emerald-600 uppercase">+12%</span>
+           </div>
+        </div>
+
+        {/* KPI Card 3 */}
+        <div 
+          onClick={() => setActiveTab('churn')}
+          className={`p-6 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between h-32 ${activeTab === 'churn' ? 'border-red-500 bg-red-50 shadow-sm' : 'border-slate-100 hover:border-slate-200 bg-white'}`}
+        >
+           <div className="flex justify-between items-start">
+              <span className={`text-sm font-bold tracking-wide ${activeTab === 'churn' ? 'text-red-800' : 'text-slate-600'}`}>Churn Alerts</span>
+              <AlertTriangle size={18} className={activeTab === 'churn' ? 'text-red-600' : 'text-slate-400'} />
+           </div>
+           <div className="font-black text-3xl font-outfit text-red-600">3</div>
+        </div>
       </div>
 
-      {/* Embedded Terminal App */}
+      <div className="flex gap-2">
+          {/* Legacy toggles */}
+          <button onClick={() => setActiveTab('pool')} className={`text-xs font-bold px-3 py-1.5 rounded-lg border ${activeTab === 'pool' ? 'bg-slate-800 text-white' : 'bg-white text-slate-500'}`}>Legacy Pool Ledger</button>
+          <button onClick={() => setActiveTab('lookup')} className={`text-xs font-bold px-3 py-1.5 rounded-lg border ${activeTab === 'lookup' ? 'bg-slate-800 text-white' : 'bg-white text-slate-500'}`}>Legacy Profiles</button>
+      </div>
+
+      {/* Embedded Terminal Routing */}
       <div className="pt-2">
         <Suspense fallback={<Loader />}>
-          {activeTab === 'integrations' && <PartnerIntegrationHub />}
-          {activeTab === 'compliance' && <ServiceCompliance />}
+          {activeTab === 'directory' && <PartnerDirectory />}
+          {activeTab === 'capital' && <PartnerCapitalFlow />}
+          {activeTab === 'churn' && <PartnerChurnAlerts />}
+          
+          {/* Legacy */}
+          {activeTab === 'pool' && <SupporterPoolBalanceCard />}
+          {activeTab === 'lookup' && <UserProfilesTable />}
         </Suspense>
       </div>
     </div>

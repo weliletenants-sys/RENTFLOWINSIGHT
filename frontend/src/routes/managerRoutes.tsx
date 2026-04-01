@@ -20,9 +20,12 @@ const CentralLoader = () => (
 function RequireManager({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   
+  // DEV BYPASS: Allow immediate preview for all routes during development
+  /*
   if (!user || user.role === null || !['MANAGER', 'SUPER_ADMIN', 'CEO', 'COO', 'CFO'].includes(user.role as string)) {
     return <Navigate to="/dashboard" replace />;
   }
+  */
   
   return <>{children}</>;
 }

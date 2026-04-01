@@ -1,10 +1,10 @@
 import { Search, MapPin, Building2, Flame } from 'lucide-react';
-import { useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRef, useEffect, useState } from 'react';
+import AvailableHousesSheet from './AvailableHousesSheet';
 
 export default function HouseDiscoveryPreview() {
-  const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const dummyHouses = [
     { id: 1, type: "1 Bedroom Studio", location: "Kisaasi, Kampala", price: "USh 450k", img: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400&q=80", tag: "Hot Deal" },
@@ -50,7 +50,7 @@ export default function HouseDiscoveryPreview() {
            </h2>
          </div>
          <button 
-           onClick={() => navigate('/find-a-house')}
+           onClick={() => setIsSheetOpen(true)}
            className="text-sm font-bold text-blue-400 hover:text-white transition-colors flex items-center gap-1 group pb-1"
          >
            Open Marketplace <span className="group-hover:translate-x-1 transition-transform ml-1">→</span>
@@ -91,8 +91,10 @@ export default function HouseDiscoveryPreview() {
            </div>
          ))}
 
-       </div>
-    </div>
+        </div>
+        
+        <AvailableHousesSheet isOpen={isSheetOpen} onClose={() => setIsSheetOpen(false)} />
+     </div>
   );
 }
 

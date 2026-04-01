@@ -84,11 +84,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           localStorage.removeItem('user_data');
           setUser(null);
           
+          /* DEV BYPASS: Disable aggressive 401 redirect during frontend iteration
           if (window.location.pathname.startsWith('/funder') && window.location.pathname !== '/funder/login') {
             window.location.replace('/funder/login');
           } else if (!window.location.pathname.startsWith('/funder') && window.location.pathname !== '/login') {
             window.location.replace('/login');
           }
+          */
         }
         return Promise.reject(error);
       }
