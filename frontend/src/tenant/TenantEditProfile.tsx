@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Check, User, Mail, Phone, Shield } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { toast, Toaster } from 'react-hot-toast';
+import { getMyRoles, requestRole } from '../services/rolesApi';
+import type { RoleView } from '../services/rolesApi';
+import { useEffect } from 'react';
 
 export default function TenantEditProfile() {
   const navigate = useNavigate();
@@ -17,6 +20,27 @@ export default function TenantEditProfile() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [avatarUrl, setAvatarUrl] = useState(`url("https://lh3.googleusercontent.com/aida-public/AB6AXuD1Xe7qGPblaN_lNwa-0FHT-W5VCviDsz17FoZPP3vffhFAXcpuV6kc9c8hitxw1J7lz6uPKNRdq0pSYgdtXTimxOax3YOz03jrtrW-BkXbG7RDuJ-ry-URQkiI8pYYcVmi_gxbyYkWayzwbhQ6UqAdFFOEtxnHr60t9VKnv3CmUbDYbPgR-Hal1gh7PoFk0dUdwTHbvxPA5trO5Ksx6sQU1RjBeHiqWoHgrAZPP3wmS9t4ytfu-ieUUWkOVn5Ze91L8GO9AqKBag8")`);
+
+  const [roles, setRoles] = useState<RoleView[]>([]);
+  const [loadingRole, setLoadingRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    getMyRoles().then(res => setRoles(res.roles)).catch(console.error);
+  }, []);
+
+  const handleRequestRole = async (targetRole: string) => {
+    try {
+      setLoadingRole(targetRole);
+      const res = await requestRole(targetRole);
+      toast.success(res.message);
+      const updated = await getMyRoles();
+      setRoles(updated.roles);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to request role');
+    } finally {
+      setLoadingRole(null);
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -149,7 +173,44 @@ export default function TenantEditProfile() {
                <button type="submit" className="w-full flex items-center justify-center gap-2 bg-[#8b5cf6] dark:bg-[#6b45c2] hover:bg-purple-600 dark:hover:bg-[#5a2e9d] text-white py-4 rounded-xl font-bold shadow-lg shadow-purple-500/25 dark:shadow-none transition-all active:translate-y-0.5 mt-8 cursor-pointer text-[15px]">
                   <Check strokeWidth={3} size={18} /> Save Changes
                </button>
-            </form>
+             </form>
+
+            {/* Account Roles Management */}
+            <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-700">
+               <div className="flex items-center gap-2 mb-6">
+                 <Shield className="text-purple-500 w-5 h-5" />
+                 <h2 className="text-[14px] font-bold text-slate-800 dark:text-white uppercase tracking-widest">Platform Roles</h2>
+               </div>
+               
+               <div className="space-y-4">
+                 {roles.map(r => (
+                   <div key={r.role} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-200 dark:border-slate-600">
+                     <div className="flex flex-col">
+                       <span className="font-bold text-slate-800 dark:text-white">{r.role} Account</span>
+                       <span className="text-xs text-slate-500 dark:text-slate-400">
+                         {r.status === 'ACTIVE' ? 'Active and available in your sidebar' : 
+                          r.status === 'PENDING' ? 'Your request is under review' : 'Unlock additional platform features'}
+                       </span>
+                     </div>
+                     
+                     {r.status === 'ACTIVE' ? (
+                       <span className="px-3 py-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 text-xs font-bold rounded-lg uppercase tracking-wider">Active</span>
+                     ) : r.status === 'PENDING' ? (
+                       <span className="px-3 py-1 bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 text-xs font-bold rounded-lg uppercase tracking-wider">Pending</span>
+                     ) : (
+                       <button
+                         type="button"
+                         onClick={() => handleRequestRole(r.role)}
+                         disabled={loadingRole === r.role}
+                         className="px-4 py-2 bg-purple-100 text-purple-700 hover:bg-purple-200 dark:bg-purple-500/20 dark:text-purple-300 dark:hover:bg-purple-500/30 text-xs font-bold rounded-lg uppercase tracking-wider transition-colors disabled:opacity-50 cursor-pointer"
+                       >
+                         {loadingRole === r.role ? 'Requesting...' : 'Apply Now'}
+                       </button>
+                     )}
+                   </div>
+                 ))}
+               </div>
+            </div>
 
          </div>
       </div>

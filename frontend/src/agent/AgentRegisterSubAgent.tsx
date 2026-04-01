@@ -1,185 +1,289 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Phone, MapPin, CheckCircle2 } from 'lucide-react';
-import PurpleBubbles from '../components/PurpleBubbles';
-import { motion, AnimatePresence } from 'framer-motion';
-import { registerSubAgent } from '../services/agentApi';
-import toast from 'react-hot-toast';
+import { ArrowLeft, Handshake, Search, UserPlus, Users, MapPin, TrendingUp, CheckCircle2, Wallet, Link2, Copy, Smartphone } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+// Mock Downline / Sub-Agent Data
+type SubAgentStatus = 'Active Runner' | 'Suspended' | 'Pending Invite';
+
+interface SubAgent {
+  id: string;
+  name: string;
+  phone: string;
+  territory: string;
+  status: SubAgentStatus;
+  commissionsEarnedForMe: number; // Volume of commission share kicked up from downline
+  collectionsMasked: number;
+}
+
+const mockDownline: SubAgent[] = [
+  { id: 'SA-9912', name: 'John Mugisha', phone: '+256 701 445566', territory: 'Najjera', status: 'Active Runner', commissionsEarnedForMe: 450000, collectionsMasked: 15 },
+  { id: 'SA-9934', name: 'Betty Opolot', phone: '+256 772 889900', territory: 'Ntinda', status: 'Active Runner', commissionsEarnedForMe: 1250000, collectionsMasked: 42 },
+  { id: 'SA-9955', name: 'Daniel Kasozi', phone: '+256 755 112233', territory: 'Kyanja', status: 'Pending Invite', commissionsEarnedForMe: 0, collectionsMasked: 0 },
+  { id: 'SA-9901', name: 'Sarah Nampeera', phone: '+256 700 998877', territory: 'Kololo', status: 'Active Runner', commissionsEarnedForMe: 2100000, collectionsMasked: 105 },
+];
 
 export default function AgentRegisterSubAgent() {
   const navigate = useNavigate();
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    fullName: '',
-    phoneNumber: '',
-    location: ''
-  });
+  
+  // Registration Form State
+  const [phone, setPhone] = useState('');
+  const [name, setName] = useState('');
+  const [territory, setTerritory] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [inviteLink, setInviteLink] = useState('');
+  
+  // Search State
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  // Downline KPIs
+  const downlineStats = useMemo(() => {
+    let totalOverride = 0;
+    let activeRunners = 0;
+    
+    mockDownline.forEach(agent => {
+       totalOverride += agent.commissionsEarnedForMe;
+       if (agent.status === 'Active Runner') activeRunners++;
+    });
+
+    return { totalOverride, activeRunners, totalNetwork: mockDownline.length };
+  }, []);
+
+  const filteredDownline = useMemo(() => {
+    if (searchQuery.trim() === '') return mockDownline;
+    const q = searchQuery.toLowerCase();
+    return mockDownline.filter(ag => 
+       ag.name.toLowerCase().includes(q) || 
+       ag.phone.includes(q) ||
+       ag.territory.toLowerCase().includes(q)
+    );
+  }, [searchQuery]);
+
+  const handleGenerateInvite = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!phone || !name) return;
+    
+    setIsGenerating(true);
+    // Simulate Backend Invite Provisioning
+    setTimeout(() => {
+       setInviteLink(`https://rentflow.io/join/ref-ax992-${Math.floor(Math.random() * 9999)}`);
+       setIsGenerating(false);
+    }, 1200);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    try {
-      await registerSubAgent({
-        sub_agent_name: formData.fullName,
-        phone: formData.phoneNumber
-      });
-      setIsSuccess(true);
-      toast.success('Sub-agent registered successfully!');
-    } catch (err: any) {
-      toast.error(err.isProblemDetail ? err.detail : 'Failed to register sub-agent.');
-    } finally {
-      setIsSubmitting(false);
-    }
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(inviteLink);
+    alert("Invite Link Copied!");
   };
 
   return (
-    <div className="bg-[#f8f6f6] dark:bg-[#221610] min-h-screen relative font-['Public_Sans'] text-slate-900 dark:text-slate-100 antialiased overflow-hidden flex flex-col">
+    <div className="w-full min-h-screen bg-[#f7f9fa] font-sans antialiased pb-24 selection:bg-[#9234eb]/20">
       
-      {/* Background Bubbles (z-0) */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <PurpleBubbles />
-      </div>
+      {/* Background ambient light */}
+      <div className="fixed bottom-[-10%] left-[-5%] w-[40rem] h-[40rem] bg-[#9234eb]/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
 
-      <div className="relative z-10 w-full max-w-md mx-auto min-h-screen flex flex-col bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-x border-slate-100 dark:border-slate-800 shadow-2xl">
+      {/* Sticky Header */}
+      <header className="sticky top-0 left-0 right-0 z-50 w-full border-b border-purple-100 bg-white/80 backdrop-blur-md px-4 py-4 mb-8">
+        <div className="max-w-5xl mx-auto flex items-center gap-3">
+           <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-xl text-[#9234eb]/50 hover:text-[#9234eb] hover:bg-purple-50 transition-colors">
+              <ArrowLeft size={24} />
+           </button>
+           <div>
+               <h1 className="text-xl font-black text-slate-800 leading-none mb-1">Downline Manager</h1>
+               <p className="text-[10px] font-bold text-[#9234eb]/70 uppercase tracking-widest">Team Architecture</p>
+           </div>
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-4 relative z-10 space-y-8">
         
-        {/* Header */}
-        <header className="sticky top-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-4 py-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 z-50">
-          <button 
-            onClick={() => navigate(-1)} 
-            className="p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <h1 className="text-lg font-bold">Register Sub-Agent</h1>
-          <div className="w-9" />
-        </header>
+        {/* Top Section: Form + KPI Panel */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+           
+           {/* Form Module */}
+           <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4 }}
+              className="lg:col-span-5 bg-white rounded-[2rem] p-8 shadow-sm border border-purple-100"
+           >
+              <div className="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center text-[#9234eb] mb-6 border border-purple-100 shadow-inner">
+                 <UserPlus size={28} />
+              </div>
+              
+              <h2 className="text-2xl font-black text-slate-800 mb-1">Onboard Sub-Agent</h2>
+              <p className="text-sm font-semibold text-slate-500 mb-8">Deploy a runner to a territory and earn an override commission on their rent collections.</p>
 
-        <main className="flex-1 overflow-y-auto w-full flex flex-col pb-10">
-          <AnimatePresence mode="wait">
-            
-            {!isSuccess ? (
-              <motion.div 
-                key="form"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -30 }}
-                transition={{ duration: 0.4 }}
-                className="w-full flex-1 flex flex-col p-6"
-              >
-                
-                <div className="mb-8">
-                  <h2 className="text-2xl font-bold tracking-tight mb-2 text-slate-800 dark:text-white">New Sub-Agent</h2>
-                  <p className="text-slate-500 dark:text-slate-400 text-sm">Fill in the details below to onboard a new sub-agent to your network.</p>
-                </div>
-                
-                <form onSubmit={handleSubmit} className="space-y-5 flex-1 flex flex-col">
-                  
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Full Name</label>
-                    <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors">
-                        <User size={18} strokeWidth={2} />
-                      </div>
-                      <input 
-                        name="fullName" value={formData.fullName} onChange={handleChange} 
-                        placeholder="John Doe"
-                        className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-800/50 border border-transparent focus:border-[#6c11d4]/30 focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none font-medium placeholder:text-slate-400" 
-                        required 
-                      />
+              <form onSubmit={handleGenerateInvite} className="space-y-5">
+                 <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#9234eb]/70 pl-1">Runner Name</label>
+                    <input 
+                       type="text" required
+                       placeholder="e.g. John Kasozi"
+                       value={name} onChange={e => setName(e.target.value)}
+                       className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm font-bold rounded-xl px-4 py-3 outline-none focus:border-[#9234eb] focus:ring-2 focus:ring-[#9234eb]/20 transition-all placeholder:text-slate-400 placeholder:font-semibold"
+                    />
+                 </div>
+
+                 <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#9234eb]/70 pl-1">Mobile Number (WhatsApp)</label>
+                    <div className="flex bg-slate-50 border border-slate-200 rounded-xl focus-within:border-[#9234eb] focus-within:ring-2 focus-within:ring-[#9234eb]/20 transition-all overflow-hidden relative">
+                       <span className="flex items-center justify-center px-4 bg-slate-100/50 border-r border-slate-200 text-slate-500 font-bold text-sm shrink-0">
+                          <Smartphone size={16} className="mr-1.5 text-slate-400" /> +256
+                       </span>
+                       <input 
+                          type="tel" required
+                          placeholder="772 123 456"
+                          value={phone} onChange={e => setPhone(e.target.value)}
+                          className="w-full bg-transparent text-slate-800 text-sm font-bold px-4 py-3 outline-none placeholder:text-slate-400 placeholder:font-semibold"
+                       />
                     </div>
-                  </div>
+                 </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Phone Number</label>
-                    <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors">
-                        <Phone size={18} strokeWidth={2} />
-                      </div>
-                      <input 
-                        type="tel"
-                        name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} 
-                        placeholder="0700 000 000"
-                        className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-800/50 border border-transparent focus:border-[#6c11d4]/30 focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none font-medium placeholder:text-slate-400" 
-                        required 
-                      />
-                    </div>
-                  </div>
+                 <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[#9234eb]/70 pl-1">Assigned Territory (Optional)</label>
+                    <input 
+                       type="text"
+                       placeholder="e.g. Kololo Sector B"
+                       value={territory} onChange={e => setTerritory(e.target.value)}
+                       className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm font-bold rounded-xl px-4 py-3 outline-none focus:border-[#9234eb] focus:ring-2 focus:ring-[#9234eb]/20 transition-all placeholder:text-slate-400 placeholder:font-semibold"
+                    />
+                 </div>
 
-                  <div className="space-y-1.5 mb-8">
-                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Location</label>
-                    <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#6c11d4] transition-colors">
-                        <MapPin size={18} strokeWidth={2} />
-                      </div>
-                      <input 
-                        name="location" value={formData.location} onChange={handleChange} 
-                        placeholder="Kampala, Uganda"
-                        className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-800/50 border border-transparent focus:border-[#6c11d4]/30 focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-[#6c11d4]/10 rounded-xl transition-all outline-none font-medium placeholder:text-slate-400" 
-                        required 
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mt-auto pt-8">
+                 {!inviteLink ? (
                     <button 
-                      type="submit" 
-                      disabled={isSubmitting}
-                      className="w-full bg-[#6c11d4] hover:bg-[#5b21b6] text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-[#6c11d4]/25 transition-all transform active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                       type="submit" 
+                       disabled={isGenerating || !phone || !name}
+                       className="w-full mt-4 flex items-center justify-center gap-2 py-3.5 bg-[#9234eb] hover:bg-[#7b2cbf] disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-black uppercase tracking-widest rounded-xl transition-all shadow-md shadow-[#9234eb]/20"
                     >
-                      {isSubmitting ? (
-                        <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"/>
-                      ) : (
-                        'Register Sub-Agent'
-                      )}
+                       {isGenerating ? (
+                          <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Provisioning Link...</>
+                       ) : (
+                          <><Link2 size={18} /> Generate Invite Link</>
+                       )}
                     </button>
-                  </div>
-                
-                </form>
+                 ) : (
+                    <motion.div 
+                       initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                       className="mt-6 bg-purple-50 p-4 rounded-xl border border-purple-200 overflow-hidden"
+                    >
+                       <p className="text-[10px] font-black text-[#9234eb] uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                          <CheckCircle2 size={12} /> Invite Link Ready
+                       </p>
+                       <div className="flex items-center gap-2 bg-white rounded-lg p-2 border border-purple-100 shadow-inner">
+                          <input readOnly value={inviteLink} className="w-full bg-transparent outline-none text-xs font-bold text-slate-600 px-2" />
+                          <button onClick={copyToClipboard} className="shrink-0 p-2 bg-[#9234eb] text-white rounded-md hover:bg-[#7b2cbf] transition-colors shadow-sm">
+                             <Copy size={14} />
+                          </button>
+                       </div>
+                    </motion.div>
+                 )}
+              </form>
+           </motion.div>
 
-              </motion.div>
-            ) : (
-              <motion.div 
-                key="success"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4 }}
-                className="flex-1 flex flex-col items-center justify-center p-8 text-center"
-              >
-                <div className="size-20 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-500 rounded-full flex items-center justify-center mb-6 shadow-xl shadow-emerald-500/20">
-                  <CheckCircle2 size={40} strokeWidth={2.5} />
-                </div>
-                
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Registration Successful!</h2>
-                
-                <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-[300px] leading-relaxed">
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">{formData.fullName}</span> has been successfully registered as a sub-agent.
-                </p>
+           {/* KPI Metrics Dashboard */}
+           <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+              className="lg:col-span-7 flex flex-col gap-6"
+           >
+              {/* Massive Purple Hero KPI */}
+              <div className="relative overflow-hidden flex-1 rounded-[2rem] bg-gradient-to-br from-[#9234eb] to-[#6a15ba] p-8 shadow-[0_20px_40px_-10px_rgba(146,52,235,0.3)] border border-white/10 text-white flex flex-col justify-center">
+                 <div className="absolute top-0 right-0 p-6 opacity-10 transform translate-x-4">
+                    <TrendingUp size={160} strokeWidth={1} />
+                 </div>
+                 
+                 <div className="relative z-10 w-full mb-8">
+                    <p className="text-[10px] font-bold tracking-widest uppercase text-purple-200 mb-2 flex items-center gap-2">
+                       <Wallet size={14} /> Downline Commission Overrides
+                    </p>
+                    <p className="text-4xl md:text-5xl font-black text-white leading-none tracking-tighter drop-shadow-md">
+                       UGX {(downlineStats.totalOverride / 1000000).toFixed(2)}<span className="text-2xl text-white/50 ml-1">M</span>
+                    </p>
+                 </div>
 
-                <div className="w-full bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-800/30 rounded-2xl p-5 mb-8">
-                  <p className="text-sm text-orange-800 dark:text-orange-400 font-medium mb-3">Default One-Time Password:</p>
-                  <div className="bg-white dark:bg-slate-800 text-center py-3 rounded-xl border border-orange-100 dark:border-orange-900/20">
-                    <span className="text-xl font-mono font-bold tracking-widest text-[#6c11d4]">WELILE123</span>
-                  </div>
-                  <p className="text-[11px] text-orange-600 dark:text-orange-500/70 mt-3 font-medium">Please share this password with the sub-agent. They will be prompted to change it upon their first login.</p>
-                </div>
+                 <div className="relative z-10 grid grid-cols-2 gap-4 border-t border-white/20 pt-6">
+                    <div>
+                       <p className="text-[10px] font-bold tracking-widest uppercase text-purple-200 mb-1">Active Runners</p>
+                       <p className="text-3xl font-black">{downlineStats.activeRunners}</p>
+                    </div>
+                    <div>
+                       <p className="text-[10px] font-bold tracking-widest uppercase text-purple-200 mb-1">Network Capacity</p>
+                       <p className="text-3xl font-black">{downlineStats.totalNetwork} <span className="text-sm font-normal text-white/50">Total</span></p>
+                    </div>
+                 </div>
+              </div>
 
-                <button 
-                  onClick={() => navigate('/dashboard')}
-                  className="w-full bg-[#6c11d4]/10 hover:bg-[#6c11d4]/20 text-[#6c11d4] font-bold py-4 px-6 rounded-xl transition-colors"
-                >
-                  Back to Dashboard
-                </button>
-              </motion.div>
-            )}
+              {/* Functional Search Block */}
+              <div className="bg-white rounded-[2rem] p-4 flex items-center gap-3 border border-purple-100 shadow-sm shrink-0">
+                 <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
+                    <Search size={18} className="text-[#9234eb]/60" />
+                 </div>
+                 <input 
+                    type="text" 
+                    placeholder="Search downline by Name or Number..."
+                    value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                    className="w-full bg-transparent outline-none text-sm font-bold text-slate-700 placeholder:text-slate-400 placeholder:font-semibold"
+                 />
+              </div>
 
-          </AnimatePresence>
-        </main>
-      </div>
+           </motion.div>
+        </div>
+
+        {/* Existing Downline Roster */}
+        <div>
+           <h3 className="text-sm font-black uppercase tracking-widest text-slate-800 px-2 mb-6 flex items-center gap-2">
+              <Users size={16} className="text-[#9234eb]" /> Active Roster Ledger
+           </h3>
+
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {filteredDownline.map((agent, index) => (
+                 <motion.div 
+                    key={agent.id}
+                    initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.1 + (index * 0.05) }}
+                    className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-[#9234eb]/50 hover:shadow-md transition-all group"
+                 >
+                    <div className="flex justify-between items-start mb-4">
+                       <div className="flex items-center gap-3">
+                          <div className={`w-12 h-12 rounded-full border flex items-center justify-center bg-slate-50 text-slate-500 border-slate-200 shrink-0 group-hover:bg-purple-50 group-hover:text-[#9234eb] transition-colors`}>
+                             <Handshake size={20} />
+                          </div>
+                          <div>
+                             <h4 className="font-bold text-slate-900 leading-tight">{agent.name}</h4>
+                             <p className="text-xs font-semibold text-slate-500">{agent.phone}</p>
+                          </div>
+                       </div>
+                       
+                       <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[10px] font-bold uppercase tracking-widest ${agent.status === 'Active Runner' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
+                          {agent.status}
+                       </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-4">
+                       <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+                          <MapPin size={14} className="text-[#9234eb]/70" /> {agent.territory}
+                       </div>
+                       <div className="text-right">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Override Earned</p>
+                          <p className="text-sm font-black text-[#9234eb]">UGX {agent.commissionsEarnedForMe.toLocaleString()}</p>
+                       </div>
+                    </div>
+                 </motion.div>
+              ))}
+
+              {filteredDownline.length === 0 && (
+                 <div className="col-span-1 md:col-span-2 py-16 flex flex-col items-center justify-center text-center bg-white rounded-2xl border border-slate-200 border-dashed">
+                    <Handshake size={32} className="text-slate-300 mb-3" />
+                    <p className="text-sm font-bold text-slate-500">No downline sub-agents match your search query.</p>
+                 </div>
+              )}
+           </div>
+
+        </div>
+
+      </main>
     </div>
   );
 }

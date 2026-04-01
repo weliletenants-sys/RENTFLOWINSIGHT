@@ -780,9 +780,60 @@ paths:
         "404": { $ref: "#/components/responses/NotFound" }
         "500": { $ref: "#/components/responses/InternalError" }
 
+  /api/v1/personas/ai-id/me:
+    get:
+      summary: Fetch the current user's complete AI ID profile
+      operationId: getMyAiIdProfile
+      tags: [Personas, AI ID]
+      responses:
+        "200":
+          description: Complete AI ID Profile
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AiIdProfile" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/v1/personas/ai-id/{aiId}:
+    get:
+      summary: Fetch a public AI ID profile
+      operationId: getPublicAiIdProfile
+      tags: [Personas, AI ID]
+      parameters:
+        - name: aiId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Public AI ID Profile
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AiIdProfile" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
 
 components:
   schemas:
+    AiIdProfile:
+      type: object
+      required: [ai_id, risk_level, risk_score, on_time_payment_rate, total_rent_facilitated, total_rent_requests, funded_requests, estimated_borrowing_limit, referral_count, member_since, can_lend]
+      properties:
+        ai_id: { type: string, example: "WEL-A3F2B1" }
+        risk_level: { type: string, enum: [Excellent, Good, Standard, Caution, High Risk, New Member] }
+        risk_score: { type: number, example: 85 }
+        on_time_payment_rate: { type: number, example: 92.5 }
+        total_rent_facilitated: { type: number, example: 1500000 }
+        total_rent_requests: { type: integer, example: 3 }
+        funded_requests: { type: integer, example: 3 }
+        estimated_borrowing_limit: { type: number, example: 500000 }
+        wallet_balance: { type: number, nullable: true, example: 15000 }
+        referral_count: { type: integer, example: 5 }
+        member_since: { type: string, format: date-time }
+        can_lend: { type: boolean, example: true }
     ProblemDetails:
       type: object
       required: [type, title, status]

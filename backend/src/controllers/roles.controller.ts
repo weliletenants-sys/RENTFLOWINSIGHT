@@ -59,7 +59,7 @@ export const getMyRoles = async (req: Request, res: Response) => {
 /**
  * POST /roles/request
  * Body: { role: 'LANDLORD' | 'TENANT' | 'AGENT' | 'FUNDER' }
- * Creates a pending role request (enabled: false) for admin approval.
+ * Creates and instantly approves a role request (enabled: true) for testing Multi-Role Flow.
  */
 export const requestRole = async (req: Request, res: Response) => {
   try {
@@ -97,14 +97,14 @@ export const requestRole = async (req: Request, res: Response) => {
       data: {
         user_id: userId,
         role,
-        enabled: false,
+        enabled: true, // auto-approve activated
         created_at: now
       }
     });
 
     return res.status(201).json({
       status: 'success',
-      message: `${role} role requested successfully. Awaiting admin approval.`,
+      message: `${role} role activated successfully. It is now available in your sidebar.`,
       data: {}
     });
   } catch (error) {

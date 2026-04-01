@@ -2,12 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
-  ShieldCheck,
   User,
   MapPin,
   ArrowRight,
   Info,
-  Zap,
 } from 'lucide-react';
 import PurpleBubbles from '../components/PurpleBubbles';
 import { motion } from 'framer-motion';
@@ -100,10 +98,7 @@ export default function AgentRegisterTenant() {
           </div>
           <div className="flex items-center gap-2">
             <div className="hidden md:flex items-center gap-2 mr-4">
-              <div className="size-8 rounded-full bg-[#6c11d4]/10 flex items-center justify-center text-[#6c11d4]">
-                <ShieldCheck size={16} />
-              </div>
-              <span className="text-sm font-semibold text-[#6c11d4]">Welile Fintech</span>
+              <img src="/welile-colored.png" alt="Welile Fintech" className="h-7 object-contain drop-shadow-sm" />
             </div>
           </div>
         </div>
@@ -359,14 +354,8 @@ export default function AgentRegisterTenant() {
 
       {/* Footer Space */}
       <footer className="relative z-10 py-12 bg-slate-50 dark:bg-[#1a110c] mt-auto border-t border-slate-100 dark:border-slate-800">
-        <div className="max-w-5xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="size-6 bg-[#6c11d4] rounded-md flex items-center justify-center">
-              <Zap size={14} className="text-white" />
-            </div>
-            <p className="text-sm font-bold text-slate-600 dark:text-slate-400">Welile Fintech Platform</p>
-          </div>
-          <p className="text-xs text-slate-400 dark:text-slate-500">© 2024 Welile. All rights reserved.</p>
+        <div className="max-w-5xl mx-auto px-4 flex justify-center items-center">
+          <p className="text-xs font-semibold text-slate-400 dark:text-slate-500">© 2024 Welile. All rights reserved.</p>
         </div>
       </footer>
     </div>

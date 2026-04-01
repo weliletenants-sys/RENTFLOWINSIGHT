@@ -1,63 +1,34 @@
-import { Clock, CheckCircle } from 'lucide-react';
+import { Crown, CalendarClock } from 'lucide-react';
 
-interface RentRequest {
-  status: 'pending' | 'approved' | 'funded' | 'disbursed' | 'completed';
-  rentFinanced: number;
-}
-
-interface SubscriptionStatusCardProps {
-  activeRent: RentRequest | null;
-  daysRemaining: number;
-  amountPaid: number;
-  totalRepayment: number;
-}
-
-export default function SubscriptionStatusCard({ activeRent, daysRemaining, amountPaid, totalRepayment }: SubscriptionStatusCardProps) {
-  if (!activeRent) {
-    return (
-      <div className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700/50 p-6 rounded-[2rem] text-center transition-colors">
-        <div className="w-16 h-16 bg-gray-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-3 transition-colors">
-          <Clock className="text-gray-400 dark:text-slate-500" size={28} />
-        </div>
-        <h4 className="font-bold text-gray-900 dark:text-white mb-1 transition-colors">No Active Rent Request</h4>
-        <p className="text-sm text-gray-500 dark:text-slate-400 transition-colors">You currently do not have an active rent financing subscription. Tap "New Request" to get started.</p>
-      </div>
-    );
-  }
-
-  const remainingBalance = totalRepayment - amountPaid;
-  const progressPercent = (amountPaid / totalRepayment) * 100;
-
+export default function SubscriptionStatusCard() {
   return (
-    <div className="bg-[#482D98] p-6 rounded-[1.75rem] text-white shadow-xl shadow-purple-500/20 relative overflow-hidden">
-      <div className="relative z-10 flex justify-between items-center mb-8">
-        <p className="text-purple-200/90 font-medium text-[15px]">Remaining Balance</p>
-        <span className="bg-white/5 px-4 py-1.5 rounded-2xl text-[13px] font-bold border border-white/10 text-white shadow-sm flex items-center gap-1.5">
-          {activeRent.status === 'disbursed' ? (
-            <><CheckCircle size={15} strokeWidth={2} className="text-white" /> Active Loan</>
-          ) : (
-            <><Clock size={15} /> {activeRent.status.toUpperCase()}</>
-          )}
-        </span>
-      </div>
-      
-      <h2 className="relative z-10 flex items-baseline gap-2 mb-8">
-        <span className="text-xl font-bold opacity-80 tracking-wide">UGX</span>
-        <span className="text-[40px] font-black tracking-tight leading-none">{remainingBalance.toLocaleString()}</span>
-      </h2>
+    <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm mt-8 relative overflow-hidden group">
+       <div className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-bl-full -z-10 group-hover:scale-110 transition-transform duration-500"></div>
+       
+       <div className="flex justify-between items-start mb-6">
+         <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+              <Crown className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-0.5">Current Plan</p>
+              <h4 className="text-sm font-bold text-slate-900">Standard Tier Active</h4>
+            </div>
+         </div>
+         <span className="bg-amber-100 text-amber-900 border border-amber-200 text-[10px] font-black tracking-widest uppercase px-2 py-1 rounded-sm">
+           Level 1
+         </span>
+       </div>
 
-      <div className="relative z-10 space-y-2.5">
-        <div className="flex justify-between text-[13px] text-purple-200/90 font-medium">
-          <span>UGX {amountPaid.toLocaleString()} paid</span>
-          <span>{daysRemaining} days left</span>
-        </div>
-        <div className="w-full bg-[#321e6a] h-2.5 rounded-full overflow-hidden">
-          <div 
-            className="bg-[#00E676] h-full rounded-full transition-all duration-500 ease-out shadow-[0_0_10px_rgba(0,230,118,0.5)]"
-            style={{ width: `${progressPercent}%` }}
-          ></div>
-        </div>
-      </div>
+       <div className="flex items-center gap-3 text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100 mb-4 cursor-pointer hover:bg-white transition-colors">
+          <CalendarClock className="w-4 h-4 text-[#1a56db]" />
+          <span className="text-xs font-semibold flex-1">Next rent payment due in</span>
+          <span className="text-sm font-black text-slate-900">14 Days</span>
+       </div>
+
+       <button className="text-xs font-bold text-[#1a56db] hover:text-[#0f3b7d] flex items-center transition-colors">
+         Upgrade to Platinum <span className="ml-1 text-[16px] leading-none">→</span>
+       </button>
     </div>
   );
 }

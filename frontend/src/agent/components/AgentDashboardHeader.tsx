@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, Bell, Search, CheckCircle, TrendingUp, Info, Settings, LogOut, LifeBuoy, Activity, BadgeCheck, Loader2, ShieldCheck, ArrowDownLeft, ArrowUpRight, PieChart } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import WelileAIIDBadge from '../../components/layout/WelileAIIDBadge';
 
 interface AgentDashboardHeaderProps {
   user: { fullName: string; role: string; avatarUrl?: string; isVerified?: boolean };
@@ -133,6 +134,10 @@ export default function AgentDashboardHeader({
 
       {/* Right: search + bell + avatar */}
       <div className="flex items-center gap-3 lg:gap-6">
+        <div className="hidden sm:block">
+          <WelileAIIDBadge />
+        </div>
+        
         <div className="relative hidden sm:block">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input

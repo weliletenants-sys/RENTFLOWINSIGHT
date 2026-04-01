@@ -694,6 +694,7 @@ model Profiles {
   national_id           String?
   phone                 String
   password_hash         String?
+  ai_id                 String?  @unique
   referrer_id           String?
   rent_discount_active  Boolean
   territory             String?

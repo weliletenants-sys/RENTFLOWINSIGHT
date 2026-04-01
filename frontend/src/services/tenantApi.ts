@@ -27,3 +27,18 @@ export const getTenantWallet = async () => {
   const response = await axios.get(`${API}/wallets/my-wallet`, getAuthHeaders());
   return response.data;
 };
+
+export const getAiIdProfile = async () => {
+  const response = await axios.get(`${API}/v1/personas/ai-id/me`, getAuthHeaders());
+  return response.data;
+};
+
+export const getTenantAgreementStatus = async () => {
+  const response = await axios.get(`${API}/tenant/agreement-status`, getAuthHeaders());
+  return response.data;
+};
+
+export const acceptTenantAgreement = async (payload: { version?: string; ipAddress?: string; deviceInfo?: string } = {}) => {
+  const response = await axios.post(`${API}/tenant/accept-agreement`, payload, getAuthHeaders());
+  return response.data;
+};

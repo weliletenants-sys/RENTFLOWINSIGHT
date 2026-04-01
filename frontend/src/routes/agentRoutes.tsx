@@ -10,6 +10,18 @@ const AgentWithdraw       = lazy(() => import('../agent/AgentWithdraw'));
 const AgentDeposit        = lazy(() => import('../agent/AgentDeposit'));
 const AgentInvestForPartner = lazy(() => import('../agent/AgentInvestForPartner'));
 const AgentRegisterTenant = lazy(() => import('../agent/AgentRegisterTenant'));
+const AgentRankSystem     = lazy(() => import('../agent/AgentRankSystem'));
+const AgentLandlordMap    = lazy(() => import('../agent/AgentLandlordMap'));
+const AgentManagedProperty= lazy(() => import('../agent/AgentManagedProperty'));
+const AgentListings       = lazy(() => import('../agent/AgentListings'));
+const AgentRegistrations  = lazy(() => import('../agent/AgentRegistrations'));
+const AgentSchedules      = lazy(() => import('../agent/AgentSchedules'));
+const AgentProxyHistory   = lazy(() => import('../agent/AgentProxyHistory'));
+const AgentFunders        = lazy(() => import('../agent/AgentFunders'));
+const AgentShareLink      = lazy(() => import('../agent/AgentShareLink'));
+const AgentGoals          = lazy(() => import('../agent/AgentGoals'));
+const AgentTransactions   = lazy(() => import('../agent/AgentTransactions'));
+const AgentInstallApp     = lazy(() => import('../agent/AgentInstallApp'));
 const TenantPropertyExplorer = lazy(() => import('../tenant/TenantPropertyExplorer'));
 
 const CentralWalletView   = lazy(() => import('../pages/wallet/CentralWalletView'));
@@ -55,7 +67,19 @@ export const agentRoutes = [
   <Route key="agent-withdraw"        path="/agent-withdraw"        element={<AgentWithdraw />} />,
   <Route key="agent-deposit"         path="/agent-deposit"         element={<AgentDeposit />} />,
   <Route key="agent-invest-partner"  path="/agent-invest-partner"  element={<AgentInvestForPartner />} />,
+  <Route key="agent-landlord-map"    path="/agent-landlord-map"    element={<AgentLandlordMap />} />,
+  <Route key="agent-listings"        path="/agent-listings"        element={<AgentListings />} />,
+  <Route key="agent-managed-property" path="/agent-managed-property" element={<AgentManagedProperty />} />,
+  <Route key="agent-rank-system"     path="/rank-system"           element={<AgentRankSystem />} />,
   <Route key="agent-register-tenant" path="/agent-register-tenant" element={<AgentRegisterTenant />} />,
+  <Route key="agent-registrations"   path="/agent-registrations"   element={<AgentRegistrations />} />,
+  <Route key="agent-schedules"       path="/schedules"             element={<AgentSchedules />} />,
+  <Route key="agent-funders"         path="/my-funders"            element={<AgentFunders />} />,
+  <Route key="agent-share-link"      path="/share-link"            element={<AgentShareLink />} />,
+  <Route key="agent-goals"           path="/goals"                 element={<AgentGoals />} />,
+  <Route key="agent-transactions"    path="/transactions"          element={<AgentTransactions />} />,
+  <Route key="agent-install"         path="/install"               element={<AgentInstallApp />} />,
+  <Route key="proxy-history"         path="/proxy-history"         element={<AgentProxyHistory />} />,
   <Route key="agent-analytics"       path="/agent-analytics"       element={<AgentAnalytics />} />,
   <Route key="agent-wallet"          path="/agent-wallet"          element={<CentralWalletView />} />,
   <Route key="agent-edit-profile"    path="/agent-edit-profile"    element={<AgentEditProfile />} />,
@@ -63,7 +87,7 @@ export const agentRoutes = [
   <Route key="agent-security"        path="/agent-security"        element={<AgentSecurity />} />,
   <Route key="agent-privacy-policy"  path="/agent-privacy-policy"  element={<AgentPrivacyPolicy />} />,
   <Route key="agent-transfer"        path="/agent-transfer"        element={<AgentTransfer />} />,
-  <Route key="agent-register-subagent" path="/agent-register-subagent" element={<AgentRegisterSubAgent />} />,
+  <Route key="agent-register-subagent" path="/register-sub-agent" element={<AgentRegisterSubAgent />} />,
   <Route key="agent-register-landlord" path="/agent-register-landlord" element={<AgentRegisterLandlord />} />,
   <Route key="agent-register-investor" path="/agent-register-investor" element={<AgentRegisterInvestor />} />,
   <Route key="agent-visit"             path="/agent-visit"             element={<AgentVisit />} />,

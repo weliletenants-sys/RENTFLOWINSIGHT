@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { X, LayoutDashboard, Users, FileText, Wallet, Settings, LogOut, Loader2, Home, Trophy } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import SidebarRoleTabs from '../../components/SidebarRoleTabs';
 
 interface AgentSidebarProps {
   activePage?: string;
@@ -15,7 +16,7 @@ const navItems = [
   { label: 'My Tenants', icon: <Users className="w-5 h-5" />, path: '/dashboard/agent/clients' },
   { label: 'Rent Requests', icon: <FileText className="w-5 h-5" />, path: '/agent-rent-requests' },
   { label: 'Wallet & Earnings', icon: <Wallet className="w-5 h-5" />, path: '/dashboard/agent/earnings' },
-  { label: 'Properties', icon: <Home className="w-5 h-5" />, path: '/agent-managed-properties' },
+  { label: 'Properties', icon: <Home className="w-5 h-5" />, path: '/agent-managed-property' },
   { label: 'Rank & Goals', icon: <Trophy className="w-5 h-5" />, path: '/rank-system' },
 ];
 
@@ -47,6 +48,9 @@ export default function AgentSidebar({ activePage = 'Dashboard', onNavigate, isO
             <X className="w-5 h-5" />
           </button>
         </div>
+
+      {/* Dynamic Role Switcher Tabs */}
+      <SidebarRoleTabs />
 
       {/* Navigation */}
       <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto sidebar-scroll">
