@@ -200,14 +200,14 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance }: F
         </div>
 
         {/* Filter Bar */}
-        <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-          <div className="flex items-center gap-2 flex-wrap">
-            <Filter className="w-4 h-4 text-slate-400" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 flex-wrap gap-4">
+          <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar w-full sm:w-auto pb-1">
+            <Filter className="w-4 h-4 text-slate-400 flex-shrink-0" />
             {(['all', 'active', 'pending', 'pending_approval', 'cancelled'] as FilterStatus[]).map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filter === f
+                className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${filter === f
                   ? 'text-white shadow-md'
                   : 'bg-white text-slate-500 border border-slate-200 hover:border-slate-300'
                   }`}
@@ -272,11 +272,11 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance }: F
                   onClick={() => navigate(`/funder/portfolio/${p.portfolioCode}`)}
                   className={`bg-white rounded-[24px] border border-slate-100 shadow-sm hover:shadow-lg hover:border-slate-200 transition-all cursor-pointer group flex p-5 sm:p-6 lg:p-8 ${viewMode === 'list'
                       ? 'flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 lg:gap-8'
-                      : 'flex-col items-start gap-4 justify-between h-full'
+                      : 'flex-col items-start gap-4 h-full relative'
                     }`}
                 >
                   {/* Header: Identity */}
-                  <div className={`flex items-center gap-4 sm:gap-5 lg:gap-6 min-w-0 flex-1 ${viewMode === 'card' ? 'w-full' : ''}`}>
+                  <div className={`flex items-center gap-4 sm:gap-5 lg:gap-6 min-w-0 ${viewMode === 'list' ? 'flex-1' : 'w-full'}`}>
                     <div className="w-14 h-14 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-2xl overflow-hidden flex-shrink-0 relative group-hover:shadow-md transition-shadow">
                       <img src={imgUrl} alt={p.assetName || 'Portfolio'} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
@@ -315,10 +315,10 @@ export default function FunderPortfolioPage({ onAddPortfolio, walletBalance }: F
                   <div className={`w-full h-px bg-slate-50 shrink-0 ${viewMode === 'card' ? 'my-2' : 'my-1 sm:hidden'}`} />
 
                   {/* Footer: Value & Performance */}
-                  <div className={`flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 shrink-0 ${viewMode === 'card' ? 'w-full sm:flex-row sm:items-center sm:justify-between' : ''}`}>
+                  <div className={`flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 shrink-0 ${viewMode === 'card' ? 'w-full sm:flex-row sm:items-center sm:justify-between mt-auto pt-2' : ''}`}>
                     <div className="text-left sm:text-right">
                       <p className="text-[9px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-0.5 sm:mb-1">Total Value</p>
-                      <p className="font-black text-xl sm:text-2xl lg:text-3xl text-slate-900 tracking-tight">
+                      <p className="font-black text-xl sm:text-2xl lg:text-3xl text-slate-900 tracking-tight leading-none">
                         UGX {currentValue.toLocaleString()}
                       </p>
                     </div>

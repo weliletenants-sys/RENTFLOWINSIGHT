@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, Bell, Search, CheckCircle, TrendingUp, Info, Settings, LogOut, LifeBuoy, Activity, BadgeCheck, Loader2, ShieldCheck, ArrowDownLeft, ArrowUpRight, PieChart } from 'lucide-react';
+import { Bell, Search, CheckCircle, TrendingUp, Info, Settings, LogOut, LifeBuoy, Activity, BadgeCheck, Loader2, ShieldCheck, ArrowDownLeft, ArrowUpRight, PieChart } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import WelileAIIDBadge from '../../components/layout/WelileAIIDBadge';
 
@@ -13,7 +13,7 @@ interface FunderDashboardHeaderProps {
 }
 
 export default function FunderDashboardHeader({
-  user, pageTitle = 'Dashboard', onNotificationClick, onAvatarClick, onMenuClick
+  user, pageTitle = 'Dashboard', onNotificationClick, onAvatarClick
 }: FunderDashboardHeaderProps) {
   const [showNotifs, setShowNotifs] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
@@ -166,7 +166,7 @@ export default function FunderDashboardHeader({
           </button>
           
           {showNotifs && (
-            <div className="absolute right-0 mt-3 w-[320px] bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden z-50 transform origin-top-right transition-all">
+            <div className="fixed sm:absolute top-[70px] sm:top-auto left-4 right-4 sm:left-auto sm:right-0 sm:mt-3 sm:w-[340px] bg-white rounded-2xl shadow-[0_20px_60px_-10px_rgba(0,0,0,0.3)] border border-slate-100 overflow-hidden z-[100] transform sm:origin-top-right transition-all animate-in slide-in-from-top-2 sm:zoom-in-95 duration-200">
               {/* Dropdown Header */}
               <div className="flex items-center justify-between px-5 py-4 border-b border-slate-50 bg-slate-50/50">
                 <div className="flex items-center gap-2">
@@ -261,7 +261,7 @@ export default function FunderDashboardHeader({
 
           {/* Dropdown Menu */}
           {showProfile && (
-            <div className="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden z-50 transform origin-top-right transition-all animate-in zoom-in-95 duration-200">
+            <div className="fixed sm:absolute top-[70px] sm:top-auto left-4 right-4 sm:left-auto sm:right-0 sm:mt-3 sm:w-64 bg-white rounded-2xl shadow-[0_20px_60px_-10px_rgba(0,0,0,0.3)] border border-slate-100 overflow-hidden z-[100] transform sm:origin-top-right transition-all animate-in slide-in-from-top-2 sm:zoom-in-95 duration-200">
               <div className="p-4 border-b border-slate-50 bg-slate-50/50">
                 <p className="font-bold text-slate-900 truncate">{user.fullName}</p>
                 <p className="text-xs text-slate-500 truncate mb-2">{authUser?.email || 'user@rentflowinsight.com'}</p>

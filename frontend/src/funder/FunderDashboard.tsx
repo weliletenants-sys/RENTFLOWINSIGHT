@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Lightbulb, ShieldAlert, ArrowRight } from 'lucide-react';
+import { driver } from "driver.js";
+import "driver.js/dist/driver.css";
 import FunderDashboardHeader from './components/FunderDashboardHeader';
 import FunderSidebar from './components/FunderSidebar';
 import FunderBottomNav from './components/FunderBottomNav';
@@ -76,6 +78,40 @@ export default function FunderDashboard() {
 
     fetchDashboard();
   }, [user, navigate]);
+
+  // ──────────── ONBOARDING TOUR ────────────
+  useEffect(() => {
+    if (!isLoading && stats && activePage === 'Dashboard') {
+      const hasSeenTour = localStorage.getItem('funder_tour_v1');
+      if (!hasSeenTour) {
+        const driverObj = driver({
+          showProgress: true,
+          animate: true,
+          popoverClass: 'driverjs-theme',
+          steps: [
+            { popover: { title: 'Welcome to RentFlow', description: 'Let\'s take a complete tour of your new Funder Dashboard. We\'ll walk you through how to manage your capital and monitor your daily passive income.' } },
+            { element: '#tour-wallet', popover: { title: 'Your Digital Wallet', description: 'This beautiful card is your central financial hub. It gives you a bird\'s-eye view of your entire RentFlow capital.', side: "bottom", align: 'start' } },
+            { element: '#tour-wallet-liquid', popover: { title: 'Liquid Balance', description: 'This is your withdrawable cash. It includes your initial unsettled deposits, top-ups, and all unlocked daily ROI payouts.', side: "bottom", align: 'start' } },
+            { element: '#tour-wallet-active', popover: { title: 'Active Capital Bucket', description: 'These indicators separate your idle cash from the funds currently locked inside rent pools generating high-yield returns.', side: "right", align: 'start' } },
+            { element: '#tour-wallet-actions', popover: { title: 'Wallet Actions', description: 'Instantly add funds via Mobile Money or Bank Transfer, or seamlessly withdraw your liquid earnings directly to your phone from here.', side: "bottom", align: 'center' } },
+            { element: '#tour-portfolio-health', popover: { title: 'Risk & Health Distribution', description: 'A real-time overview of your asset health. Ensure your investments are diversified and performing well within safe parameters.', side: "bottom", align: 'start' } },
+            { element: '#tour-portfolio', popover: { title: 'Active Portfolios', description: 'Track the real-time performance of the specific rent pools you have funded. This list updates dynamically as your investments generate compounding payouts every day.', side: "top", align: 'start' } },
+            { element: '#tour-recent-activity', popover: { title: 'Immutable Ledger', description: 'A transparent, secure log of all your deposits, withdrawals, and automated daily payouts. You are fully audited.', side: "left", align: 'center' } }
+          ],
+          onDestroyStarted: () => {
+            if (!driverObj.hasNextStep() || confirm("Are you sure you want to pause the tour?")) {
+              localStorage.setItem('funder_tour_v1', 'true');
+              driverObj.destroy();
+            }
+          },
+        });
+        
+        setTimeout(() => {
+          driverObj.drive();
+        }, 800);
+      }
+    }
+  }, [isLoading, stats, activePage]);
 
 
   const handleVerificationCheck = (actionFn: () => void) => {
@@ -179,15 +215,17 @@ export default function FunderDashboard() {
                 <div className="lg:col-span-8 flex flex-col gap-8">
 
                   {/* Wealth Performance Card */}
-                  <FunderWalletCard
-                    totalBalance={stats?.totalBalance || 0}
-                    availableLiquid={stats?.availableLiquid || 0}
-                    totalInvested={stats?.totalInvested || 0}
-                    cardId="WL-99201"
-                    onAddFunds={() => navigate('/funder/wallet')}
-                    onWithdraw={() => navigate('/funder/wallet')}
-                    onPortfolio={() => navigate('/funder/portfolio')}
-                  />
+                  <div id="tour-wallet">
+                    <FunderWalletCard
+                      totalBalance={stats?.totalBalance || 0}
+                      availableLiquid={stats?.availableLiquid || 0}
+                      totalInvested={stats?.totalInvested || 0}
+                      cardId="WL-99201"
+                      onAddFunds={() => navigate('/funder/wallet')}
+                      onWithdraw={() => navigate('/funder/wallet')}
+                      onPortfolio={() => navigate('/funder/portfolio')}
+                    />
+                  </div>
 
 
                   {/* Quick Actions — mobile only */}
@@ -198,12 +236,14 @@ export default function FunderDashboard() {
                     />
                   </div>
                   {/* Portfolio list */}
-                  <FunderPortfolioList
-                    portfolios={portfolios.slice(0, 3)}
-                    onViewAll={() => navigate('/funder/portfolio')}
-                    onCardClick={(code) => handleVerificationCheck(() => navigate(`/funder/portfolio/${code}`))}
-                    onAddAsset={() => handleVerificationCheck(() => navigate('/funder/portfolio'))}
-                  />
+                  <div id="tour-portfolio">
+                    <FunderPortfolioList
+                      portfolios={portfolios.slice(0, 3)}
+                      onViewAll={() => navigate('/funder/portfolio')}
+                      onCardClick={(code) => handleVerificationCheck(() => navigate(`/funder/portfolio/${code}`))}
+                      onAddAsset={() => handleVerificationCheck(() => navigate('/funder/portfolio'))}
+                    />
+                  </div>
 
                   {/* Portfolio Health Distribution (Replacing Recommended Opportunities) */}
                   <div className="relative w-full">
@@ -230,7 +270,7 @@ export default function FunderDashboard() {
                   </div>
 
                   {/* Recent Activity */}
-                  <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
+                  <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6" id="tour-recent-activity">
                     <FunderRecentActivity
                       activities={activities.slice(0, 3)}
                       onViewAll={() => navigate('/funder/wallet')}

@@ -50,7 +50,7 @@ export default function FunderWalletCard({
         {/* Middle Section: Values */}
         <div className="flex flex-col gap-4 mb-2">
           {/* Main Focus: Wallet Balance */}
-          <div>
+          <div id="tour-wallet-liquid">
             <p className="text-white/70 text-xs font-semibold mb-1 uppercase tracking-widest flex items-center gap-2">
               Liquid Balance
               <button
@@ -66,7 +66,7 @@ export default function FunderWalletCard({
           </div>
 
           {/* Bucket Segregation UI */}
-          <div className="grid grid-cols-2 gap-4 border-t border-white/20 pt-4 mt-2">
+          <div id="tour-wallet-active" className="grid grid-cols-2 gap-4 border-t border-white/20 pt-4 mt-2">
             <div>
               <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-0.5 flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-blue-400"></span>
@@ -89,7 +89,7 @@ export default function FunderWalletCard({
         </div>
 
         {/* Bottom Section: Quick Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-3 pt-3 sm:pt-4 mt-auto overflow-x-auto pb-1 hide-scrollbar -mx-1 px-1">
+        <div id="tour-wallet-actions" className="flex items-center gap-1.5 sm:gap-3 pt-3 sm:pt-4 mt-auto overflow-x-auto pb-1 hide-scrollbar -mx-1 px-1">
           <button
             onClick={onAddFunds}
             className="flex items-center gap-1 sm:gap-1.5 bg-white text-[var(--color-primary)] hover:bg-white/90 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full font-extrabold text-[10px] sm:text-xs transition-colors shadow-sm whitespace-nowrap cursor-pointer"

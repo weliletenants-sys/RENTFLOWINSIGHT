@@ -292,17 +292,32 @@ export default function FunderWallet() {
             {/* Header */}
             <div className="mb-8">
               <h2 className="text-2xl font-black text-slate-900 tracking-tight">Wallet Management</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1">
-                Manage your liquid capital, deposits, and withdrawal gates.
-              </p>
             </div>
 
             {/* ──────────────── TOP ROW: BALANCE & WARNINGS ──────────────── */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-5">
               
               {/* Main Balance Card */}
-              <div className={`${!isWalletIdle ? 'lg:col-span-3' : 'lg:col-span-2'} bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden transition-all duration-300`}>
+              <div className={`${!isWalletIdle ? 'lg:col-span-3' : 'lg:col-span-2'} bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl pb-8 pt-8 p-6 sm:p-8 text-white shadow-xl relative overflow-hidden transition-all duration-300 border border-slate-700/50`}>
+                
+                {/* Financial Security Micro-Stripes (Premium FinTech feel) */}
+                <div 
+                  className="absolute inset-0 opacity-[0.04] pointer-events-none mix-blend-overlay" 
+                  style={{ 
+                    backgroundImage: 'repeating-linear-gradient(-45deg, #ffffff 0, #ffffff 1px, transparent 1px, transparent 8px)'
+                  }}
+                />
+                
+                {/* Secondary Accent Diagonal */}
+                <div 
+                  className="absolute right-0 top-0 bottom-0 w-1/2 opacity-[0.02] pointer-events-none" 
+                  style={{ 
+                    backgroundImage: 'repeating-linear-gradient(45deg, #ffffff 0, #ffffff 2px, transparent 2px, transparent 24px)'
+                  }}
+                />
+
                 <div className="absolute -right-20 -top-20 w-64 h-64 bg-white/5 rounded-full blur-3xl text-sm" />
+                <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-[var(--color-primary)]/10 rounded-full blur-3xl pointer-events-none" />
                 
                 {/* Loading State Overlay */}
                 {isLoading && (
@@ -413,7 +428,7 @@ export default function FunderWallet() {
                     onClick={handleExport}
                     className="flex items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[var(--color-primary)] bg-[var(--color-primary-faint)] px-3 py-2 rounded-lg hover:shadow-sm transition-all border border-[var(--color-primary-border)] flex-1 sm:flex-none"
                   >
-                    <Download className="w-3.5 h-3.5" /> Export XLSX
+                    <Download className="w-3.5 h-3.5" /> Export
                   </button>
                   <div className="flex bg-slate-50 p-1 rounded-xl overflow-x-auto hide-scrollbar flex-1 sm:flex-none w-full sm:w-auto">
                   {['All', 'Cash In', 'Cash Out'].map(tab => (
@@ -495,13 +510,13 @@ export default function FunderWallet() {
                             
                             {/* Center Content (3 Lines) */}
                             <div className="flex flex-col flex-1 min-w-0 justify-center">
-                              <h4 className="text-[13px] sm:text-[14px] font-bold text-slate-900 truncate pr-2 capitalize">
+                              <h4 className="text-[13px] sm:text-[14px] font-semibold text-slate-800 truncate pr-2 capitalize">
                                 {isRentFund ? 'Rent Fund' : String(tx.category) === 'coo_manual_portfolio' ? 'Capital Injection' : String(tx.category).replace(/_/g, ' ')}
                               </h4>
                               <p className="text-[11px] sm:text-[12px] text-slate-500 truncate mt-0.5 pr-2">
-                                <span className="font-black" style={{ color: txColor }}>{txSymbol}{tx.amount.toLocaleString()} UGX</span> - <span className="capitalize">{tx.description}</span>
+                                <span className="font-semibold" style={{ color: txColor }}>{txSymbol}{tx.amount.toLocaleString()} UGX</span> - <span className="capitalize">{tx.description}</span>
                               </p>
-                              <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 mt-1">
+                              <p className="text-[10px] sm:text-[11px] font-normal text-slate-400 mt-1">
                                 {tx.date} • <span className="uppercase font-mono text-[9px]">{tx.ref}</span>
                               </p>
                             </div>
