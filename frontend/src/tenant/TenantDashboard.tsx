@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { ArrowRight, MoreHorizontal, TrendingUp } from 'lucide-react';
-import { getTenantWallet, getTenantRentProgress, getAiIdProfile, getTenantAgreementStatus } from '../services/tenantApi';
+import { useState, useEffect, useMemo } from 'react';
+import { ArrowRight, TrendingUp } from 'lucide-react';
+import { getTenantWallet, getTenantRentProgress, getAiIdProfile, getTenantAgreementStatus, getTenantActivities } from '../services/tenantApi';
 import TenantSidebar from './components/TenantSidebar';
 import TenantDashboardHeader from './components/TenantDashboardHeader';
 import FullScreenWalletSheet from './components/FullScreenWalletSheet';
@@ -14,6 +14,16 @@ import RentRequestCTA from './components/RentRequestCTA';
 import HouseDiscoveryPreview from './components/HouseDiscoveryPreview';
 import TenantAgreementModal from './components/TenantAgreementModal';
 
+// Repayment Engine Components
+import RepaymentSection from './components/RepaymentSection';
+import RepaymentScheduleView from './components/RepaymentScheduleView';
+import PaymentStreakCalendar from './components/PaymentStreakCalendar';
+
+// Community & Ecosystem Components
+import AchievementBadges from './components/AchievementBadges';
+import InviteFriendsCard from './components/InviteFriendsCard';
+import MyLandlordsSection from './components/MyLandlordsSection';
+
 export default function TenantDashboard() {
 
   const { user } = useAuth();
@@ -23,6 +33,7 @@ export default function TenantDashboard() {
   const [isWalletOpen, setIsWalletOpen] = useState(false);
   const [activePage, setActivePage] = useState<string>('Dashboard');
   const [aiProfile, setAiProfile] = useState<any>(null);
+  const [activities, setActivities] = useState<any[]>([]);
 
   // Simulated validation states for new modules
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState<boolean | null>(null);
@@ -32,6 +43,7 @@ export default function TenantDashboard() {
   useEffect(() => {
     getTenantWallet().then(res => setWallet({ balance: res.wallet?.balance || 0 })).catch(console.error);
     getTenantRentProgress().then(setRentProgress).catch(console.error);
+    getTenantActivities().then(setActivities).catch(console.error);
     getAiIdProfile().then(setAiProfile).catch(console.error);
     getTenantAgreementStatus().then(res => setHasAcceptedTerms(res.hasAcceptedTerms)).catch(() => setHasAcceptedTerms(false));
   }, []);
@@ -45,9 +57,11 @@ export default function TenantDashboard() {
   const remainingRent = Math.max(0, totalRent - amountPaid);
   const percentPaid = Math.min(100, Math.round((amountPaid / totalRent) * 100));
 
-  const chartStyle = {
-    background: `conic-gradient(from 0deg, #0f4cac 0%, #0f4cac ${percentPaid}%, #e2e8f0 ${percentPaid}%, #e2e8f0 100%)`
-  };
+  // Compute a simple paid streak from historical activities
+  const paidDays = useMemo(() => {
+    // In a real app we'd map timestamps to day indexes. Here we just mock it based on activity count.
+    return activities.map((_, i) => i);
+  }, [activities]);
 
   return (
     <div className="min-h-screen font-sans bg-[#f7f9fc] text-slate-800">
@@ -106,86 +120,61 @@ export default function TenantDashboard() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
                  
                  {/* Middle Left: Rent Distribution & Specs */}
-                 <div className="lg:col-span-8 flex flex-col">
-                    <div className="bg-white rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 p-8 flex flex-col">
-                      <div className="flex justify-between items-start w-full mb-8">
-                         <div>
-                           <h3 className="text-xl font-bold text-slate-900 tracking-tight">Rent Distribution</h3>
-                           <p className="text-sm font-medium text-slate-500 mt-1">Rent Paid vs. Remaining Balance</p>
-                         </div>
-                         <button className="text-slate-400 hover:text-slate-600">
-                           <MoreHorizontal className="w-5 h-5" />
-                         </button>
-                      </div>
-
-                      <div className="flex flex-col md:flex-row items-center gap-12 md:gap-16 flex-1">
-                         
-                         {/* Pure CSS Donut Chart */}
-                         <div className="relative w-48 h-48 rounded-full flex items-center justify-center shrink-0" style={chartStyle}>
-                            <div className="absolute inset-0 m-4 bg-white rounded-full flex flex-col items-center justify-center">
-                               <span className="text-3xl font-black text-slate-900">{percentPaid}%</span>
-                               <span className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mt-1">Paid</span>
-                            </div>
-                         </div>
-
-                         {/* Stats Blocks */}
-                         <div className="flex items-center gap-4 flex-1 w-full justify-center md:justify-start">
-                            <div className="bg-[#f7f9fc] rounded-2xl p-6 flex-1 min-w-[140px]">
-                              <p className="text-[11px] font-bold text-slate-500 tracking-widest uppercase mb-2">Rent Paid</p>
-                              <p className="text-2xl font-bold text-slate-900 mb-1">{amountPaid.toLocaleString()}</p>
-                              <p className="text-xs text-slate-500 leading-tight">Current active cycle partial completion</p>
-                            </div>
-                            
-                            <div className="bg-[#f7f9fc] rounded-2xl p-6 flex-1 min-w-[140px]">
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="w-2 h-2 rounded-full bg-[#84cc16]"></span>
-                                <p className="text-[11px] font-bold text-slate-500 tracking-widest uppercase">Remaining</p>
-                              </div>
-                              <p className="text-2xl font-bold text-slate-900 mb-1">{remainingRent.toLocaleString()}</p>
-                              <p className="text-xs font-bold text-emerald-600 mb-1">Active Debt</p>
-                              <p className="text-[10px] text-slate-800 font-bold uppercase tracking-wider">{rentProgress?.daysLeft || 0} Days left</p>
-                            </div>
-                         </div>
-                      </div>
-                    </div>
+                 <div className="lg:col-span-8 flex flex-col gap-6 lg:gap-8">
+                    
+                    <RepaymentSection 
+                      amountPaid={amountPaid}
+                      remainingRent={remainingRent}
+                      daysLeft={rentProgress?.daysLeft || 0}
+                      percentPaid={percentPaid}
+                      onMakePayment={() => setIsWalletOpen(true)}
+                    />
                     
                     {/* Integrated Specification Components */}
-                    <SubscriptionStatusCard />
-                    <VerificationChecklist isVerified={isVerified} />
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+                       <SubscriptionStatusCard />
+                       <VerificationChecklist isVerified={isVerified} />
+                    </div>
                  </div>
 
                  {/* Middle Right: Actions & Forecasts */}
                  <div className="lg:col-span-4 flex flex-col gap-6 lg:gap-8">
                     
-                    {/* Primary Tenant CTA replacing simple Last Transaction block */}
+                    {/* Primary Tenant CTA */}
                     <RentRequestCTA />
 
+                    {/* Gamified 30-Day Streak Tracking */}
+                    <PaymentStreakCalendar 
+                      currentStreak={activities.length}
+                      paidDays={paidDays}
+                    />
+
                     {/* AI ID Profile Snapshot */}
-                    <div className="bg-white rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 p-6 flex flex-col flex-1 relative overflow-hidden">
+                    <div className="bg-white rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100 p-6 lg:p-8 flex flex-col shrink-0 min-h-[220px] relative overflow-hidden">
                        <div className={`absolute left-0 top-0 bottom-0 w-[4px] ${aiProfile ? 'bg-[#7e22ce]' : 'bg-[#0c3114]'}`}></div>
 
-                       <div className="flex justify-between items-center mb-6 pl-2">
+                       <div className="flex justify-between items-center mb-8 pl-3">
                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${aiProfile ? 'bg-[#f3e8ff] text-[#7e22ce]' : 'bg-[#f0f9f1] text-[#16a34a]'}`}>
                            <TrendingUp className="w-5 h-5" />
                          </div>
                          <span className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">Credit Access Limit</span>
                        </div>
                        
-                       <p className="text-sm font-semibold text-slate-600 mb-2 pl-2">Estimated Borrowing Limit</p>
-                       <div className="flex items-baseline gap-2 mb-4 pl-2">
+                       <p className="text-sm font-semibold text-slate-600 mb-2 pl-3">Estimated Borrowing Limit</p>
+                       <div className="flex items-baseline gap-2 mb-6 pl-3">
                          <h3 className="text-3xl font-bold text-slate-900 tracking-tight leading-none">
                            {aiProfile ? `UGX ${aiProfile.estimated_borrowing_limit.toLocaleString()}` : 'Calculating...'}
                          </h3>
                        </div>
 
                        {aiProfile && (
-                         <div className="flex justify-between items-center pl-2 mt-2">
+                         <div className="flex justify-between items-center pl-3 mt-4">
                             <span className="text-xs font-semibold text-slate-500">Risk Score: {aiProfile.risk_score}/100</span>
                             <span className="text-xs font-bold text-purple-600">Level: {aiProfile.risk_level}</span>
                          </div>
                        )}
 
-                       <div className="w-full h-2 rounded-full bg-slate-100 mt-auto ml-2 overflow-hidden flex">
+                       <div className="w-full h-2.5 rounded-full bg-slate-100 mt-auto ml-3 overflow-hidden flex">
                           <div className={`h-full transition-all duration-1000 ${aiProfile ? 'bg-[#9333ea]' : 'bg-[#20502a]'}`} style={{ width: `${aiProfile ? Math.min(aiProfile.risk_score, 100) : 0}%` }} />
                        </div>
                     </div>
@@ -196,10 +185,36 @@ export default function TenantDashboard() {
 
 
               {/* ────────────────── BOTTOM TIER ────────────────── */}
-              <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 mt-4 lg:-mt-4 relative z-20">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 mt-4 lg:-mt-4 relative z-20">
                  
-                 {/* Replaced old Retirement Projection with the Discovery Market component */}
-                 <HouseDiscoveryPreview />
+                 <div className="lg:col-span-7">
+                    <RepaymentScheduleView 
+                       activities={activities}
+                       nextDueAmount={rentProgress?.activeRent?.rentFinanced ? Math.ceil(rentProgress.activeRent.rentFinanced / 30) : 0}
+                       daysLeft={rentProgress?.daysLeft || 0}
+                    />
+                 </div>
+
+                 <div className="lg:col-span-5">
+                    <HouseDiscoveryPreview />
+                 </div>
+
+              </div>
+
+              {/* ────────────────── COMMUNITY & ECOSYSTEM TIER ────────────────── */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 mt-4 relative z-20">
+                 
+                 <div className="lg:col-span-4">
+                    <MyLandlordsSection />
+                 </div>
+                 
+                 <div className="lg:col-span-4">
+                    <AchievementBadges />
+                 </div>
+                 
+                 <div className="lg:col-span-4">
+                    <InviteFriendsCard />
+                 </div>
 
               </div>
 

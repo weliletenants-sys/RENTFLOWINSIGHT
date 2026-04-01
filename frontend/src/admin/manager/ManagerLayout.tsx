@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, Search, Bell, User, LayoutDashboard, Database, Activity, MapPin, Shield, Home, Building2, Network } from 'lucide-react';
+import { Menu, Search, Bell, User, LayoutDashboard, Activity, MapPin, Shield, Home, Building2, Network } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function ManagerLayout() {
@@ -20,36 +20,42 @@ export default function ManagerLayout() {
   ];
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full bg-[#111827] text-gray-300 w-64 border-r border-gray-800">
+    <div className="flex flex-col h-full bg-white text-slate-600 w-64 border-r border-slate-200 shadow-sm">
       <div className="p-6">
-        <h2 className="text-xl font-bold text-white tracking-widest uppercase mb-1">Ops Hub</h2>
-        <div className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-purple-500/10 text-purple-400">
+        <h2 className="text-xl font-black text-slate-900 tracking-tight uppercase mb-1 font-outfit">Ops Hub</h2>
+        <div className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold tracking-widest bg-[var(--color-primary-faint,#f4f0ff)] text-[var(--color-primary)] border border-[var(--color-primary-light)]">
           MANAGER ACCESS
         </div>
       </div>
 
-      <nav className="flex-1 px-4 space-y-1 overflow-y-auto no-scrollbar">
+      <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto no-scrollbar">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
             onClick={() => setIsSidebarOpen(false)}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                isActive ? 'bg-purple-600 text-white shadow-md shadow-purple-900/20' : 'hover:bg-gray-800 hover:text-white'
+              `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all font-semibold text-sm group ${
+                isActive 
+                ? 'bg-[var(--color-primary)] text-white shadow-md shadow-[var(--color-primary)]/20' 
+                : 'hover:bg-slate-50 hover:text-[var(--color-primary)]'
               }`
             }
           >
-            <item.icon size={20} />
-            <span className="font-medium text-sm">{item.name}</span>
+            {({ isActive }) => (
+              <>
+                <item.icon size={18} className={isActive ? 'text-white' : 'text-slate-400 group-hover:text-[var(--color-primary)]'} />
+                <span>{item.name}</span>
+              </>
+            )}
           </NavLink>
         ))}
       </nav>
 
-      <div className="p-4 border-t border-gray-800">
+      <div className="p-4 border-t border-slate-100">
         <button
           onClick={() => navigate('/dashboard')}
-          className="w-full text-left px-3 py-2 text-sm text-gray-400 hover:text-white transition-colors"
+          className="w-full text-left px-3 py-2 text-sm font-bold text-slate-500 hover:text-[var(--color-primary)] hover:bg-slate-50 rounded-xl transition-colors flex items-center gap-2"
         >
           &larr; Back to Platform
         </button>
@@ -58,7 +64,7 @@ export default function ManagerLayout() {
   );
 
   return (
-    <div className="min-h-screen bg-[#F0F2F5] dark:bg-[#0B0F19] text-gray-900 dark:text-gray-100 flex overflow-hidden font-inter">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex overflow-hidden font-inter">
       
       {/* Desktop Sidebar */}
       <div className="hidden lg:block z-40">
