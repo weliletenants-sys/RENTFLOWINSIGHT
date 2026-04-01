@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { ShieldAlert, Users, Database } from 'lucide-react';
 import RoleSwitcher from '../components/RoleSwitcher';
+import WelileAIIDBadge from '../components/layout/WelileAIIDBadge';
 
 export default function AdminDashboard() {
   const { profile, logout } = useAuth();
@@ -22,6 +23,7 @@ export default function AdminDashboard() {
           <span className="font-bold tracking-widest text-sm uppercase text-slate-300">System Administration</span>
         </div>
         <div className="flex items-center gap-6">
+          <WelileAIIDBadge />
           <div className="text-right">
             <p className="text-sm font-bold">{profile?.full_name || 'Admin User'}</p>
             <p className="text-xs text-slate-400 uppercase tracking-wider">{profile?.role || 'Root Access'}</p>

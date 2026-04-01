@@ -15,10 +15,25 @@ export default function RoleSwitcher() {
     roles = ['SUPER_ADMIN', ...roles];
   }
 
+  const getRoleRoute = (r: Role) => {
+    switch (r) {
+      case 'FUNDER': return '/funder';
+      case 'SUPER_ADMIN': return '/admin';
+      case 'CEO':
+      case 'CTO':
+      case 'COO':
+      case 'CFO':
+      case 'CRM':
+      case 'CMO': return '/staff'; 
+      default: return '/dashboard';
+    }
+  };
+
   const handleSwitch = (r: Role) => {
     switchRoleMode(r);
-    if (window.location.pathname !== '/dashboard') {
-      navigate('/dashboard');
+    const targetPath = getRoleRoute(r);
+    if (window.location.pathname !== targetPath) {
+      navigate(targetPath, { replace: true });
     }
   };
 

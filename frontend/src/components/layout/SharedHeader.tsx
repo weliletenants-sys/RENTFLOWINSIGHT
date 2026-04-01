@@ -1,6 +1,7 @@
-﻿import { Bell, Repeat, Settings, User } from 'lucide-react';
+import { Bell, Repeat, Settings, User } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import WelileAIIDBadge from './WelileAIIDBadge';
 
 interface SharedHeaderProps {
   title?: string;
@@ -27,6 +28,7 @@ export default function SharedHeader({ title = "Dashboard" }: SharedHeaderProps)
           Switch Role
         </button>
         <div className="flex items-center gap-3">
+          <WelileAIIDBadge />
           <button className="p-2 bg-gray-50 text-gray-500 hover:bg-gray-100 rounded-full relative transition">
             <Bell size={20} />
             <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>

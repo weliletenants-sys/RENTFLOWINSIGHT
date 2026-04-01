@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { ArrowDownLeft, ArrowUpRight, Zap, RefreshCcw, Landmark, Clock, FileText, SendHorizontal } from 'lucide-react';
-import axios from 'axios';
+import { Plus, CreditCard, Download, Navigation, RefreshCcw } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { getWalletBalance, requestTransfer } from '../../services/agentApi';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface LedgerEntry {
   id: string;
@@ -21,6 +23,7 @@ interface WalletState {
 }
 
 export default function CentralWalletView() {
+  const navigate = useNavigate();
   const [wallet, setWallet] = useState<WalletState | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -36,9 +39,7 @@ export default function CentralWalletView() {
 
   const fetchLedger = async () => {
     try {
-      // Role Authentication occurs transparently via JWT bearer.
-      // Backend controller determines user_id and binds strict boundaries automatically.
-      const { data } = await axios.get('/api/wallets/my-wallet');
+      const data = await getWalletBalance();
       setWallet(data);
       setLoading(false);
     } catch (err) {
@@ -54,7 +55,7 @@ export default function CentralWalletView() {
 
     setProcessing(true);
     try {
-      await axios.post('/api/wallets/transfers', {
+      await requestTransfer({
         amount: Number(transferAmount.replace(/\D/g, '')),
         recipientId
       });
@@ -63,7 +64,7 @@ export default function CentralWalletView() {
       setTransferMode(false);
       setTransferAmount('');
       setRecipientId('');
-      fetchLedger(); // Refresh mathematical history natively from DB
+      fetchLedger(); 
     } catch {
       toast.error("Transfer rejected by core engine.");
     } finally {
@@ -71,104 +72,181 @@ export default function CentralWalletView() {
     }
   };
 
-  if (loading || !wallet) return <div className="animate-pulse bg-gray-100 rounded-3xl h-96 w-full"></div>;
+  if (loading || !wallet) {
+    return (
+      <div className="w-full max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 animate-pulse flex flex-col gap-8 h-[80vh] justify-center items-center">
+         <div className="w-16 h-16 border-4 border-purple-100 border-t-[#9234eb] rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  // Helper date formatter for "Nov 14" format
+  const formatShortDate = (dateString: string) => {
+    const d = new Date(dateString);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-8 font-inter animate-in fade-in duration-500 pb-12">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
-         <div>
-            <h1 className="text-3xl font-black text-gray-900 tracking-tight">Universal Wallet</h1>
-            <p className="text-gray-500 font-medium mt-1">Role-authenticated ledger interface securely synchronized with the core banking engine.</p>
-         </div>
-      </div>
+    <div className="w-full min-h-screen bg-[#f7f9fa] text-[#9234eb] font-sans relative overflow-hidden selection:bg-[#9234eb]/20 py-16">
+      
+      {/* Background ambient light representing top right glow */}
+      <div className="fixed top-[-10%] right-[10%] w-[35rem] h-[35rem] bg-[#9234eb]/5 rounded-full blur-[100px] pointer-events-none z-0"></div>
+      
+      <div className="w-full max-w-5xl mx-auto px-6 relative z-10 flex flex-col lg:flex-row gap-16 xl:gap-24 items-start justify-center">
+        
+        {/* Left Column: Premium Wallet Card */}
+        <div className="w-full lg:w-[420px] shrink-0 flex flex-col gap-6 pt-4">
+           
+           <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="relative w-full aspect-[1/1.05] max-w-[420px] mx-auto"
+           >
+              {/* Soft purple shadow blur behind the card (since background is white) */}
+              <div className="absolute inset-x-0 inset-y-2 bg-[#9234eb] rounded-[2rem] blur-2xl opacity-20"></div>
+              
+              {/* Premium Purple Solid Card (so text is readable in white) */}
+              <div className="absolute inset-x-2 inset-y-2 bg-gradient-to-br from-[#9234eb] to-[#6a15ba] shadow-[0_20px_40px_-10px_rgba(146,52,235,0.4)] rounded-[1.8rem] p-8 flex flex-col justify-between overflow-hidden ring-1 ring-inset ring-white/10">
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-         {/* Left Column: Primary Mathematical State */}
-         <div className="lg:col-span-1 space-y-6">
-            <div className="bg-gray-900 rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden">
-               <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500 rounded-full blur-[80px] opacity-30 -mr-20 -mt-20 pointer-events-none"></div>
-               
-               <p className="text-gray-400 text-sm font-bold tracking-widest uppercase mb-2">Available Base Liquidity</p>
-               <h2 className="text-4xl font-black tracking-tighter mb-8">UGX {wallet.balance.toLocaleString()}</h2>
-               
-               <div className="grid grid-cols-2 gap-3">
-                  <button onClick={() => setTransferMode(true)} className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition flex justify-center items-center gap-2">
-                     <SendHorizontal size={18} /> Send
-                  </button>
-                  <button className="bg-white/10 hover:bg-white/20 backdrop-blur text-white font-bold py-3 rounded-xl transition flex justify-center items-center gap-2">
-                     <Landmark size={18} /> Top Up
-                  </button>
-               </div>
-            </div>
+                 {/* Top Row */}
+                 <div className="flex justify-between items-start z-10 text-white">
+                    <CreditCard size={32} className="text-white/80" strokeWidth={1.5} />
+                    <span className="uppercase text-white/90 font-bold tracking-[0.08em] text-[13px] mt-1 mr-1">UGX Wallet</span>
+                 </div>
 
-            {/* Transfer Interface */}
-            {transferMode && (
-               <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-xl animate-in slide-in-from-top-4">
-                  <div className="flex justify-between items-center mb-6">
-                     <h3 className="font-bold text-gray-900">Peer-to-Peer Transfer</h3>
-                     <button onClick={() => setTransferMode(false)} className="text-gray-400 hover:text-gray-900">Cancel</button>
-                  </div>
-                  <form onSubmit={handleTransfer} className="space-y-4">
-                     <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Recipient ID</label>
-                        <input type="text" value={recipientId} onChange={e => setRecipientId(e.target.value)} required className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition" placeholder="UUID or Phone" />
-                     </div>
-                     <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Amount (UGX)</label>
-                        <input type="text" value={transferAmount} onChange={e => setTransferAmount(Number(e.target.value.replace(/\D/g, '') || 0).toLocaleString())} required className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-black text-gray-900 text-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition" placeholder="0" />
-                     </div>
-                     <button type="submit" disabled={processing} className="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl mt-2 disabled:opacity-50">
-                        {processing ? 'Processing...' : 'Execute Shift'}
-                     </button>
-                  </form>
-               </div>
-            )}
-         </div>
+                 {/* Middle Row (Balance) */}
+                 <div className="z-10 mt-auto mb-10 text-white">
+                    <p className="text-white/80 font-medium text-xl mb-1 tracking-wide">Balance</p>
+                    <h2 className="text-[2.85rem] leading-none font-black tracking-tight drop-shadow-sm">UGX {wallet.balance.toLocaleString()}</h2>
+                 </div>
 
-         {/* Right Column: Triple-State Ledger */}
-         <div className="lg:col-span-2">
-            <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden h-full">
-               <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                     <div className="bg-indigo-50 text-indigo-600 p-2.5 rounded-xl"><FileText size={20} /></div>
-                     <h3 className="text-lg font-bold text-gray-900">Triple-State Ledger Array</h3>
-                  </div>
-                  <button onClick={fetchLedger} className="text-gray-400 hover:text-indigo-600 flex items-center gap-2 text-sm font-bold bg-gray-50 px-3 py-1.5 rounded-lg transition"><RefreshCcw size={14} /> Sync</button>
-               </div>
-               
-               <div className="divide-y divide-gray-100 overflow-y-auto max-h-[600px]">
-                  {wallet.ledger && wallet.ledger.length > 0 ? wallet.ledger.map(entry => (
-                     <div key={entry.id} className="p-6 hover:bg-gray-50 transition-colors flex flex-col sm:flex-row justify-between gap-4">
-                        <div className="flex gap-4">
-                           <div className={`mt-1 h-10 w-10 shrink-0 rounded-full flex items-center justify-center border-2 shadow-sm ${entry.type === 'CREDIT' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
-                              {entry.type === 'CREDIT' ? <ArrowDownLeft size={18} /> : <ArrowUpRight size={18} />}
-                           </div>
-                           <div>
-                              <p className="font-bold text-gray-900 text-base">{entry.description}</p>
-                              <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-500 font-medium">
-                                 <span className="flex items-center gap-1"><Clock size={12} /> {new Date(entry.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</span>
-                                 <span className="flex items-center gap-1 bg-gray-100 px-2 py-0.5 rounded text-gray-600"><Zap size={10} /> {entry.status}</span>
-                              </div>
-                           </div>
-                        </div>
-                        <div className="text-right flex flex-col justify-center border-t sm:border-t-0 sm:border-l border-gray-100 pt-3 sm:pt-0 sm:pl-6">
-                           <p className={`text-xl font-black ${entry.type === 'CREDIT' ? 'text-emerald-600' : 'text-gray-900'}`}>
-                              {entry.type === 'CREDIT' ? '+' : '-'} UGX {entry.amount.toLocaleString()}
-                           </p>
-                           {entry.balance_after !== null && (
-                              <p className="text-xs font-bold text-gray-400 mt-1 uppercase tracking-widest">Post: UGX {entry.balance_after.toLocaleString()}</p>
-                           )}
-                        </div>
-                     </div>
-                  )) : (
-                     <div className="p-12 text-center text-gray-400">
-                        <FileText size={48} className="mx-auto mb-4 opacity-20" />
-                        <p className="font-bold">Ledger Array Empty</p>
-                     </div>
-                  )}
-               </div>
-            </div>
-         </div>
+                 {/* Bottom Row (Buttons) */}
+                 <div className="grid grid-cols-2 gap-4 z-10">
+                    <button onClick={() => setTransferMode(true)} className="bg-white hover:bg-slate-50 text-[#9234eb] font-bold py-[14px] rounded-[0.9rem] transition hover:scale-[1.03] active:scale-95 flex justify-center items-center gap-2 shadow-[0_4px_15px_rgba(0,0,0,0.1)]">
+                       <Navigation size={18} strokeWidth={2.5} className="-rotate-45 mb-[2px] ml-1" /> Send
+                    </button>
+                    <button onClick={() => navigate('/agent-deposit')} className="bg-orange-500 hover:bg-orange-400 text-white font-bold py-[14px] rounded-[0.9rem] transition hover:scale-[1.03] active:scale-95 flex justify-center items-center gap-2 shadow-[0_4px_15px_rgba(249,115,22,0.3)]">
+                       <Plus size={20} strokeWidth={2.5} /> Top Up
+                    </button>
+                 </div>
+              </div>
+           </motion.div>
+
+           {/* Transfer Form mapped beneath the card */}
+           <AnimatePresence>
+             {transferMode && (
+                <motion.div 
+                   key="transfer-form"
+                   initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                   animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                   exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                   transition={{ duration: 0.3 }}
+                   className="bg-white rounded-3xl p-7 border border-purple-100 shadow-[0_15px_40px_-15px_rgba(146,52,235,0.15)] overflow-hidden relative mx-2"
+                >
+                   <div className="flex justify-between items-center mb-6">
+                      <h3 className="font-bold text-[#9234eb] text-base">Send Transfer</h3>
+                      <button onClick={() => setTransferMode(false)} className="text-[#9234eb]/50 hover:text-[#9234eb] transition font-medium text-xs bg-purple-50 px-3 py-1.5 rounded-full hover:bg-purple-100">Cancel</button>
+                   </div>
+                   <form onSubmit={handleTransfer} className="space-y-4">
+                      <div>
+                         <label className="block text-xs font-bold text-[#9234eb]/60 uppercase tracking-widest mb-1.5">Recipient ID</label>
+                         <input type="text" value={recipientId} onChange={e => setRecipientId(e.target.value)} required className="w-full bg-[#f7f9fa] border border-purple-100 rounded-xl px-4 py-3.5 font-medium text-[#9234eb] focus:outline-none focus:border-[#9234eb] focus:ring-1 focus:ring-[#9234eb] transition-all placeholder:text-[#9234eb]/30" placeholder="UUID or Phone" />
+                      </div>
+                      <div>
+                         <label className="block text-xs font-bold text-[#9234eb]/60 uppercase tracking-widest mb-1.5">Amount (UGX)</label>
+                         <input type="text" value={transferAmount} onChange={e => setTransferAmount(Number(e.target.value.replace(/\D/g, '') || 0).toLocaleString())} required className="w-full bg-[#f7f9fa] border border-purple-100 rounded-xl px-4 py-3.5 font-black text-[#9234eb] text-xl focus:outline-none focus:border-[#9234eb] focus:ring-1 focus:ring-[#9234eb] transition-all placeholder:text-[#9234eb]/20" placeholder="0" />
+                      </div>
+                      <button type="submit" disabled={processing} className="w-full bg-[#9234eb] text-white hover:bg-[#7823c6] font-bold py-3.5 rounded-xl mt-4 transition-all hover:scale-[1.02] active:scale-95 disabled:hover:scale-100 disabled:opacity-50 flex justify-center items-center gap-2 shadow-lg shadow-[#9234eb]/20">
+                         {processing ? (
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                         ) : (
+                            "Execute Shift"
+                         )}
+                      </button>
+                   </form>
+                </motion.div>
+             )}
+           </AnimatePresence>
+
+        </div>
+
+        {/* Right Column: Transaction History */}
+        <motion.div 
+           initial={{ opacity: 0, x: 20 }}
+           animate={{ opacity: 1, x: 0 }}
+           transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+           className="w-full lg:max-w-[450px]"
+        >
+           <div className="flex justify-between items-center mb-6 pl-1 pr-2">
+               <h3 className="text-[1.7rem] font-black text-[#9234eb] tracking-wide">Transaction History</h3>
+               <button onClick={fetchLedger} className="text-[#9234eb]/40 hover:text-[#9234eb] transition active:scale-90 bg-white shadow-sm border border-purple-100 p-2 rounded-full">
+                  <RefreshCcw size={16} />
+               </button>
+           </div>
+           
+           <div className="space-y-3">
+              {wallet.ledger && wallet.ledger.length > 0 ? (
+                 wallet.ledger.map((entry, index) => {
+                    const isCredit = entry.type === 'CREDIT';
+                    
+                    // Specific icon logic referencing the mockup layout
+                    let Icon = Navigation; 
+                    let iconColor = "text-[#9234eb]";
+                    let iconRotation = "rotate-45";
+                    
+                    if (isCredit) {
+                       Icon = Plus;
+                       iconColor = "text-emerald-500";
+                       iconRotation = "";
+                    } else if (entry.description.toLowerCase().includes('subscription') || entry.description.toLowerCase().includes('payment')) {
+                       Icon = Download;
+                       iconRotation = "";
+                    }
+
+                    return (
+                    <motion.div 
+                       initial={{ opacity: 0, y: 15 }}
+                       animate={{ opacity: 1, y: 0 }}
+                       transition={{ duration: 0.4, delay: index * 0.05 + 0.3 }}
+                       key={entry.id} 
+                       className="bg-white rounded-[1.2rem] p-4 border border-purple-100 flex items-center justify-between hover:border-[#9234eb]/30 hover:shadow-md transition-all group cursor-default shadow-sm"
+                    >
+                       <div className="flex items-center gap-4">
+                          {/* Circular Icon Container */}
+                          <div className={`h-[45px] w-[45px] shrink-0 rounded-full flex items-center justify-center border border-purple-100 bg-purple-50 group-hover:scale-110 transition-transform`}>
+                             <Icon size={18} className={`${iconColor} ${iconRotation}`} strokeWidth={2} />
+                          </div>
+                          
+                          {/* Main Text Content */}
+                          <div className="flex flex-col gap-[2px]">
+                             <p className="font-bold text-[#9234eb] text-[15px]">{entry.description}</p>
+                             <p className={`text-[14px] font-black tracking-tight ${isCredit ? 'text-emerald-500' : 'text-[#9234eb]/60'}`}>
+                                {isCredit ? '+' : '-'}UGX {entry.amount.toLocaleString()}
+                             </p>
+                          </div>
+                       </div>
+                       
+                       {/* Right-aligned Date/Status */}
+                       <div className="flex flex-col items-end gap-[3px] pr-1">
+                          <p className="text-[13px] font-bold text-[#9234eb]/40 tracking-wide uppercase">{formatShortDate(entry.created_at)}</p>
+                          <p className="text-[12px] font-bold text-[#9234eb]/40">{capitalize(entry.status)}</p>
+                       </div>
+                    </motion.div>
+                 )})
+              ) : (
+                 <div className="py-20 flex flex-col items-center justify-center opacity-70">
+                    <div className="w-16 h-16 rounded-full bg-purple-50 flex items-center justify-center mb-4 border border-purple-100 shadow-sm">
+                       <CreditCard size={24} className="text-[#9234eb]" />
+                    </div>
+                    <p className="text-[#9234eb] font-bold tracking-wide">No transactions</p>
+                 </div>
+              )}
+           </div>
+
+        </motion.div>
       </div>
     </div>
   );

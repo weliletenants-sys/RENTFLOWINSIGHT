@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { ShieldCheck, UserCheck, ArrowRight, Wallet, Percent, ArrowLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function AgentInvestForPartner() {
   const navigate = useNavigate();
@@ -38,90 +39,127 @@ export default function AgentInvestForPartner() {
   };
 
   return (
-    <div className="bg-[#f8f6f6] dark:bg-[#221610] text-slate-900 dark:text-slate-100 antialiased min-h-screen font-['Public_Sans'] pb-24 top-0 left-0 fixed w-full z-50 overflow-y-auto">
-      <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#221610]/80 backdrop-blur-md px-4 py-4">
+    <div className="w-full min-h-screen bg-[#f7f9fa] text-[#9234eb] font-sans relative overflow-hidden selection:bg-[#9234eb]/20 pb-24 top-0 left-0 fixed z-50 overflow-y-auto">
+      
+      {/* Background ambient light representing top right glow */}
+      <div className="fixed top-[-10%] right-[10%] w-[35rem] h-[35rem] bg-[#9234eb]/5 rounded-full blur-[100px] pointer-events-none z-0"></div>
+
+      <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-purple-100 bg-white/80 backdrop-blur-md px-4 py-4">
         <div className="max-w-xl mx-auto flex items-center gap-4">
-          <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
+          <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-xl text-[#9234eb]/50 hover:text-[#9234eb] hover:bg-purple-50 transition-colors">
              <ArrowLeft size={24} />
           </button>
           <div>
-              <h1 className="text-xl font-bold font-outfit text-slate-900 dark:text-white leading-none mb-1">Invest For Supporter</h1>
-              <p className="text-xs font-medium text-slate-500">Proxy Investment Portal</p>
+              <h1 className="text-xl font-bold text-[#9234eb] leading-none mb-1">Invest For Supporter</h1>
+              <p className="text-xs font-bold text-[#9234eb]/50 uppercase tracking-widest">Proxy Portal</p>
           </div>
         </div>
       </header>
 
-      <main className="max-w-xl mx-auto px-4 pt-24 space-y-6">
-        <div className="bg-[#6c11d4] text-white p-6 rounded-2xl shadow-lg relative overflow-hidden">
-           <div className="absolute top-0 right-0 p-4 opacity-5">
-              <ShieldCheck size={120} />
+      <main className="max-w-xl mx-auto px-4 pt-28 space-y-6 relative z-10">
+        
+        <motion.div 
+           initial={{ opacity: 0, y: 20 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ duration: 0.5 }}
+           className="relative overflow-hidden rounded-[1.8rem]"
+        >
+           {/* Soft purple shadow blur behind the card */}
+           <div className="absolute inset-x-0 inset-y-2 bg-[#9234eb] rounded-[2rem] blur-2xl opacity-20"></div>
+           
+           <div className="relative bg-gradient-to-br from-[#9234eb] to-[#6a15ba] text-white p-8 shadow-[0_20px_40px_-10px_rgba(146,52,235,0.4)] rounded-[1.8rem] ring-1 ring-inset ring-white/10 overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10">
+                 <ShieldCheck size={140} strokeWidth={1} />
+              </div>
+              <h2 className="text-2xl font-black mb-2 tracking-tight">Proxy Capital Deployment</h2>
+              <p className="text-sm font-medium text-white/80 max-w-[280px] leading-relaxed">
+                Instantly leverage your available float to fund a supporter portfolio. Earn exactly 2% direct commission upon manager execution.
+              </p>
            </div>
-           <h2 className="text-xl font-bold font-outfit mb-2">Proxy Capital Deployment</h2>
-           <p className="text-sm font-medium text-white/80 max-w-sm mb-6">
-             Instantly leverage your available float to fund a supporter portfolio. Earn 2% direct commission immediately upon execution.
-           </p>
-        </div>
+        </motion.div>
 
         <form onSubmit={handleInvest} className="space-y-6">
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-             <h3 className="text-sm font-bold uppercase tracking-widest text-[#6c11d4] mb-4">Partner details</h3>
+          <motion.div 
+             initial={{ opacity: 0, y: 20 }}
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ duration: 0.5, delay: 0.1 }}
+             className="bg-white p-7 rounded-3xl shadow-[0_15px_40px_-15px_rgba(146,52,235,0.15)] border border-purple-100 relative overflow-hidden"
+          >
+             <h3 className="text-sm font-black uppercase tracking-widest text-[#9234eb] mb-5">Partner Details</h3>
              
-             <div className="space-y-4">
+             <div className="space-y-5">
                 <div>
-                  <label className="text-xs font-bold text-slate-500 mb-1.5 block">Supporter Registered Phone</label>
+                  <label className="text-xs font-bold text-[#9234eb]/60 uppercase tracking-widest mb-1.5 block">Supporter Registered Phone</label>
                   <div className="relative">
-                    <UserCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                    <UserCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9234eb]/40" size={20} />
                     <input 
                       type="tel"
                       value={partnerPhone}
                       onChange={(e) => setPartnerPhone(e.target.value)}
                       placeholder="e.g. 077XXXXXXXX"
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-3.5 pl-12 pr-4 text-sm font-bold outline-none focus:border-[#6c11d4] transition-colors"
+                      className="w-full bg-[#f7f9fa] border border-purple-100 rounded-xl py-3.5 pl-12 pr-4 text-[15px] font-bold text-[#9234eb] outline-none focus:border-[#9234eb] focus:ring-1 focus:ring-[#9234eb] transition-all placeholder:text-[#9234eb]/30"
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-500 mb-1.5 block">Capital Amount (UGX)</label>
+                  <label className="text-xs font-bold text-[#9234eb]/60 uppercase tracking-widest mb-1.5 block">Capital Amount (UGX)</label>
                   <div className="relative">
-                    <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                    <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 text-[#9234eb]/40" size={20} />
                     <input 
                       type="number"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      placeholder="e.g. 500000"
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-3.5 pl-12 pr-4 text-sm font-bold outline-none focus:border-[#6c11d4] transition-colors"
+                      placeholder="Min. 100,000"
+                      className="w-full bg-[#f7f9fa] border border-purple-100 rounded-xl py-3.5 pl-12 pr-4 text-[15px] font-black text-[#9234eb] outline-none focus:border-[#9234eb] focus:ring-1 focus:ring-[#9234eb] transition-all placeholder:text-[#9234eb]/20 tracking-tight"
                       required
                     />
                   </div>
                 </div>
              </div>
-          </div>
+          </motion.div>
 
-          <div className="bg-slate-900 text-white rounded-2xl p-6 shadow-xl relative overflow-hidden flex flex-col items-center text-center">
-             <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-400 via-slate-900 to-slate-900"></div>
-             <p className="text-xs font-bold text-slate-400 tracking-widest uppercase mb-1 z-10">Your Retained Commission</p>
-             <h3 className="text-4xl font-black font-outfit text-emerald-400 tracking-tight z-10 mb-4">
-                +{agentCommission.toLocaleString()} UGX
-             </h3>
-             <div className="w-full bg-slate-800 rounded-xl p-4 flex justify-between items-center text-left z-10">
-                <div>
-                   <span className="block text-xs text-slate-400">Deduction from Float</span>
-                   <span className="block text-sm font-bold text-slate-200">UGX {numericAmount.toLocaleString()}</span>
-                </div>
-                <Percent className="text-slate-500" />
-             </div>
-          </div>
+          {numericAmount > 0 && (
+            <motion.div 
+               initial={{ opacity: 0, scale: 0.95 }}
+               animate={{ opacity: 1, scale: 1 }}
+               transition={{ duration: 0.4 }}
+               className="bg-white rounded-3xl p-6 shadow-[0_15px_40px_-15px_rgba(146,52,235,0.15)] border border-purple-100 flex flex-col items-center text-center relative overflow-hidden"
+            >
+               <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-200 via-white to-white pointer-events-none"></div>
+               
+               <p className="text-xs font-bold text-[#9234eb]/50 tracking-widest uppercase mb-1 z-10">Your Retained Commission</p>
+               <h3 className="text-4xl font-black text-emerald-500 tracking-tight z-10 mb-5">
+                  +{agentCommission.toLocaleString()} UGX
+               </h3>
+               
+               <div className="w-full bg-[#f7f9fa] border border-purple-100 rounded-2xl p-4 flex justify-between items-center text-left z-10 shadow-sm">
+                  <div>
+                     <span className="block text-[10px] font-bold uppercase tracking-widest text-[#9234eb]/50">Deduction from Float</span>
+                     <span className="block text-sm font-black text-[#9234eb]">UGX {numericAmount.toLocaleString()}</span>
+                  </div>
+                  <div className="bg-purple-100 p-2 rounded-xl text-[#9234eb]">
+                     <Percent size={18} strokeWidth={2.5} />
+                  </div>
+               </div>
+            </motion.div>
+          )}
 
-          <button 
-            type="submit" 
-            disabled={loading || numericAmount < 100000}
-            className="w-full bg-[#6c11d4] disabled:opacity-50 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-[#580eb0] transition-colors shadow-lg shadow-[#6c11d4]/30"
+          <motion.div
+             initial={{ opacity: 0, y: 20 }}
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            {loading ? <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <ArrowRight size={20} />}
-            <span>{loading ? 'Processing...' : 'Authorize Investment Draw'}</span>
-          </button>
+             <button 
+               type="submit" 
+               disabled={loading || numericAmount < 100000}
+               className="w-full bg-[#9234eb] disabled:opacity-50 disabled:hover:scale-100 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-[#7823c6] transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-[#9234eb]/20 mt-2"
+             >
+               {loading ? <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <ArrowRight size={20} />}
+               <span>{loading ? 'Processing...' : 'Authorize Investment Draw'}</span>
+             </button>
+          </motion.div>
         </form>
       </main>
     </div>

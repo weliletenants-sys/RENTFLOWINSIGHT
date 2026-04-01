@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Bell, User, CheckCircle, TrendingUp, Info, PieChart } from 'lucide-react';
+import WelileAIIDBadge from '../../components/layout/WelileAIIDBadge';
 
 interface FunderMobileHeaderProps {
   user: { fullName: string; avatarUrl?: string };
@@ -83,7 +84,11 @@ export default function FunderMobileHeader({ user, onNotificationClick, onAvatar
           </div>
         </div>
 
-        <div className="relative" ref={notifRef}>
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:block">
+            <WelileAIIDBadge />
+          </div>
+          <div className="relative" ref={notifRef}>
           <button 
             onClick={() => {
               setShowNotifs(!showNotifs);
@@ -160,6 +165,7 @@ export default function FunderMobileHeader({ user, onNotificationClick, onAvatar
               </div>
             </div>
           )}
+        </div>
         </div>
 
       </div>

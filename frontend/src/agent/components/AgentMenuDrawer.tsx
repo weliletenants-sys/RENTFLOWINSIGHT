@@ -49,7 +49,6 @@ export default function AgentMenuDrawer({ isOpen, onClose, onOpenRegister, onOpe
       { label: 'List House', icon: <Home size={24} />, path: '/agent-list-house', badge: '5K', colorClass: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20' },
       { label: 'My Listings', icon: <ClipboardList size={24} />, path: '/agent-listings', colorClass: 'text-slate-500 bg-slate-50 dark:bg-slate-800' },
       { label: 'Manage Property', icon: <Building2 size={24} />, path: '/agent-managed-property', badge: '2%', colorClass: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20' },
-      { label: 'Managed Props', icon: <Home size={24} />, path: '/agent-managed-properties', colorClass: 'text-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' },
       { label: 'Find Rentals', icon: <Search size={24} />, path: '/find-rentals', colorClass: 'text-purple-500 bg-purple-50 dark:bg-purple-900/20' },
       { label: 'Landlord Map', icon: <MapPin size={24} />, path: '/agent-landlord-map', badge: 'GPS', colorClass: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' },
     ],

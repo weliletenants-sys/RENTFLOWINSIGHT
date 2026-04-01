@@ -1,0 +1,42 @@
+# Funder Dashboard Architecture Analysis
+
+## Overview
+The Funder Dashboard built into the Rentflow platform serves as the central command post for investors (funders) providing an aggregated look at wealth performance, live real estate market opportunities, and portfolio health.
+
+## Main Layout Structure (`FunderDashboard.tsx`)
+The main `<FunderDashboard>` component utilizes a responsive wrapper structure that is predominantly component-driven rather than strictly route-driven for its internal tabs, thereby achieving seamless context switching.
+
+- **Sidebar Navigation (`FunderSidebar`)**: Offers high-level navigation across functional views. Visual state is maintained via `activePage` locally in the component.
+- **Top Bar (`FunderDashboardHeader`)**: Contains contextual user information and triggers mobile navigation.
+- **KYC Verification Interceptor**: Automatically mounts a top-level alert (`user?.isVerified`) indicating compliance status (e.g. `UNDER_REVIEW` or `Profile Verification Required`). It proactively gatekeeps certain actions while letting users organically explore other areas like 'Portfolio' and 'Opportunities'.
+
+## The 12-Column Responsive Dashboard Grid
+When the main `activePage` is set to "Dashboard", the layout deploys a complex 12-column grid structural breakdown, separating macro-level wealth functions from specialized analytics.
+
+### 1. Primary Left Column (8-col width)
+This section houses the most critical performance data designed to consume maximum attention real estate.
+- **`FunderWalletCard`**: Central wealth node displaying `totalBalance`, `availableLiquid`, and `totalInvested`. Embeds primary functional CTA gateways (Top-Up / Withdraw / Portfolio).
+- **`FunderPortfolioList`**: Displays a snapshot of the top 3 active investments handled through the platform. 
+- **`FunderPortfolioHealth`**: An analytical component highlighting current asset allocation metrics and providing transparency into risk profiling.
+- **Responsive Components**: Elements such as `<FunderActionButtons>` and `<FunderRecentActivity>` are dynamically deployed here specifically for mobile visibilities using `lg:hidden` classes.
+
+### 2. Secondary Context Aside (4-col width, Desktop only)
+This section houses persistent context and forward-looking financial tools.
+- **`FunderActionButtons`**: Quick action interfaces calculating rapid `portfolioValue` and projected `roiPercent`.
+- **`FunderRecentActivity`**: A normalized ledger stream showing the latest financial transactions and events inside the funder ecosystem.
+- **`InvestmentCalculator`**: An interactive financial compounding tool built explicitly to reduce friction for on-platform continuous capital deployment.
+- **Smart Insights Block**: A dynamic insight system that aggressively targets idle capital (Available Liquid). It calculates a real-time hypothetic yield via simple multi-month compounding factors—actively nudging funders to deploy standing capacity.
+
+## Data Layer & Telemetry
+The entire dashboard synchronizes using a top-level React `useEffect` which consolidates all major payload needs securely on-mount. 
+It uses `Promise.all` to fetch parallel streams:
+1. `getFunderDashboardStats`: Financial aggregation totals.
+2. `getFunderPortfolios`: Active user-owned properties and portfolios.
+3. `getFunderActivities`: Raw wallet ledger activity.
+
+**Intelligent Processing**: The component manually transforms raw payload outputs into digestible UX data. For example, raw server keys like `coo_wallet_fund` are mapped correctly to `SYSTEM WALLET TOP-UP`, formatting `direction === 'cash_in'` intelligently into credit/debit states before passing into purely presentational components.
+
+## Technical Highlights
+1. **Component Consolidation**: Uses a stateful `activePage` variable instead of `react-router-dom` to pivot between nested features (Portfolio and Opportunities), giving the application a fast SPA feel without total re-render.
+2. **Action Interception (`handleVerificationCheck`)**: Instead of blanket redirecting standard routes, the system intercepts specific programmatic actions natively checking the user's KYC state prior to proceeding.
+3. **Dynamic Re-Arrangement**: Handles the "Mobile vs Desktop" debate gracefully by re-rendering component trees independently based on UI breakpoints rather than depending purely on flex-wraps, avoiding layout pollution.

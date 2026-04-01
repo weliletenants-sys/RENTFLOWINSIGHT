@@ -730,6 +730,7 @@ model Profiles {
   monthly_rent          Float?
   national_id           String?
   phone                 String   @unique
+  ai_id                 String?  @unique
   referrer_id           String?
   rent_discount_active  Boolean
   territory             String?
@@ -1705,5 +1706,3 @@ model SavingsHistory {
   
   @@map("savings_history")
 }
-
-

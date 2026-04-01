@@ -13,6 +13,8 @@ import {
   Loader2,
   CheckCircle,
   X,
+  Phone,
+  Copy,
 } from 'lucide-react';
 import { getWalletBalance, requestDeposit } from '../services/agentApi';
 import toast from 'react-hot-toast';
@@ -160,33 +162,77 @@ export default function AgentDeposit() {
             </div>
 
             {/* Instructions */}
-            <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
-              <h4 className="text-sm font-bold mb-4 flex items-center gap-2">
-                <Info size={18} className="text-[#6c11d4]" />
-                Deposit Instructions
-              </h4>
-              {method === 'mobile' ? (
-                <div className="space-y-3">
-                  {[
-                    'Dial the USSD code (*165# for MTN, *185# for Airtel).',
-                    <>Enter the Welile Merchant Code: <span className="font-black text-yellow-600">MTN (090777)</span> or <span className="font-black text-red-600">Airtel (4380664)</span></>,
-                    'Enter the amount you wish to deposit.',
-                    <>Enter your account reference number: <span className="font-bold text-slate-900 dark:text-slate-100">W-9023</span></>,
-                  ].map((step, i) => (
-                    <div key={i} className="flex gap-3">
-                      <span className="flex-shrink-0 size-6 rounded-full bg-[#6c11d4]/10 text-[#6c11d4] text-xs font-bold flex items-center justify-center border border-[#6c11d4]/20">
-                        {i + 1}
-                      </span>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">{step}</p>
-                    </div>
-                  ))}
+            {method === 'mobile' ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* MTN Card */}
+                  <div className="rounded-[1.25rem] border border-[#ffcc00]/40 dark:border-[#ffcc00]/20 bg-white dark:bg-[#1f1a00] overflow-hidden flex flex-col relative shadow-[0_4px_20px_rgb(255,204,0,0.08)] transition-colors duration-300">
+                     <div className="bg-[#ffcc00] p-3.5 flex flex-col gap-2">
+                        <div className="flex gap-2 items-center">
+                            <div className="w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shrink-0 shadow-sm"></div>
+                            <div className="leading-tight">
+                              <div className="text-black font-extrabold text-[15px] truncate">MTN MoMo</div>
+                              <div className="text-black/80 text-[10px] font-bold uppercase tracking-wider mt-0.5">Pay Merchant</div>
+                            </div>
+                        </div>
+                     </div>
+                     <div className="p-3.5 flex flex-col items-center">
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold tracking-wide transition-colors">Merchant ID</span>
+                        <span className="text-[22px] font-black text-slate-800 dark:text-white tracking-widest my-1.5 transition-colors">090777</span>
+                        
+                        <button className="w-full bg-[#ffcc00] text-black font-extrabold py-2.5 rounded-[10px] flex items-center justify-center gap-2 mt-2 mb-2 hover:bg-yellow-400 transition text-[13px] shadow-sm">
+                           <Phone strokeWidth={2.5} size={14} /> Pay Now
+                        </button>
+                        <button className="w-full border border-slate-200 dark:border-slate-700/50 text-slate-700 dark:text-slate-300 font-semibold py-2.5 rounded-[10px] flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition text-[13px]">
+                           <Copy strokeWidth={2} size={14} /> Copy ID
+                        </button>
+                        <button className="mt-3.5 text-[11px] font-bold text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition uppercase tracking-wider mb-1">View Manual Step</button>
+                     </div>
+                  </div>
+
+                  {/* Airtel Card */}
+                  <div className="rounded-[1.25rem] border border-red-500/30 dark:border-red-500/20 bg-white dark:bg-[#200000] overflow-hidden flex flex-col relative shadow-[0_4px_20px_rgb(239,68,68,0.08)] transition-colors duration-300">
+                     <div className="bg-[#ff0000] p-3.5 flex flex-col gap-2">
+                        <div className="flex gap-2 items-center">
+                            <div className="w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shrink-0 shadow-sm"></div>
+                            <div className="leading-tight">
+                              <div className="text-white font-extrabold text-[15px] truncate">Airtel Money</div>
+                              <div className="text-white/80 text-[10px] font-bold uppercase tracking-wider mt-0.5">Pay Merchant</div>
+                            </div>
+                        </div>
+                     </div>
+                     <div className="p-3.5 flex flex-col items-center">
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold tracking-wide transition-colors">Merchant ID</span>
+                        <span className="text-[22px] font-black text-slate-800 dark:text-white tracking-widest my-1.5 transition-colors">4380664</span>
+                        
+                        <button className="w-full bg-[#ff0000] text-white font-extrabold py-2.5 rounded-[10px] flex items-center justify-center gap-2 mt-2 mb-2 hover:bg-red-600 transition text-[13px] shadow-sm">
+                           <Phone strokeWidth={2.5} size={14} /> Pay Now
+                        </button>
+                        <button className="w-full border border-slate-200 dark:border-slate-700/50 text-slate-700 dark:text-slate-300 font-semibold py-2.5 rounded-[10px] flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition text-[13px]">
+                           <Copy strokeWidth={2} size={14} /> Copy ID
+                        </button>
+                        <button className="mt-3.5 text-[11px] font-bold text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition uppercase tracking-wider mb-1">View Manual Step</button>
+                     </div>
+                  </div>
                 </div>
-              ) : (
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800/50 flex gap-3">
+                  <Info size={18} className="text-blue-600 shrink-0 mt-0.5" />
+                  <p className="text-sm text-blue-800 dark:text-blue-200 leading-tight">
+                    Remember to use <span className="font-bold">W-9023</span> as your account reference number when making the deposit.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+                <h4 className="text-sm font-bold mb-4 flex items-center gap-2">
+                  <Info size={18} className="text-[#6c11d4]" />
+                  Deposit Instructions
+                </h4>
                 <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed italic">
                   Please visit any authorized Welile agent station near you. Provide your account number and the cash amount to the agent to complete your deposit.
                 </p>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* ───── Right column ───── */}

@@ -73,3 +73,46 @@ export const getRecentActivities = async (req: Request, res: Response) => {
     return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
   }
 };
+
+export const getAgreementStatus = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.sub;
+    if (!userId) return problemResponse(res, 401, 'Unauthorized', `Unauthorized`, 'unauthorized');
+
+    const acceptance = await prisma.tenantAgreementAcceptance.findFirst({
+      where: { tenant_id: userId, status: 'ACCEPTED' },
+      orderBy: { created_at: 'desc' }
+    });
+
+    return res.status(200).json({ hasAcceptedTerms: !!acceptance });
+  } catch (error) {
+    console.error('getAgreementStatus error:', error);
+    return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
+  }
+};
+
+export const acceptAgreement = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.sub;
+    if (!userId) return problemResponse(res, 401, 'Unauthorized', `Unauthorized`, 'unauthorized');
+
+    const { version, ipAddress, deviceInfo } = req.body;
+
+    await prisma.tenantAgreementAcceptance.create({
+      data: {
+        tenant_id: userId,
+        agreement_version: version || '1.0.0',
+        status: 'ACCEPTED',
+        accepted_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        ip_address: ipAddress || req.ip,
+        device_info: deviceInfo || req.headers['user-agent'],
+      }
+    });
+
+    return res.status(200).json({ success: true, message: 'Agreement accepted' });
+  } catch (error) {
+    console.error('acceptAgreement error:', error);
+    return problemResponse(res, 500, 'Internal Server Error', `Internal server error`, 'internal-server-error');
+  }
+};

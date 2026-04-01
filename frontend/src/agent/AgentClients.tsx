@@ -42,7 +42,7 @@ export default function AgentClients() {
             <p className="text-slate-500 dark:text-slate-400 mt-1">Manage and track your assigned portfolio</p>
           </div>
           
-          <button className="flex items-center gap-2 bg-[#8b5cf6] hover:bg-[#7c3aed] text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-[0_8px_30px_rgb(139,92,246,0.3)] active:scale-95">
+          <button onClick={() => navigate('/agent-register-tenant')} className="flex items-center gap-2 bg-[#8b5cf6] hover:bg-[#7c3aed] text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-[0_8px_30px_rgb(139,92,246,0.3)] active:scale-95">
              <UserPlus size={18} />
              Add New Tenant
           </button>
