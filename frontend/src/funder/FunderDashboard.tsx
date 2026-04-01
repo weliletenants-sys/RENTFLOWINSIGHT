@@ -96,7 +96,9 @@ export default function FunderDashboard() {
             { element: '#tour-wallet-actions', popover: { title: 'Wallet Actions', description: 'Instantly add funds via Mobile Money or Bank Transfer, or seamlessly withdraw your liquid earnings directly to your phone from here.', side: "bottom", align: 'center' } },
             { element: '#tour-portfolio-health', popover: { title: 'Risk & Health Distribution', description: 'A real-time overview of your asset health. Ensure your investments are diversified and performing well within safe parameters.', side: "bottom", align: 'start' } },
             { element: '#tour-portfolio', popover: { title: 'Active Portfolios', description: 'Track the real-time performance of the specific rent pools you have funded. This list updates dynamically as your investments generate compounding payouts every day.', side: "top", align: 'start' } },
-            { element: '#tour-recent-activity', popover: { title: 'Immutable Ledger', description: 'A transparent, secure log of all your deposits, withdrawals, and automated daily payouts. You are fully audited.', side: "left", align: 'center' } }
+            { element: '#tour-recent-activity', popover: { title: 'Immutable Ledger', description: 'A transparent, secure log of all your deposits, withdrawals, and automated daily payouts. You are fully audited.', side: "left", align: 'center' } },
+            { element: '#tour-calculator', popover: { title: 'Yield Projections', description: 'Experiment with different capital allocations to accurately predict your compound interest earnings over time.', side: "left", align: 'start' } },
+            { element: '#tour-insights', popover: { title: 'Smart Insights', description: 'Our engine constantly analyzes your idle wallet balance and provides one-click personalized opportunities to maximize your yield.', side: "left", align: 'start' } }
           ],
           onDestroyStarted: () => {
             if (!driverObj.hasNextStep() || confirm("Are you sure you want to pause the tour?")) {
@@ -246,7 +248,7 @@ export default function FunderDashboard() {
                   </div>
 
                   {/* Portfolio Health Distribution (Replacing Recommended Opportunities) */}
-                  <div className="relative w-full">
+                  <div className="relative w-full" id="tour-portfolio-health">
                     <FunderPortfolioHealth portfolios={portfolios} />
                   </div>
 
@@ -278,7 +280,7 @@ export default function FunderDashboard() {
                   </div>
 
                   {/* Interactive Financial Tools */}
-                  <div className="relative w-full">
+                  <div className="relative w-full" id="tour-calculator">
                     <InvestmentCalculator />
                   </div>
 
@@ -286,6 +288,7 @@ export default function FunderDashboard() {
                   <div
                     className="bg-white rounded-xl border p-6 flex items-start gap-4 shadow-sm"
                     style={{ borderColor: 'var(--color-primary-border)', borderLeft: '4px solid var(--color-primary)' }}
+                    id="tour-insights"
                   >
                     <div className="p-2 rounded-full shrink-0 mt-1" style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}>
                       <Lightbulb className="w-5 h-5" />
