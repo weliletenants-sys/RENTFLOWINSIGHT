@@ -489,7 +489,7 @@ export default function FunderAccountSettings() {
         <div className="flex-1 flex flex-col min-h-screen overflow-y-auto relative">
           
           <FunderDashboardHeader
-            user={{ fullName: 'Grace N.', role: 'supporter', avatarUrl: '' }}
+            user={{ fullName: userFirst ? `${userFirst} ${userLast}`.trim() : 'User', role: 'supporter', avatarUrl: '' }}
             pageTitle="Account Settings"
             onMenuClick={() => setMobileMenuOpen(true)}
             onAvatarClick={() => {}}

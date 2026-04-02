@@ -31,7 +31,11 @@ const CustomPieTooltip = ({ active, payload }: any) => {
 
 const COLORS = ['#6c11d4', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
+import { useAuth } from '../contexts/AuthContext';
+
 export default function FunderReports() {
+  const { user } = useAuth();
+  const displayName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'User';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [statementRange, setStatementRange] = useState('Last 6 Months');
   const [statementYear, setStatementYear] = useState(new Date().getFullYear().toString());
@@ -124,7 +128,7 @@ export default function FunderReports() {
         <div className="flex-1 flex flex-col min-h-screen overflow-y-auto relative">
           
           <FunderDashboardHeader
-            user={{ fullName: 'Grace N.', role: 'supporter', avatarUrl: '' }}
+            user={{ fullName: displayName, role: 'supporter', avatarUrl: '' }}
             pageTitle="Reports & Analytics"
             onMenuClick={() => setMobileMenuOpen(true)}
           />

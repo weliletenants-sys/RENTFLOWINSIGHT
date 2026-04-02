@@ -12,7 +12,11 @@ import { Link } from 'react-router-dom';
 import { getFunderDashboardStats, getFunderActivities, fundRentPool, requestDeposit, requestWalletWithdrawal, getWalletOperations, getPayoutMethods, transferFunds, type PayoutMethodView } from '../services/funderApi';
 import type { DashboardStatsResponse } from '../services/funderApi';
 
+import { useAuth } from '../contexts/AuthContext';
+
 export default function FunderWallet() {
+  const { user } = useAuth();
+  const displayName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'User';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'All' | 'Cash In' | 'Cash Out'>('All');
   
@@ -282,7 +286,7 @@ export default function FunderWallet() {
 
         <div className="flex-1 flex flex-col min-h-screen overflow-y-auto relative">
           <FunderDashboardHeader
-            user={{ fullName: 'Grace N.', role: 'supporter', avatarUrl: '' }}
+            user={{ fullName: displayName, role: 'supporter', avatarUrl: '' }}
             pageTitle="Wallet"
             onMenuClick={() => setMobileMenuOpen(true)}
           />

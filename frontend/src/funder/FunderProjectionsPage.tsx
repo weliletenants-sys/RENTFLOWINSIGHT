@@ -15,6 +15,7 @@ import FunderSidebar from './components/FunderSidebar';
 import FunderDashboardHeader from './components/FunderDashboardHeader';
 import FunderBottomNav from './components/FunderBottomNav';
 import { getFunderDashboardStats, fundRentPool } from '../services/funderApi';
+import { useAuth } from '../contexts/AuthContext';
 import {
   AreaChart,
   Area,
@@ -111,6 +112,8 @@ const CustomSelect = ({
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function FunderProjectionsPage() {
+  const { user } = useAuth();
+  const displayName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'User';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const [walletBalance, setWalletBalance] = useState(0);
@@ -451,7 +454,7 @@ export default function FunderProjectionsPage() {
 
         <div className="flex-1 flex flex-col overflow-y-auto">
           <FunderDashboardHeader
-            user={{ fullName: 'Grace N.', role: 'supporter', avatarUrl: '' }}
+            user={{ fullName: displayName, role: 'supporter', avatarUrl: '' }}
             pageTitle="Projections"
             onMenuClick={() => setMobileMenuOpen(true)}
             onAvatarClick={() => {}}

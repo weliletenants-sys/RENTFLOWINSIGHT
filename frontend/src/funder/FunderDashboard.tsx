@@ -127,9 +127,9 @@ export default function FunderDashboard() {
   };
 
   const displayName =
-    user?.firstName && user?.lastName
-      ? `${user.firstName} ${user.lastName}`
-      : 'Grace Nakato';
+    user?.firstName
+      ? `${user.firstName} ${user.lastName || ''}`.trim()
+      : 'User';
 
   if (isLoading) {
     return (
