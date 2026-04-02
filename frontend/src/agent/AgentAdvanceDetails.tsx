@@ -41,6 +41,20 @@ export default function AgentAdvanceDetails() {
   if (!advance) return null;
 
   const progressPct = Math.min((advance.cleared_amount / advance.amount) * 100, 100);
+  const balanceRatio = advance.remaining_balance / advance.amount;
+  
+  let riskColor = 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
+  let riskLabel = 'Healthy (≤ 1.0x)';
+  if (balanceRatio > 3.0) {
+    riskColor = 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+    riskLabel = 'Critical (> 3.0x)';
+  } else if (balanceRatio > 1.5) {
+    riskColor = 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
+    riskLabel = 'Caution (> 1.5x)';
+  } else if (balanceRatio > 1.0) {
+    riskColor = 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
+    riskLabel = 'Monitor (> 1.0x)';
+  }
 
   return (
     <div className="bg-[#f8f6f6] dark:bg-[#221610] text-slate-900 dark:text-slate-100 antialiased min-h-screen font-['Public_Sans'] pb-24 top-0 left-0 fixed w-full z-50 overflow-y-auto">
@@ -77,6 +91,13 @@ export default function AgentAdvanceDetails() {
                     {new Date(advance.due_by).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                  </span>
               </div>
+           </div>
+
+           <div className="mb-6 flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700/50">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Balance-to-Principal Ratio</span>
+              <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${riskColor}`}>
+                 {riskLabel} ({balanceRatio.toFixed(2)}x)
+              </span>
            </div>
 
            <div className="space-y-4">

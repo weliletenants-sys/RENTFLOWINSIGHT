@@ -66,6 +66,7 @@ export default function AgentMenuDrawer({ isOpen, onClose, onOpenRegister, onOpe
     'Earnings': [
       { label: 'Rank System', icon: <Trophy size={24} />, path: '/rank-system', colorClass: 'text-amber-500 bg-amber-50 dark:bg-amber-900/20' },
       { label: 'My Earnings', icon: <TrendingUp size={24} />, path: '/dashboard/agent/earnings', colorClass: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' },
+      { label: 'Commission Plan', icon: <HandCoins size={24} />, path: '/agent-commission-benefits', badge: 'New', colorClass: 'text-[#7214c9] bg-purple-50 dark:bg-[#7214c9]/20' },
       { label: 'Goals', icon: <Target size={24} />, path: '/goals', colorClass: 'text-red-500 bg-red-50 dark:bg-red-900/20' },
       { label: 'Analytics', icon: <BarChart3 size={24} />, path: '/agent-analytics', colorClass: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20' },
       { label: 'Withdrawals', icon: <PiggyBank size={24} />, path: '/withdrawals', colorClass: 'text-purple-500 bg-purple-50 dark:bg-purple-900/20' },

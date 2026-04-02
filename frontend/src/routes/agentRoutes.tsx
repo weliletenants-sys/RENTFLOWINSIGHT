@@ -45,6 +45,7 @@ const AgentAdvanceDetails = lazy(() => import('../agent/AgentAdvanceDetails'));
 const AgentCashPayouts    = lazy(() => import('../agent/AgentCashPayouts'));
 const AgentLandlordPayout = lazy(() => import('../agent/AgentLandlordPayout'));
 const AgentRentRequests   = lazy(() => import('../agent/AgentRentRequests'));
+const AgentCommissionBenefits = lazy(() => import('../agent/AgentCommissionBenefits'));
 
 // Marketplace Suite
 const AgentShop             = lazy(() => import('../agent/shop/AgentShop'));
@@ -102,6 +103,7 @@ export const agentRoutes = [
   <Route key="agent-receipt"           path="/agent-receipt"           element={<AgentReceipt />} />,
   <Route key="agent-referral"          path="/agent-referral"          element={<AgentReferral />} />,
   <Route key="agent-daily-ops"         path="/agent-daily-ops"         element={<AgentDailyOps />} />,
+  <Route key="agent-commission-benefits" path="/agent-commission-benefits" element={<AgentCommissionBenefits />} />,
   
   // Marketplace Suite Routes
   <Route key="agent-shop"              path="/agent-shop"                        element={<AgentShop />} />,

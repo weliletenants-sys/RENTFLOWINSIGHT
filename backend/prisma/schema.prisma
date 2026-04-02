@@ -1706,3 +1706,64 @@ model SavingsHistory {
   
   @@map("savings_history")
 }
+
+model AgentTasks {
+  created_at       String
+  due_date         String?
+  id               String   @id @default(uuid())
+  priority         String
+  status           String
+  task_type        String
+  description      String?
+  requires_gps     Boolean  @default(false)
+  completed_at     String?
+  completion_notes String?
+  latitude         Float?
+  longitude        Float?
+  agent_id         String?
+  manager_id       String?
+
+  @@map("agent_tasks")
+}
+
+model AgentEscalations {
+  created_at       String
+  id               String   @id @default(uuid())
+  issue_type       String
+  severity         String
+  status           String
+  description      String
+  resolution_notes String?
+  resolved_at      String?
+  agent_id         String?
+  assigned_to_id   String?
+
+  @@map("agent_escalations")
+}
+
+model AgentCollectionStreaks {
+  created_at           String
+  id                   String   @id @default(uuid())
+  updated_at           String
+  agent_id             String?
+  consecutive_days     Float    @default(0)
+  current_multiplier   Float    @default(1.0)
+  last_collection_date String?
+  longest_streak       Float    @default(0)
+
+  @@map("agent_collection_streaks")
+}
+
+model AgentRebalanceRecords {
+  created_at       String
+  id               String   @id @default(uuid())
+  agent_id         String?
+  manager_id       String?
+  amount           Float
+  direction        String
+  reason           String?
+  float_before     Float?
+  float_after      Float?
+
+  @@map("agent_rebalance_records")
+}
