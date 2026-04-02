@@ -104,6 +104,7 @@ export const agentRoutes = [
   <Route key="agent-referral"          path="/agent-referral"          element={<AgentReferral />} />,
   <Route key="agent-daily-ops"         path="/agent-daily-ops"         element={<AgentDailyOps />} />,
   <Route key="agent-commission-benefits" path="/agent-commission-benefits" element={<AgentCommissionBenefits />} />,
+  <Route key="agent-commission-benefits-dashboard" path="/dashboard/agent/commission-benefits" element={<AgentCommissionBenefits />} />,
   
   // Marketplace Suite Routes
   <Route key="agent-shop"              path="/agent-shop"                        element={<AgentShop />} />,
