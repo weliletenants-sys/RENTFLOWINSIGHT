@@ -28,9 +28,9 @@ async function main() {
 
   console.log(`Read ${records.length} funder records. Beginning identity sync...`);
 
-  // Secure temporary password
-  const TEMP_PASSWORD = 'Welile2026!';
-  const hashedPassword = await bcrypt.hash(TEMP_PASSWORD, 10);
+  // Secure temporary password according to COO Partner Import Guidelines
+  const TEMP_PASSWORD = 'Partner@welile';
+  const hashedPassword = await bcrypt.hash(TEMP_PASSWORD, 12);
   let syncedProfiles = 0;
   let syncedPortfolios = 0;
 

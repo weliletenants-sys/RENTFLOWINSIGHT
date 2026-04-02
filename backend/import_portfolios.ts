@@ -4,7 +4,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  const filePath = 'c:\\Users\\USER\\Documents\\RENTFLOWINSIGHT\\FUNDERS\\investor_portfolios.csv';
+  const filePath = 'c:\\Users\\USER\\Documents\\WELILE\\RENTFLOWINSIGHT\\FUNDERS\\investor_portfolios.csv';
   const data = fs.readFileSync(filePath, 'utf-8');
   
   const lines = data.split('\n').map(l => l.trim()).filter(l => l.length > 0);

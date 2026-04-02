@@ -8,6 +8,23 @@ import { problemResponse } from '../utils/problem';
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
 
 // Standard RFC 7807 Error Response wrapper matching api.md
+
+// Helper to reliably find a phone number format despite variations
+const getPhoneVariants = (rawPhone: string): string[] => {
+  const cleanPhone = rawPhone.trim();
+  let phoneVariants = [cleanPhone];
+  if (cleanPhone.startsWith('0') && cleanPhone.length === 10) {
+    phoneVariants.push(`256${cleanPhone.slice(1)}`);
+    phoneVariants.push(`+256${cleanPhone.slice(1)}`);
+  } else if (cleanPhone.startsWith('256') && cleanPhone.length === 12) {
+    phoneVariants.push(`0${cleanPhone.slice(3)}`);
+    phoneVariants.push(`+${cleanPhone}`);
+  } else if (cleanPhone.startsWith('+256') && cleanPhone.length === 13) {
+    phoneVariants.push(`0${cleanPhone.slice(4)}`);
+    phoneVariants.push(`${cleanPhone.slice(1)}`);
+  }
+  return phoneVariants;
+};
 export const register = async (req: Request, res: Response) => {
   try {
     const { phone, password, firstName, lastName, role, email, referrer_id } = req.body;
@@ -172,7 +189,7 @@ export const login = async (req: Request, res: Response) => {
     const profile = await prisma.profiles.findFirst({ 
        where: phoneTrimmed.includes('@') 
           ? { email: phoneTrimmed } 
-          : { phone: phoneTrimmed } 
+          : { phone: { in: getPhoneVariants(phoneTrimmed) } } 
     });
 
     // Auth Validation
@@ -428,12 +445,20 @@ export const forgotPassword = async (req: Request, res: Response) => {
     const { phone } = req.body;
     if (!phone) return problemResponse(res, 400, 'Validation Error', 'Phone number is required', 'missing-phone');
 
+    const cleanPhone = phone.trim();
+    const phoneVariants = getPhoneVariants(cleanPhone);
+
     // Confirm the phone belongs to a known account
-    const profile = await prisma.profiles.findFirst({ where: { phone: phone.trim() } });
+    const profile = await prisma.profiles.findFirst({ 
+      where: { phone: { in: phoneVariants } } 
+    });
     if (!profile) {
       // Return the same response to avoid account enumeration
       return res.status(200).json({ status: 'success', message: 'If this number is registered, an OTP has been sent.', data: {} });
     }
+
+    // Standardize the phone number format for the SMS sending service
+    const targetPhone = profile.phone;
 
     const otp_code = OTPService.generateCode(6);
     const message = `Your RentFlowInsight password reset code is ${otp_code}. It expires in 10 minutes. Do not share it.`;
@@ -513,7 +538,8 @@ export const resetPassword = async (req: Request, res: Response) => {
       return problemResponse(res, 401, 'Unauthorized', 'Invalid reset token purpose', 'invalid-token');
     }
 
-    const profile = await prisma.profiles.findFirst({ where: { phone: payload.phone } });
+    const phoneVariants = getPhoneVariants(payload.phone);
+    const profile = await prisma.profiles.findFirst({ where: { phone: { in: phoneVariants } } });
     if (!profile) return problemResponse(res, 404, 'Not Found', 'Account not found', 'not-found');
 
     const password_hash = await bcrypt.hash(new_password, 12);
