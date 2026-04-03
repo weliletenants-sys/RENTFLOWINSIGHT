@@ -13,6 +13,8 @@ import { getFunderDashboardStats, getFunderActivities, fundRentPool, requestDepo
 import type { DashboardStatsResponse } from '../services/funderApi';
 
 import { useAuth } from '../contexts/AuthContext';
+import { useFunderWalletData, funderQueryKeys } from './hooks/useFunderQueries';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function FunderWallet() {
   const { user } = useAuth();
@@ -28,10 +30,48 @@ export default function FunderWallet() {
     setCurrentPage(1);
   }, [activeTab]);
 
-  // Live State
-  const [stats, setStats] = useState<DashboardStatsResponse | null>(null);
-  const [transactions, setTransactions] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data, isLoading } = useFunderWalletData();
+  const queryClient = useQueryClient();
+  
+  const stats = data?.stats || null;
+  const payoutMethods = data?.payoutRes?.data?.payoutMethods || [];
+
+  const transactions = useMemo(() => {
+    if (!data) return [];
+    
+    const pendingOps = (data.opsData?.data?.operations || []).map((op: any) => ({
+      id: op.id,
+      date: new Date(op.created_at || Date.now()).toLocaleString(),
+      rawDate: new Date(op.created_at || Date.now()).getTime(),
+      type: op.direction === 'credit' ? 'Cash In' : 'Cash Out',
+      category: op.category || 'pending_op',
+      description: `Pending ${op.category}`,
+      amount: op.amount || 0,
+      status: op.status,
+      ref: op.reference_id || 'PENDING-...'
+    }));
+
+    const mappedTx = (data.activities || []).map((tx: any) => {
+      let niceDesc = tx.description || 'Transfer';
+      if (tx.category === 'coo_manual_portfolio') niceDesc = 'Emergency Capital Injection';
+      else if (tx.category === 'coo_wallet_fund') niceDesc = 'System Wallet Top-Up';
+      else if (tx.category) niceDesc = String(tx.category).replace(/_/g, ' ').toUpperCase();
+      
+      return {
+        id: tx.id || `tx-${Math.random()}`,
+        date: new Date(tx.created_at || tx.transaction_date || Date.now()).toLocaleString(),
+        rawDate: new Date(tx.created_at || tx.transaction_date || Date.now()).getTime(),
+        type: tx.direction === 'cash_in' ? 'Cash In' : 'Cash Out',
+        category: tx.category || 'general_transfer',
+        description: niceDesc,
+        amount: tx.amount || 0,
+        status: 'completed',
+        ref: tx.reference_id || (tx.id ? String(tx.id).slice(0, 8) : 'REF-N/A')
+      };
+    });
+
+    return [...pendingOps, ...mappedTx].sort((a, b) => b.rawDate - a.rawDate);
+  }, [data]);
 
   // Check if wallet is idle for >= 7 days AND has > 100,000 UGX
   const isWalletIdle = useMemo(() => {
@@ -69,65 +109,8 @@ export default function FunderWallet() {
   // Withdrawal Notice logic (mocked visually for now, or extracted from backend)
   const pendingWithdrawal: any = null; // To fully support this, we would pull `InvestmentWithdrawalRequests` from API.
 
-  const fetchData = async () => {
-    try {
-      const [liveStats, liveTx, opsData, payoutRes] = await Promise.all([
-        getFunderDashboardStats(),
-        getFunderActivities(),
-        getWalletOperations().catch(() => ({ data: { operations: [] } })),
-        getPayoutMethods().catch(() => ({ data: { payoutMethods: [] } }))
-      ]);
-      setStats(liveStats);
-      if (payoutRes?.data?.payoutMethods) {
-        setPayoutMethods(payoutRes.data.payoutMethods);
-      }
-
-      const pendingOps = (opsData?.data?.operations || []).map((op: any) => ({
-        id: op.id,
-        date: new Date(op.created_at || Date.now()).toLocaleString(),
-        rawDate: new Date(op.created_at || Date.now()).getTime(),
-        type: op.direction === 'credit' ? 'Cash In' : 'Cash Out',
-        category: op.category || 'pending_op',
-        description: `Pending ${op.category}`,
-        amount: op.amount || 0,
-        status: op.status,
-        ref: op.reference_id || 'PENDING-...'
-      }));
-
-      const mappedTx = (liveTx || []).map((tx: any) => {
-        let niceDesc = tx.description || 'Transfer';
-        if (tx.category === 'coo_manual_portfolio') niceDesc = 'Emergency Capital Injection';
-        else if (tx.category === 'coo_wallet_fund') niceDesc = 'System Wallet Top-Up';
-        else if (tx.category) niceDesc = String(tx.category).replace(/_/g, ' ').toUpperCase();
-        
-        return {
-          id: tx.id || `tx-${Math.random()}`,
-          date: new Date(tx.created_at || tx.transaction_date || Date.now()).toLocaleString(),
-          rawDate: new Date(tx.created_at || tx.transaction_date || Date.now()).getTime(),
-          type: tx.direction === 'cash_in' ? 'Cash In' : 'Cash Out',
-          category: tx.category || 'general_transfer',
-          description: niceDesc,
-          amount: tx.amount || 0,
-          status: 'completed',
-          ref: tx.reference_id || (tx.id ? String(tx.id).slice(0, 8) : 'REF-N/A')
-        };
-      });
-
-      // Combine and sort intelligently descending
-      const combined = [...pendingOps, ...mappedTx].sort((a, b) => b.rawDate - a.rawDate);
-      setTransactions(combined);
-
-    } catch (error) {
-      console.error("Error loading wallet", error);
-      toast.error("Failed to load live wallet data.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
+  // Minimal pending withdrawal mockup logic for now
+  const pendingWithdrawal: any = null;
 
   const handleDepositSubmit = async () => {
     if (!depositAmount || !depositTid || !selectedDepositPayoutId) {
@@ -150,7 +133,7 @@ export default function FunderWallet() {
       setDepositAmount('');
       setDepositTid('');
       setSelectedDepositPayoutId('');
-      await fetchData();
+      queryClient.invalidateQueries({ queryKey: funderQueryKeys.wallet });
     } catch (e: any) {
       toast.error(e.response?.data?.message || 'Deposit submission failed');
     } finally {
@@ -181,7 +164,7 @@ export default function FunderWallet() {
       setIsWithdrawModalOpen(false);
       setWithdrawAmount('');
       setSelectedPayoutId('');
-      await fetchData();
+      queryClient.invalidateQueries({ queryKey: funderQueryKeys.wallet });
     } catch (e: any) {
       toast.error(e.response?.data?.message || 'Withdrawal failed');
     } finally {
@@ -197,8 +180,9 @@ export default function FunderWallet() {
         roi_mode: 'monthly_compounding',
         duration_months: 12, // Default 12 months for quick invest
         auto_renew: false // Default to false for quick invest
-      });toast.success("Successfully transferred 100,000 UGX into active Rent Pool!");
-      fetchData();
+      });
+      toast.success("Successfully transferred 100,000 UGX into active Rent Pool!");
+      queryClient.invalidateQueries({ queryKey: funderQueryKeys.wallet });
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to allocate funds to rent pool.");
     } finally {
@@ -223,7 +207,7 @@ export default function FunderWallet() {
       setIsTransferModalOpen(false);
       setTransferAmount('');
       setTransferTargetIdentifier('');
-      fetchData();
+      queryClient.invalidateQueries({ queryKey: funderQueryKeys.wallet });
     } catch (e: any) {
       toast.error(e.response?.data?.message || 'Transfer failed');
     } finally {

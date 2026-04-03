@@ -4,6 +4,11 @@ import { X, LayoutDashboard, Rocket, FileText, Settings, LogOut, Building2, Wall
 import { useAuth } from '../../contexts/AuthContext';
 import SidebarRoleTabs from '../../components/SidebarRoleTabs';
 
+import { useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { funderQueryKeys, fetchFunderWalletData } from '../hooks/useFunderQueries';
+import { getFunderPortfolios, getFunderOpportunities } from '../../services/funderApi';
+
 interface FunderSidebarProps {
   activePage?: string;
   onNavigate?: (page: string) => void;
@@ -24,6 +29,24 @@ const navItems = [
 export default function FunderSidebar({ activePage = 'Dashboard', onNavigate, isOpen, onClose }: FunderSidebarProps) {
   const { logout } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const queryClient = useQueryClient();
+  const prefetchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handlePrefetch = (path: string | undefined) => {
+    if (!path || path === '#') return;
+    if (prefetchTimeout.current) clearTimeout(prefetchTimeout.current);
+    prefetchTimeout.current = setTimeout(() => {
+      if (path.includes('/funder/wallet')) {
+        queryClient.prefetchQuery({ queryKey: funderQueryKeys.wallet, queryFn: fetchFunderWalletData, staleTime: 1000 * 60 * 5 });
+      }
+      if (path.includes('/funder/portfolio')) {
+        queryClient.prefetchQuery({ queryKey: funderQueryKeys.portfolios, queryFn: getFunderPortfolios, staleTime: 1000 * 60 * 5 });
+      }
+      if (path.includes('/funder/opportunities')) {
+        queryClient.prefetchQuery({ queryKey: funderQueryKeys.opportunities, queryFn: getFunderOpportunities, staleTime: 1000 * 60 * 5 });
+      }
+    }, 200); // 200ms intent debounce
+  };
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -66,6 +89,7 @@ export default function FunderSidebar({ activePage = 'Dashboard', onNavigate, is
                 }
                 onNavigate?.(item.label);
               }}
+              onMouseEnter={() => handlePrefetch(item.path)}
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all"
               style={
                 isActive

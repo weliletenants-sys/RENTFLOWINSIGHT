@@ -143,20 +143,20 @@ export const register = async (req: Request, res: Response) => {
     const access_token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
 
     // Retain previous active sessions for multi-device support
-
-    // await prisma.sessions.create({
-    //   data: {
-    //     user_id: profile?.id || result?.id,
-    //     token: access_token,
-    //     device_info: req.headers['user-agent']?.substring(0, 255) || null,
-    //     ip_address: req.ip?.substring(0, 45) || null,
-    //     expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000)
-    //   }
-    // });
+    await prisma.sessions.create({
+      data: {
+        user_id: result.id,
+        token: access_token,
+        device_info: req.headers['user-agent']?.substring(0, 255) || null,
+        ip_address: req.ip?.substring(0, 45) || null,
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000)
+      }
+    });
 
     let onboarding_url = '/dashboard';
     if (role === 'AGENT') onboarding_url = '/agent-onboarding';
     if (role === 'TENANT') onboarding_url = '/tenant-agreement';
+    if (role === 'FUNDER') onboarding_url = '/funder';
     if (role === 'SUPER_ADMIN') onboarding_url = '/admin';
 
     // 4. Standardized Success Output {status, data, message} (backend.md)
@@ -216,16 +216,15 @@ export const login = async (req: Request, res: Response) => {
     const access_token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
 
     // Retain previous active sessions for multi-device support
-
-    // await prisma.sessions.create({
-    //   data: {
-    //     user_id: profile.id,
-    //     token: access_token,
-    //     device_info: req.headers['user-agent']?.substring(0, 255) || null,
-    //     ip_address: req.ip?.substring(0, 45) || null,
-    //     expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000)
-    //   }
-    // });
+    await prisma.sessions.create({
+      data: {
+        user_id: profile.id,
+        token: access_token,
+        device_info: req.headers['user-agent']?.substring(0, 255) || null,
+        ip_address: req.ip?.substring(0, 45) || null,
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000)
+      }
+    });
 
     await logSecurityEvent({ event: 'LOGIN_SUCCESS', user_id: profile.id, email: profile.email || undefined, ip_address: req.ip, user_agent: req.headers['user-agent'] });
 
@@ -233,6 +232,7 @@ export const login = async (req: Request, res: Response) => {
     if (role === 'AGENT' && profile.verified === false) onboarding_url = '/agent-onboarding';
     else if (role === 'AGENT') onboarding_url = '/dashboard';
     if (role === 'TENANT') onboarding_url = '/tenant-agreement'; // or based on tenant onboarding status
+    if (role === 'FUNDER') onboarding_url = '/funder';
     if (role === 'SUPER_ADMIN') onboarding_url = '/admin';
 
     return res.status(200).json({
@@ -303,16 +303,15 @@ export const ssoLogin = async (req: Request, res: Response) => {
 
     // Business Logic constraint: Single Device Policy execution
     // Retain previous active sessions for multi-device cross-browser tracking
-
-    // await prisma.sessions.create({
-    //   data: {
-    //     user_id: profile.id,
-    //     token: access_token,
-    //     device_info: req.headers['user-agent']?.substring(0, 255) || null,
-    //     ip_address: req.ip?.substring(0, 45) || null,
-    //     expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000)
-    //   }
-    // });
+    await prisma.sessions.create({
+      data: {
+        user_id: profile.id,
+        token: access_token,
+        device_info: req.headers['user-agent']?.substring(0, 255) || null,
+        ip_address: req.ip?.substring(0, 45) || null,
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000)
+      }
+    });
 
     await logSecurityEvent({ event: 'SSO_LOGIN_SUCCESS', user_id: profile.id, email: profile.email || undefined, ip_address: req.ip, user_agent: req.headers['user-agent'] });
 

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { problemResponse } from '../utils/problem';
+import { FunderEventBus, FUNDER_EVENTS } from '../events/funder.events';
 
 const prisma = new PrismaClient();
 
@@ -230,16 +231,8 @@ export const requestWalletWithdrawal = async (req: Request, res: Response) => {
       }
     });
 
-    await prisma.notifications.create({
-      data: {
-        user_id: userId,
-        type: 'withdrawal',
-        title: 'Withdrawal Requested',
-        message: `Your withdrawal request for ${amount.toLocaleString()} UGX is securely queued for manual review.`,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-    });
+    // Decoupled background side-effects
+    FunderEventBus.emit(FUNDER_EVENTS.WITHDRAWAL_REQUESTED, { userId, amount });
 
     return res.status(201).json({ status: 'success', message: 'Withdrawal queued successfully. Awaiting Manager Approval.', data: { withdrawal } });
   } catch (error: any) {
@@ -280,16 +273,8 @@ export const requestDeposit = async (req: Request, res: Response) => {
       }
     });
 
-    await prisma.notifications.create({
-      data: {
-        user_id: userId,
-        type: 'deposit',
-        title: 'Deposit Requested',
-        message: `Your deposit request for ${amount.toLocaleString()} UGX via ${provider} is under review by the COO.`,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-    });
+    // Decoupled background side-effects
+    FunderEventBus.emit(FUNDER_EVENTS.DEPOSIT_REQUESTED, { userId, amount, provider });
 
     return res.status(201).json({ status: 'success', message: 'Deposit recorded securely. Awaiting Manager Audit verification.', data: { deposit } });
   } catch (error: any) {
@@ -391,28 +376,17 @@ export const transferFunds = async (req: Request, res: Response) => {
             recipient_id: recipientProfile.id,
             created_at: new Date().toISOString()
           }
-        }),
-        prisma.notifications.create({
-          data: {
-            user_id: userId,
-            type: 'transfer_out',
-            title: 'Funds Transferred',
-            message: `You have successfully sent ${transferAmount.toLocaleString()} UGX to ${recipientProfile.full_name}.`,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }
-        }),
-        prisma.notifications.create({
-          data: {
-            user_id: recipientProfile.id,
-            type: 'transfer_in',
-            title: 'Funds Received',
-            message: `You have received ${transferAmount.toLocaleString()} UGX from ${senderProfile.full_name}.`,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }
         })
       ]);
+
+      // Fire side effects asynchronously
+      FunderEventBus.emit(FUNDER_EVENTS.P2P_TRANSFER_SUCCESS, {
+        senderId: userId,
+        recipientId: recipientProfile.id,
+        amount: transferAmount,
+        senderName: senderProfile.full_name,
+        recipientName: recipientProfile.full_name
+      });
 
       return res.status(200).json({ status: 'success', message: `Successfully sent ${transferAmount.toLocaleString()} UGX to ${recipientProfile.full_name}` });
     }
