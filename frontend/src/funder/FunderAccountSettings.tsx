@@ -1372,6 +1372,11 @@ export default function FunderAccountSettings() {
         </div>
       )}
 
+      {/* TAB 5: REPORTING & COMPLIANCE */}
+      {activeTab === 'reporting' && (
+        <ReportingComplianceTab />
+      )}
+
     </div>
   );
 }
@@ -1658,6 +1663,87 @@ function AmbassadorNetworkTab() {
                </div>
            </div>
         </div>
+    </div>
+  );
+}
+
+// ─────────── REPORTING & COMPLIANCE TAB SUB-COMPONENT ───────────
+function ReportingComplianceTab() {
+  const navigate = useNavigate();
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500 mt-6">
+      <div className="lg:col-span-2 space-y-6">
+        <div className="bg-white rounded-[24px] p-6 sm:p-8 shadow-sm border border-slate-100 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full -mr-8 -mt-8 pointer-events-none" />
+          <h3 className="text-xl font-black text-slate-800 tracking-tight mb-2 flex items-center gap-2">
+            Legal Agreements & Policies
+          </h3>
+          <p className="text-slate-500 text-sm font-medium mb-8 pr-12">
+            View, download, and manage your signed digital agreements regulating your capital deployment.
+          </p>
+
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 border-2 border-slate-100 rounded-2xl bg-white hover:border-blue-100 transition-colors">
+              <div className="flex items-center gap-4 mb-4 sm:mb-0">
+                <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <FileText className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-800">Supporter Participation Agreement</h4>
+                  <p className="text-xs text-slate-500 font-medium tracking-wide">Document Version: v1.0 — April 2026</p>
+                </div>
+              </div>
+              <div className="flex w-full sm:w-auto gap-2">
+                <button
+                  onClick={() => navigate('/funder/policy')}
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg text-xs transition-colors cursor-pointer"
+                >
+                  <Search className="w-3.5 h-3.5" /> View
+                </button>
+                <button 
+                  onClick={() => {
+                     toast.success("Preparing PDF document...", { icon: '📄' });
+                     setTimeout(() => window.open('/funder/policy', '_blank')?.print(), 1000);
+                  }}
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg text-xs transition-colors cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" /> Get PDF
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 border-2 border-slate-100 rounded-2xl bg-white hover:border-blue-100 transition-colors opacity-70">
+              <div className="flex items-center gap-4 mb-4 sm:mb-0">
+                <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                  <ShieldCheck className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-800">Angel Pool Shareholders Agreement</h4>
+                  <p className="text-xs text-slate-500 font-medium tracking-wide">Locked — Awaiting Equity Purchase</p>
+                </div>
+              </div>
+              <button disabled className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-100 text-slate-400 font-bold px-4 py-2 rounded-lg text-xs transition-colors cursor-not-allowed">
+                <Lock className="w-3.5 h-3.5" /> Locked
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div className="space-y-6">
+        <div className="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100">
+          <div className="flex items-start gap-3 mb-4">
+            <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-bold text-slate-800 text-sm mb-1">Electronic Signatures</h4>
+              <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                By operating under these roles on the platform, your identity verified metrics serve as your digital signature on the generated PDFs.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

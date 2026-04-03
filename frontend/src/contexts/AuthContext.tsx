@@ -14,6 +14,7 @@ interface User {
   phone?: string;
   isVerified?: boolean;
   avatar_url?: string;
+  has_accepted_platform_terms?: boolean;
 }
 
 interface AuthContextType {

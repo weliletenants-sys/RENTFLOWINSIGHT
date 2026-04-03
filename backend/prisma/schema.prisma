@@ -269,10 +269,10 @@ model DepositRequests {
   updated_at       String
   user_id          String?
 
-  coo_id           String?
-  coo_approved_at  String?
-  cfo_id           String?
-  cfo_approved_at  String?
+  coo_id          String?
+  coo_approved_at String?
+  cfo_id          String?
+  cfo_approved_at String?
 
   @@map("deposit_requests")
 }
@@ -349,7 +349,7 @@ model InvestorPortfolios {
   bank_name           String?
   created_at          String
   duration_months     Float
-  id                  String  @id @default(uuid())
+  id                  String   @id @default(uuid())
   investment_amount   Float
   investor_id         String?
   invite_id           String?
@@ -712,41 +712,43 @@ model Products {
 }
 
 model Profiles {
-  agent_type            String?
-  avatar_url            String?
-  city                  String?
-  country               String?
-  country_code          String?
-  created_at            String
-  email                 String?
-  frozen_at             String?
-  frozen_reason         String?
-  full_name             String
-  id                    String   @id @default(uuid())
-  is_frozen             Boolean
-  last_active_at        String?
-  mobile_money_number   String?
-  mobile_money_provider String?
-  monthly_rent          Float?
-  national_id           String?
-  phone                 String   @unique
-  ai_id                 String?  @unique
-  referrer_id           String?
-  rent_discount_active  Boolean
-  territory             String?
-  updated_at            String
-  verified              Boolean
-  whatsapp_verified     Boolean?
-  whatsapp_verified_at  String?
-  password_hash         String?
-  role                  String?
-  kyc_status            String   @default("NOT_SUBMITTED")
-  kyc_submitted_at      String?
-  kyc_approved_at       String?
-  kyc_rejected_reason   String?
-  is_2fa_enabled        Boolean  @default(false)
-  two_factor_expires_at String?
-  two_factor_otp        String?
+  agent_type                  String?
+  avatar_url                  String?
+  city                        String?
+  country                     String?
+  country_code                String?
+  created_at                  String
+  email                       String?
+  frozen_at                   String?
+  frozen_reason               String?
+  full_name                   String
+  id                          String   @id @default(uuid())
+  is_frozen                   Boolean
+  last_active_at              String?
+  mobile_money_number         String?
+  mobile_money_provider       String?
+  monthly_rent                Float?
+  national_id                 String?
+  phone                       String   @unique
+  ai_id                       String?  @unique
+  referrer_id                 String?
+  rent_discount_active        Boolean
+  territory                   String?
+  updated_at                  String
+  verified                    Boolean
+  whatsapp_verified           Boolean?
+  whatsapp_verified_at        String?
+  password_hash               String?
+  role                        String?
+  kyc_status                  String   @default("NOT_SUBMITTED")
+  kyc_submitted_at            String?
+  kyc_approved_at             String?
+  kyc_rejected_reason         String?
+  is_2fa_enabled              Boolean  @default(false)
+  two_factor_expires_at       String?
+  two_factor_otp              String?
+  has_accepted_platform_terms Boolean  @default(false)
+  platform_terms_accepted_at  String?
 
   @@map("profiles")
 }
@@ -1239,8 +1241,8 @@ model WalletDeposits {
 
 model WalletTransactions {
   amount         Float
-  balance_before Float?   // Injected for Triple-State Ledger Tracking
-  balance_after  Float?   // Injected for Triple-State Ledger Tracking
+  balance_before Float? // Injected for Triple-State Ledger Tracking
+  balance_after  Float? // Injected for Triple-State Ledger Tracking
   created_at     String
   description    String?
   id             String  @id @default(uuid())
@@ -1674,8 +1676,8 @@ model FunderProxyMandates {
 }
 
 model TenantGamification {
-  id                    String  @id @default(uuid())
-  tenant_id             String  @unique
+  id                    String @id @default(uuid())
+  tenant_id             String @unique
   target_goal           Float
   current_savings       Float
   payment_streak_months Float
@@ -1693,29 +1695,29 @@ model GamificationTrophies {
   icon        String
   unlocked    Boolean
   unlocked_at String?
-  
+
   @@map("gamification_trophies")
 }
 
 model SavingsHistory {
-  id        String  @id @default(uuid())
+  id        String @id @default(uuid())
   tenant_id String
   month     String
   savings   Float?
   projected Float
-  
+
   @@map("savings_history")
 }
 
 model AgentTasks {
   created_at       String
   due_date         String?
-  id               String   @id @default(uuid())
+  id               String  @id @default(uuid())
   priority         String
   status           String
   task_type        String
   description      String?
-  requires_gps     Boolean  @default(false)
+  requires_gps     Boolean @default(false)
   completed_at     String?
   completion_notes String?
   latitude         Float?
@@ -1728,7 +1730,7 @@ model AgentTasks {
 
 model AgentEscalations {
   created_at       String
-  id               String   @id @default(uuid())
+  id               String  @id @default(uuid())
   issue_type       String
   severity         String
   status           String
@@ -1743,39 +1745,39 @@ model AgentEscalations {
 
 model AgentCollectionStreaks {
   created_at           String
-  id                   String   @id @default(uuid())
+  id                   String  @id @default(uuid())
   updated_at           String
   agent_id             String?
-  consecutive_days     Float    @default(0)
-  current_multiplier   Float    @default(1.0)
+  consecutive_days     Float   @default(0)
+  current_multiplier   Float   @default(1.0)
   last_collection_date String?
-  longest_streak       Float    @default(0)
+  longest_streak       Float   @default(0)
 
   @@map("agent_collection_streaks")
 }
 
 model AgentRebalanceRecords {
-  created_at       String
-  id               String   @id @default(uuid())
-  agent_id         String?
-  manager_id       String?
-  amount           Float
-  direction        String
-  reason           String?
-  float_before     Float?
-  float_after      Float?
+  created_at   String
+  id           String  @id @default(uuid())
+  agent_id     String?
+  manager_id   String?
+  amount       Float
+  direction    String
+  reason       String?
+  float_before Float?
+  float_after  Float?
 
   @@map("agent_rebalance_records")
 }
 
 model AgentServiceCentres {
-  id                   String   @id @default(uuid())
+  id                   String  @id @default(uuid())
   agent_id             String
   photo_url            String
   latitude             Float
   longitude            Float
   location_description String
-  status               String   @default("PENDING")
+  status               String  @default("PENDING")
   created_at           String
   approved_at          String?
   approved_by          String?
@@ -1784,13 +1786,35 @@ model AgentServiceCentres {
 }
 
 model AgentBonuses {
-  id         String   @id @default(uuid())
+  id         String  @id @default(uuid())
   agent_id   String
   bonus_type String
   amount     Float
-  status     String   @default("PENDING")
+  status     String  @default("PENDING")
   created_at String
   paid_at    String?
 
   @@map("agent_bonuses")
+}
+
+model AngelPoolInvestments {
+  id               String @id @default(uuid())
+  user_id          String
+  amount_ugx       Float
+  shares_purchased Float
+  created_at       String
+  status           String
+  reference_code   String
+
+  @@map("angel_pool_investments")
+}
+
+model PortfolioRentPledges {
+  id              String @id @default(uuid())
+  portfolio_id    String
+  rent_request_id String
+  assigned_amount Float
+  created_at      String
+
+  @@map("portfolio_rent_pledges")
 }
