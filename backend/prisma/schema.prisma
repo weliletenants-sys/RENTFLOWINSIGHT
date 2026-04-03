@@ -1767,3 +1767,30 @@ model AgentRebalanceRecords {
 
   @@map("agent_rebalance_records")
 }
+
+model AgentServiceCentres {
+  id                   String   @id @default(uuid())
+  agent_id             String
+  photo_url            String
+  latitude             Float
+  longitude            Float
+  location_description String
+  status               String   @default("PENDING")
+  created_at           String
+  approved_at          String?
+  approved_by          String?
+
+  @@map("agent_service_centres")
+}
+
+model AgentBonuses {
+  id         String   @id @default(uuid())
+  agent_id   String
+  bonus_type String
+  amount     Float
+  status     String   @default("PENDING")
+  created_at String
+  paid_at    String?
+
+  @@map("agent_bonuses")
+}

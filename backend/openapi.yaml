@@ -816,6 +816,68 @@ paths:
         "404": { $ref: "#/components/responses/NotFound" }
         "500": { $ref: "#/components/responses/InternalError" }
 
+  /api/agent/service-centres:
+    post:
+      summary: Submit proof of a new physical Service Centre setup
+      operationId: submitServiceCentre
+      tags: [Agent Gamification]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [photo_url, latitude, longitude, location_description]
+              properties:
+                photo_url: { type: string, format: uri }
+                latitude: { type: number }
+                longitude: { type: number }
+                location_description: { type: string }
+      responses:
+        "201":
+          description: Service centre successfully submitted for approval
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/agent/bonuses:
+    get:
+      summary: Fetch agent gamification bonuses and their status
+      operationId: getAgentBonuses
+      tags: [Agent Gamification]
+      responses:
+        "200":
+          description: List of applied and pending bonuses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AgentBonus"
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/agent/bonuses/claim:
+    post:
+      summary: Claim a one-time cash bonus if criteria are met
+      operationId: claimAgentBonus
+      tags: [Agent Gamification]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [bonus_type]
+              properties:
+                bonus_type: { type: string, enum: ['SERVICE_CENTRE', 'REPLACE_TENANT', 'REGISTER_AGENT', 'HELP_TENANT_APPLY', 'LIST_HOUSE'] }
+      responses:
+        "200":
+          description: Bonus securely claimed and added to earnings
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
 components:
   schemas:
     AiIdProfile:
@@ -834,6 +896,19 @@ components:
         referral_count: { type: integer, example: 5 }
         member_since: { type: string, format: date-time }
         can_lend: { type: boolean, example: true }
+        
+    AgentBonus:
+      type: object
+      required: [id, agent_id, bonus_type, amount, status, created_at]
+      properties:
+        id: { type: string, format: uuid, readOnly: true }
+        agent_id: { type: string, format: uuid }
+        bonus_type: { type: string, enum: ['SERVICE_CENTRE', 'REPLACE_TENANT', 'REGISTER_AGENT', 'HELP_TENANT_APPLY', 'LIST_HOUSE'] }
+        amount: { type: number, example: 25000 }
+        status: { type: string, enum: ['PENDING', 'CLAIMED', 'PAID'] }
+        created_at: { type: string, format: date-time, readOnly: true }
+        paid_at: { type: string, format: date-time, nullable: true }
+
     ProblemDetails:
       type: object
       required: [type, title, status]
