@@ -1,11 +1,31 @@
 import { Link } from 'react-router-dom';
 import { Wallet, Briefcase, LayoutDashboard, FileText, TrendingUp } from 'lucide-react';
+import { useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { funderQueryKeys, fetchFunderWalletData } from '../hooks/useFunderQueries';
+import { getFunderPortfolios } from '../../services/funderApi';
 
 interface FunderBottomNavProps {
   activePage: string;
 }
 
 export default function FunderBottomNav({ activePage }: FunderBottomNavProps) {
+  const queryClient = useQueryClient();
+  const prefetchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handlePrefetch = (path: string | undefined) => {
+    if (!path || path === '#') return;
+    if (prefetchTimeout.current) clearTimeout(prefetchTimeout.current);
+    prefetchTimeout.current = setTimeout(() => {
+      if (path.includes('/funder/wallet')) {
+        queryClient.prefetchQuery({ queryKey: funderQueryKeys.wallet, queryFn: fetchFunderWalletData, staleTime: 1000 * 60 * 5 });
+      }
+      if (path.includes('/funder/portfolio')) {
+        queryClient.prefetchQuery({ queryKey: funderQueryKeys.portfolios, queryFn: getFunderPortfolios, staleTime: 1000 * 60 * 5 });
+      }
+    }, 200); // 200ms intent debounce
+  };
+
   const tabs = [
     { label: 'Wallet', icon: Wallet, href: '/funder/wallet' },
     { label: 'Portfolio', icon: Briefcase, href: '/funder/portfolio' },
@@ -26,6 +46,7 @@ export default function FunderBottomNav({ activePage }: FunderBottomNavProps) {
                 <div key={tab.label} className="relative -mt-6 flex flex-col items-center z-10 mx-1 group">
                   <Link 
                     to={tab.href}
+                    onMouseEnter={() => handlePrefetch(tab.href)}
                     className={`flex items-center justify-center w-[60px] h-[60px] rounded-full border-[4px] border-white transition-all duration-300 active:scale-95 bg-[var(--color-primary)] overflow-hidden relative ${
                       isActive 
                         ? 'shadow-[0_8px_20px_var(--color-primary-shadow)] -translate-y-1' 
@@ -54,6 +75,7 @@ export default function FunderBottomNav({ activePage }: FunderBottomNavProps) {
               <Link
                 key={tab.label}
                 to={tab.href}
+                onMouseEnter={() => handlePrefetch(tab.href)}
                 className="flex flex-col items-center justify-center w-[18%] gap-1 group mt-2"
               >
                 <div className={`p-1 rounded-xl transition-colors ${

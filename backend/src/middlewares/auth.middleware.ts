@@ -15,12 +15,17 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
 
 export const authGuard = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
+  let token = '';
   
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.split(' ')[1];
+  } else if (req.query.token && typeof req.query.token === 'string') {
+    token = req.query.token;
+  }
+  
+  if (!token) {
     return res.status(401).json({ message: 'Unauthorized: No token provided' });
   }
-
-  const token = authHeader.split(' ')[1];
 
   // DEVELOPMENT BYPASS
   if (token.startsWith('dummy-token-admin_') || token.startsWith('dummy-token_')) {
@@ -32,6 +37,12 @@ export const authGuard = async (req: Request, res: Response, next: NextFunction)
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
 
+    // Validate session hasn't been revoked
+    const session = await prisma.sessions.findUnique({ where: { token } });
+    if (session && session.is_revoked) {
+      return res.status(401).json({ message: 'Unauthorized: Session revoked' });
+    }
+
     req.user = decoded;
     next();
   } catch (error) {
@@ -41,9 +52,6 @@ export const authGuard = async (req: Request, res: Response, next: NextFunction)
 
 export const rolesGuard = (roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    // DEVELOPMENT BYPASS: Automatically clear all RBAC boundary scopes
-    return next();
-
     if (!req.user || !req.user.role) {
       return res.status(401).json({ message: 'Unauthorized: Role not found' });
     }
