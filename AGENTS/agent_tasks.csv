@@ -1,0 +1,2 @@
+id,created_at,due_date,priority,status,task_type,description,requires_gps,completed_at,completion_notes,latitude,longitude,agent_id,manager_id
+uuid-task-001,2026-04-02T10:00:00Z,2026-04-03T10:00:00Z,HIGH,PENDING,verify_tenant,Verify tenant KYC info,true,,,,,,agent-001,manager-001

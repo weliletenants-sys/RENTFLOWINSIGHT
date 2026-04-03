@@ -12,8 +12,8 @@ const prisma = new PrismaClient({
   log: ['error'],
 });
 
-const DB_HOST = 'weliledb.c186wwc0ipkw.eu-north-1.rds.amazonaws.com';
-const DB_PORT = 5432;
+const DB_HOST = 'localhost';
+const DB_PORT = 5433;
 
 async function checkDns(): Promise<void> {
   return new Promise((resolve, reject) => {

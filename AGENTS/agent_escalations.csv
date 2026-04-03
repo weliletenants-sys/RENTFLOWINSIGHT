@@ -1,0 +1,2 @@
+id,created_at,issue_type,severity,status,description,resolution_notes,resolved_at,agent_id,assigned_to_id
+uuid-escalation-001,2026-04-02T10:00:00Z,FLOAT_ISSUE,MAJOR,OPEN,Float limit reached during collection,,,agent-001,manager-001
