@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, CheckSquare, Upload, CheckCircle2 } from 'lucide-react';
+import { X, CheckSquare, Upload, CheckCircle2, Loader2 } from 'lucide-react';
+import { useConfirmDeliveryMutation } from '../../hooks/useAgentQueries';
 
 interface AgentDeliveryConfirmationProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface AgentDeliveryConfirmationProps {
 
 export default function AgentDeliveryConfirmation({ isOpen, onClose, onSubmit }: AgentDeliveryConfirmationProps) {
   const [fileUploaded, setFileUploaded] = useState(false);
+  const { mutate: confirmDelivery, isPending } = useConfirmDeliveryMutation();
 
   if (!isOpen) return null;
 
@@ -68,10 +70,16 @@ export default function AgentDeliveryConfirmation({ isOpen, onClose, onSubmit }:
 
           <div className="pt-2">
             <button
-              disabled={!fileUploaded}
-              onClick={() => { onSubmit('mock-receipt-url.jpg'); onClose(); }}
-              className="w-full bg-green-600 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-[0.98]"
+              disabled={!fileUploaded || isPending}
+              onClick={() => {
+                 confirmDelivery(
+                    { receipt_url: 'mock-receipt-url.jpg' }, 
+                    { onSuccess: () => { onSubmit('mock-receipt-url.jpg'); onClose(); }}
+                 );
+              }}
+              className="w-full bg-green-600 flex justify-center items-center gap-2 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-[0.98]"
             >
+              {isPending && <Loader2 size={16} className="animate-spin" />}
               Complete Delivery
             </button>
           </div>

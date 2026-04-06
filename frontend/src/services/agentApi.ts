@@ -58,6 +58,11 @@ export const getReferrals = async () => {
   return data;
 };
 
+export const getAgentLeaderboard = async () => {
+  const { data } = await agentClient.get('/agent/leaderboard');
+  return data;
+};
+
 /* -------------------------------------------------------------------------- */
 /*                               FIELD OPERATIONS                             */
 /* -------------------------------------------------------------------------- */
@@ -73,6 +78,16 @@ export const recordCollection = async (payload: { amount: number; payment_method
 
 export const issueReceipt = async (payload: { amount: number; payer_name: string; payer_phone: string; payment_method: string }) => {
   const { data } = await agentClient.post('/agent/receipts', payload);
+  return data;
+};
+
+export const generatePaymentToken = async (payload: { amount: number; tenant_id?: string }) => {
+  const { data } = await agentClient.post('/agent/tokens', payload);
+  return data;
+};
+
+export const uploadDeliveryConfirmation = async (payload: { receipt_url: string; collection_id?: string }) => {
+  const { data } = await agentClient.post('/agent/deliveries', payload);
   return data;
 };
 
@@ -102,7 +117,7 @@ export const getAdvances = async () => {
   return data;
 };
 
-export const requestAdvance = async (payload: { amount: number; reason: string }) => {
+export const requestAdvance = async (payload: { amount: number; reason: string; duration_days?: number }) => {
   const { data } = await agentClient.post('/agent/advances', payload);
   return data;
 };

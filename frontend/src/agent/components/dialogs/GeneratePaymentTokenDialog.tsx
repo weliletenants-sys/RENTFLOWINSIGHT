@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, Download, Copy, Ticket, Check } from 'lucide-react';
+import { X, Download, Copy, Ticket, Check, Loader2 } from 'lucide-react';
+import { useGenerateTokenMutation } from '../../hooks/useAgentQueries';
 
 interface GeneratePaymentTokenDialogProps {
   isOpen: boolean;
@@ -8,16 +9,17 @@ interface GeneratePaymentTokenDialogProps {
 
 export default function GeneratePaymentTokenDialog({ isOpen, onClose }: GeneratePaymentTokenDialogProps) {
   const [isCopied, setIsCopied] = useState(false);
+  const [generatedToken, setGeneratedToken] = useState<string | null>(null);
+  const { mutate: generateToken, isPending } = useGenerateTokenMutation();
 
   if (!isOpen) return null;
 
-  // Mock token to simulate generated payload
-  const token = 'PAY-8X4-M2B';
-
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(token);
-    setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 2000);
+    if (generatedToken) {
+       navigator.clipboard.writeText(generatedToken);
+       setIsCopied(true);
+       setTimeout(() => setIsCopied(false), 2000);
+    }
   };
 
   return (
@@ -37,15 +39,28 @@ export default function GeneratePaymentTokenDialog({ isOpen, onClose }: Generate
             <Ticket size={28} className="text-[#512DA8]" />
           </div>
           
-          <h3 className="font-bold text-gray-900 mb-2">Token Generated</h3>
+          <h3 className="font-bold text-gray-900 mb-2">Offline Payment Token</h3>
           <p className="text-sm text-gray-500 mb-6 px-4">
             Give this token to offline tenants. They can use it to securely pay rent via authorized outlets.
           </p>
 
-          <div className="w-full p-4 bg-gray-50 border-2 border-dashed border-purple-200 rounded-2xl flex items-center justify-between mb-6 group cursor-pointer hover:bg-purple-50 transition-colors" onClick={copyToClipboard}>
-            <div className="text-2xl font-black text-gray-800 tracking-widest">{token}</div>
-            {isCopied ? <Check size={20} className="text-green-500" /> : <Copy size={20} className="text-gray-400 group-hover:text-[#512DA8]" />}
-          </div>
+          {generatedToken ? (
+            <div className="w-full p-4 bg-gray-50 border-2 border-dashed border-purple-200 rounded-2xl flex items-center justify-between mb-6 group cursor-pointer hover:bg-purple-50 transition-colors" onClick={copyToClipboard}>
+               <div className="text-2xl font-black text-gray-800 tracking-widest">{generatedToken}</div>
+               {isCopied ? <Check size={20} className="text-green-500" /> : <Copy size={20} className="text-gray-400 group-hover:text-[#512DA8]" />}
+            </div>
+          ) : (
+             <div className="w-full mb-6">
+                <button
+                   onClick={() => generateToken({ amount: 0 }, { onSuccess: (res) => setGeneratedToken(res.token.token_code) })}
+                   disabled={isPending}
+                   className="w-full bg-[#512DA8] flex items-center justify-center gap-2 text-white font-bold py-4 rounded-xl shadow-sm hover:bg-[#4527a0] disabled:opacity-50 transition-colors"
+                >
+                   {isPending ? <Loader2 size={18} className="animate-spin" /> : <Ticket size={18} />} 
+                   {isPending ? "Generating..." : "Generate Token"}
+                </button>
+             </div>
+          )}
 
           <div className="w-full flex gap-3">
             <button
@@ -55,9 +70,10 @@ export default function GeneratePaymentTokenDialog({ isOpen, onClose }: Generate
               Close
             </button>
             <button
-              className="flex-1 bg-[#512DA8] text-white font-bold py-3 rounded-xl hover:bg-[#4527a0] transition-colors flex justify-center items-center gap-2"
+              disabled={!generatedToken}
+              className="flex-1 bg-gray-900 disabled:opacity-20 text-white font-bold py-3 rounded-xl hover:bg-black transition-colors flex justify-center items-center gap-2"
             >
-              <Download size={18} /> Save
+              <Download size={18} /> Save As Image
             </button>
           </div>
         </div>

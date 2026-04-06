@@ -1,34 +1,20 @@
 import { Search, Phone, Users, UserPlus, MapPin, MoreVertical, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import { getAssignedTenants } from '../services/agentApi';
+import { useState } from 'react';
+import { useAgentClients } from './hooks/useAgentQueries';
 import toast from 'react-hot-toast';
 import AgentLayout from './components/AgentLayout';
 
 export default function AgentClients() {
   const navigate = useNavigate();
-  const [clients, setClients] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data, isLoading } = useAgentClients();
+  const clients = data || [];
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    const fetchClients = async () => {
-      try {
-        const data = await getAssignedTenants();
-        setClients(data || []);
-      } catch (err) {
-        toast.error('Failed to load clients');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchClients();
-  }, []);
-
-  const filteredClients = clients.filter(c => 
+  const filteredClients = clients.filter((c: any) => 
     c.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    c.property_address?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.phone_number?.includes(searchQuery)
+    (c.property_address || c.property)?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (c.phone_number || c.phone)?.includes(searchQuery)
   );
 
   return (
@@ -65,7 +51,7 @@ export default function AgentClients() {
               <div className="relative z-10 flex items-center justify-between mb-2">
                  <div className="text-emerald-500 dark:text-emerald-400"><MapPin size={24} /></div>
               </div>
-              <p className="relative z-10 text-3xl font-black text-slate-900 dark:text-white">{new Set(clients.map(c => c.property_address).filter(Boolean)).size}</p>
+              <p className="relative z-10 text-3xl font-black text-slate-900 dark:text-white">{new Set(clients.map((c: any) => c.property_address || c.property).filter(Boolean)).size}</p>
               <p className="relative z-10 text-[10px] font-bold text-slate-500 tracking-[0.15em] uppercase mt-1">Unique Properties</p>
            </div>
         </div>
@@ -130,13 +116,13 @@ export default function AgentClients() {
                  <div className="bg-slate-50 dark:bg-[#121212] rounded-[20px] p-4 mb-6 mt-auto border border-slate-100 dark:border-slate-800/60">
                     <div className="flex items-start gap-3">
                        <MapPin size={16} className="text-[#8b5cf6] shrink-0 mt-0.5" />
-                       <p className="text-xs font-medium text-slate-700 dark:text-slate-300 line-clamp-2 leading-relaxed">{client.property_address || 'Unassigned Property Location'}</p>
+                       <p className="text-xs font-medium text-slate-700 dark:text-slate-300 line-clamp-2 leading-relaxed">{client.property_address || client.property || 'Unassigned Property Location'}</p>
                     </div>
                  </div>
 
                  <div className="border-t border-slate-100 dark:border-slate-800 pt-5 flex items-center justify-between mt-auto">
                     <button 
-                      onClick={() => client.phone_number ? window.open(`tel:${client.phone_number}`) : toast.error('No phone number')}
+                      onClick={() => (client.phone_number || client.phone) ? window.open(`tel:${client.phone_number || client.phone}`) : toast.error('No phone number')}
                       className="flex items-center justify-center w-11 h-11 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-500 dark:hover:text-white transition-all active:scale-95"
                     >
                       <Phone size={18} />
