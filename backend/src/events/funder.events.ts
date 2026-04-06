@@ -1,84 +1,53 @@
-import { EventEmitter } from 'events';
-import prisma from '../prisma/prisma.client';
+import { Queue } from 'bullmq';
+import { getRedisClient } from '../config/redis.client';
 
-class FunderEventEmitter extends EventEmitter {}
-
-export const FunderEventBus = new FunderEventEmitter();
-
-// Known event constants
 export const FUNDER_EVENTS = {
   DEPOSIT_REQUESTED: 'DEPOSIT_REQUESTED',
   WITHDRAWAL_REQUESTED: 'WITHDRAWAL_REQUESTED',
   INTERNAL_TRANSFER_SUCCESS: 'INTERNAL_TRANSFER_SUCCESS',
   P2P_TRANSFER_SUCCESS: 'P2P_TRANSFER_SUCCESS',
   PAYOUT_METHOD_ADDED: 'PAYOUT_METHOD_ADDED',
-  // Triggered by Admin/System
   WALLET_CREDITED: 'WALLET_CREDITED',
   WITHDRAWAL_APPROVED: 'WITHDRAWAL_APPROVED',
   WITHDRAWAL_REJECTED: 'WITHDRAWAL_REJECTED',
   PORTFOLIO_MATURED: 'PORTFOLIO_MATURED',
-  ROI_DISBURSED: 'ROI_DISBURSED'
+  ROI_DISBURSED: 'ROI_DISBURSED',
+  ANGEL_POOL_INVESTMENT: 'ANGEL_POOL_INVESTMENT'
 } as const;
 
-// Example Side-Effect Listener (can later be moved to workers/)
-FunderEventBus.on(FUNDER_EVENTS.DEPOSIT_REQUESTED, async (payload: { userId: string, amount: number, provider: string }) => {
-  try {
-    await prisma.notifications.create({
-      data: {
-        user_id: payload.userId,
-        type: 'deposit',
-        title: 'Deposit Requested',
-        message: `Your deposit request for ${payload.amount.toLocaleString()} UGX via ${payload.provider} is under review by the COO.`,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-    });
-  } catch (error) {
-    console.error('Failed to process DEPOSIT_REQUESTED side effect:', error);
-  }
+const redisClient = getRedisClient();
+
+export const funderQueue = new Queue('funder_queue', {
+  connection: redisClient
 });
 
-FunderEventBus.on(FUNDER_EVENTS.WITHDRAWAL_REQUESTED, async (payload: { userId: string, amount: number }) => {
-  try {
-    await prisma.notifications.create({
-      data: {
-        user_id: payload.userId,
-        type: 'withdrawal',
-        title: 'Withdrawal Requested',
-        message: `Your withdrawal request for ${payload.amount.toLocaleString()} UGX is securely queued for manual review.`,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+class ResilientFunderEventBus {
+  async emit(eventName: string, payload: any) {
+    try {
+      // 1. Immediately fan-out UI invalidations over Pub/Sub
+      if (payload.userId) {
+        await redisClient.publish(`sse:user:${payload.userId}`, JSON.stringify({ eventName, payload }));
       }
-    });
-  } catch (error) {
-    console.error('Failed to process WITHDRAWAL_REQUESTED side effect:', error);
-  }
-});
+      if (payload.senderId && payload.recipientId) {
+        await redisClient.publish(`sse:user:${payload.senderId}`, JSON.stringify({ eventName, payload }));
+        await redisClient.publish(`sse:user:${payload.recipientId}`, JSON.stringify({ eventName, payload }));
+      }
 
-// P2P transfers trigger notifications for both sender and recipient
-FunderEventBus.on(FUNDER_EVENTS.P2P_TRANSFER_SUCCESS, async (payload: { senderId: string, recipientId: string, amount: number, senderName: string, recipientName: string }) => {
-  try {
-    await prisma.notifications.createMany({
-      data: [
-        {
-          user_id: payload.senderId,
-          type: 'transfer_out',
-          title: 'Funds Transferred',
-          message: `You have successfully sent ${payload.amount.toLocaleString()} UGX to ${payload.recipientName}.`,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        {
-          user_id: payload.recipientId,
-          type: 'transfer_in',
-          title: 'Funds Received',
-          message: `You have received ${payload.amount.toLocaleString()} UGX from ${payload.senderName}.`,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      ]
-    });
-  } catch (error) {
-    console.error('Failed to process P2P_TRANSFER_SUCCESS side effect:', error);
+      // 2. Offload processing-heavy side effect (like DB creation) to BullMQ Queue
+      await funderQueue.add(eventName, payload, {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 1000 },
+        removeOnComplete: true,
+        removeOnFail: 100,
+      });
+    } catch (error) {
+      console.error(`Failed to dispatch event ${eventName}:`, error);
+    }
   }
-});
+
+  // Stub methods to prevent crashes where controllers might still try to bind locally
+  on(eventName: string, callback: any) {}
+  off(eventName: string, callback: any) {}
+}
+
+export const FunderEventBus = new ResilientFunderEventBus();
