@@ -1,7 +1,19 @@
-import React from 'react';
-import { CreditCard, Rocket, CheckCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { CreditCard, Rocket, CheckCircle, Loader2 } from 'lucide-react';
+import { useAdvances, useRequestAdvanceMutation } from '../hooks/useAgentQueries';
 
 export default function LoanManagement() {
+  const { data: advancesData, isLoading: isLoadingAdvances } = useAdvances();
+  const { mutate: requestAdvance, isPending } = useRequestAdvanceMutation();
+  const [duration, setDuration] = useState<number>(30);
+
+  const handleRequest = () => {
+    if (!advancesData?.maxLimit) return;
+    // Just requesting the minimum fixed amount of 100k for demonstration in the dummy UI.
+    requestAdvance({ amount: 100000, reason: "Float Replenishment", duration_days: duration });
+  };
+  
+  const availableLimit = advancesData?.maxLimit || 0;
   return (
     <div className="bg-white rounded-[1.5rem] p-5 shadow-sm border border-gray-100 flex flex-col">
       <div className="flex justify-between items-start mb-4">
@@ -23,7 +35,13 @@ export default function LoanManagement() {
         
         <div className="relative z-10">
           <p className="text-xs text-gray-500 font-medium">Available to Request</p>
-          <div className="text-2xl font-black text-gray-900 drop-shadow-sm mb-1">UGX 250,000</div>
+          <div className="text-2xl font-black text-gray-900 drop-shadow-sm mb-1">
+            {isLoadingAdvances ? (
+               <Loader2 className="animate-spin text-gray-400 mt-1" size={24} />
+            ) : (
+               `UGX ${availableLimit.toLocaleString()}`
+            )}
+          </div>
           
           <div className="flex items-center gap-1 mt-3">
             <CheckCircle size={12} className="text-green-500" />
@@ -32,7 +50,24 @@ export default function LoanManagement() {
         </div>
       </div>
 
-      <button className="w-full py-3.5 bg-[#512DA8] text-white text-sm font-bold rounded-xl hover:bg-[#4527a0] transition-colors shadow-sm active:scale-[0.98]">
+      <div className="flex gap-2 mb-4">
+         {[7, 14, 30].map(d => (
+            <button
+               key={d}
+               onClick={() => setDuration(d)}
+               className={`flex-1 py-1.5 rounded-lg text-xs font-bold border ${duration === d ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-white border-gray-200 text-gray-500'}`}
+            >
+               {d} Days
+            </button>
+         ))}
+      </div>
+
+      <button 
+        onClick={handleRequest}
+        disabled={isPending || isLoadingAdvances || availableLimit === 0}
+        className="w-full py-3.5 bg-[#512DA8] text-white flex justify-center items-center gap-2 text-sm font-bold rounded-xl hover:bg-[#4527a0] disabled:opacity-50 transition-colors shadow-sm active:scale-[0.98]"
+      >
+        {isPending && <Loader2 size={16} className="animate-spin" />}
         Request Float Advance
       </button>
     </div>

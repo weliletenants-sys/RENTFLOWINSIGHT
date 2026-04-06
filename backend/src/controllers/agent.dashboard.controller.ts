@@ -40,6 +40,12 @@ export const getDashboardSummary = async (req: Request, res: Response) => {
         orderBy: { created_at: 'desc' }
     });
 
+    // Fetch Commission Earned
+    const commission = await prisma.agentEarnings.aggregate({
+      _sum: { amount: true },
+      where: { agent_id: userId }
+    });
+
     // Fetch Wallet Balance (Dynamic assumption based on user relation or fallback to 0 until wallet table is strictly verified)
     const walletBalance = 0; // TBD via ledger aggregation or native Wallets table
 
@@ -49,7 +55,8 @@ export const getDashboardSummary = async (req: Request, res: Response) => {
       collections_amount: collections._sum.amount || 0,
       float_limit: floatRecord?.float_limit || 0,
       collected_today: floatRecord?.collected_today || 0,
-      wallet_balance: walletBalance
+      wallet_balance: walletBalance,
+      commission_earned: commission._sum.amount || 0
     });
   } catch (error) {
     console.error('getDashboardSummary error:', error);

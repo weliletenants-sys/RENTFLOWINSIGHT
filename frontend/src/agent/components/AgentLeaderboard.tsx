@@ -1,13 +1,42 @@
 import React from 'react';
-import { Trophy, Medal, ArrowUp } from 'lucide-react';
+import { Trophy, Loader2 } from 'lucide-react';
+import { useAgentLeaderboard } from '../hooks/useAgentQueries';
 
 export default function AgentLeaderboard() {
-  const leaders = [
-    { rank: 1, name: 'Sarah Namukasa', score: 2840 },
-    { rank: 2, name: 'You', score: 2450, isCurrent: true },
-    { rank: 3, name: 'Joshua Kasozi', score: 2120 },
-    { rank: 4, name: 'Brian M.', score: 1890 },
-  ];
+  const { data, isLoading, isError } = useAgentLeaderboard();
+
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-[1.5rem] p-5 shadow-sm border border-gray-100 flex items-center justify-center min-h-[300px]">
+        <Loader2 className="animate-spin text-purple-600" size={32} />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="bg-white rounded-[1.5rem] p-5 shadow-sm border border-red-100 flex items-center justify-center min-h-[300px]">
+        <p className="text-red-500 font-bold text-sm">Failed to load leaderboard.</p>
+      </div>
+    );
+  }
+
+  // Combine top agents and inject my rank if it's not in the top 5
+  const topAgents = data?.top_agents || [];
+  const myRank = data?.my_rank;
+  const myScore = data?.score;
+  const isMeInTop = topAgents.some((a: any) => a.rank === myRank);
+  
+  const leadersToDisplay = [...topAgents];
+  if (!isMeInTop && myRank) {
+    leadersToDisplay.push({ rank: myRank, name: "You", score: myScore, isCurrent: true });
+  }
+
+  // Ensure "You" is highlighted if found in top
+  const finalLeaders = leadersToDisplay.map((l: any) => ({
+    ...l,
+    isCurrent: l.isCurrent || l.rank === myRank
+  }));
 
   return (
     <div className="bg-white rounded-[1.5rem] p-5 shadow-sm border border-gray-100">
@@ -19,7 +48,7 @@ export default function AgentLeaderboard() {
       </div>
 
       <div className="space-y-3">
-        {leaders.map((leader) => (
+        {finalLeaders.map((leader) => (
           <div 
             key={leader.rank} 
             className={`flex justify-between items-center p-3 rounded-xl border ${
@@ -40,7 +69,7 @@ export default function AgentLeaderboard() {
                 <p className={`font-bold text-sm ${leader.isCurrent ? 'text-[#512DA8]' : 'text-gray-900'}`}>
                   {leader.name}
                 </p>
-                {leader.isCurrent && <p className="text-[10px] text-purple-600 font-medium">Currently Rank 2</p>}
+                {leader.isCurrent && <p className="text-[10px] text-purple-600 font-medium">Currently Rank {leader.rank}</p>}
               </div>
             </div>
             

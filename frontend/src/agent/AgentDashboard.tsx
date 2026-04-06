@@ -1,7 +1,8 @@
 import { useAuth } from '../contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getDashboardSummary } from '../services/agentApi';
+// import { getDashboardSummary } from '../services/agentApi';
+import { useAgentDashboardSummary } from './hooks/useAgentQueries';
 import toast from 'react-hot-toast';
 import { 
   Bell, 
@@ -47,26 +48,16 @@ export default function AgentDashboard() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isWalletOpen, setIsWalletOpen] = useState(false);
   const [isVisitWizardOpen, setIsVisitWizardOpen] = useState(false);
-  const [summary, setSummary] = useState<any>({
+  const { data: summaryData, isLoading, isError } = useAgentDashboardSummary();
+  const summary = summaryData || {
     visits_today: 0,
     collections_count: 0,
     collections_amount: 0,
     float_limit: 0,
     collected_today: 0,
-    wallet_balance: 0
-  });
-
-  useEffect(() => {
-    const fetchSummary = async () => {
-      try {
-         const data = await getDashboardSummary();
-         setSummary(data);
-      } catch (err: any) {
-         console.error('Failed to fetch stats', err);
-      }
-    };
-    fetchSummary();
-  }, []);
+    wallet_balance: 0,
+    commission_earned: 0
+  };
 
   const userName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : "Joshua Wanda";
 

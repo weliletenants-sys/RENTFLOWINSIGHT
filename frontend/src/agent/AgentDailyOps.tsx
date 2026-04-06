@@ -6,32 +6,21 @@ import {
   Edit, CheckCircle2, Clock
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { getDashboardSummary, fetchRentRequests } from '../services/agentApi';
+import { useAgentDashboardSummary, useAgentRentRequests } from './hooks/useAgentQueries';
 
 export default function AgentDailyOps() {
   const navigate = useNavigate();
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [timeframe, setTimeframe] = useState<'Today' | 'Yesterday' | 'Custom'>('Today');
-  const [summary, setSummary] = useState<any>({
+  const { data: summaryData } = useAgentDashboardSummary();
+  const summary = summaryData || {
     visits_today: 0,
     collections_count: 0,
     collections_amount: 0,
-  });
-  const [recentRequests, setRecentRequests] = useState<any[]>([]);
+  };
 
-  useEffect(() => {
-    const fetchSummaryAndRequests = async () => {
-      try {
-         const data = await getDashboardSummary();
-         setSummary(data);
-         const reqData = await fetchRentRequests();
-         setRecentRequests((reqData.requests || []).slice(0, 3));
-      } catch (err: any) {
-         toast.error(err.isProblemDetail ? err.detail : 'Failed to fetch operations data');
-      }
-    };
-    fetchSummaryAndRequests();
-  }, []);
+  const { data: reqData } = useAgentRentRequests();
+  const recentRequests = (reqData?.requests || []).slice(0, 3);
 
   // Listen for online/offline status
   useEffect(() => {
@@ -332,7 +321,7 @@ export default function AgentDailyOps() {
                    {recentRequests.length === 0 ? (
                      <p className="text-sm text-center text-slate-500 py-2">No pending requests found.</p>
                    ) : (
-                     recentRequests.map(req => (
+                     recentRequests.map((req: any) => (
                        <div key={req.id} className="p-3 sm:p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center justify-between hover:border-[#6c11d4]/30 transition-colors">
                          <div>
                            <p className="font-bold text-sm text-slate-900 dark:text-white line-clamp-1">{req.tenant_name || 'Anonymous Tenant'}</p>

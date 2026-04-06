@@ -1,33 +1,13 @@
-import { useEffect, useState } from 'react';
 import { Bell, MapPin, Star } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { getEarnings } from '../services/agentApi';
-import toast from 'react-hot-toast';
+import { useAgentEarnings } from './hooks/useAgentQueries';
 
 export default function AgentEarnings() {
   const { user } = useAuth();
-  const [earningsData, setEarningsData] = useState<any[]>([]);
-  const [totalEarnings, setTotalEarnings] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchEarnings = async () => {
-      try {
-        const data = await getEarnings();
-        const earningsList = data.earnings || [];
-        setEarningsData(earningsList);
-        
-        // Sum basic earnings 
-        const total = earningsList.reduce((sum: number, tx: any) => sum + (Number(tx.amount) || 0), 0);
-        setTotalEarnings(total);
-      } catch (err: any) {
-        toast.error('Failed to load earnings');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchEarnings();
-  }, []);
+  const { data: earningsResp, isLoading } = useAgentEarnings();
+  
+  const earningsData = earningsResp?.earnings || [];
+  const totalEarnings = earningsData.reduce((sum: number, tx: any) => sum + (Number(tx.amount) || 0), 0);
 
   return (
     <div className="bg-background-light dark:bg-background-dark font-sans text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
@@ -84,7 +64,7 @@ export default function AgentEarnings() {
           ) : earningsData.length === 0 ? (
             <div className="p-8 text-center text-sm text-slate-500">No earnings found.</div>
           ) : (
-            earningsData.map(tx => (
+            earningsData.map((tx: any) => (
               <div key={tx.id} className="flex items-center justify-between bg-white dark:bg-slate-900 p-4 border-b border-primary/5 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
