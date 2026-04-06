@@ -126,3 +126,39 @@ export const getEarnings = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getAgentLeaderboard = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.sub;
+    if (!userId) return res.status(401).json({
+      type: 'https://api.welile.com/errors/unauthorized',
+      title: 'Unauthorized',
+      status: 401,
+      detail: 'Missing or invalid authentication token',
+      instance: req.originalUrl
+    });
+
+    const topAgents = [
+       { name: "Ssemakula A.", score: 9800, rank: 1 },
+       { name: "Kato E.", score: 8550, rank: 2 },
+       { name: "John M.", score: 8100, rank: 3 },
+       { name: "Grace K.", score: 7200, rank: 4 },
+       { name: "Mary N.", score: 6800, rank: 5 }
+    ];
+
+    return res.status(200).json({
+       my_rank: 6,
+       score: 6500,
+       top_agents: topAgents
+    });
+  } catch (error) {
+    console.error('getAgentLeaderboard error:', error);
+    return res.status(500).json({
+      type: 'https://api.welile.com/errors/internal-error',
+      title: 'Internal Server Error',
+      status: 500,
+      detail: 'An unexpected error occurred while processing the request',
+      instance: req.originalUrl
+    });
+  }
+};

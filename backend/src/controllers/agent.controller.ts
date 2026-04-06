@@ -135,21 +135,31 @@ export const requestAdvance = async (req: Request, res: Response) => {
       });
     }
 
+    const numAmount = Number(amount);
+    const durationDays = Number(req.body.duration_days) || 30; // Supported periods: 7, 14, 30, 60, 90
+    
+    // Advanced access fee formula: accessFee = principal * ((1.33)^(durationDays/30) - 1)
+    const accessFee = numAmount * (Math.pow(1.33, durationDays / 30) - 1);
+    const registrationFee = numAmount > 200000 ? 20000 : 10000;
+    const totalPayable = numAmount + accessFee + registrationFee;
+    const dailyDeduction = Math.ceil(totalPayable / durationDays);
+
     const now = new Date().toISOString();
     const expires = new Date();
-    expires.setDate(expires.getDate() + 30); // Dynamic 30 day repayment cycle
+    expires.setDate(expires.getDate() + durationDays); 
 
     const advance = await prisma.agentAdvances.create({
       data: {
         agent_id: userId,
-        principal: Number(amount),
-        outstanding_balance: Number(amount),
+        principal: numAmount,
+        outstanding_balance: totalPayable, // Stores the computed total obligation
+        registration_fee: registrationFee,
         advance_type: advance_type || 'Float / Operational',
         reason: reason || '',
         expected_date: expected_date || now,
         status: 'PENDING',
-        cycle_days: 30,
-        daily_rate: 0,
+        cycle_days: durationDays,
+        daily_rate: dailyDeduction, // Extracted formula deduction
         issued_by: 'SYSTEM',
         issued_at: now,
         expires_at: expires.toISOString(),

@@ -19,16 +19,19 @@ router.post('/rent-requests', authGuard, createRentRequest);
 router.patch('/rent-requests/:id/status', authGuard, processRentRequest);
 
 // Module 1: Dashboard & Analytics
-import { getDashboardSummary, getReferrals, getEarnings } from '../../controllers/agent.dashboard.controller';
+import { getDashboardSummary, getReferrals, getEarnings, getAgentLeaderboard } from '../../controllers/agent.dashboard.controller';
 router.get('/statistics/dashboard', authGuard, getDashboardSummary);
 router.get('/referrals', authGuard, getReferrals);
 router.get('/earnings', authGuard, getEarnings);
+router.get('/leaderboard', authGuard, getAgentLeaderboard);
 
 // Module 2: Field Operations
-import { recordVisit, recordCollection, issueReceipt } from '../../controllers/agent.operations.controller';
+import { recordVisit, recordCollection, issueReceipt, generatePaymentToken, uploadDeliveryConfirmation } from '../../controllers/agent.operations.controller';
 router.post('/visits', authGuard, recordVisit);
 router.post('/collections', authGuard, recordCollection);
 router.post('/receipts', authGuard, issueReceipt);
+router.post('/tokens', authGuard, generatePaymentToken);
+router.post('/deliveries', authGuard, uploadDeliveryConfirmation);
 
 // Module 3: Identity & Network Registrations
 import { registerTenant, registerLandlord, registerSubAgent, registerInvestor, getMyNetwork, getAssignedTenants } from '../../controllers/agent.users.controller';
