@@ -7,8 +7,12 @@ import {
   ChevronRight,
   Eye,
   Banknote,
-  Loader2
+  Loader2,
+  TrendingUp,
+  ShieldCheck,
+  AlertCircle
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { getFunderOpportunities } from '../services/funderApi';
 import VirtualHouseCard from './components/VirtualHouseCard';
 
@@ -41,17 +45,58 @@ type FilterStatus = 'all' | OpportunityStatus;
 /* ═══════════ PROPS ═══════════ */
 interface FunderOpportunitiesPageProps {
   onSupport?: (propertyId: string) => void;
+  walletBalance?: number;
 }
 
 /* ═══════════════════════════════════════════════════════ */
 /*         OPPORTUNITIES PAGE — Rent Support              */
 /* ═══════════════════════════════════════════════════════ */
-export default function FunderOpportunitiesPage({ onSupport }: FunderOpportunitiesPageProps) {
+export default function FunderOpportunitiesPage({ onSupport, walletBalance = 0 }: FunderOpportunitiesPageProps) {
   const [filter, setFilter] = useState<FilterStatus>('all');
   const [search, setSearch] = useState('');
   const [selectedProperty, setSelectedProperty] = useState<RentOpportunity | null>(null);
   const [opportunities, setOpportunities] = useState<RentOpportunity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Angel Pool State
+  const PRICE_PER_SHARE = 20000;
+  const ANGEL_POOL_CAP = 500000000;
+  // Mock raised amount for aesthetics based on V3 specs
+  const raisedAmount = 312400000; 
+  
+  const [sharesInput, setSharesInput] = useState<string>('');
+  const [isDeployingAngel, setIsDeployingAngel] = useState(false);
+
+  const investmentAmount = (parseInt(sharesInput) || 0) * PRICE_PER_SHARE;
+  const isSufficientBalance = investmentAmount <= walletBalance;
+  const isInputValid = investmentAmount > 0 && investmentAmount % PRICE_PER_SHARE === 0;
+
+  const handleAngelPoolInvestment = async () => {
+    if (!isInputValid || !isSufficientBalance) return;
+    setIsDeployingAngel(true);
+    const toastId = toast.loading('Connecting securely to Welile Angel Pool...');
+    
+    try {
+      const response = await fetch('/api/funder/financial/angel-pool', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ amount: investmentAmount })
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Investment failed');
+
+      toast.success(data.message || `Successfully purchased ${parseInt(sharesInput)} shares!`, { id: toastId });
+      setSharesInput('');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to process Angel Pool investment', { id: toastId });
+    } finally {
+      setIsDeployingAngel(false);
+    }
+  };
 
   useEffect(() => {
     getFunderOpportunities()
@@ -152,17 +197,117 @@ export default function FunderOpportunitiesPage({ onSupport }: FunderOpportuniti
   return (
     <div className="flex-1 p-6 lg:p-8 pb-32 lg:pb-8">
       {/* Page Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-          Opportunities
-          {isLoading && <Loader2 className="w-5 h-5 animate-spin text-slate-400" />}
-        </h1>
-        <p className="text-sm text-slate-400 mt-0.5">
-          {totalAvailable} houses need rent support · UGX {totalRentNeeded.toLocaleString()} total
-        </p>
+      <div className="mb-6 flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+            Opportunities
+            {isLoading && <Loader2 className="w-5 h-5 animate-spin text-slate-400" />}
+          </h1>
+          <p className="text-sm text-slate-400 mt-0.5">
+            {totalAvailable} houses need rent support · UGX {totalRentNeeded.toLocaleString()} total
+          </p>
+        </div>
+        
+        {/* Wallet Balance Display Metric */}
+        <div className="bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-100 hidden md:block">
+           <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest text-right">Available Capital</p>
+           <p className="font-black text-slate-900">UGX {walletBalance.toLocaleString()}</p>
+        </div>
       </div>
 
+      {/* ──────────────── ANGEL POOL PREMIUM UI ──────────────── */}
+      <div className="mb-10 w-full rounded-[24px] overflow-hidden border border-slate-800 relative bg-slate-900 text-white shadow-xl flex flex-col lg:flex-row">
+        {/* Decorative Graphic Layer */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20 pointer-events-none translate-x-1/3 -translate-y-1/3" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-600 rounded-full mix-blend-screen filter blur-[80px] opacity-10 pointer-events-none -translate-x-1/2 translate-y-1/2" />
+        
+        {/* Left Side: Information */}
+        <div className="lg:w-3/5 p-6 md:p-8 lg:p-10 relative z-10 flex flex-col justify-between">
+          <div>
+             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-purple-300 text-[10px] font-bold uppercase tracking-widest mb-4">
+               <TrendingUp className="w-3 h-3" /> Welile Angel Pool
+             </div>
+             <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-3">Long-Term Impact. <br className="hidden md:block"/>Class-B Equity.</h2>
+             <p className="text-slate-400 text-sm md:text-base leading-relaxed max-w-xl mb-6">
+                Bypass individual property cycles and own a strategic piece of the overall Welile operational treasury. Backed directly by our assurance mechanisms and the aggregation of platform revenues.
+             </p>
+          </div>
+          
+          <div>
+            <div className="flex justify-between items-end mb-2">
+              <div>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Fund Capitalization</p>
+                <p className="font-bold text-lg">UGX {raisedAmount.toLocaleString()}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Target Cap</p>
+                <p className="font-bold text-slate-300">UGX {ANGEL_POOL_CAP.toLocaleString()}</p>
+              </div>
+            </div>
+            
+            {/* Progress Bar */}
+            <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+               <div className="h-full bg-gradient-to-r from-purple-600 to-indigo-500 rounded-full" style={{ width: `${(raisedAmount/ANGEL_POOL_CAP)*100}%` }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side: Interactive Investment Panel */}
+        <div className="lg:w-2/5 bg-slate-950 p-6 md:p-8 lg:p-10 relative z-10 border-t lg:border-t-0 lg:border-l border-slate-800 flex flex-col justify-center">
+           <h3 className="font-bold text-lg mb-1 flex items-center gap-2">
+              Purchase Equity <ShieldCheck className="w-5 h-5 text-emerald-500" />
+           </h3>
+           <p className="text-xs text-slate-500 mb-6 font-medium tracking-wide">1 Share = UGX {PRICE_PER_SHARE.toLocaleString()}</p>
+           
+           <div className="space-y-4 relative">
+             <div className="relative">
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Number of Shares</label>
+                <div className="relative flex items-center">
+                   <input 
+                     type="number" 
+                     min="1"
+                     value={sharesInput}
+                     onChange={e => setSharesInput(e.target.value)}
+                     className="w-full bg-slate-900 border-2 border-slate-800 rounded-xl px-4 py-3 pb-8 text-xl font-black focus:outline-none focus:border-purple-500 transition-colors placeholder:text-slate-700 hover:border-slate-700"
+                     placeholder="Enter quantity..."
+                   />
+                   <div className="absolute right-4 text-slate-500 font-bold pointer-events-none">Shares</div>
+                </div>
+                {sharesInput && (
+                   <p className="absolute bottom-3 left-4 text-[10px] text-purple-400 font-bold tracking-widest uppercase">
+                     Total: UGX {investmentAmount.toLocaleString()}
+                   </p>
+                )}
+             </div>
+
+             {sharesInput && !isSufficientBalance && (
+                <div className="flex items-center gap-2 text-rose-400 bg-rose-400/10 p-3 rounded-xl border border-rose-400/20 text-xs font-bold">
+                   <AlertCircle className="w-4 h-4 shrink-0" />
+                   Insufficient Available Capital (Requires UGX {investmentAmount.toLocaleString()})
+                </div>
+             )}
+             
+             <button
+               onClick={handleAngelPoolInvestment}
+               disabled={!isInputValid || !isSufficientBalance || isDeployingAngel}
+               className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black uppercase tracking-widest text-xs py-4 rounded-xl shadow-lg shadow-purple-900/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-[0.98] disabled:active:scale-100 flex items-center justify-center gap-2"
+             >
+               {isDeployingAngel ? (
+                 <><Loader2 className="w-4 h-4 animate-spin" /> Authorizing Transfer...</>
+               ) : (
+                 'Deploy Angel Capital'
+               )}
+             </button>
+           </div>
+        </div>
+      </div>
+      
+      {/* ──────────────── OPPORTUNITIES GRID ──────────────── */}
       {/* Search & Filters */}
+      <div className="flex items-center justify-between mb-4 mt-8 py-2 border-b border-slate-100">
+        <h2 className="font-black text-slate-900 tracking-tight text-lg">Current Portfolio Opportunities</h2>
+      </div>
+      
       <div className="flex items-center gap-3 mb-6 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />

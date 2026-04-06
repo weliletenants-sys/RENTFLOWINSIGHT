@@ -4,6 +4,8 @@ import { uploadAvatar, uploadKycDocuments, getKycStatus } from '../../controller
 import { getPayoutMethods, addPayoutMethod, setPrimaryPayoutMethod, deletePayoutMethod, getRewardMode, updateRewardMode, getWalletOperations, requestWalletWithdrawal, requestDeposit, getPortfolios as getCapitalPortfolios, transferFunds } from '../../controllers/funder.financial.controller';
 import { uploadS3 } from '../../services/s3.service';
 import { getMandates, addMandate, updateMandateLimit, revokeMandate, restoreMandate } from '../../controllers/funder.proxy.controller';
+import { acceptPlatformTerms } from '../../controllers/funder.policy.controller';
+import { investAngelPool } from '../../controllers/funder.angelpool.controller';
 import { streamFunderEvents } from '../../controllers/funder.stream.controller';
 import { authGuard, rolesGuard } from '../../middlewares/auth.middleware';
 
@@ -11,6 +13,9 @@ const router = Router();
 
 // Apply authGuard to ensure user is logged in
 router.use(authGuard);
+
+router.post('/policy/accept', acceptPlatformTerms);
+router.post('/financial/angel-pool', investAngelPool);
 // Apply proxy bypass logic here if a direct Funder role isn't universally stamped, but for now we enforce it.
 // Wait, the user already said "initial signup persona is granted by default". So Funder mode should be completely accessible.
 

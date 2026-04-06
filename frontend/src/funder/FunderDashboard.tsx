@@ -168,8 +168,56 @@ export default function FunderDashboard() {
             onMenuClick={() => setMobileMenuOpen(true)}
           />
 
+          {/* ──────────── POLICY OVERLAY DIALOG ──────────── */}
+          {user?.has_accepted_platform_terms === false && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm">
+              <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 relative">
+                <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-6">
+                  <ShieldAlert className="w-8 h-8 text-blue-600" />
+                </div>
+                
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">Platform Agreement</h2>
+                <p className="text-slate-600 mb-6 leading-relaxed">
+                  To access the Angel Pool and securely deploy capital on the platform, you must legally consent to the 90-day withdrawal rules and the Class B equity lock-up horizons.
+                </p>
+
+                <div className="flex flex-col gap-3">
+                  <button 
+                    onClick={async () => {
+                      const btn = document.getElementById('accept-btn-dash');
+                      if (btn) btn.innerHTML = 'Confirming Signature...';
+                      try {
+                        const resp = await fetch('/api/funder/policy/accept', {
+                          method: 'POST',
+                          headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                            'Content-Type': 'application/json'
+                          }
+                        });
+                        if (resp.ok) window.location.reload();
+                      } catch {
+                        alert("Network error.");
+                        if (btn) btn.innerHTML = 'I Accept the Terms';
+                      }
+                    }}
+                    id="accept-btn-dash"
+                    className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-black transition-colors"
+                  >
+                    I Accept the Terms
+                  </button>
+                  <button 
+                    onClick={() => navigate('/funder/policy')}
+                    className="w-full bg-slate-100 text-slate-700 font-bold py-3.5 rounded-xl hover:bg-slate-200 transition-colors"
+                  >
+                    Read Full Policy
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ──────────── VERIFICATION INTERCEPTOR ──────────── */}
-          {!user?.isVerified && activePage !== 'Portfolio' && activePage !== 'Opportunities' && (() => {
+          {(user?.has_accepted_platform_terms !== false) && !user?.isVerified && activePage !== 'Portfolio' && activePage !== 'Opportunities' && (() => {
             if (kycStatus === 'UNDER_REVIEW') {
               return (
                 <div className="bg-blue-50 border-b border-blue-200 p-4 sm:p-6 flex items-start md:items-center gap-4 shrink-0">
@@ -208,7 +256,7 @@ export default function FunderDashboard() {
           {activePage === 'Portfolio' ? (
             <FunderPortfolioPage onAddPortfolio={() => handleVerificationCheck(() => {})} walletBalance={stats?.availableLiquid || 0} />
           ) : activePage === 'Opportunities' ? (
-            <FunderOpportunitiesPage />
+            <FunderOpportunitiesPage walletBalance={stats?.availableLiquid || 0} />
           ) : (
             <div className="flex-1 p-6 lg:p-8">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
