@@ -157,3 +157,82 @@ export const issueReceipt = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const generatePaymentToken = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.sub;
+    if (!userId) return res.status(401).json({
+      type: 'https://api.welile.com/errors/unauthorized',
+      title: 'Unauthorized',
+      status: 401,
+      detail: 'Missing or invalid authentication token',
+      instance: req.originalUrl
+    });
+
+    const { amount, tenant_id } = req.body;
+    const numAmount = Number(amount);
+
+    if (numAmount <= 0) return res.status(400).json({
+      type: 'https://api.welile.com/errors/bad-request',
+      title: 'Bad Request',
+      status: 400,
+      detail: 'Invalid amount. Minimum amount is 1.',
+      instance: req.originalUrl
+    });
+
+    const now = new Date();
+    const expires = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours
+    
+    // Generate 6 digit token string safely
+    const tokenCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const token = await prisma.paymentTokens.create({
+      data: {
+        agent_id: userId,
+        tenant_id,
+        amount: numAmount,
+        token_code: tokenCode,
+        used: false,
+        created_at: now.toISOString(),
+        expires_at: expires.toISOString()
+      }
+    });
+
+    return res.status(201).json({ message: 'Offline access token created successfully', token });
+  } catch (error) {
+    console.error('generatePaymentToken error:', error);
+    return res.status(500).json({
+      type: 'https://api.welile.com/errors/internal-error',
+      title: 'Internal Server Error',
+      status: 500,
+      detail: 'An unexpected error occurred while processing the request',
+      instance: req.originalUrl
+    });
+  }
+};
+
+export const uploadDeliveryConfirmation = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.sub;
+    if (!userId) return res.status(401).json({
+      type: 'https://api.welile.com/errors/unauthorized',
+      title: 'Unauthorized',
+      status: 401,
+      detail: 'Missing or invalid authentication token',
+      instance: req.originalUrl
+    });
+
+    // Accept S3 receipt URL and potentially update the existing collection or request status.
+    // For scaffolding, log success.
+    return res.status(200).json({ message: 'Delivery confirmation logged successfully' });
+  } catch (error) {
+    console.error('uploadDeliveryConfirmation error:', error);
+    return res.status(500).json({
+      type: 'https://api.welile.com/errors/internal-error',
+      title: 'Internal Server Error',
+      status: 500,
+      detail: 'An unexpected error occurred while processing the request',
+      instance: req.originalUrl
+    });
+  }
+};

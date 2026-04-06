@@ -1,0 +1,312 @@
+openapi: "3.1.0"
+info:
+  title: RentFlowInsight Agent API
+  description: Modular API specification for Agent Dashboard functionality. Integrates with the main platform. Enforces JWT `sub` == `agent_id` for authorization.
+  version: "1.0.0"
+servers:
+  - url: https://api.rentflowinsight.com/v1
+
+tags:
+  - name: AgentRentRequests
+    description: Managing rent requests instantiated by agents
+  - name: AgentCollections
+    description: Field operations and cash collections
+  - name: AgentFloat
+    description: Capital float, advances, and payouts
+  - name: AgentPerformance
+    description: Gamification, leaderboards, and invites
+
+paths:
+  /agents/{agent_id}/rent-requests:
+    get:
+      summary: List agent rent requests
+      description: Returns a paginated list of rent requests initiated by the agent. Requires `agent_id` to match the authenticated JWT `sub` claim.
+      operationId: listAgentRentRequests
+      tags: [AgentRentRequests]
+      parameters:
+        - name: agent_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: cursor
+          in: query
+          schema: { type: string }
+          description: Opaque cursor for pagination
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20, maximum: 50 }
+      responses:
+        "200":
+          description: Paginated list of rent requests
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, pagination]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/RentRequest" }
+                  pagination:
+                    $ref: "#/components/schemas/CursorPage"
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/ForbiddenIDOR" }
+
+    post:
+      summary: Submit a rent request
+      description: Facilitate a rent request on behalf of a tenant. Requires `agent_id` to match the authenticated JWT `sub` claim.
+      operationId: createAgentRentRequest
+      tags: [AgentRentRequests]
+      parameters:
+        - name: agent_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tenant_name, rent_amount, duration_months]
+              properties:
+                tenant_name: { type: string }
+                rent_amount: { type: number }
+                duration_months: { type: integer }
+      responses:
+        "201":
+          description: Rent request created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RentRequest" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/ForbiddenIDOR" }
+
+  /agents/{agent_id}/collections:
+    post:
+      summary: Record a field collection
+      description: Log physical cash collected from a tenant, along with GPS coordinates. Must match JWT `sub`.
+      operationId: recordAgentCollection
+      tags: [AgentCollections]
+      parameters:
+        - name: agent_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tenant_id, amount, latitude, longitude]
+              properties:
+                tenant_id: { type: string, format: uuid }
+                amount: { type: number }
+                latitude: { type: number }
+                longitude: { type: number }
+      responses:
+        "201":
+          description: Collection logged
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AgentCollection" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/ForbiddenIDOR" }
+
+  /agents/{agent_id}/tokens:
+    post:
+      summary: Generate payment token
+      operationId: generatePaymentToken
+      tags: [AgentCollections]
+      parameters:
+        - name: agent_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount]
+              properties:
+                amount: { type: number }
+      responses:
+        "201":
+          description: Created offline access token
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PaymentToken" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /agents/{agent_id}/advances:
+    get:
+      summary: Get float advance status
+      operationId: getFloatAdvanceStatus
+      tags: [AgentFloat]
+      parameters:
+        - name: agent_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Advance eligibility and current limits
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  available_limit: { type: number }
+                  is_eligible: { type: boolean }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    
+    post:
+      summary: Request float advance
+      operationId: requestFloatAdvance
+      tags: [AgentFloat]
+      parameters:
+        - name: agent_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount, duration_days]
+              properties:
+                amount: { type: number }
+                duration_days: { type: integer, enum: [7, 14, 30] }
+      responses:
+        "201":
+          description: Advance application submitted
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AgentAdvance" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /agents/{agent_id}/leaderboard:
+    get:
+      summary: Get agent ranking
+      operationId: getLeaderboard
+      tags: [AgentPerformance]
+      parameters:
+        - name: agent_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Current rankings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  my_rank: { type: integer }
+                  score: { type: number }
+                  top_agents:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name: { type: string }
+                        score: { type: number }
+                        rank: { type: integer }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+components:
+  schemas:
+    RentRequest:
+      type: object
+      required: [id, rent_amount, status, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        rent_amount: { type: number }
+        status: { type: string }
+        created_at: { type: string, format: date-time }
+
+    AgentCollection:
+      type: object
+      required: [id, amount, created_at, float_after]
+      properties:
+        id: { type: string, format: uuid }
+        amount: { type: number }
+        float_after: { type: number }
+        created_at: { type: string, format: date-time }
+
+    PaymentToken:
+      type: object
+      required: [id, token_code, amount, expires_at]
+      properties:
+        id: { type: string, format: uuid }
+        token_code: { type: string }
+        amount: { type: number }
+        expires_at: { type: string, format: date-time }
+
+    AgentAdvance:
+      type: object
+      required: [id, principal, status, issued_at]
+      properties:
+        id: { type: string, format: uuid }
+        principal: { type: number }
+        status: { type: string }
+        issued_at: { type: string, format: date-time }
+
+    CursorPage:
+      type: object
+      required: [next_cursor, has_more]
+      properties:
+        next_cursor: { type: string, nullable: true }
+        has_more: { type: boolean }
+
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri, example: "https://api.rentflowinsight.com/errors/validation-error" }
+        title: { type: string, example: "Validation Error" }
+        status: { type: integer, example: 400 }
+        detail: { type: string, example: "Missing required fields." }
+        instance: { type: string, format: uri, example: "/v1/agents/{id}/collections" }
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    Unauthorized:
+      description: Missing or invalid authentication token
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    ForbiddenIDOR:
+      description: Permission denied (JWT `sub` does not match URL `agent_id`)
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+            example:
+              type: "https://api.rentflowinsight.com/errors/forbidden"
+              title: "Forbidden"
+              status: 403
+              detail: "You do not have permission to access resources for this agent_id."
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - BearerAuth: []
