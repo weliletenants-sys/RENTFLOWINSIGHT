@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { v7 as uuidv7 } from 'uuid';
 
 const API = '/api';
 
@@ -8,6 +9,7 @@ const getAuthHeaders = () => {
     headers: {
       Authorization: token ? `Bearer ${token}` : '',
       'Content-Type': 'application/json',
+      'Idempotency-Key': uuidv7(),
     },
   };
 };
@@ -234,4 +236,3 @@ export const getFunderROILeaderboard = async () => {
   const response = await axios.get(`${API}/funder/referrals/leaderboard`, getAuthHeaders());
   return response.data.data;
 };
-

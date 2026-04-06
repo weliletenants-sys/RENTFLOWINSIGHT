@@ -34,7 +34,7 @@ export default function FunderWallet() {
   const queryClient = useQueryClient();
   
   const stats = data?.stats || null;
-  const payoutMethods = data?.payoutRes?.data?.payoutMethods || [];
+  const initialPayoutMethods = data?.payoutRes?.data?.payoutMethods || [];
 
   const transactions = useMemo(() => {
     if (!data) return [];
@@ -106,13 +106,13 @@ export default function FunderWallet() {
   const [transferTargetIdentifier, setTransferTargetIdentifier] = useState('');
   const [isSubmittingTransfer, setIsSubmittingTransfer] = useState(false);
 
-  // Withdrawal Notice logic (mocked visually for now, or extracted from backend)
-  const pendingWithdrawal: any = null; // To fully support this, we would pull `InvestmentWithdrawalRequests` from API.
-
   // Minimal pending withdrawal mockup logic for now
   const pendingWithdrawal: any = null;
 
+  const [isFundingRentPool, setIsFundingRentPool] = useState(false);
+
   const handleDepositSubmit = async () => {
+    if (isSubmittingDeposit) return; // Strict boundary to prevent micro-tick double clicks
     if (!depositAmount || !depositTid || !selectedDepositPayoutId) {
       toast.error('Please fill in all fields and select a source account');
       return;
@@ -142,6 +142,7 @@ export default function FunderWallet() {
   };
 
   const handleWithdrawSubmit = async () => {
+    if (isSubmittingWithdraw) return; // Strict boundary
     if (!withdrawAmount || !selectedPayoutId) {
       toast.error('Please select a payout method and enter an amount');
       return;
@@ -173,8 +174,9 @@ export default function FunderWallet() {
   };
 
   const handleFundRentPool = async () => {
+    if (isFundingRentPool) return;
     try {
-      setIsLoading(true);
+      setIsFundingRentPool(true);
       await fundRentPool({
         amount: 100000,
         roi_mode: 'monthly_compounding',
@@ -186,11 +188,12 @@ export default function FunderWallet() {
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to allocate funds to rent pool.");
     } finally {
-      setIsLoading(false);
+      setIsFundingRentPool(false);
     }
   };
 
   const handleTransferSubmit = async () => {
+    if (isSubmittingTransfer) return; // Strict boundary
     const amount = Number(transferAmount);
     if (!amount || amount <= 0) return toast.error('Enter a valid amount');
     if (transferType === 'p2p' && !transferTargetIdentifier) return toast.error('Enter a valid recipient email or phone number');

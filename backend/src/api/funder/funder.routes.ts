@@ -8,6 +8,7 @@ import { acceptPlatformTerms } from '../../controllers/funder.policy.controller'
 import { investAngelPool } from '../../controllers/funder.angelpool.controller';
 import { streamFunderEvents } from '../../controllers/funder.stream.controller';
 import { authGuard, rolesGuard } from '../../middlewares/auth.middleware';
+import { requireIdempotency } from '../../middlewares/idempotency.middleware';
 
 const router = Router();
 
@@ -15,7 +16,7 @@ const router = Router();
 router.use(authGuard);
 
 router.post('/policy/accept', acceptPlatformTerms);
-router.post('/financial/angel-pool', investAngelPool);
+router.post('/financial/angel-pool', requireIdempotency(), investAngelPool);
 // Apply proxy bypass logic here if a direct Funder role isn't universally stamped, but for now we enforce it.
 // Wait, the user already said "initial signup persona is granted by default". So Funder mode should be completely accessible.
 
@@ -32,8 +33,8 @@ router.patch('/portfolios/:code', updatePortfolioDetails);
 router.get('/referrals/stats', getReferralStats);
 router.get('/referrals/leaderboard', getROILeaderboard);
 
-router.post('/fund', fundRentPool);
-router.post('/withdrawals', requestWithdrawal);
+router.post('/fund', requireIdempotency(), fundRentPool);
+router.post('/withdrawals', requireIdempotency(), requestWithdrawal);
 
 // --- KYC File Storage ---
 router.get('/kyc/status', getKycStatus);
@@ -51,9 +52,9 @@ router.delete('/payout-methods/:id', deletePayoutMethod);
 router.get('/financial/reward-mode', getRewardMode);
 router.put('/financial/reward-mode', updateRewardMode);
 router.get('/financial/wallet-operations', getWalletOperations);
-router.post('/financial/wallet-withdraw', requestWalletWithdrawal);
-router.post('/financial/wallet-deposit', requestDeposit);
-router.post('/financial/transfer', transferFunds);
+router.post('/financial/wallet-withdraw', requireIdempotency(), requestWalletWithdrawal);
+router.post('/financial/wallet-deposit', requireIdempotency(), requestDeposit);
+router.post('/financial/transfer', requireIdempotency(), transferFunds);
 router.get('/financial/portfolios', getCapitalPortfolios);
 
 // --- Proxy Mandates ---

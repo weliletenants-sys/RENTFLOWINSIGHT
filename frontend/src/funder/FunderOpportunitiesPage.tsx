@@ -72,6 +72,7 @@ export default function FunderOpportunitiesPage({ onSupport, walletBalance = 0 }
   const isInputValid = investmentAmount > 0 && investmentAmount % PRICE_PER_SHARE === 0;
 
   const handleAngelPoolInvestment = async () => {
+    if (isDeployingAngel) return;
     if (!isInputValid || !isSufficientBalance) return;
     setIsDeployingAngel(true);
     const toastId = toast.loading('Connecting securely to Welile Angel Pool...');
