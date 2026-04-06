@@ -1818,3 +1818,24 @@ model PortfolioRentPledges {
 
   @@map("portfolio_rent_pledges")
 }
+
+model Permissions {
+  id              String            @id @default(uuid())
+  name            String            @unique
+  description     String?
+  rolePermissions RolePermissions[]
+  created_at      String
+
+  @@map("permissions")
+}
+
+model RolePermissions {
+  id            String      @id @default(uuid())
+  role          String
+  permission_id String
+  permission    Permissions @relation(fields: [permission_id], references: [id], onDelete: Cascade)
+  granted_at    String
+
+  @@unique([role, permission_id])
+  @@map("role_permissions")
+}

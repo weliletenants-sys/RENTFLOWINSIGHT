@@ -177,87 +177,63 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+import { AdminAuthService } from '../services/adminAuth.service';
+import { UserAuthService } from '../services/userAuth.service';
+
+export const adminLogin = async (req: Request, res: Response): Promise<any> => {
   try {
     const { phone, password } = req.body;
-
-    if (!phone || !password) {
-      return problemResponse(res, 400, 'Validation Error', 'Phone and password are required', 'missing-credentials');
+    if (!phone || !password) return problemResponse(res, 400, 'Validation Error', 'Phone and password are required', 'missing-credentials');
+    
+    // The request must explicitly come strictly from the admin context middleware flow
+    if (req.context !== 'admin') {
+      return problemResponse(res, 403, 'Forbidden', 'Strict isolation violation', 'domain-violation');
     }
 
-    const phoneTrimmed = phone.trim().toLowerCase();
-    const profile = await prisma.profiles.findFirst({ 
-       where: phoneTrimmed.includes('@') 
-          ? { email: phoneTrimmed } 
-          : { phone: { in: getPhoneVariants(phoneTrimmed) } } 
+    const { token, onboarding_url, user } = await AdminAuthService.login(phone, password, req.ip || '', req.headers['user-agent'] || '');
+    
+    // Strict HTTP-Only Admin Session Cookie mapping back to admin.localhost natively
+    res.cookie('admin_session', token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      domain: process.env.ADMIN_SESSION_DOMAIN || 'admin.localhost',
+      maxAge: 8 * 60 * 60 * 1000 // 8 hours
     });
 
-    // Auth Validation
-    if (!profile || !profile.password_hash) {
-      // Intentional delay to avoid timing leaks
-      try {
-        await bcrypt.compare(password, '$2b$12$LQv3c1tyKcgcgfpUX6m4wOEvB/P/4qE3F.qB0bZ3m6vE0bZ3m6vE0');
-      } catch (e) {}
-      await logSecurityEvent({ event: 'LOGIN_FAILED', ip_address: req.ip, user_agent: req.headers['user-agent'], details: { reason: 'user_not_found_or_no_password', phone: phoneTrimmed } });
-      return problemResponse(res, 401, 'Unauthorized', 'Invalid phone number or password', 'invalid-credentials');
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, profile.password_hash);
-    if (!isPasswordValid) {
-      await logSecurityEvent({ event: 'LOGIN_FAILED', user_id: profile.id, ip_address: req.ip, user_agent: req.headers['user-agent'], details: { reason: 'wrong_password', phone: profile.phone } });
-      return problemResponse(res, 401, 'Unauthorized', 'Invalid phone number or password', 'invalid-credentials');
-    }
-
-    const userRoleRecord = await prisma.userRoles.findFirst({ where: { user_id: profile.id, enabled: true }, orderBy: { created_at: 'desc' } }) || await prisma.userRoles.findFirst({ where: { user_id: profile.id }, orderBy: { created_at: 'desc' } });
-    const role = userRoleRecord ? userRoleRecord.role.toUpperCase() : (profile.role ? profile.role.toUpperCase() : 'TENANT');
-    const firstName = profile.full_name?.split(' ')[0] || 'User';
-
-    const payload = { phone: profile.phone, email: profile.email, sub: profile.id, role, firstName };
-    const access_token = jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
-
-    // Retain previous active sessions for multi-device support
-    await prisma.sessions.create({
-      data: {
-        user_id: profile.id,
-        token: access_token,
-        device_info: req.headers['user-agent']?.substring(0, 255) || null,
-        ip_address: req.ip?.substring(0, 45) || null,
-        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000)
-      }
-    });
-
-    await logSecurityEvent({ event: 'LOGIN_SUCCESS', user_id: profile.id, email: profile.email || undefined, ip_address: req.ip, user_agent: req.headers['user-agent'] });
-
-    let onboarding_url = '/dashboard';
-    if (role === 'AGENT' && profile.verified === false) onboarding_url = '/agent-onboarding';
-    else if (role === 'AGENT') onboarding_url = '/dashboard';
-    if (role === 'TENANT') onboarding_url = '/tenant-agreement'; // or based on tenant onboarding status
-    if (role === 'FUNDER') onboarding_url = '/funder';
-    if (role === 'SUPER_ADMIN') onboarding_url = '/admin';
-
-    return res.status(200).json({
-      status: 'success',
-      message: 'Logged in successfully',
-      data: {
-        access_token,
-        onboarding_url,
-        user: {
-          id: profile.id,
-          email: profile.email,
-          firstName: profile.full_name.split(' ')[0],
-          lastName: profile.full_name.split(' ').slice(1).join(' '),
-          role,
-          isVerified: profile.verified,
-          avatar_url: profile.avatar_url,
-          phone: profile.phone
-        }
-      }
-    });
-
+    return res.status(200).json({ status: 'success', message: 'Admin authenticated tightly securely.', data: { onboarding_url, user } });
   } catch (error: any) {
-    console.error('Login error:', error);
-    await logSecurityEvent({ event: 'LOGIN_ERROR', ip_address: req.ip, user_agent: req.headers['user-agent'], details: { error: error.message } });
-    return problemResponse(res, 500, 'Internal Server Error', 'An unexpected error occurred during login', 'internal-error');
+    if (error.message === 'Invalid credentials') return problemResponse(res, 401, 'Unauthorized', 'Invalid credentials', 'invalid-credentials');
+    if (error.message === 'Unauthorized for admin domain') return problemResponse(res, 403, 'Forbidden', error.message, 'unauthorized');
+    return problemResponse(res, 500, 'Internal Server Error', 'Unexpected login failure', 'internal-error');
+  }
+};
+
+export const userLogin = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { phone, password } = req.body;
+    if (!phone || !password) return problemResponse(res, 400, 'Validation Error', 'Phone and password are required', 'missing-credentials');
+    
+    if (req.context === 'admin') {
+      return problemResponse(res, 403, 'Forbidden', 'Admin domain must use admin auth', 'domain-violation');
+    }
+
+    const { token, onboarding_url, user } = await UserAuthService.login(phone, password, req.ip || '', req.headers['user-agent'] || '');
+    
+    // Strict HTTP-Only User Session Cookie mapping natively to the app domain
+    res.cookie('user_session', token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      domain: process.env.SESSION_DOMAIN || 'localhost',
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    });
+
+    return res.status(200).json({ status: 'success', message: 'Logged in successfully', data: { onboarding_url, user } });
+  } catch (error: any) {
+    if (error.message === 'Invalid credentials') return problemResponse(res, 401, 'Unauthorized', 'Invalid phone number or password', 'invalid-credentials');
+    if (error.message === 'Administrator accounts must log in through the secure admin portal.') return problemResponse(res, 403, 'Forbidden', error.message, 'unauthorized');
+    return problemResponse(res, 500, 'Internal Server Error', 'Unexpected login failure', 'internal-error');
   }
 };
 
