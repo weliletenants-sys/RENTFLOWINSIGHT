@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { ArrowRight, TrendingUp } from 'lucide-react';
-import { getTenantWallet, getTenantRentProgress, getAiIdProfile, getTenantAgreementStatus, getTenantActivities } from '../services/tenantApi';
+import { useTenantRentProgress, useTenantActivities, useTenantWallet, useAiIdProfile, useTenantAgreementStatus, useAcceptTenantAgreement } from './hooks/useTenantQueries';
 import TenantSidebar from './components/TenantSidebar';
 import TenantDashboardHeader from './components/TenantDashboardHeader';
 import FullScreenWalletSheet from './components/FullScreenWalletSheet';
@@ -27,26 +27,25 @@ import MyLandlordsSection from './components/MyLandlordsSection';
 export default function TenantDashboard() {
 
   const { user } = useAuth();
-  const [wallet, setWallet] = useState({ balance: 0 });
-  const [rentProgress, setRentProgress] = useState<any>(null);
+  const { data: walletData } = useTenantWallet();
+  const wallet = { balance: walletData?.wallet?.balance || walletData?.balance || 0 };
+
+  const { data: rentProgress } = useTenantRentProgress();
+  const { data: activitiesData } = useTenantActivities();
+  const activities = Array.isArray(activitiesData) ? activitiesData : [];
+
+  const { data: aiProfile } = useAiIdProfile();
+  
+  const { data: agreementData } = useTenantAgreementStatus();
+  const { mutate: acceptAgreement } = useAcceptTenantAgreement();
+  const hasAcceptedTerms = agreementData?.hasAcceptedTerms ?? null;
+
+  // UI States
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isWalletOpen, setIsWalletOpen] = useState(false);
   const [activePage, setActivePage] = useState<string>('Dashboard');
-  const [aiProfile, setAiProfile] = useState<any>(null);
-  const [activities, setActivities] = useState<any[]>([]);
-
-  // Simulated validation states for new modules
-  const [hasAcceptedTerms, setHasAcceptedTerms] = useState<boolean | null>(null);
   const [showAgreementModal, setShowAgreementModal] = useState(false);
   const [isVerified] = useState(false);
-
-  useEffect(() => {
-    getTenantWallet().then(res => setWallet({ balance: res.wallet?.balance || 0 })).catch(console.error);
-    getTenantRentProgress().then(setRentProgress).catch(console.error);
-    getTenantActivities().then(setActivities).catch(console.error);
-    getAiIdProfile().then(setAiProfile).catch(console.error);
-    getTenantAgreementStatus().then(res => setHasAcceptedTerms(res.hasAcceptedTerms)).catch(() => setHasAcceptedTerms(false));
-  }, []);
 
   const displayName = user?.firstName && user?.lastName 
     ? `${user.firstName} ${user.lastName}` 
@@ -229,7 +228,7 @@ export default function TenantDashboard() {
         isOpen={showAgreementModal} 
         onClose={() => setShowAgreementModal(false)} 
         onSuccess={() => {
-          setHasAcceptedTerms(true);
+          acceptAgreement({ version: '1.0.0' });
           setShowAgreementModal(false);
         }} 
       />

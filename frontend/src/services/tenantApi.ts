@@ -1,44 +1,65 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
-const API = '/api';
+const API = (import.meta.env.VITE_API_URL || 'http://localhost:3000') + '/api';
 
-const getAuthHeaders = () => {
+export const tenantClient = axios.create({
+  baseURL: API,
+});
+
+tenantClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token') || localStorage.getItem('token');
-  return {
-    headers: {
-      Authorization: token ? `Bearer ${token}` : '',
-      'Content-Type': 'application/json',
-    },
-  };
-};
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+tenantClient.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    if (error.response?.data && typeof error.response.data === 'object' && 'title' in error.response.data) {
+      const problem = error.response.data as { type: string; title: string; status: number; detail: string };
+      return Promise.reject({
+        isProblemDetail: true,
+        title: problem.title,
+        detail: problem.detail,
+        status: problem.status,
+        type: problem.type
+      });
+    }
+    return Promise.reject({
+      isProblemDetail: false,
+      detail: error.message || 'An unexpected error occurred. Please check your connection.'
+    });
+  }
+);
 
 export const getTenantRentProgress = async () => {
-  const response = await axios.get(`${API}/tenant/rent-progress`, getAuthHeaders());
-  return response.data;
+  const { data } = await tenantClient.get('/tenant/rent-progress');
+  return data;
 };
 
 export const getTenantActivities = async () => {
-  const response = await axios.get(`${API}/tenant/activities`, getAuthHeaders());
-  return response.data;
+  const { data } = await tenantClient.get('/tenant/activities');
+  return data;
 };
 
 export const getTenantWallet = async () => {
-  // Utilizing the global wallet sub-system
-  const response = await axios.get(`${API}/wallets/my-wallet`, getAuthHeaders());
-  return response.data;
+  const { data } = await tenantClient.get('/wallets/my-wallet');
+  return data;
 };
 
 export const getAiIdProfile = async () => {
-  const response = await axios.get(`${API}/v1/personas/ai-id/me`, getAuthHeaders());
-  return response.data;
+  const { data } = await tenantClient.get('/v1/personas/ai-id/me');
+  return data;
 };
 
 export const getTenantAgreementStatus = async () => {
-  const response = await axios.get(`${API}/tenant/agreement-status`, getAuthHeaders());
-  return response.data;
+  const { data } = await tenantClient.get('/tenant/agreement-status');
+  return data;
 };
 
 export const acceptTenantAgreement = async (payload: { version?: string; ipAddress?: string; deviceInfo?: string } = {}) => {
-  const response = await axios.post(`${API}/tenant/accept-agreement`, payload, getAuthHeaders());
-  return response.data;
+  const { data } = await tenantClient.post('/tenant/accept-agreement', payload);
+  return data;
 };
