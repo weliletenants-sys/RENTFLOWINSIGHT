@@ -30,18 +30,27 @@ import prisma from '../prisma/prisma.client';
 
 export const logSecurityEvent = async (params: {
   event: string;
-  user_id?: string;
+  user_id?: string; // Legacy compatibility
   email?: string;
   ip_address?: string;
   user_agent?: string;
+  actor_id?: string;
+  actor_type?: 'admin' | 'user' | string;
+  action?: string;
+  status?: 'success' | 'failure' | string;
   details?: any;
+  timestamp?: string;
 }) => {
   try {
     const detailsStr = params.details ? JSON.stringify(params.details) : null;
     
+    // Unify actor_id with legacy user_id
+    const finalUserId = params.actor_id || params.user_id;
+
     // 1. Log to physical file via Winston
     logger.info(`Security Event: ${params.event}`, {
       ...params,
+      user_id: finalUserId,
       details: detailsStr
     });
 
@@ -49,13 +58,19 @@ export const logSecurityEvent = async (params: {
     await prisma.securityLogs.create({
       data: {
         event: params.event,
-        user_id: params.user_id,
+        user_id: finalUserId,
         email: params.email,
         ip_address: params.ip_address,
         user_agent: params.user_agent,
         details: detailsStr
+        // We don't map new actor_type to Prisma unless we migrate the table physically too
       }
     });
+
+    if (params.actor_type) {
+        // Specifically route audit logs to a JSON payload locally for analysis
+        logger.info(`STRUCTURAL_AUDIT`, params);
+    }
   } catch (error) {
     console.error('Failed to write security log:', error);
   }

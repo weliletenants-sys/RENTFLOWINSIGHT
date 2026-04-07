@@ -41,7 +41,7 @@ export interface COOOverviewMetrics {
 
 export const fetchOverviewMetrics = async (): Promise<COOOverviewMetrics> => {
   try {
-    const response = await axios.get<COOOverviewMetrics>(`${API}/v1/coo/metrics/overview`, getAuthHeaders());
+    const response = await axios.get<COOOverviewMetrics>(`${API}/admin/coo/metrics/overview`, getAuthHeaders());
     return response.data;
   } catch (error: any) {
     if (error.response?.data?.type) {
@@ -53,52 +53,52 @@ export const fetchOverviewMetrics = async (): Promise<COOOverviewMetrics> => {
 };
 
 export const fetchTransactions = async () => {
-  const response = await axios.get(`${API}/v1/coo/metrics/transactions`, getAuthHeaders());
+  const response = await axios.get(`${API}/admin/coo/metrics/transactions`, getAuthHeaders());
   return response.data;
 };
 
 export const fetchCollections = async () => {
-  const response = await axios.get(`${API}/v1/coo/metrics/collections`, getAuthHeaders());
+  const response = await axios.get(`${API}/admin/coo/metrics/collections`, getAuthHeaders());
   return response.data;
 };
 
 export const fetchWallets = async () => {
-  const response = await axios.get(`${API}/v1/coo/metrics/wallets`, getAuthHeaders());
+  const response = await axios.get(`${API}/admin/coo/metrics/wallets`, getAuthHeaders());
   return response.data;
 };
 
 export const fetchWithdrawals = async () => {
-  const response = await axios.get(`${API}/v1/coo/metrics/withdrawals`, getAuthHeaders());
+  const response = await axios.get(`${API}/admin/coo/metrics/withdrawals`, getAuthHeaders());
   return response.data;
 };
 
 export const fetchAnalytics = async () => {
-  const response = await axios.get(`${API}/v1/coo/metrics/analytics`, getAuthHeaders());
+  const response = await axios.get(`${API}/admin/coo/metrics/analytics`, getAuthHeaders());
   return response.data;
 };
 
 export const fetchPartners = async () => {
-  const response = await axios.get(`${API}/v1/coo/metrics/partners`, getAuthHeaders());
+  const response = await axios.get(`${API}/admin/coo/metrics/partners`, getAuthHeaders());
   return response.data;
 };
 
 export const fetchTenants = async () => {
-  const response = await axios.get(`${API}/v1/coo/metrics/tenants`, getAuthHeaders());
+  const response = await axios.get(`${API}/admin/coo/metrics/tenants`, getAuthHeaders());
   return response.data;
 };
 
 export const fetchAlerts = async () => {
-  const response = await axios.get(`${API}/v1/coo/metrics/alerts`, getAuthHeaders());
+  const response = await axios.get(`${API}/admin/coo/metrics/alerts`, getAuthHeaders());
   return response.data;
 };
 
 export const fetchStaff = async () => {
-  const response = await axios.get(`${API}/v1/coo/metrics/staff`, getAuthHeaders());
+  const response = await axios.get(`${API}/admin/coo/metrics/staff`, getAuthHeaders());
   return response.data;
 };
 
 export const fetchOpportunities = async () => {
-  const response = await axios.get(`${API}/v1/coo/opportunities`, getAuthHeaders());
+  const response = await axios.get(`${API}/admin/coo/opportunities`, getAuthHeaders());
   return response.data;
 };
 
@@ -117,7 +117,7 @@ export const getGlobalUsers = async ({ pageParam, search, role, status }: GetUse
     if (role && role !== 'ALL') params.append('role', role);
     if (status && status !== 'ALL') params.append('status', status);
     
-    const response = await axios.get(`${API}/v1/coo/users?${params.toString()}`, getAuthHeaders());
+    const response = await axios.get(`${API}/admin/coo/users?${params.toString()}`, getAuthHeaders());
     return {
       users: response.data.data.users,
       nextCursor: response.data.pagination.next_cursor as string | null,
@@ -133,13 +133,13 @@ export const getGlobalUsers = async ({ pageParam, search, role, status }: GetUse
 };
 
 export const createOpportunity = async (data: any) => {
-  const response = await axios.post(`${API}/v1/coo/opportunities`, data, getAuthHeaders());
+  const response = await axios.post(`${API}/admin/coo/opportunities`, data, getAuthHeaders());
   return response.data;
 };
 
 export const deleteGlobalUsers = async (userIds: string[]) => {
   try {
-    const response = await axios.delete(`${API}/v1/coo/users`, {
+    const response = await axios.delete(`${API}/admin/coo/users`, {
       ...getAuthHeaders(),
       data: { userIds }
     });
@@ -155,7 +155,7 @@ export const deleteGlobalUsers = async (userIds: string[]) => {
 
 export const getGlobalUserProfile = async (id: string) => {
   try {
-    const response = await axios.get(`${API}/v1/coo/users/${id}`, getAuthHeaders());
+    const response = await axios.get(`${API}/admin/coo/users/${id}`, getAuthHeaders());
     return response.data.data.user;
   } catch (error: any) {
     if (error.response?.data?.type) {
@@ -168,7 +168,7 @@ export const getGlobalUserProfile = async (id: string) => {
 
 export const updateGlobalUserProfile = async (id: string, updates: any) => {
   try {
-    const response = await axios.patch(`${API}/v1/coo/users/${id}`, updates, getAuthHeaders());
+    const response = await axios.patch(`${API}/admin/coo/users/${id}`, updates, getAuthHeaders());
     return response.data.data.user;
   } catch (error: any) {
     if (error.response?.data?.type) {
@@ -183,7 +183,7 @@ export const updateGlobalUserProfile = async (id: string, updates: any) => {
 
 export const getPendingDeposits = async () => {
   try {
-    const response = await axios.get(`${API}/v1/coo/deposits/pending`, getAuthHeaders());
+    const response = await axios.get(`${API}/admin/coo/deposits/pending`, getAuthHeaders());
     return response.data.deposits;
   } catch (error: any) {
     if (error.response?.data?.type) {
@@ -201,7 +201,7 @@ export const freezePartnerAccount = async (id: string, is_frozen: boolean) => {
 
 export const fundPartnerWallet = async (id: string, data: any) => {
   try {
-    const response = await axios.post(`${API}/v1/coo/partners/${id}/fund`, data, getAuthHeaders());
+    const response = await axios.post(`${API}/admin/coo/partners/${id}/fund`, data, getAuthHeaders());
     return response.data;
   } catch (error: any) {
     if (error.response?.data?.type) {
@@ -214,7 +214,7 @@ export const fundPartnerWallet = async (id: string, data: any) => {
 
 export const suspendPartnerAccount = async (id: string, reason: string) => {
   try {
-    const response = await axios.post(`${API}/v1/coo/partners/${id}/suspend`, { reason }, getAuthHeaders());
+    const response = await axios.post(`${API}/admin/coo/partners/${id}/suspend`, { reason }, getAuthHeaders());
     return response.data;
   } catch (error: any) {
     if (error.response?.data?.type) {
@@ -227,7 +227,7 @@ export const suspendPartnerAccount = async (id: string, reason: string) => {
 
 export const topUpPortfolio = async (portfolioId: string, data: any) => {
   try {
-    const response = await axios.post(`${API}/v1/coo/portfolios/${portfolioId}/topup`, data, getAuthHeaders());
+    const response = await axios.post(`${API}/admin/coo/portfolios/${portfolioId}/topup`, data, getAuthHeaders());
     return response.data;
   } catch (error: any) {
     if (error.response?.data?.type) {
@@ -240,7 +240,7 @@ export const topUpPortfolio = async (portfolioId: string, data: any) => {
 
 export const renewPortfolio = async (portfolioId: string) => {
   try {
-    const response = await axios.post(`${API}/v1/coo/portfolios/${portfolioId}/renew`, {}, getAuthHeaders());
+    const response = await axios.post(`${API}/admin/coo/portfolios/${portfolioId}/renew`, {}, getAuthHeaders());
     return response.data;
   } catch (error: any) {
     if (error.response?.data?.type) {
@@ -253,7 +253,7 @@ export const renewPortfolio = async (portfolioId: string) => {
 
 export const forwardDeposit = async (id: string) => {
   try {
-    const response = await axios.post(`${API}/v1/coo/deposits/${id}/forward`, {}, getAuthHeaders());
+    const response = await axios.post(`${API}/admin/coo/deposits/${id}/forward`, {}, getAuthHeaders());
     return response.data;
   } catch (error: any) {
     if (error.response?.data?.type) {
@@ -266,7 +266,7 @@ export const forwardDeposit = async (id: string) => {
 
 export const rejectDeposit = async (id: string, reason: string) => {
   try {
-    const response = await axios.post(`${API}/v1/coo/deposits/${id}/reject`, { reason }, getAuthHeaders());
+    const response = await axios.post(`${API}/admin/coo/deposits/${id}/reject`, { reason }, getAuthHeaders());
     return response.data;
   } catch (error: any) {
     if (error.response?.data?.type) {
@@ -279,7 +279,7 @@ export const rejectDeposit = async (id: string, reason: string) => {
 
 export const updatePartnerPortfolio = async (id: string, updates: any) => {
   try {
-    const response = await axios.patch(`${API}/v1/coo/portfolios/${id}`, updates, getAuthHeaders());
+    const response = await axios.patch(`${API}/admin/coo/portfolios/${id}`, updates, getAuthHeaders());
     return response.data;
   } catch (error: any) {
     if (error.response?.data?.type) {
@@ -292,7 +292,7 @@ export const updatePartnerPortfolio = async (id: string, updates: any) => {
 
 export const deletePartnerPortfolio = async (id: string) => {
   try {
-    const response = await axios.delete(`${API}/v1/coo/portfolios/${id}`, getAuthHeaders());
+    const response = await axios.delete(`${API}/admin/coo/portfolios/${id}`, getAuthHeaders());
     return response.data;
   } catch (error: any) {
     if (error.response?.data?.type) {
@@ -305,7 +305,7 @@ export const deletePartnerPortfolio = async (id: string) => {
 
 export const validatePartnersImport = async (partners: any[]) => {
   try {
-    const response = await axios.post(`${API}/v1/coo/partners/import/validate`, { partners }, getAuthHeaders());
+    const response = await axios.post(`${API}/admin/coo/partners/import/validate`, { partners }, getAuthHeaders());
     return response.data.data;
   } catch (error: any) {
     if (error.response?.data?.type) {
@@ -318,7 +318,7 @@ export const validatePartnersImport = async (partners: any[]) => {
 
 export const importPartners = async (partners: any[]) => {
   try {
-    const response = await axios.post(`${API}/v1/coo/partners/import`, { partners }, getAuthHeaders());
+    const response = await axios.post(`${API}/admin/coo/partners/import`, { partners }, getAuthHeaders());
     return response.data;
   } catch (error: any) {
     if (error.response?.data?.type) {
@@ -331,7 +331,7 @@ export const importPartners = async (partners: any[]) => {
 
 export const createPartnerPortfolio = async (id: string, data: any) => {
   try {
-    const response = await axios.post(`${API}/v1/coo/partners/${id}/portfolios`, data, getAuthHeaders());
+    const response = await axios.post(`${API}/admin/coo/partners/${id}/portfolios`, data, getAuthHeaders());
     return response.data;
   } catch (error: any) {
     if (error.response?.data?.type) {

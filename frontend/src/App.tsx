@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 
 import ProtectedRoute from './components/ProtectedRoute';
+import { DomainGuard } from './components/DomainGuard';
 import AdaptiveConsumerDashboard from './portals/consumer/AdaptiveConsumerDashboard';
 
 // Dashboard sub-routes from HEAD
@@ -130,8 +131,8 @@ function App() {
           <BrowserRouter>
             <Toaster position="top-center" toastOptions={{ duration: 4000, style: { background: '#1e293b', color: '#fff', borderRadius: '12px' } }} />
             <Suspense fallback={<PageLoader />}>
-              <Routes>
-                {/* Public / auth routes */}
+              <DomainGuard>
+                <Routes>
                 {publicRoutes}
 
                 {/* Role-specific routes */}
@@ -179,6 +180,7 @@ function App() {
                   </div>
                 } />
               </Routes>
+              </DomainGuard>
             </Suspense>
           </BrowserRouter>
         </AuthProvider>

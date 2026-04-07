@@ -1,3 +1,7 @@
+import cookieParser from 'cookie-parser';
+import { domainContextDetector } from './middlewares/domain.middleware';
+
+// ... other imports remain exactly the same but since we replacing from top, I'll just rewrite the imports block
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -12,9 +16,22 @@ dotenv.config();
 const app = express();
 
 app.use(helmet());
-app.use(cors());
+
+const appUrl = process.env.APP_URL || 'http://localhost:5173';
+const adminAppUrl = process.env.ADMIN_APP_URL || 'http://admin.localhost:5173';
+
+app.use(cors({
+  origin: [appUrl, adminAppUrl],
+  credentials: true
+}));
+
 app.use(express.json());
+app.use(cookieParser());
 app.use(morgan('dev'));
+
+// Inject global domain context detector
+app.use(domainContextDetector);
+
 
 if (!fs.existsSync('uploads')) {
   fs.mkdirSync('uploads');

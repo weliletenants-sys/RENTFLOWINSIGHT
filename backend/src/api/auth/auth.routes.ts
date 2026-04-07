@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
-import { register, login, ssoLogin, sendOTP, verifyOTP, logout, forgotPassword, verifyResetCode, resetPassword } from '../../controllers/auth.controller';
+import { register, userLogin, ssoLogin, sendOTP, verifyOTP, logout, forgotPassword, verifyResetCode, resetPassword } from '../../controllers/auth.controller';
 import { changePassword, enable2FA, verify2FA, disable2FA, getSessions, revokeSession, revokeAllOtherSessions } from '../../controllers/auth.security.controller';
-import { authGuard } from '../../middlewares/auth.middleware';
+import { ensureUserAuthenticated } from '../../middlewares/auth.middleware';
 
 const router = Router();
 
@@ -38,9 +38,9 @@ const authLimiter = rateLimit({
 });
 
 router.post('/registrations', authLimiter, register);
-router.post('/sessions', loginLimiter, login);
+router.post('/login', loginLimiter, userLogin);
 router.post('/sessions/sso', loginLimiter, ssoLogin);
-router.delete('/sessions', authGuard, logout);
+router.post('/logout', ensureUserAuthenticated, logout);
 router.post('/otp', authLimiter, sendOTP);
 router.post('/otp/verifications', authLimiter, verifyOTP);
 
@@ -50,15 +50,15 @@ router.post('/forgot-password/verify', authLimiter, verifyResetCode);
 router.post('/forgot-password/reset', authLimiter, resetPassword);
 
 // Security & 2FA (Authenticated Flows)
-router.put('/security/password', authGuard, changePassword);
-router.post('/security/2fa/enable', authGuard, enable2FA);
-router.post('/security/2fa/verify', authGuard, verify2FA);
-router.post('/security/2fa/disable', authGuard, disable2FA);
+router.put('/security/password', ensureUserAuthenticated, changePassword);
+router.post('/security/2fa/enable', ensureUserAuthenticated, enable2FA);
+router.post('/security/2fa/verify', ensureUserAuthenticated, verify2FA);
+router.post('/security/2fa/disable', ensureUserAuthenticated, disable2FA);
 
 // Session History Management
-router.get('/security/sessions', authGuard, getSessions);
-router.delete('/security/sessions', authGuard, revokeAllOtherSessions);
-router.delete('/security/sessions/:id', authGuard, revokeSession);
+router.get('/security/sessions', ensureUserAuthenticated, getSessions);
+router.delete('/security/sessions', ensureUserAuthenticated, revokeAllOtherSessions);
+router.delete('/security/sessions/:id', ensureUserAuthenticated, revokeSession);
 
 export default router;
 
