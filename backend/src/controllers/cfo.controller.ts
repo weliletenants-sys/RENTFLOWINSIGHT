@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { problemResponse } from '../utils/problem';
+import { CfoService } from '../services/cfo.service';
 
 const prisma = new PrismaClient();
 
@@ -46,130 +47,28 @@ const getDateFilters = (query: any) => {
 };
 
 
-// 1. Overview Tab Data
+// 1. Overview Tab Data (Refactored to Three-Tier Architecture)
 export const getOverview = async (req: Request, res: Response) => {
   try {
-    const { dateFilter, createdFilter } = getDateFilters(req.query);
+    const overview = await CfoService.getLedgerOverview();
+    const risks = await CfoService.getRiskAlerts();
     
-    // Total Wallet Balances
-    const wallets = await prisma.wallets.aggregate({ _sum: { balance: true } });
-    const totalWalletBalance = wallets._sum.balance || 0;
-
-
-    // Total Partner Capital (Funder Portfolios)
-    const portfolios = await prisma.investorPortfolios.aggregate({
-      where: { status: 'ACTIVE' },
-      _sum: { investment_amount: true, total_roi_earned: true }
-    });
-    const totalPartnerCapital = (portfolios._sum.investment_amount || 0) + (portfolios._sum.total_roi_earned || 0);
-
-    // Deposits (from Ledger or Deposits table)
-    const deposits = await prisma.generalLedger.aggregate({
-      where: { category: 'deposit', direction: 'credit', ...dateFilter },
-      _sum: { amount: true }
-    });
-
-    // Withdrawals
-    const withdrawals = await prisma.generalLedger.aggregate({
-      where: { category: 'withdrawal', direction: 'debit', ...dateFilter },
-      _sum: { amount: true }
-    });
-
-    // Platform Fees
-    const fees = await prisma.generalLedger.aggregate({
-      where: { category: 'platform_fee', direction: 'credit', ...dateFilter },
-      _sum: { amount: true }
-    });
-
-    // Pending Repayments
-    const rentRequests = await prisma.rentRequests.findMany({
-      where: { status: 'DISBURSED', ...createdFilter }
-    });
-    
-    let pendingRepayments = 0;
-    let capitalDeployed = 0;
-    for (const rr of rentRequests) {
-      const principal = Number(rr.total_repayment) || 0;
-      capitalDeployed += principal;
-      const remaining = principal - Number(rr.amount_repaid);
-      if (remaining > 0) pendingRepayments += remaining;
-    }
-
-    // Counts
-    const [totalUsers, totalAgents, totalTenants, totalSupporters] = await Promise.all([
-      prisma.profiles.count({ where: { verified: true } }),
-      prisma.profiles.count({ where: { role: { in: ['AGENT', 'agent', 'partner'] } } }),
-      prisma.profiles.count({ where: { role: { in: ['TENANT', 'tenant'] } } }),
-      prisma.profiles.count({ where: { role: { in: ['FUNDER', 'funder', 'SUPPORTER', 'supporter'] } } })
-    ]);
-
-    // Live Financial Charts derived from the General Ledger
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    
-    const recentLedger = await prisma.generalLedger.findMany({
-      where: { created_at: { gte: sevenDaysAgo.toISOString() } },
-      select: {
-        amount: true,
-        direction: true,
-        category: true,
-        created_at: true
-      }
-    });
-
-    const trendMap: Record<string, { profit: number; inflow: number; outflow: number }> = {};
-    
-    recentLedger.forEach(entry => {
-      // safely slice the ISO string to just YYYY-MM-DD
-      const day = entry.created_at.split('T')[0];
-      if (!trendMap[day]) {
-        trendMap[day] = { profit: 0, inflow: 0, outflow: 0 };
-      }
-      
-      const val = entry.amount || 0;
-      if (entry.direction === 'credit') {
-        trendMap[day].inflow += val;
-        if (entry.category === 'platform_fee' || entry.category === 'commission') {
-          trendMap[day].profit += val;
-        }
-      } else if (entry.direction === 'debit') {
-        trendMap[day].outflow += val;
-      }
-    });
-
-    const trends = Object.keys(trendMap).sort().map(date => ({
-      date,
-      profit: trendMap[date].profit,
-      inflow: trendMap[date].inflow,
-      outflow: trendMap[date].outflow
-    }));
-
     res.json({
-      metrics: {
-        totalWalletBalance,
-        totalPartnerCapital,
-        capitalDeployed,
-        outstandingReceivables: pendingRepayments,
-        deposits: deposits._sum.amount || 0,
-        withdrawals: withdrawals._sum.amount || 0,
-        platformFees: fees._sum.amount || 0,
-        pendingRepayments,
-        transfers: 0,
-        agentEarnings: 0,
-        commissions: 0,
-        bonuses: 0,
-        rentFacilitated: capitalDeployed
-      },
-      counts: {
-        totalUsers,
-        totalAgents,
-        totalTenants,
-        totalSupporters
-      },
-      trends
+      metrics: overview,
+      alerts: risks
     });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    return problemResponse(res, 500, 'Internal Server Error', error.message, 'internal-server-error');
+  }
+};
+
+// 1.5 ROI Dashboard Data
+export const getRoiDashboard = async (req: Request, res: Response) => {
+  try {
+    const roiData = await CfoService.getRoiDashboard();
+    res.json(roiData);
+  } catch (error: any) {
+    return problemResponse(res, 500, 'Internal Server Error', error.message, 'internal-server-error');
   }
 };
 

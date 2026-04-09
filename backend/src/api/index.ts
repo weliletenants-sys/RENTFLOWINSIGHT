@@ -17,6 +17,7 @@ import rolesRoutes from './roles/roles.routes';
 import notificationsRoutes from './notifications/notifications.routes';
 import propertiesRoutes from './properties/properties.routes';
 import marketplaceRoutes from './marketplace/marketplace.routes';
+import ownerRoutes from './owner/owner.routes';
 
 // ─── ADMIN ROUTES (Admin Domain) ───
 import adminAuthRoutes from './auth/adminAuth.routes';
@@ -29,6 +30,9 @@ import executiveRoutes from './executive/executive.routes';
 import superadminRoutes from './superadmin/superadmin.routes';
 import managerRoutes from './manager/manager.routes';
 import welileHomesRoutes from './welile-homes/welile-homes.routes';
+import hrRoutes from './hr/hr.routes';
+import finopsRoutes from './ops/finops.routes';
+import opsRoutes from './ops/index';
 
 const api = Router();
 
@@ -50,6 +54,9 @@ adminRouter.use('/executive', executiveRoutes);
 adminRouter.use('/superadmin', superadminRoutes);
 adminRouter.use('/manager', managerRoutes);
 adminRouter.use('/welile-homes', welileHomesRoutes);
+adminRouter.use('/hr', hrRoutes);
+adminRouter.use('/finops', finopsRoutes);
+adminRouter.use('/ops', opsRoutes);
 
 api.use('/admin', adminRouter);
 
@@ -72,6 +79,7 @@ userRouter.use('/roles', rolesRoutes);
 userRouter.use('/notifications', notificationsRoutes);
 userRouter.use('/properties', propertiesRoutes);
 userRouter.use('/marketplace', marketplaceRoutes);
+userRouter.use('/owner', ownerRoutes);
 
 api.use('/', userRouter);
 

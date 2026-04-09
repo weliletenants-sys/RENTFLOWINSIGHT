@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
@@ -14,13 +14,12 @@ import AgentEarnings from './agent/AgentEarnings';
 import AgentClients from './agent/AgentClients';
 import StaffPortal from './portals/staff/StaffPortal';
 import AgentSettings from './agent/AgentSettings';
-import CfoDashboard from './admin/cfo/CfoDashboard';
-import CrmDashboard from './admin/crm/CrmDashboard';
 // CEO Routes now dynamically lazy-loaded by ceoRoutes.tsx
 import TenantPayments from './tenant/TenantPayments';
 import TenantProfile from './tenant/TenantProfile';
 
 import AdminLogin from './pages/auth/AdminLogin';
+import DashboardAccessPanel from './admin/DashboardAccessPanel';
 
 // --- Role-based route groups ---
 import { publicRoutes } from './routes/publicRoutes';
@@ -32,6 +31,7 @@ import { executiveRoutes } from './routes/executiveRoutes';
 import { superAdminRoutes } from './routes/superAdminRoutes';
 import { managerRoutes } from './routes/managerRoutes';
 import { ceoRoutes } from './routes/ceoRoutes';
+import { adminOpsRoutes, hrRoutes } from './routes/adminOpsRoutes';
 
 const queryClient = new QueryClient();
 
@@ -75,7 +75,7 @@ class GlobalErrorBoundary extends React.Component<{ children: React.ReactNode },
     
     if (isChunkLoadError) {
       // Prevent infinite reload loops by setting a short-lived flag in sessionStorage
-      const reloadKey = 'welile_chunk_retried';
+      const reloadKey = 'welile_chunk_retried_v2';
       const hasRetried = sessionStorage.getItem(reloadKey);
       
       if (!hasRetried) {
@@ -91,7 +91,7 @@ class GlobalErrorBoundary extends React.Component<{ children: React.ReactNode },
     if (this.state.hasError) {
       const isChunkLoadError = /Failed to fetch dynamically imported module/i.test(this.state.error?.message || '');
       // If we are about to reload, show a friendly spinner instead of the red crash screen
-      if (isChunkLoadError && sessionStorage.getItem('welile_chunk_retried')) {
+      if (isChunkLoadError && sessionStorage.getItem('welile_chunk_retried_v2')) {
         return (
           <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#FAFAFA', fontFamily: 'sans-serif' }}>
             <div style={{ width: 40, height: 40, borderRadius: '50%', border: '3px solid #E8DBFC', borderTopColor: '#6c11d4', animation: 'spin 0.7s linear infinite', marginBottom: 20 }} />
@@ -143,8 +143,16 @@ function App() {
                 {managerRoutes}
                 {ceoRoutes}
 
-                {/* Admin Routes */}
-                <Route path="/admin/login" element={<AdminLogin />} />
+                {/* Admin Routing Tree (Secured by DomainGuard + Auth) */}
+                <Route path="/admin">
+                    <Route path="login" element={<AdminLogin />} />
+                    <Route element={<ProtectedRoute />}>
+                        <Route path="dashboard" element={<DashboardAccessPanel />} />
+                        {executiveRoutes}
+                        {adminOpsRoutes}
+                        {hrRoutes}
+                    </Route>
+                </Route>
                 
                 {/* Super Admin Control Panel */}
                 {superAdminRoutes}
@@ -159,14 +167,9 @@ function App() {
                   <Route path="/dashboard/agent/earnings" element={<AgentEarnings />} />
                   <Route path="/dashboard/agent/clients" element={<AgentClients />} />
                   <Route path="/dashboard/agent/settings" element={<AgentSettings />} />
-                  <Route path="/cfo" element={<CfoDashboard />} />
-                  <Route path="/cfo/dashboard" element={<CfoDashboard />} />
-                  <Route path="/crm/dashboard" element={<CrmDashboard />} />
+                  <Route path="/crm/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
                   <Route path="/dashboard/tenant/payments" element={<TenantPayments />} />
                   <Route path="/dashboard/tenant/profile" element={<TenantProfile />} />
-                  
-                  {/* Executive Hub (CEO, CTO, CMO, CRM, CFO...) */}
-                  {executiveRoutes}
                 </Route>
 
                 {/* Fallback */}

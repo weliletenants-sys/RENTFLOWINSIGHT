@@ -12,13 +12,15 @@ import {
   approveCommission,
   rejectCommission,
   getPredictiveRunway,
-  getForwardedDeposits
+  getForwardedDeposits,
+  getRoiDashboard
 } from '../../controllers/cfo.controller';
 
 const router = express.Router();
 
 // Analytics Engine
 router.get('/analytics/runway', getPredictiveRunway);
+router.get('/analytics/roi', getRoiDashboard);
 
 // Dashboard Overview
 router.get('/statistics/overview', getOverview);

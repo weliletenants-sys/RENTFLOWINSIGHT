@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ShoppingBag, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import ProductCard from './ProductCard';
 import CartDrawer from './CartDrawer';
 

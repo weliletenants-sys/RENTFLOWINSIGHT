@@ -12,7 +12,11 @@ export default function ProtectedRoute({ children }: { children?: ReactNode }) {
 
   if (!user) {
     const isFunderRoute = location.pathname.startsWith('/funder');
-    return <Navigate to={isFunderRoute ? '/funder/login' : '/login'} replace />;
+    const isAdminRoute = location.pathname.startsWith('/admin');
+    
+    if (isAdminRoute) return <Navigate to="/admin/login" replace />;
+    if (isFunderRoute) return <Navigate to="/funder/login" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return children ? <>{children}</> : <Outlet />;

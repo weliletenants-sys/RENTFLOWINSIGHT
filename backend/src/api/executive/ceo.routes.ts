@@ -1,5 +1,9 @@
 import { Router } from 'express';
-import { getCeoKpis, getGrowthMetrics, getCharts, getRentRequestsTable, getRevenueTrajectory, getUserAcquisitionTrends, getPlatformLiquidityHealth, getStaffPerformanceMetrics } from './ceo.controller';
+import { 
+  getCeoKpis, getGrowthMetrics, getCharts, getRentRequestsTable, 
+  getRevenueTrajectory, getUserAcquisitionTrends, getPlatformLiquidityHealth, 
+  getStaffPerformanceMetrics, getAngelPoolMetrics 
+} from './ceo.controller';
 
 const router = Router();
 
@@ -14,5 +18,6 @@ router.get('/staff-performance', getStaffPerformanceMetrics);
 router.get('/revenue-trajectory', getRevenueTrajectory);
 router.get('/user-acquisition', getUserAcquisitionTrends);
 router.get('/liquidity-health', getPlatformLiquidityHealth);
+router.get('/angel-pool', getAngelPoolMetrics);
 
 export default router;

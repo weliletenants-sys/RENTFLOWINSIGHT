@@ -296,3 +296,48 @@ export const getStaffPerformanceMetrics = async (req: Request, res: Response) =>
     return problemResponse(res, 500, 'Internal Error', 'Failed to fetch staff performance metrics', 'urn:welile:error:ceo:performance');
   }
 };
+
+export const getAngelPoolMetrics = async (req: Request, res: Response) => {
+  try {
+    const cached = getCached('ceo_angel_pool');
+    if (cached) return res.status(200).json(cached);
+
+    // Aggregate InvestorPortfolios
+    const avgQuery = await prisma.investorPortfolios.aggregate({
+      _avg: { investment_amount: true },
+      _count: { _all: true }
+    });
+
+    const averagePortfolioSize = avgQuery._avg.investment_amount || 0;
+    const totalInvestors = avgQuery._count._all || 0;
+
+    // Simulate Tier 1 vs Tier 2 based on threshold (e.g., > 50M UGX)
+    const tier1Count = await prisma.investorPortfolios.count({
+      where: { investment_amount: { gte: 50000000 } }
+    });
+
+    const tier2Count = totalInvestors - tier1Count;
+
+    // Simulated velocity trend line since no ledger velocity tracking exists natively yet
+    const liquidityVelocity = [
+      { month: 'Jan', velocity: 1.1 },
+      { month: 'Feb', velocity: 1.8 },
+      { month: 'Mar', velocity: 1.4 },
+      { month: 'Apr', velocity: 2.3 },
+      { month: 'May', velocity: 2.7 }
+    ];
+
+    const data = {
+      tier1Count,
+      tier2Count,
+      averagePortfolioSize,
+      globalRegions: 14, // Simulated geographical spread
+      liquidityVelocity
+    };
+
+    setCache('ceo_angel_pool', data);
+    return res.status(200).json(data);
+  } catch (error) {
+    return problemResponse(res, 500, 'Internal Error', 'Failed to fetch angel pool metrics', 'urn:welile:error:ceo:angel-pool');
+  }
+};

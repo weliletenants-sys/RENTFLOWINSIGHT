@@ -8,7 +8,7 @@ export default function FunderInvestCTA({ onStartsupporting }: FunderInvestCTAPr
   const [opportunities, setOpportunities] = useState<any[]>([]);
 
   useEffect(() => {
-    import('../services/funderApi').then(({ getFunderOpportunities }) => {
+    import('../../services/funderApi').then(({ getFunderOpportunities }) => {
       getFunderOpportunities().then(ops => {
         setOpportunities(ops.slice(0, 2).map((op: any) => ({
           id: op.id,

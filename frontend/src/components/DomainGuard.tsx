@@ -23,7 +23,13 @@ export const DomainGuard: React.FC<{ children: React.ReactNode }> = ({ children 
         }
 
         // 2. If trying to hit User routes on Admin Domain
-        if (!requestingAdminRoute && isAdminDomain && currentPath !== '/login' && currentPath !== '/' && !currentPath.startsWith('/admin')) {
+        if (!requestingAdminRoute && isAdminDomain && currentPath !== '/login' && !currentPath.startsWith('/admin')) {
+             if (currentPath === '/') {
+                 // For root hits on the Admin Domain, force a redirect to the dashboard layer 
+                 // where auth interceptors will handle passing to login if needed.
+                 window.location.replace('/admin/dashboard');
+                 return;
+             }
              setStatus('forbidden');
              return;
         }

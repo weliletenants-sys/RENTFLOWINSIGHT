@@ -18,9 +18,9 @@ export default function AdminLogin() {
   // If already logged in, redirect to admin dashboard (or normal dashboard based on permission)
   useEffect(() => {
     if (user) {
-      if (user.role === 'CEO') navigate('/ceo/dashboard');
-      else if (user.role === 'COO') navigate('/coo/overview');
-      else if (user.role === 'CFO') navigate('/cfo/dashboard');
+      if (user.role === 'CEO') navigate('/admin/executive/ceo');
+      else if (user.role === 'COO') navigate('/admin/executive/coo');
+      else if (user.role === 'CFO') navigate('/admin/executive/cfo');
       else navigate('/admin/dashboard');
     }
   }, [user, navigate]);
@@ -46,9 +46,9 @@ export default function AdminLogin() {
         updateSession('dummy-token-admin_' + u.role, u);
         toast.success(`Admin authorization granted (${u.role}).`);
         
-        if (u.role === 'CEO') navigate('/ceo/dashboard');
-        else if (u.role === 'COO') navigate('/coo/overview');
-        else if (u.role === 'CFO') navigate('/cfo/dashboard');
+        if (u.role === 'CEO') navigate('/admin/executive/ceo');
+        else if (u.role === 'COO') navigate('/admin/executive/coo');
+        else if (u.role === 'CFO') navigate('/admin/executive/cfo');
         else navigate('/admin/dashboard');
         return;
     }
@@ -66,9 +66,9 @@ export default function AdminLogin() {
         }
         updateSession(access_token, user);
         toast.success(`Admin authorization granted (${user.role}).`);
-        if (user.role === 'CEO') navigate('/ceo/dashboard');
-        else if (user.role === 'COO') navigate('/coo/overview');
-        else if (user.role === 'CFO') navigate('/cfo/dashboard');
+        if (user.role === 'CEO') navigate('/admin/executive/ceo');
+        else if (user.role === 'COO') navigate('/admin/executive/coo');
+        else if (user.role === 'CFO') navigate('/admin/executive/cfo');
         else navigate('/admin/dashboard');
       }
     } catch (err: any) {

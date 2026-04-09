@@ -320,9 +320,23 @@ model GeneralLedger {
   user_id              String?
   from_bucket          String?
   to_bucket            String?
+  role_type            String?
+  scope                String?
+  account_type         String?
 
   @@map("general_ledger")
 }
+
+model SystemSettings {
+  id         String  @id @default(uuid())
+  key        String  @unique
+  value      String
+  updated_by String?
+  updated_at String
+
+  @@map("system_settings")
+}
+
 
 model InvestmentWithdrawalRequests {
   amount                Float
@@ -1838,4 +1852,74 @@ model RolePermissions {
 
   @@unique([role, permission_id])
   @@map("role_permissions")
+}
+
+model LeaveRequests {
+  id          String  @id @default(uuid())
+  user_id     String?
+  leave_type  String
+  start_date  String
+  end_date    String
+  reason      String?
+  status      String  @default("pending")
+  reviewer_id String?
+  reviewed_at String?
+  created_at  String
+  updated_at  String
+
+  @@map("leave_requests")
+}
+
+model DisciplinaryRecords {
+  id           String  @id @default(uuid())
+  user_id      String?
+  issuer_id    String?
+  type         String
+  severity     String?
+  description  String?
+  evidence_url String?
+  issued_at    String
+  created_at   String
+  updated_at   String
+
+  @@map("disciplinary_records")
+}
+
+model PayrollBatches {
+  id              String  @id @default(uuid())
+  batch_name      String
+  period_start    String
+  period_end      String
+  status          String  @default("draft")
+  submitted_by    String?
+  approved_by_cfo String?
+  total_amount    Float
+  created_at      String
+  updated_at      String
+
+  @@map("payroll_batches")
+}
+
+model FinancialAgents {
+  id               String  @id @default(uuid())
+  agent_id         String?
+  expense_category String
+  assigned_by      String?
+  created_at       String
+  updated_at       String
+
+  @@map("financial_agents")
+}
+
+model ProxyAgentAssignments {
+  id          String  @id @default(uuid())
+  agent_id    String?
+  partner_id  String?
+  status      String  @default("pending")
+  assigned_by String?
+  assigned_at String?
+  created_at  String
+  updated_at  String
+
+  @@map("proxy_agent_assignments")
 }
