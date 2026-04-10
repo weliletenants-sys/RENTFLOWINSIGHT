@@ -77,13 +77,38 @@ export const ensureAdminAuthenticated = async (req: Request, res: Response, next
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded: any = jwt.verify(token, JWT_SECRET);
     const session = await prisma.sessions.findUnique({ where: { token } });
     if (session && session.is_revoked) {
       return res.status(401).json({ message: 'Unauthorized: Session revoked' });
     }
 
     req.user = decoded;
+    
+    // Explicit server-side role validation against the database as Source of Truth
+    const userId = req.user.id || req.user.sub || req.user.userId;
+    
+    if (!userId) {
+       return res.status(401).json({ message: 'Unauthorized: Invalid token payload format' });
+    }
+    
+    const dbUser = await prisma.profiles.findUnique({ where: { id: userId } });
+    
+    if (!dbUser || !dbUser.role) {
+       return res.status(403).json({ message: 'Forbidden: Unauthorized payload in Database.' });
+    }
+    
+    // Evaluate Dynamic Spatie RBAC Permissions
+    if (dbUser.role !== 'SUPER_ADMIN') {
+       const hasAdminAccess = await PermissionService.hasPermission(dbUser.role, 'admin-dashboard');
+       if (!hasAdminAccess) {
+          return res.status(403).json({ message: 'Forbidden: Role lacks [admin-dashboard] system-level permission.' });
+       }
+    }
+    
+    // Enforce the live DB role into the pipeline to prevent executing on stale JWT data
+    req.user.role = dbUser.role;
+
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Unauthorized: Invalid admin token' });

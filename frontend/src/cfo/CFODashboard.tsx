@@ -48,7 +48,7 @@ export default function CFODashboard() {
   const navigate = useNavigate();
 
   return (
-    <ExecutiveDashboardLayout title="Finance Workspace">
+    <ExecutiveDashboardLayout role="cfo" title="Finance Workspace">
       <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-slate-50">
         
         {/* Massive 30+ Tab Sidebar from Mockup */}

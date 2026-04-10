@@ -6,12 +6,28 @@ const api = axios.create({
 
 // Attach JWT token to requests if available
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('executive_token') || localStorage.getItem('token');
-  if (token) {
+  const token = sessionStorage.getItem('access_token') || localStorage.getItem('access_token') || localStorage.getItem('executive_token') || localStorage.getItem('token');
+  if (token && token !== 'undefined' && token !== 'null') {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      sessionStorage.removeItem('access_token');
+      sessionStorage.removeItem('user_data');
+      if (typeof window !== 'undefined') {
+        if (!window.location.pathname.includes('/login')) {
+          window.location.replace('/admin/login');
+        }
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Overview & Analytics
 export const getCfoOverview = async () => {
