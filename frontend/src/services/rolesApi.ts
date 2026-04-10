@@ -3,7 +3,7 @@ import axios from 'axios';
 const API = (import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:3000')) + '/api';
 
 function authHeaders() {
-  const token = localStorage.getItem('access_token');
+  const token = sessionStorage.getItem('access_token') || localStorage.getItem('access_token');
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 

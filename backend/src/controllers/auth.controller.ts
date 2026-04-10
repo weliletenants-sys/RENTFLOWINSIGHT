@@ -197,8 +197,8 @@ export const adminLogin = async (req: Request, res: Response): Promise<any> => {
       httpOnly: true,
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
-      domain: process.env.ADMIN_SESSION_DOMAIN || 'admin.localhost',
-      maxAge: 8 * 60 * 60 * 1000 // 8 hours
+      domain: process.env.ADMIN_SESSION_DOMAIN || 'admin.localhost'
+      // maxAge intentionally omitted to ensure the session dies automatically when the browser is closed.
     });
 
     return res.status(200).json({ status: 'success', message: 'Admin authenticated tightly securely.', data: { onboarding_url, user } });

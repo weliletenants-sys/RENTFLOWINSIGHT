@@ -38,7 +38,7 @@ export default function AdminLogin() {
       
       if (res.status === 'success') {
         const { access_token, user, onboarding_url } = res.data;
-        updateSession(access_token, user);
+        updateSession(access_token, user, true); // True to enforce ephemeral admin session
         toast.success(`Admin access granted (${user.role}).`);
         navigate(onboarding_url || '/admin/dashboard');
       }

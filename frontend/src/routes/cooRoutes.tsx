@@ -1,6 +1,7 @@
 import { lazy } from 'react';
 import { Route, Navigate } from 'react-router-dom';
-import COOLayout from '../admin/coo/components/COOLayout';
+import ProtectedRoute from '../components/ProtectedRoute';
+import { ExecutiveDashboardLayout } from '../components/layout/ExecutiveDashboardLayout';
 
 const COOOverview = lazy(() => import('../admin/coo/COOOverview'));
 const COOTransactions = lazy(() => import('../admin/coo/COOTransactions'));
@@ -18,22 +19,38 @@ const COOTenants = lazy(() => import('../admin/coo/COOTenants'));
 const COOStaffPerformance = lazy(() => import('../admin/coo/COOStaffPerformance'));
 const COOOpportunities = lazy(() => import('../admin/coo/COOOpportunities'));
 
-export const cooRoutes = [
-  <Route key="coo-index" path="/coo" element={<Navigate to="/coo/dashboard" replace />} />,
-  <Route key="coo-dashboard" path="/coo/dashboard" element={<Navigate to="/coo/overview" replace />} />,
-  <Route key="coo-overview" path="/coo/overview" element={<COOLayout pageTitle="Overview"><COOOverview /></COOLayout>} />,
-  <Route key="coo-transactions" path="/coo/transactions" element={<COOLayout pageTitle="Financial Ledger"><COOTransactions /></COOLayout>} />,
-  <Route key="coo-collections" path="/coo/collections" element={<COOLayout pageTitle="Agent Collections"><COOCollections /></COOLayout>} />,
-  <Route key="coo-wallets" path="/coo/wallets" element={<COOLayout pageTitle="Wallet Monitoring"><COOWallets /></COOLayout>} />,
-  <Route key="coo-analytics" path="/coo/analytics" element={<COOLayout pageTitle="Payment Analytics"><COOAnalytics /></COOLayout>} />,
-  <Route key="coo-reports" path="/coo/reports" element={<COOLayout pageTitle="Financial Reports"><COOReports /></COOLayout>} />,
-  <Route key="coo-alerts" path="/coo/alerts" element={<COOLayout pageTitle="Risk & Alerts"><COOAlerts /></COOLayout>} />,
-  <Route key="coo-users" path="/coo/users" element={<COOLayout pageTitle="Global Users Registry"><COOUsers /></COOLayout>} />,
-  <Route key="coo-user-profile" path="/coo/users/:id" element={<COOLayout pageTitle="Identity Management"><COOUserProfile /></COOLayout>} />,
-  <Route key="coo-withdrawals" path="/coo/withdrawals" element={<COOLayout pageTitle="Withdrawals Engine"><COOWithdrawals /></COOLayout>} />,
-  <Route key="coo-deposits" path="/coo/deposits" element={<COOLayout pageTitle="Deposit Tracking"><COODeposits /></COOLayout>} />,
-  <Route key="coo-partners" path="/coo/partners" element={<COOLayout pageTitle="Partners Governance"><COOPartnersPage /></COOLayout>} />,
-  <Route key="coo-tenants" path="/coo/tenants" element={<COOLayout pageTitle="Tenants Management"><COOTenants /></COOLayout>} />,
-  <Route key="coo-staff-performance" path="/coo/staff-performance" element={<COOLayout pageTitle="Staff Performance"><COOStaffPerformance /></COOLayout>} />,
-  <Route key="coo-opportunities" path="/coo/opportunities" element={<COOLayout pageTitle="Virtual Opportunities"><COOOpportunities /></COOLayout>} />,
-];
+export const cooRoutes = (
+  <Route element={<ProtectedRoute />}>
+    <Route path="/admin/coo" element={<ExecutiveDashboardLayout role="coo" />}>
+      <Route index element={<Navigate to="/admin/coo/overview" replace />} />
+      <Route path="dashboard" element={<Navigate to="/admin/coo/overview" replace />} />
+      
+      {/* Financial Operations */}
+      <Route path="overview" element={<COOOverview />} />
+      <Route path="transactions" element={<COOTransactions />} />
+      <Route path="collections" element={<COOCollections />} />
+      <Route path="wallets" element={<COOWallets />} />
+      <Route path="analytics" element={<COOAnalytics />} />
+      <Route path="agent-activity" element={<COOUsers />} />
+      
+      {/* Governance */}
+      <Route path="reports" element={<COOReports />} />
+      <Route path="alerts" element={<COOAlerts />} />
+      <Route path="withdrawals" element={<COOWithdrawals />} />
+      <Route path="partners" element={<COOPartnersPage />} />
+      <Route path="partner-finance" element={<COODeposits />} />
+      <Route path="staff-performance" element={<COOStaffPerformance />} />
+      
+      {/* Other mappings not strictly in side-bar but accessible */}
+      <Route path="rent-approvals" element={<COOOverview />} />
+      <Route path="partner-topups" element={<COODeposits />} />
+      <Route path="users" element={<COOUsers />} />
+      <Route path="users/:id" element={<COOUserProfile />} />
+      <Route path="deposits" element={<COODeposits />} />
+      <Route path="tenants" element={<COOTenants />} />
+      <Route path="opportunities" element={<COOOpportunities />} />
+      
+      <Route path="*" element={<Navigate to="/admin/coo/overview" replace />} />
+    </Route>
+  </Route>
+);

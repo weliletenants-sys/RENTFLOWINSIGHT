@@ -42,7 +42,7 @@ export const updateFunderProfile = async (firstName: string, lastName: string, e
 
 export const uploadFunderAvatar = async (formData: FormData) => {
   // Overriding content-type for multipart boundaries
-  const token = localStorage.getItem('access_token');
+  const token = sessionStorage.getItem('access_token') || localStorage.getItem('access_token');
   const response = await axios.post(`${API}/funder/kyc/avatar`, formData, {
     headers: {
       Authorization: token ? `Bearer ${token}` : '',

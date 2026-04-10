@@ -24,7 +24,7 @@ interface AuthContextType {
   login: (userData: User) => void;
   logout: () => void;
   switchRoleMode: (newRole: Role) => void;
-  updateSession: (token: string, userData: User) => void;
+  updateSession: (token: string, userData: User, ephemeral?: boolean) => void;
   originalRole: Role;
   intendedRole: Role;
   setIntendedRole: (role: Role) => void;
@@ -36,10 +36,10 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  // Initialize user from local storage if available, otherwise null
+  // Initialize user from local storage or session storage if available, otherwise null
   const [user, setUser] = useState<User | null>(() => {
-    const token = localStorage.getItem('access_token');
-    const storedUser = localStorage.getItem('user_data');
+    const token = sessionStorage.getItem('access_token') || localStorage.getItem('access_token');
+    const storedUser = sessionStorage.getItem('user_data') || localStorage.getItem('user_data');
     
     if (token && storedUser) {
       try {
@@ -68,7 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   // Track the absolute original role so we don't lose admin privileges when switching views
   const [originalRole, setOriginalRole] = useState<Role>(() => {
-    const storedUser = localStorage.getItem('user_data');
+    const storedUser = sessionStorage.getItem('user_data') || localStorage.getItem('user_data');
     if (storedUser) {
       try {
         const parsedNode = JSON.parse(storedUser);
@@ -90,6 +90,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           console.error("Session expired or unauthorized, redirecting to login...");
           localStorage.removeItem('access_token');
           localStorage.removeItem('user_data');
+          sessionStorage.removeItem('access_token');
+          sessionStorage.removeItem('user_data');
           setUser(null);
           
           if (window.location.pathname.startsWith('/funder') && window.location.pathname !== '/funder/login') {
@@ -110,7 +112,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = (userData: User) => setUser(userData);
   
   const logout = async () => {
-    const token = localStorage.getItem('access_token');
+    const token = sessionStorage.getItem('access_token') || localStorage.getItem('access_token');
     const isFunder = user?.role === 'FUNDER';
     
     if (token) {
@@ -122,6 +124,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     localStorage.removeItem('access_token');
     localStorage.removeItem('user_data');
+    sessionStorage.removeItem('access_token');
+    sessionStorage.removeItem('user_data');
     setUser(null);
     
     if (isFunder) {
@@ -139,9 +143,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Real JWT-based session update for role switching
-  const updateSession = (token: string, userData: User) => {
-    localStorage.setItem('access_token', token);
-    localStorage.setItem('user_data', JSON.stringify(userData));
+  const updateSession = (token: string, userData: User, ephemeral: boolean = false) => {
+    const storage = ephemeral ? sessionStorage : localStorage;
+    storage.setItem('access_token', token);
+    storage.setItem('user_data', JSON.stringify(userData));
     setUser(userData);
     setOriginalRole(userData.role);
   };
@@ -150,7 +155,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (user) {
       const newUser = { ...user, ...updates };
       setUser(newUser);
-      localStorage.setItem('user_data', JSON.stringify(newUser));
+      if (sessionStorage.getItem('access_token')) {
+        sessionStorage.setItem('user_data', JSON.stringify(newUser));
+      } else {
+        localStorage.setItem('user_data', JSON.stringify(newUser));
+      }
     }
   };
 
