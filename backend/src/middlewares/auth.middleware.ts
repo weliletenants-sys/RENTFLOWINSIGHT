@@ -13,6 +13,11 @@ declare global {
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
 
+// Alias for legacy routes to prevent undefined runtime crashes
+export const authGuard = async (req: Request, res: Response, next: NextFunction) => {
+  return ensureUserAuthenticated(req, res, next);
+};
+
 export const ensureUserAuthenticated = async (req: Request, res: Response, next: NextFunction) => {
   let token = req.cookies?.user_session;
   
