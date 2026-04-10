@@ -96,7 +96,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           
           if (window.location.pathname.startsWith('/funder') && window.location.pathname !== '/funder/login') {
             window.location.replace('/funder/login');
-          } else if (!window.location.pathname.startsWith('/funder') && window.location.pathname !== '/login') {
+          } else if (window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin/login') {
+            window.location.replace('/admin/login');
+          } else if (!window.location.pathname.startsWith('/funder') && !window.location.pathname.startsWith('/admin') && window.location.pathname !== '/login') {
             window.location.replace('/login');
           }
         }
@@ -128,8 +130,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     sessionStorage.removeItem('user_data');
     setUser(null);
     
-    if (isFunder) {
+    if (isFunder || window.location.pathname.startsWith('/funder')) {
        window.location.replace('/funder/login');
+    } else if (window.location.pathname.startsWith('/admin')) {
+       window.location.replace('/admin/login');
     } else {
        window.location.replace('/login');
     }

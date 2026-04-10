@@ -19,12 +19,12 @@ export default function QuickNavigationGrid() {
           <button
             key={item.path}
             onClick={() => navigate(item.path)}
-            className="group flex flex-col items-center justify-center p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-white hover:border-[#6c11d4]/20 hover:shadow-[0_8px_20px_rgb(108,17,212,0.08)] transition-all duration-300 active:scale-95"
+            className="group flex flex-col items-center justify-center p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-[var(--color-primary-faint)] hover:border-[var(--color-primary-border)] hover:shadow-[0_8px_20px_var(--color-primary-shadow)] transition-all duration-300 active:scale-95"
           >
-            <div className="w-10 h-10 rounded-full bg-white shadow-sm border border-slate-100 flex items-center justify-center mb-3 group-hover:-translate-y-1 transition-transform duration-300">
-              <item.icon size={18} className="text-slate-400 group-hover:text-[#6c11d4] transition-colors" />
+            <div className="w-10 h-10 rounded-full bg-white shadow-sm border border-[var(--color-primary-border)] flex items-center justify-center mb-3 group-hover:-translate-y-1 transition-transform duration-300">
+              <item.icon size={18} className="text-slate-400 group-hover:text-[var(--color-primary)] transition-colors" />
             </div>
-            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider text-center leading-tight group-hover:text-[#6c11d4] transition-colors">
+            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider text-center leading-tight group-hover:text-[var(--color-primary-dark)] transition-colors">
               {item.title}
             </span>
           </button>

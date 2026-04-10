@@ -42,10 +42,10 @@ export default function CooPipelineQueue() {
   }
 
   return (
-    <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/60 overflow-hidden relative group transition-all duration-300 hover:shadow-[0_8px_40px_rgb(108,17,212,0.06)]">
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#6c11d4] via-indigo-500 to-purple-400"></div>
+    <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-sm border border-[var(--color-primary-border)] overflow-hidden relative group transition-all duration-300 hover:shadow-[0_8px_40px_var(--color-primary-shadow)]">
+      <div className="absolute top-0 left-0 w-full h-1 bg-[var(--color-primary)]"></div>
       
-      <div className="p-6 md:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/40 border-b border-slate-100">
+      <div className="p-6 md:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/40 border-b border-[var(--color-primary-border)]">
         <div>
           <h2 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center">

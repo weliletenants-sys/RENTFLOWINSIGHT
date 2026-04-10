@@ -31,13 +31,13 @@ export const ExecutiveDashboardLayout: React.FC<ExecutiveDashboardLayoutProps> =
   }
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full bg-[#111827] text-slate-300 w-64 border-r border-[#1f2937]">
-      <div className="p-6 shrink-0 flex items-center justify-between">
+    <div className="flex flex-col h-full bg-[#fcfdfd] text-slate-600 w-64 border-r border-[#eaeced] shadow-sm">
+      <div className="p-6 shrink-0 flex items-center justify-between border-b border-[#eaeced]">
         <div>
-           <h2 className="text-xl font-bold text-white tracking-widest uppercase">Executive Hub</h2>
+           <h2 className="text-xl font-bold text-slate-800 tracking-widest uppercase">Executive Hub</h2>
            <p className="text-xs text-[var(--color-primary)] font-semibold mt-1">Terminal: {role.toUpperCase()}</p>
         </div>
-        <button className="lg:hidden text-slate-400 hover:text-white" onClick={() => setIsMobileMenuOpen(false)}>
+        <button className="lg:hidden text-slate-400 hover:text-[var(--color-primary-dark)]" onClick={() => setIsMobileMenuOpen(false)}>
            <X size={20} />
         </button>
       </div>
@@ -55,14 +55,14 @@ export const ExecutiveDashboardLayout: React.FC<ExecutiveDashboardLayoutProps> =
                      to={item.path}
                      onClick={() => setIsMobileMenuOpen(false)}
                      className={({ isActive }) =>
-                       `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors font-medium text-sm ${
+                       `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all font-medium text-sm ${
                          isActive 
-                           ? 'bg-[var(--color-primary)] text-white shadow-sm' 
-                           : 'text-slate-400 hover:bg-[#1f2937] hover:text-white'
+                           ? 'bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] font-bold shadow-sm border border-[var(--color-primary-border)]' 
+                           : 'text-slate-500 hover:bg-slate-50 hover:text-[var(--color-primary)]'
                        }`
                      }
                    >
-                     <item.icon size={18} className={location.pathname === item.path ? 'text-white' : 'text-slate-500 group-hover:text-slate-300'} />
+                     <item.icon size={18} className={location.pathname === item.path ? 'text-[var(--color-primary-dark)]' : 'text-slate-400 group-hover:text-[var(--color-primary)]'} />
                      <span>{item.title}</span>
                    </NavLink>
                 ))}
@@ -71,10 +71,10 @@ export const ExecutiveDashboardLayout: React.FC<ExecutiveDashboardLayoutProps> =
         ))}
       </nav>
 
-      <div className="p-4 border-t border-[#1f2937] shrink-0">
+      <div className="p-4 border-t border-[#eaeced] shrink-0 bg-[#fcfdfd]">
         <button
           onClick={() => navigate('/admin/dashboard')}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-semibold text-slate-400 bg-[#1f2937]/50 hover:bg-[#1f2937] hover:text-white rounded-lg transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-semibold text-slate-600 bg-white border border-[#eaeced] hover:bg-[var(--color-primary-light)] hover:text-[var(--color-primary-darker)] hover:border-[var(--color-primary-border)] rounded-lg transition-all"
         >
           <ExternalLink size={16} /> Exit Terminal
         </button>
@@ -83,7 +83,7 @@ export const ExecutiveDashboardLayout: React.FC<ExecutiveDashboardLayoutProps> =
   );
 
   return (
-    <div className="min-h-screen font-sans bg-[#f8fafc] text-slate-900 flex overflow-hidden">
+    <div className="min-h-screen font-sans bg-[#f8fafa] text-slate-900 flex overflow-hidden">
       
       {/* Desktop Sidebar */}
       <div className="hidden lg:block z-40 h-screen shrink-0">
@@ -107,7 +107,7 @@ export const ExecutiveDashboardLayout: React.FC<ExecutiveDashboardLayoutProps> =
       <div className="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
         
         {/* Top Navbar */}
-        <header className="h-16 shrink-0 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-8 z-30 shadow-sm">
+        <header className="h-16 shrink-0 bg-[#fcfdfd] border-b border-[#eaeced] flex items-center justify-between px-4 lg:px-8 z-30 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
           
           <div className="flex items-center gap-4">
             <button 
@@ -151,15 +151,22 @@ export const ExecutiveDashboardLayout: React.FC<ExecutiveDashboardLayoutProps> =
                    {user?.role || role.toUpperCase()} OPS
                  </span>
                </div>
-               <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[var(--color-primary)] to-purple-600 border border-white shadow-sm overflow-hidden flex items-center justify-center text-white font-bold">
-                 {user?.firstName?.charAt(0) || <UserIcon size={16} />}
+               
+               {/* Admin Avatar Implementation */}
+               <div className="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden flex items-center justify-center bg-slate-100">
+                 {user?.avatar_url ? (
+                   <img src={user.avatar_url} alt="Executive Profile" className="w-full h-full object-cover" />
+                 ) : (
+                   <img src={`https://api.dicebear.com/7.x/notionists/svg?seed=${user?.id || 'admin-coo'}&backgroundColor=e2e8f0`} alt="Random Admin Avatar" className="w-full h-full object-cover" />
+                 )}
                </div>
+
              </div>
           </div>
         </header>
 
         {/* Scrollable Main Native SPA Outlet */}
-        <main className="flex-1 overflow-y-auto no-scrollbar scroll-smooth p-4 lg:p-6 xl:p-8 bg-slate-50/50">
+        <main className="flex-1 overflow-y-auto no-scrollbar scroll-smooth p-4 lg:p-6 xl:p-8 bg-transparent">
           <div className="mx-auto max-w-screen-2xl h-full animate-in fade-in slide-in-from-bottom-2 duration-300">
             <Outlet />
           </div>
