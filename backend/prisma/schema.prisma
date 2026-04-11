@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
+  engineType = "library"
 }
 
 datasource db {
@@ -1833,24 +1834,45 @@ model PortfolioRentPledges {
   @@map("portfolio_rent_pledges")
 }
 
+model SystemRoles {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  
+  parent_id   String?
+  parent      SystemRoles?   @relation("RoleHierarchy", fields: [parent_id], references: [id])
+  children    SystemRoles[]  @relation("RoleHierarchy")
+  
+  permissions RolePermissions[]
+  
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@map("system_roles")
+}
+
 model Permissions {
   id              String            @id @default(uuid())
-  name            String            @unique
+  action          String            // e.g. "manage"
+  subject         String            // e.g. "all", "Dashboard", "Users"
+  system_name     String?           @unique // e.g. "manage_all", equivalent to Spatie's "name"
   description     String?
   rolePermissions RolePermissions[]
-  created_at      String
+  created_at      DateTime          @default(now())
 
+  @@unique([action, subject])
   @@map("permissions")
 }
 
 model RolePermissions {
   id            String      @id @default(uuid())
-  role          String
+  role_id       String
   permission_id String
+  
+  role          SystemRoles @relation(fields: [role_id], references: [id], onDelete: Cascade)
   permission    Permissions @relation(fields: [permission_id], references: [id], onDelete: Cascade)
-  granted_at    String
+  granted_at    DateTime    @default(now())
 
-  @@unique([role, permission_id])
+  @@unique([role_id, permission_id])
   @@map("role_permissions")
 }
 

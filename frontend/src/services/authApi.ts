@@ -8,7 +8,16 @@ const api = axios.create({
 });
 
 export const loginUser = async (credentials: { phone: string; password: string }) => {
-  const response = await api.post('/sessions', credentials);
+  const response = await api.post('/login', credentials);
+  return response.data;
+};
+
+export const loginAdmin = async (credentials: { phone: string; password: string }) => {
+  const adminApi = axios.create({
+    baseURL: (import.meta.env.VITE_API_URL || 'http://localhost:3000') + '/api/admin/auth',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const response = await adminApi.post('/login', credentials);
   return response.data;
 };
 
@@ -36,7 +45,7 @@ export const verifyOTP = async (data: { phone: string; otp_code: string }) => {
 };
 
 export const logoutUser = async (token: string) => {
-  const response = await api.delete('/sessions', {
+  const response = await api.post('/logout', {}, {
     headers: { Authorization: `Bearer ${token}` }
   });
   return response.data;

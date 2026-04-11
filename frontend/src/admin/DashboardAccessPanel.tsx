@@ -6,7 +6,7 @@ const DASHBOARD_ROUTES = {
     { id: 'ceo', title: 'CEO Dashboard', desc: 'Platform overview & strategy', path: '/admin/executive/ceo/dashboard', color: 'bg-amber-50', textColor: 'text-amber-700', border: 'border-amber-200', icon: '👑' },
     { id: 'cto', title: 'CTO Dashboard', desc: 'Infrastructure & engineering', path: '/admin/executive/cto/dashboard', color: 'bg-blue-50', textColor: 'text-blue-600', border: 'border-blue-200', icon: '💻' },
     { id: 'cfo', title: 'CFO Dashboard', desc: 'Financial governance', path: '/admin/executive/cfo/dashboard', color: 'bg-emerald-50', textColor: 'text-emerald-700', border: 'border-emerald-200', icon: '📊' },
-    { id: 'coo', title: 'COO Dashboard', desc: 'Operations health', path: '/admin/executive/coo/dashboard', color: 'bg-purple-50', textColor: 'text-purple-700', border: 'border-purple-200', icon: '📈' },
+    { id: 'coo', title: 'COO Dashboard', desc: 'Operations health', path: '/admin/coo', color: 'bg-purple-50', textColor: 'text-purple-700', border: 'border-purple-200', icon: '📈' },
     { id: 'cmo', title: 'CMO Dashboard', desc: 'Marketing & growth', path: '/admin/executive/cmo/dashboard', color: 'bg-rose-50', textColor: 'text-rose-600', border: 'border-rose-200', icon: '📣' },
     { id: 'crm', title: 'CRM Dashboard', desc: 'Customer support & disputes', path: '/admin/executive/crm/dashboard', color: 'bg-orange-50', textColor: 'text-orange-600', border: 'border-orange-200', icon: '💬' }
   ],

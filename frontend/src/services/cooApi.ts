@@ -2,9 +2,9 @@ import axios from 'axios';
 
 const API = '/api'; // Proxied to localhost:3000 by vite
 
-// Attach headers correctly based on localStorage auth mechanisms
+// Attach headers correctly based on localStorage and sessionStorage auth mechanisms
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+  const token = sessionStorage.getItem('access_token') || localStorage.getItem('access_token') || localStorage.getItem('token');
   return {
     headers: {
       Authorization: token ? `Bearer ${token}` : '',

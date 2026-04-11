@@ -14,8 +14,19 @@ declare global {
  */
 export const domainContextDetector = (req: Request, res: Response, next: NextFunction) => {
   const host = req.headers.host || '';
+  const origin = req.headers.origin || '';
+  const referer = req.headers.referer || '';
   
-  if (host.startsWith('admin.')) {
+  const adminAppUrl = process.env.ADMIN_APP_URL || 'http://admin.localhost:5173';
+  const adminSessionDomain = process.env.ADMIN_SESSION_DOMAIN || 'admin.localhost';
+
+  // Check if host matches the admin session domain, or if origin/referer originate from the admin app URL
+  if (
+    host.includes(adminSessionDomain) || 
+    (origin && adminAppUrl.includes(origin)) || 
+    (referer && referer.startsWith(adminAppUrl)) ||
+    host.startsWith('admin.') || origin.includes('admin.') || referer.includes('admin.') // Fallback
+  ) {
     req.context = 'admin';
   } else {
     req.context = 'user';

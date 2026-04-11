@@ -197,11 +197,11 @@ export const adminLogin = async (req: Request, res: Response): Promise<any> => {
       httpOnly: true,
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
-      domain: process.env.ADMIN_SESSION_DOMAIN || 'admin.localhost',
-      maxAge: 8 * 60 * 60 * 1000 // 8 hours
+      domain: process.env.ADMIN_SESSION_DOMAIN || 'admin.localhost'
+      // maxAge intentionally omitted to ensure the session dies automatically when the browser is closed.
     });
 
-    return res.status(200).json({ status: 'success', message: 'Admin authenticated tightly securely.', data: { onboarding_url, user } });
+    return res.status(200).json({ status: 'success', message: 'Admin authenticated tightly securely.', data: { access_token: token, onboarding_url, user } });
   } catch (error: any) {
     if (error.message === 'Invalid credentials') return problemResponse(res, 401, 'Unauthorized', 'Invalid credentials', 'invalid-credentials');
     if (error.message === 'Unauthorized for admin domain') return problemResponse(res, 403, 'Forbidden', error.message, 'unauthorized');
@@ -229,7 +229,7 @@ export const userLogin = async (req: Request, res: Response): Promise<any> => {
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
     });
 
-    return res.status(200).json({ status: 'success', message: 'Logged in successfully', data: { onboarding_url, user } });
+    return res.status(200).json({ status: 'success', message: 'Logged in successfully', data: { access_token: token, onboarding_url, user } });
   } catch (error: any) {
     if (error.message === 'Invalid credentials') return problemResponse(res, 401, 'Unauthorized', 'Invalid phone number or password', 'invalid-credentials');
     if (error.message === 'Administrator accounts must log in through the secure admin portal.') return problemResponse(res, 403, 'Forbidden', error.message, 'unauthorized');

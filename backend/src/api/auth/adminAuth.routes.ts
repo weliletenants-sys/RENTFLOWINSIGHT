@@ -7,9 +7,9 @@ import { ensureAdminAuthenticated } from '../../middlewares/auth.middleware';
 const router = Router();
 
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  message: { message: 'Too many admin login attempts, please try again later' }
+  windowMs: 3 * 60 * 1000, // 3 minutes cooldown
+  max: 3, // Maximum 3 attempts
+  message: { message: 'Too many admin login attempts. Please try again in 3 minutes.' }
 });
 
 router.post('/login', loginLimiter, adminLogin);

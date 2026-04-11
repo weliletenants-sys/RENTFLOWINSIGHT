@@ -16,11 +16,11 @@ export class PermissionService {
     if (!cachedPermissions) {
       // Fallback: Resolve from Source of Truth (Database)
       const rolePerms = await prisma.rolePermissions.findMany({
-        where: { role: role.toUpperCase() },
+        where: { role: { name: role.toUpperCase() } },
         include: { permission: true }
       });
       
-      const permissionsList = rolePerms.map(rp => rp.permission.name);
+      const permissionsList = rolePerms.map(rp => rp.permission.system_name || rp.permission.action);
       
       // Cache for 1 hour
       await redis.setex(cacheKey, 3600, JSON.stringify(permissionsList));

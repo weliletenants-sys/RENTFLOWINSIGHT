@@ -9,7 +9,7 @@ const executiveApi = axios.create({
 
 // Interceptor to attach the auth token automatically
 executiveApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token');
+  const token = sessionStorage.getItem('access_token') || localStorage.getItem('access_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
