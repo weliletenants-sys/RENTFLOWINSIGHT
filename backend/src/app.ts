@@ -21,7 +21,7 @@ const appUrl = process.env.APP_URL || 'http://localhost:5173';
 const adminAppUrl = process.env.ADMIN_APP_URL || 'http://admin.localhost:5173';
 
 app.use(cors({
-  origin: [appUrl, adminAppUrl],
+  origin: true,
   credentials: true
 }));
 

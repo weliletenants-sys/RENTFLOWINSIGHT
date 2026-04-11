@@ -25,6 +25,7 @@ export default function AgentDeposit() {
   const navigate = useNavigate();
   const [amount, setAmount] = useState('');
   const [method, setMethod] = useState<'mobile' | 'agent'>('mobile');
+  const [depositType, setDepositType] = useState<'float' | 'rent_repayment'>('float');
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [txRef] = useState(() => 'WF-' + Math.random().toString(36).slice(2, 10).toUpperCase());
@@ -52,6 +53,7 @@ export default function AgentDeposit() {
       await requestDeposit({
         amount: numericAmount,
         method: method,
+        deposit_type: depositType,
         reference: txRef
       });
       setShowSuccess(true);
@@ -122,6 +124,34 @@ export default function AgentDeposit() {
                     {fmt(q)}
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* Deposit Type */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">Deposit Type</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div
+                  onClick={() => setDepositType('float')}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-between ${depositType === 'float' ? 'border-[#6c11d4] bg-[#6c11d4]/5 dark:bg-[#6c11d4]/10' : 'border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900'}`}
+                >
+                  <div>
+                    <h4 className="font-bold text-slate-900 dark:text-slate-100 text-sm">Float</h4>
+                    <p className="text-[10px] text-slate-500 font-semibold mt-0.5">Operational Top-up</p>
+                  </div>
+                  {depositType === 'float' && <CheckCircle2 size={16} className="text-[#6c11d4]" />}
+                </div>
+
+                <div
+                  onClick={() => setDepositType('rent_repayment')}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-between ${depositType === 'rent_repayment' ? 'border-[#6c11d4] bg-[#6c11d4]/5 dark:bg-[#6c11d4]/10' : 'border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900'}`}
+                >
+                  <div>
+                    <h4 className="font-bold text-slate-900 dark:text-slate-100 text-sm">Rent Repayment</h4>
+                    <p className="text-[10px] text-slate-500 font-semibold mt-0.5">Deposit Tenant Arrears</p>
+                  </div>
+                  {depositType === 'rent_repayment' && <CheckCircle2 size={16} className="text-[#6c11d4]" />}
+                </div>
               </div>
             </div>
 
@@ -249,6 +279,10 @@ export default function AgentDeposit() {
                   <span className="font-medium text-[#6c11d4]">{method === 'mobile' ? 'Mobile Money' : 'Agent Deposit'}</span>
                 </div>
                 <div className="flex justify-between items-center py-3 border-b border-slate-50 dark:border-slate-800">
+                  <span className="text-slate-500 dark:text-slate-400 text-sm">Deposit Type</span>
+                  <span className="font-medium text-[#6c11d4]">{depositType === 'float' ? 'Float' : 'Rent Repayment'}</span>
+                </div>
+                <div className="flex justify-between items-center py-3 border-b border-slate-50 dark:border-slate-800">
                   <span className="text-slate-500 dark:text-slate-400 text-sm">Transaction fee</span>
                   <span className="font-medium text-green-600">Free</span>
                 </div>
@@ -334,6 +368,10 @@ export default function AgentDeposit() {
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500">Method</span>
                 <span className="font-bold text-slate-900 dark:text-white">{method === 'mobile' ? 'Mobile Money' : 'Agent Deposit'}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Type</span>
+                <span className="font-bold text-slate-900 dark:text-white">{depositType === 'float' ? 'Float' : 'Rent Repayment'}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500">Reference</span>

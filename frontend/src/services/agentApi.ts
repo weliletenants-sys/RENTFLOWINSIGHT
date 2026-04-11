@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
 
-const API = (import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:3000')) + '/api';
+const API = (import.meta.env.VITE_API_URL || '') + '/api';
 
 // Create a configured axios instance for Agent calls
 const agentClient = axios.create({
@@ -138,7 +138,7 @@ export const requestWithdrawal = async (payload: { amount: number; method: strin
   return data;
 };
 
-export const requestDeposit = async (payload: { amount: number; method: string; reference?: string }) => {
+export const requestDeposit = async (payload: { amount: number; method: string; deposit_type: string; reference?: string }) => {
   const { data } = await agentClient.post('/agent/deposits', payload);
   return data;
 };

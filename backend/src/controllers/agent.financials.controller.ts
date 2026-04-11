@@ -13,7 +13,7 @@ export const requestDeposit = async (req: Request, res: Response) => {
       instance: req.originalUrl
     });
 
-    const { target_user_id, amount, provider, transition_id, notes } = req.body;
+    const { target_user_id, amount, provider, transition_id, notes, deposit_type } = req.body;
     const depositAmount = Number(amount);
 
     if (depositAmount <= 0) {
@@ -69,12 +69,16 @@ export const requestDeposit = async (req: Request, res: Response) => {
         amount: depositAmount,
         provider,
         transaction_id: transition_id,
-        notes,
+        notes: notes || `Deposit Type: ${deposit_type || 'float'}`,
         status: 'PENDING',
         created_at: now,
         updated_at: now
       }
     });
+
+    // Auto-approve floats for now if they are simple mobile money integrations
+    // Or we rely on the CFO to approve. If approved, we will route to 'agent_float_deposit'
+    // or direct 'rent_repayment' flow bypasses wallet entirely.
 
     const executives = await prisma.profiles.findMany({
       where: { role: { in: ['COO', 'CFO'] } }
@@ -132,31 +136,36 @@ export const requestWithdrawal = async (req: Request, res: Response) => {
       });
     }
 
-    const wallet = await prisma.wallets.findFirst({ where: { user_id: userId } });
-    if (!wallet) return res.status(404).json({
-      type: 'https://api.welile.com/errors/not-found',
-      title: 'Not Found',
-      status: 404,
-      detail: 'Wallet not found',
-      instance: req.originalUrl
+    // Calculate Commission Balance strictly
+    const commissionEntries = await prisma.generalLedger.findMany({
+      where: {
+        user_id: userId,
+        category: { in: ['agent_commission_earned', 'agent_commission_paid', 'agent_commission_used_for_rent'] }
+      }
     });
     
-    if (wallet.balance < withdrawalAmount) {
+    let commissionBalance = 0;
+    for (const entry of commissionEntries) {
+      if (entry.direction === 'cash_in') commissionBalance += entry.amount;
+      else commissionBalance -= entry.amount;
+    }
+
+    if (commissionBalance < withdrawalAmount) {
       return res.status(400).json({
         type: 'https://api.welile.com/errors/payment-required',
-        title: 'Insufficient Funds',
+        title: 'Insufficient Commission',
         status: 400,
-        detail: 'Insufficient wallet balance to perform this withdrawal.',
+        detail: 'Insufficient commission balance to perform this withdrawal. Float cannot be withdrawn.',
         instance: req.originalUrl
       });
     }
 
     const now = new Date().toISOString();
 
-    const [updatedWallet, payout, ledgerEntry] = await prisma.$transaction([
-      // 1. Deduct immediately from the agent's wallet
-      prisma.wallets.update({
-        where: { id: wallet.id },
+      // 1. Commission doesn't rely strictly on wallets table anymore for validation, but we can decrement it
+      // if wallet still aggregates all funds for backwards compatibility.
+      prisma.wallets.updateMany({
+        where: { user_id: userId },
         data: { balance: { decrement: withdrawalAmount }, updated_at: now }
       }),
       // 2. Queue the payout for admin approval
@@ -173,14 +182,14 @@ export const requestWithdrawal = async (req: Request, res: Response) => {
           updated_at: now
         }
       }),
-      // 3. Append to General Ledger
+      // 3. Append to General Ledger as explicitly commission paid
       prisma.generalLedger.create({
         data: {
           user_id: userId,
           amount: withdrawalAmount,
           direction: 'cash_out',
-          category: 'agent_withdrawal_request',
-          source_table: 'wallets',
+          category: 'agent_commission_paid', // CRITICAL: using new category explicitly
+          source_table: 'agent_commission_payouts',
           transaction_date: now,
           created_at: now,
         }
