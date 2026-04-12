@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
+import { sendSuccess, sendError } from '../../shared/utils/response.util';
 
 export class AuthController {
   private service = new AuthService();
@@ -12,22 +13,17 @@ export class AuthController {
       const { phone, password } = req.body;
 
       if (!phone || !password) {
-        res.status(400).json({ error: 'Phone and password are required' });
-        return;
+        return sendError(res, 'Phone and password are required', 400);
       }
 
       const result = await this.service.loginDevice(phone, password);
       
-      res.status(200).json({
-        message: 'Successfully authenticated natively',
-        data: result
-      });
+      return sendSuccess(res, result, 'Successfully authenticated natively');
     } catch (error: any) {
       if (error.message.includes('Invalid') || error.message.includes('frozen')) {
-        // Return 401 Unauthorized for bad credentials safely masking exact reason generally
-        res.status(401).json({ error: error.message });
+        return sendError(res, error.message, 401);
       } else {
-        res.status(500).json({ error: 'Internal Server Error processing authentication.' });
+        return sendError(res, 'Internal Server Error processing authentication.', 500);
       }
     }
   };
@@ -41,15 +37,12 @@ export class AuthController {
 
       const newUser = await this.service.registerNative(phone, fullName, password, role);
 
-      res.status(201).json({
-        message: 'Profile formally registered. Please login.',
-        data: { id: newUser.id }
-      });
+      return sendSuccess(res, { id: newUser.id }, 'Profile formally registered. Please login.', 201);
     } catch (error: any) {
       if (error.message.includes('Conflict')) {
-        res.status(409).json({ error: error.message });
+        return sendError(res, error.message, 409);
       } else {
-        res.status(500).json({ error: 'Internal server error processing registration.' });
+        return sendError(res, 'Internal server error processing registration.', 500);
       }
     }
   };

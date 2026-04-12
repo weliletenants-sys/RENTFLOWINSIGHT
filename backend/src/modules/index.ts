@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import authRoutes from './auth/auth.routes';
+import adminAuthRoutes from './admin/adminAuth.routes';
 import usersRoutes from './users/users.routes';
 import agentsRoutes from './agents/agents.routes';
 import tenantsRoutes from './tenants/tenants.routes';
@@ -11,6 +12,7 @@ const modulesRouter = Router();
 
 // Modular Routes Layer
 modulesRouter.use('/auth', authRoutes);
+modulesRouter.use('/admin/auth', adminAuthRoutes);
 modulesRouter.use('/users', usersRoutes);
 modulesRouter.use('/agents', agentsRoutes);
 modulesRouter.use('/tenants', tenantsRoutes);

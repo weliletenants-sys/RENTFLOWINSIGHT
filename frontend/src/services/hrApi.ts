@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { apiClient } from './apiClient';
 
 const api = axios.create({
   baseURL: '/api/admin/hr', // Pointing to the new admin-scoped HR router

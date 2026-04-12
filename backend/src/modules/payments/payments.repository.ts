@@ -1,16 +1,14 @@
 import prisma from '../../prisma/prisma.client';
-import { LedgerService } from '../ledger/ledger.service';
-import { WalletsService } from '../wallets/wallets.service';
-import { v4 as uuidv4 } from 'uuid';
+import { LedgerRepository } from '../ledger/ledger.repository';
+// WalletsRepository IMPORT REMOVED: Ledger strictly handles Wallet mutation limits internally natively.
 import { withTransactionRetry } from '../../shared/utils/transaction.util';
 
 export class PaymentsRepository {
-  private ledgerService = new LedgerService();
-  private walletsService = new WalletsService();
+  private ledgerRepo = new LedgerRepository();
 
   /**
    * Executes the rent payment flow entirely within a single atomic PostgreSQL transaction.
-   * This handles the BEGIN/COMMIT/ROLLBACK implicitly.
+   * This handles the BEGIN/COMMIT/ROLLBACK implicitly. Data Access ONLY.
    */
   async executeRentPaymentTransaction(payload: {
     agentId: string;
@@ -28,13 +26,12 @@ export class PaymentsRepository {
       return {
         success: true,
         transactionGroupId: existingSync.id,
-        agentClosingBalance: null // Idempotent hits shouldn't strictly require live wallet pulls natively here unless requested.
       };
     }
 
     // 2. Map resilient creation logic executing strict bounds natively
     return withTransactionRetry(prisma, async (tx) => {
-      // 3. Construct the Master Event Node explicitly mapping PostgreSQL Unique Constraint P2002 locks natively!
+      // 3. Construct the Master Event Node explicitly mapping PostgreSQL Unique Constraint natively
       const event = await tx.ledgerTransactions.create({
           data: {
               idempotency_key: payload.reference,
@@ -45,48 +42,39 @@ export class PaymentsRepository {
           }
       });
 
-      // 4. Lock and Debit Agent's Wallet
-      const agentWallet = await this.walletsService.processLedgerEffect(
-        tx, payload.agentId, payload.amount, false, 
-        event.id, null, 'agent', payload.agentId
-      );
-      if (agentWallet.balance < 0) {
-        throw new Error('Insufficient Funds: Agent wallet cannot drop below 0.');
-      }
+      // 4. Create Ledger Entries structurally bound perfectly to the Master Event Node.
+      // NOTE: "Legder -> trigger -> wallet" logic means creating these ledger entries immediately
+      // and algorithmically updates the respective Wallets tied to these userIds.
 
-      // 5. Credit System Wallet (System is represented by 'system')
-      await this.walletsService.processLedgerEffect(
-        tx, 'system', payload.amount, true, 
-        event.id, null, 'agent', payload.agentId
-      );
-
-      // 6. Create Ledger Entries structurally bound perfectly to the Master Event Node
-      await this.ledgerService.recordDoubleEntry(tx, 
-        {
+      // Debit Entry (out from Agent)
+      await this.ledgerRepo.createEntry(tx, {
           amount: payload.amount,
+          direction: 'cash_out',
           category: 'rent_payment',
           description: `Rent payment collected from tenant ${payload.tenantId}`,
           userId: payload.agentId,
           sourceTable: 'rent_requests',
           transactionGroupId: event.id,
-          referenceId: payload.reference // Safe mapped tracking natively
-        },
-        {
+          sourceId: payload.reference 
+      });
+
+      // Credit Entry (in to System)
+      await this.ledgerRepo.createEntry(tx, {
           amount: payload.amount,
+          direction: 'cash_in',
           category: 'rent_collection',
           description: `System collection received from Agent ${payload.agentId} for tenant ${payload.tenantId}`,
-          userId: 'system',
+          userId: 'system', // Target the system wallet explicitly
           sourceTable: 'rent_requests',
           transactionGroupId: event.id,
-          referenceId: payload.reference 
-        }
-      );
+          sourceId: payload.reference 
+      });
 
       return {
         success: true,
-        transactionGroupId: event.id,
-        agentClosingBalance: agentWallet.balance
+        transactionGroupId: event.id
       };
     });
   }
 }
+

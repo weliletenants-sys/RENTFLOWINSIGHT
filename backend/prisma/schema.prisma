@@ -304,26 +304,25 @@ model EarningPredictions {
 }
 
 model GeneralLedger {
-  account              String?
+  id                   String   @id @default(uuid())
+  transaction_id       String   // Groups double-entry pairs
+  account_id           String   // Generic owner reference
+  entry_type           String   // 'debit' or 'credit'
   amount               Float
   category             String
-  created_at           String
   description          String?
-  direction            String
-  id                   String  @id @default(uuid())
   linked_party         String?
   reference_id         String?
   running_balance      Float?
   source_id            String?
   source_table         String
-  transaction_date     String
-  transaction_group_id String?
-  user_id              String?
+  transaction_date     String?
   from_bucket          String?
   to_bucket            String?
   role_type            String?
   scope                String?
   account_type         String?
+  created_at           DateTime @default(now())
 
   @@map("general_ledger")
 }
@@ -1269,11 +1268,11 @@ model WalletTransactions {
 }
 
 model Wallets {
-  balance    Float
-  created_at String
-  id         String  @id @default(uuid())
-  updated_at String
-  user_id    String?
+  id         String   @id @default(uuid())
+  account_id String   @unique
+  balance    Float    @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   @@map("wallets")
 }
@@ -1326,6 +1325,16 @@ model WithdrawalRequests {
   user_id               String?
 
   @@map("withdrawal_requests")
+}
+
+model OutboxEvents {
+  id         String   @id @default(uuid())
+  event_type String
+  payload    Json
+  status     String   @default("pending")
+  created_at DateTime @default(now())
+
+  @@map("outbox_events")
 }
 
 model AuditLogs {

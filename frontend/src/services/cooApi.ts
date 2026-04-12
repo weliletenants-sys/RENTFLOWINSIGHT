@@ -1,4 +1,5 @@
-import axios from 'axios';
+import { apiClient } from './apiClient';
+
 
 const API = '/api'; // Proxied to localhost:3000 by vite
 

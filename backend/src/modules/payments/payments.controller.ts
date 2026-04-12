@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { PaymentsService } from './payments.service';
+import { sendSuccess, sendError } from '../../shared/utils/response.util';
 
 export class PaymentsController {
   private service = new PaymentsService();
@@ -13,23 +14,19 @@ export class PaymentsController {
       const agentId = (req as any).user?.id || 'TEST_AGENT_ID';
 
       if (!tenantId || !amount) {
-        res.status(400).json({ error: 'Missing tenantId or amount in body.' });
-        return;
+        return sendError(res, 'Missing tenantId or amount in body.', 400);
       }
 
       const result = await this.service.processRentPayment(agentId, tenantId, Number(amount), idempotencyKey);
       
-      res.status(200).json({
-        message: 'Rent payment processed securely',
-        data: result
-      });
+      return sendSuccess(res, result, 'Rent payment processed securely');
     } catch (error: any) {
       if (error.message.includes('Idempotency')) {
-        res.status(409).json({ error: error.message });
+        return sendError(res, error.message, 409);
       } else if (error.message.includes('Insufficient')) {
-        res.status(402).json({ error: error.message });
+        return sendError(res, error.message, 402);
       } else {
-        res.status(500).json({ error: 'Internal Server Error processing payment.' });
+        return sendError(res, 'Internal Server Error processing payment.', 500);
       }
     }
   };

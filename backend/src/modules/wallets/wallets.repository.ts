@@ -3,6 +3,17 @@ import prisma from '../../prisma/prisma.client';
 
 export class WalletsRepository {
   /**
+   * Safe dirty read of current wallet balance for pre-validation in Business Services.
+   * Does NOT lock the wallet. Real locking happens in getWalletWithLock.
+   */
+  async getBalance(userId: string): Promise<number> {
+    const wallet = await prisma.wallets.findFirst({
+      where: { user_id: userId }
+    });
+    return wallet ? Number(wallet.balance) : 0;
+  }
+
+  /**
    * Securely grabs an exclusive lock on the wallet row for the duration of the transaction.
    * This prevents race conditions during concurrent financial operations.
    */
