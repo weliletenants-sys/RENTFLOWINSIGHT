@@ -1,0 +1,31 @@
+import { lazy } from 'react';
+import { Route, Navigate } from 'react-router-dom';
+import COOLayout from '../admin/coo/components/COOLayout';
+
+const COOOverview = lazy(() => import('../admin/coo/COOOverview'));
+const COOTransactions = lazy(() => import('../admin/coo/COOTransactions'));
+const COOCollections = lazy(() => import('../admin/coo/COOCollections'));
+const COOWallets = lazy(() => import('../admin/coo/COOWallets'));
+const COOAnalytics = lazy(() => import('../admin/coo/COOAnalytics'));
+const COOReports = lazy(() => import('../admin/coo/COOReports'));
+const COOAlerts = lazy(() => import('../admin/coo/COOAlerts'));
+const COOWithdrawals = lazy(() => import('../admin/coo/COOWithdrawals'));
+const COOPartnersPage = lazy(() => import('../admin/coo/COOPartnersPage'));
+const COOTenants = lazy(() => import('../admin/coo/COOTenants'));
+const COOStaffPerformance = lazy(() => import('../admin/coo/COOStaffPerformance'));
+
+export const cooRoutes = [
+  <Route key="coo-index" path="/coo" element={<Navigate to="/coo/dashboard" replace />} />,
+  <Route key="coo-dashboard" path="/coo/dashboard" element={<Navigate to="/coo/overview" replace />} />,
+  <Route key="coo-overview" path="/coo/overview" element={<COOLayout pageTitle="Overview"><COOOverview /></COOLayout>} />,
+  <Route key="coo-transactions" path="/coo/transactions" element={<COOLayout pageTitle="Financial Ledger"><COOTransactions /></COOLayout>} />,
+  <Route key="coo-collections" path="/coo/collections" element={<COOLayout pageTitle="Agent Collections"><COOCollections /></COOLayout>} />,
+  <Route key="coo-wallets" path="/coo/wallets" element={<COOLayout pageTitle="Wallet Monitoring"><COOWallets /></COOLayout>} />,
+  <Route key="coo-analytics" path="/coo/analytics" element={<COOLayout pageTitle="Payment Analytics"><COOAnalytics /></COOLayout>} />,
+  <Route key="coo-reports" path="/coo/reports" element={<COOLayout pageTitle="Financial Reports"><COOReports /></COOLayout>} />,
+  <Route key="coo-alerts" path="/coo/alerts" element={<COOLayout pageTitle="Risk & Alerts"><COOAlerts /></COOLayout>} />,
+  <Route key="coo-withdrawals" path="/coo/withdrawals" element={<COOLayout pageTitle="Withdrawals Engine"><COOWithdrawals /></COOLayout>} />,
+  <Route key="coo-partners" path="/coo/partners" element={<COOLayout pageTitle="Partners Governance"><COOPartnersPage /></COOLayout>} />,
+  <Route key="coo-tenants" path="/coo/tenants" element={<COOLayout pageTitle="Tenants Management"><COOTenants /></COOLayout>} />,
+  <Route key="coo-staff-performance" path="/coo/staff-performance" element={<COOLayout pageTitle="Staff Performance"><COOStaffPerformance /></COOLayout>} />,
+];
