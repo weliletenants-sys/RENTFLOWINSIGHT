@@ -15,6 +15,7 @@ import {
   getForwardedDeposits,
   getRoiDashboard
 } from '../../controllers/cfo.controller';
+import { fundRentPool, processSupporterRoi } from '../../controllers/finance.core.controller';
 
 const router = express.Router();
 
@@ -38,6 +39,10 @@ router.put('/deposits/:id/approve', approveDeposit);
 // Accounting
 router.get('/ledger', getLedger);
 router.get('/statements', getStatements);
+
+// Core Financial Pools
+router.post('/rent-pool/fund', fundRentPool);
+router.post('/roi/process', processSupporterRoi);
 
 // Commissions
 router.get('/commissions/pending', getPendingCommissions);

@@ -1,15 +1,11 @@
 import cookieParser from 'cookie-parser';
 import { domainContextDetector } from './middlewares/domain.middleware';
-
-// ... other imports remain exactly the same but since we replacing from top, I'll just rewrite the imports block
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import fs from 'fs';
-
-import apiRouter from './api';
 
 dotenv.config();
 
@@ -29,6 +25,9 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(morgan('dev'));
 
+import { attachRequestId } from './shared/middleware/request-id.middleware';
+app.use(attachRequestId);
+
 // Inject global domain context detector
 app.use(domainContextDetector);
 
@@ -42,15 +41,11 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-// All API routes under /api prefix
-app.use('/api', apiRouter);
+// Native Domain-Driven Design (DDD) v2 Routes
+import modulesRouter from './modules/index';
+app.use('/api/v2', modulesRouter);
 
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(err.status || 500).json({
-    message: err.message || 'Internal Server Error',
-    error: process.env.NODE_ENV === 'development' ? err : {}
-  });
-});
+import { errorHandler } from './middlewares/errorHandler.middleware';
+app.use(errorHandler);
 
 export default app;

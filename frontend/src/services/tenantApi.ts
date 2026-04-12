@@ -63,3 +63,12 @@ export const acceptTenantAgreement = async (payload: { version?: string; ipAddre
   const { data } = await tenantClient.post('/tenant/accept-agreement', payload);
   return data;
 };
+
+// ==========================================
+// V2 DDD MODULE ENDPOINTS 
+// ==========================================
+export const payRent = async (payload: { amount: number; paymentMethodToken?: string }) => {
+  // Hardcoded strictly to V2 to forcibly route through the new Double-Entry logic bounds
+  const { data } = await tenantClient.post('/v2/tenants/rent/pay', payload);
+  return data;
+};

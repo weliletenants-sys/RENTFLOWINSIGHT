@@ -317,6 +317,7 @@ model GeneralLedger {
   scope                String?
   account_type         String?
 
+  @@index([reference_id])
   @@map("general_ledger")
 }
 
@@ -472,6 +473,7 @@ model LedgerEntries {
 
 model LedgerTransactions {
   id                   String  @id @default(uuid())
+  idempotency_key      String  @unique 
   approved_by          String?
   category             String
   created_at           String
@@ -1453,4 +1455,21 @@ model ProxyAgentAssignments {
   updated_at  String
 
   @@map("proxy_agent_assignments")
+}
+
+model AuditTrail {
+  id                String   @id @default(uuid())
+  wallet_id         String
+  ledger_event_id   String
+  ledger_entry_id   String?
+  triggered_by_type String
+  triggered_by_id   String
+  before_balance    Decimal
+  after_balance     Decimal
+  delta             Decimal
+  created_at        DateTime @default(now())
+
+  @@index([wallet_id])
+  @@index([ledger_event_id])
+  @@map("audit_trail")
 }

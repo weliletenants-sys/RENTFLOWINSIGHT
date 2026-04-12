@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: (import.meta.env.VITE_API_URL || '') + '/api/auth',
+  baseURL: (import.meta.env.VITE_API_URL || '') + '/api/v2/auth',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -30,7 +30,7 @@ export const registerUser = async (userData: {
   email?: string;
   referrer_id?: string;
 }) => {
-  const response = await api.post('/registrations', userData);
+  const response = await api.post('/register', userData);
   return response.data;
 };
 
