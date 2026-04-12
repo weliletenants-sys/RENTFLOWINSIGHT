@@ -5,6 +5,7 @@ import usersRoutes from './users/users.routes';
 import agentsRoutes from './agents/agents.routes';
 import tenantsRoutes from './tenants/tenants.routes';
 import paymentsRoutes from './payments/payments.routes';
+import repaymentsRoutes from './repayments/repayments.routes';
 import roiRoutes from './roi/roi.routes';
 import ledgerRoutes from './ledger/ledger.routes';
 
@@ -17,6 +18,7 @@ modulesRouter.use('/users', usersRoutes);
 modulesRouter.use('/agents', agentsRoutes);
 modulesRouter.use('/tenants', tenantsRoutes);
 modulesRouter.use('/payments', paymentsRoutes);
+modulesRouter.use('/repayments', repaymentsRoutes);
 modulesRouter.use('/roi', roiRoutes);
 modulesRouter.use('/admin/system', ledgerRoutes);
 

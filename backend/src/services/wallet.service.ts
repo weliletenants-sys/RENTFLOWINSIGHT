@@ -8,13 +8,13 @@ export class WalletService {
    */
   static async getWalletDetails(userId: string) {
     let wallet = await prisma.wallets.findFirst({
-      where: { user_id: userId },
+      where: { account_id: userId },
     });
 
     if (!wallet) {
       wallet = await prisma.wallets.create({
         data: {
-          user_id: userId,
+          account_id: userId,
           balance: 0,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -24,7 +24,7 @@ export class WalletService {
 
     // Retrieve ledger entries from general_ledger instead of walletTransactions
     const transactions = await prisma.generalLedger.findMany({
-      where: { user_id: userId },
+      where: { account_id: userId },
       orderBy: { created_at: 'desc' },
       take: 50,
     });
@@ -39,14 +39,14 @@ export class WalletService {
    * Core deposit logic (Appends to double-entry ledger only)
    */
   static async deposit(userId: string, amount: number) {
-    const wallet = await prisma.wallets.findFirst({ where: { user_id: userId } });
+    const wallet = await prisma.wallets.findFirst({ where: { account_id: userId } });
     if (!wallet) throw new Error('Wallet not found');
 
     const ledgerEntry = await TransactionService.createLedgerTransaction({
       amount,
       category: 'wallet_deposit',
       description: 'Wallet Deposit',
-      direction: 'cash_in',
+      entry_type: 'credit',
       sourceTable: 'deposit_requests',
       userId: userId,
       scope: 'wallet'
@@ -61,7 +61,7 @@ export class WalletService {
    * Core withdrawal logic
    */
   static async withdraw(userId: string, amount: number) {
-    const wallet = await prisma.wallets.findFirst({ where: { user_id: userId } });
+    const wallet = await prisma.wallets.findFirst({ where: { account_id: userId } });
     if (!wallet) throw new Error('Wallet not found');
 
     if (wallet.balance < amount) {
@@ -72,7 +72,7 @@ export class WalletService {
       amount,
       category: 'wallet_withdrawal',
       description: 'Wallet Withdrawal',
-      direction: 'cash_out',
+      entry_type: 'debit',
       sourceTable: 'investment_withdrawal_requests', // Example source
       userId: userId,
       scope: 'wallet'
@@ -85,8 +85,8 @@ export class WalletService {
    * Core transfer logic (Internal Wallet-to-Wallet)
    */
   static async transfer(senderId: string, recipientId: string, amount: number) {
-    const senderWallet = await prisma.wallets.findFirst({ where: { user_id: senderId } });
-    const recipientWallet = await prisma.wallets.findFirst({ where: { user_id: recipientId } });
+    const senderWallet = await prisma.wallets.findFirst({ where: { account_id: senderId } });
+    const recipientWallet = await prisma.wallets.findFirst({ where: { account_id: recipientId } });
 
     if (!senderWallet) throw new Error('Sender wallet not found');
     if (!recipientWallet) throw new Error('Recipient wallet not found');
@@ -104,13 +104,13 @@ export class WalletService {
           amount,
           category: 'wallet_transfer',
           description: 'Transfer Sent',
-          direction: 'cash_out',
+          entry_type: 'debit',
           linked_party: recipientId,
           source_table: 'wallets', // Internal transfer
           transaction_date: new Date().toISOString(),
           created_at: new Date().toISOString(),
-          transaction_group_id: groupedTxId,
-          user_id: senderId,
+          transaction_id: groupedTxId,
+          account_id: senderId,
           scope: 'wallet'
         }
       }),
@@ -119,13 +119,13 @@ export class WalletService {
           amount,
           category: 'wallet_transfer',
           description: 'Transfer Received',
-          direction: 'cash_in',
+          entry_type: 'credit',
           linked_party: senderId,
           source_table: 'wallets',
           transaction_date: new Date().toISOString(),
           created_at: new Date().toISOString(),
-          transaction_group_id: groupedTxId,
-          user_id: recipientId,
+          transaction_id: groupedTxId,
+          account_id: recipientId,
           scope: 'wallet'
         }
       })
@@ -140,7 +140,7 @@ export class WalletService {
   static async requestDeposit(userId: string, amount: number, provider: string, transactionId: string, notes?: string) {
     const depositRequest = await prisma.depositRequests.create({
       data: {
-        user_id: userId,
+        account_id: userId,
         amount,
         provider: provider || 'MOBILE_MONEY',
         transaction_id: transactionId,
@@ -159,7 +159,7 @@ export class WalletService {
     if (executives.length > 0) {
       await prisma.notifications.createMany({
         data: executives.map(exec => ({
-          user_id: exec.id,
+          account_id: exec.id,
           title: 'New Deposit Request',
           message: `User ${userId} has requested a deposit of UGX ${amount}.`,
           type: 'DEPOSIT_REQUEST',

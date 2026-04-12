@@ -25,12 +25,12 @@ export class LedgerService {
 
     const debitEntry = await this.ledgerRepository.createEntry(tx, {
       ...debitPayload,
-      direction: 'cash_out' // Typically represents money leaving a source
+      entry_type: 'debit' // Typically represents money leaving a source
     });
 
     const creditEntry = await this.ledgerRepository.createEntry(tx, {
       ...creditPayload,
-      direction: 'cash_in' // Typically represents money entering a destination
+      entry_type: 'credit' // Typically represents money entering a destination
     });
 
   }
@@ -43,11 +43,11 @@ export class LedgerService {
 
     const ledgerIns = await prisma.generalLedger.aggregate({
       _sum: { amount: true },
-      where: { direction: 'cash_in' }
+      where: { entry_type: 'credit' }
     });
     const ledgerOuts = await prisma.generalLedger.aggregate({
       _sum: { amount: true },
-      where: { direction: 'cash_out' }
+      where: { entry_type: 'debit' }
     });
 
     const totalSystemIn = ledgerIns._sum.amount || 0;

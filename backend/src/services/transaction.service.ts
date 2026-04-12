@@ -6,7 +6,7 @@ export interface LedgerTransactionPayload {
   amount: number;
   category: string;
   description?: string;
-  direction: 'cash_in' | 'cash_out';
+  entry_type: 'credit' | 'cash_out';
   linkedParty?: string;
   sourceId?: string;
   sourceTable: string;
@@ -41,7 +41,7 @@ export class TransactionService {
         transaction_date: now,
         created_at: now,
         transaction_group_id: txGroupId,
-        user_id: payload.userId,
+        account_id: payload.userId,
         role_type: payload.roleType,
         scope: payload.scope || 'wallet',
       }

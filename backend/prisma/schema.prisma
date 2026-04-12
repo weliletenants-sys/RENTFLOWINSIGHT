@@ -8,6 +8,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum PaymentMethod {
+  WALLET
+  CASH
+  MOBILE_MONEY
+}
+
 model AgentAdvanceLedger {
   amount_deducted  Float
   closing_balance  Float
@@ -481,6 +487,7 @@ model LedgerEntries {
 
 model LedgerTransactions {
   id                   String  @id @default(uuid())
+  idempotency_key      String? @unique
   approved_by          String?
   category             String
   created_at           String
@@ -827,7 +834,7 @@ model RentRequests {
   agent_verified           Boolean?
   agent_verified_at        String?
   agent_verified_by        String?
-  amount_repaid            Float
+  remaining_balance        Float    @default(0)
   approval_comment         String?
   approved_at              String?
   approved_by              String?
@@ -871,14 +878,45 @@ model RentRequests {
   @@map("rent_requests")
 }
 
-model Repayments {
-  amount          Float
-  created_at      String
-  id              String  @id @default(uuid())
-  rent_request_id String?
-  tenant_id       String?
+model PipelineIdempotency {
+  id              String   @id @default(uuid())
+  repayment_id    String   @unique
+  rent_request_id String
+  created_at      DateTime @default(now())
+  
+  @@map("pipeline_idempotency")
+}
 
+model Repayments {
+  id                    String        @id @default(uuid())
+  tenant_id             String
+  paid_by_account_id    String
+  amount                Float
+  payment_method        PaymentMethod
+  ledger_transaction_id String
+  payment_id            String
+  rent_request_id       String?
+  status                String        @default("completed")
+  created_at            DateTime      @default(now())
+
+  @@index([payment_id])
+  @@index([ledger_transaction_id])
   @@map("repayments")
+}
+
+model Commissions {
+  id                    String   @id @default(uuid())
+  agent_id              String
+  tenant_id             String
+  repayment_id          String
+  amount                Float
+  rate                  Float
+  ledger_transaction_id String
+  created_at            DateTime @default(now())
+
+  @@index([repayment_id])
+  @@index([ledger_transaction_id])
+  @@map("commissions")
 }
 
 model ReviewImages {

@@ -1,78 +1,104 @@
 import prisma from '../../prisma/prisma.client';
-import { LedgerRepository } from '../ledger/ledger.repository';
-// WalletsRepository IMPORT REMOVED: Ledger strictly handles Wallet mutation limits internally natively.
+import { LedgerRepository, TransactionClient } from '../ledger/ledger.repository';
 import { withTransactionRetry } from '../../shared/utils/transaction.util';
+import { v4 as uuidv4 } from 'uuid';
+
+export interface ExecutePaymentConfig {
+  debitAccountId: string;
+  creditAccountId: string;
+  amount: number;
+  idempotencyKey: string;
+  metadata: Record<string, any>;
+  afterLedgerWrite: (tx: TransactionClient, transactionId: string, paymentId: string) => Promise<void>;
+}
 
 export class PaymentsRepository {
   private ledgerRepo = new LedgerRepository();
 
   /**
-   * Executes the rent payment flow entirely within a single atomic PostgreSQL transaction.
-   * This handles the BEGIN/COMMIT/ROLLBACK implicitly. Data Access ONLY.
+   * Universal Financial Execution Engine.
+   * Completely domain agnostic. It establishes the Atom lock, performs exact duplicate rejection, 
+   * maps double-entry pairs cleanly, allows Domain Writes sequentially, and emits to Outbox securely.
    */
-  async executeRentPaymentTransaction(payload: {
-    agentId: string;
-    amount: number;
-    reference: string;
-    tenantId: string;
-  }) {
-    // 1. Initial lookup to prevent duplicating work if already mapped accurately
+  async executeFinancialTransaction(config: ExecutePaymentConfig) {
+    // 1. Enforce Idempotency Graphically
     const existingSync = await prisma.ledgerTransactions.findUnique({
-      where: { idempotency_key: payload.reference }
+      where: { idempotency_key: config.idempotencyKey }
     });
 
     if (existingSync) {
-      console.log(`[IDEMPOTENT HIT] Rent Payment event ${payload.reference} already successfully mapped.`);
+      console.log(`[IDEMPOTENT HIT] Payment event ${config.idempotencyKey} completely skipped gracefully.`);
       return {
         success: true,
-        transactionGroupId: existingSync.id,
+        transactionId: existingSync.id,
       };
     }
 
-    // 2. Map resilient creation logic executing strict bounds natively
+    // 2. Strict Atom Wrapper
     return withTransactionRetry(prisma, async (tx) => {
-      // 3. Construct the Master Event Node explicitly mapping PostgreSQL Unique Constraint natively
+      
+      // 3. Construct the Master Event Node
       const event = await tx.ledgerTransactions.create({
           data: {
-              idempotency_key: payload.reference,
-              category: 'rent_payment',
+              idempotency_key: config.idempotencyKey,
+              category: config.metadata.type || 'generic_payment',
               created_at: new Date().toISOString(),
-              source_table: 'rent_requests',
-              initiated_by: payload.agentId
+              source_table: 'external',
+              initiated_by: config.metadata.paid_by || 'system'
           }
       });
+      const paymentId = event.id;
+      const transactionId = event.id; // Group ID identical natively
 
-      // 4. Create Ledger Entries structurally bound perfectly to the Master Event Node.
-      // NOTE: "Legder -> trigger -> wallet" logic means creating these ledger entries immediately
-      // and algorithmically updates the respective Wallets tied to these userIds.
-
-      // Debit Entry (out from Agent)
+      // 4. Ledger Core Isolation (Write Double Entry)
+      
+      // Debit Entry (out)
       await this.ledgerRepo.createEntry(tx, {
-          amount: payload.amount,
-          direction: 'cash_out',
-          category: 'rent_payment',
-          description: `Rent payment collected from tenant ${payload.tenantId}`,
-          userId: payload.agentId,
-          sourceTable: 'rent_requests',
-          transactionGroupId: event.id,
-          sourceId: payload.reference 
+          amount: config.amount,
+          entryType: 'debit',
+          category: config.metadata.type || 'generic_payment',
+          description: `Debit resolution for ${config.metadata.type || 'generic operation'}`,
+          accountId: config.debitAccountId,
+          sourceTable: 'ledger_transactions',
+          transactionId: transactionId,
+          sourceId: config.idempotencyKey
       });
 
-      // Credit Entry (in to System)
+      // Credit Entry (in)
       await this.ledgerRepo.createEntry(tx, {
-          amount: payload.amount,
-          direction: 'cash_in',
-          category: 'rent_collection',
-          description: `System collection received from Agent ${payload.agentId} for tenant ${payload.tenantId}`,
-          userId: 'system', // Target the system wallet explicitly
-          sourceTable: 'rent_requests',
-          transactionGroupId: event.id,
-          sourceId: payload.reference 
+          amount: config.amount,
+          entryType: 'credit',
+          category: config.metadata.type || 'generic_payment',
+          description: `Credit allocation for ${config.metadata.type || 'generic operation'}`,
+          accountId: config.creditAccountId,
+          sourceTable: 'ledger_transactions',
+          transactionId: transactionId,
+          sourceId: config.idempotencyKey
+      });
+
+      // 5. Execute Highly Scoped Domain Writes (Strict DB isolation required)
+      await config.afterLedgerWrite(tx, transactionId, paymentId);
+      
+      // 6. Push Event Data to Transactional Outbox
+      await tx.outboxEvents.create({
+        data: {
+            event_type: `${config.metadata.type}.created`,
+            payload: {
+                paymentId,
+                transactionId,
+                debitAccountId: config.debitAccountId,
+                creditAccountId: config.creditAccountId,
+                amount: config.amount,
+                timestamp: new Date().toISOString(),
+                ...config.metadata
+            }
+        }
       });
 
       return {
         success: true,
-        transactionGroupId: event.id
+        transactionId,
+        paymentId
       };
     });
   }

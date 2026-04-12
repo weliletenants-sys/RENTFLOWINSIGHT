@@ -1,6 +1,5 @@
-import { PaymentsRepository } from './payments.repository';
+import { PaymentsRepository, ExecutePaymentConfig } from './payments.repository';
 import { WalletsRepository } from '../wallets/wallets.repository';
-import { EventDispatcher } from '../../events/EventDispatcher';
 import { v4 as uuidv4 } from 'uuid';
 
 export class PaymentsService {
@@ -8,48 +7,32 @@ export class PaymentsService {
   private walletsRepo = new WalletsRepository();
 
   /**
-   * Orchestrates the rent payment execution securely, isolating business logic
-   * strictly inside the service layer.
+   * The Central Financial Gateway.
+   * Universal executor for all inbound platform capabilities ensuring balances validate natively
+   * before safely passing control into the isolated Ledger atom queue.
    */
-  async processRentPayment(agentId: string, tenantId: string, amount: number, referenceKey?: string) {
-    // 1. Validate Business Rules
-    if (!agentId || !tenantId) {
-      throw new Error('Agent and Tenant identifiers are strictly required.');
+  async execute(config: ExecutePaymentConfig) {
+    if (!config.debitAccountId || !config.creditAccountId) {
+      throw new Error('Transaction requires explicit bounds for both target and destination nodes.');
+    }
+    if (config.amount <= 0) {
+      throw new Error('Amount must be positively aligned mathematically.');
     }
 
-    if (amount <= 0) {
-      throw new Error('Payment amount must be greater than zero.');
+    // 1. Balance Enforcements 
+    // Notice: Debit targets specifically must be inherently fluid (Wallet checks required)
+    // Wallets are inherently protected natively inside PostgreSQL as well, this simply optimizes feedback.
+    const walletBalance = await this.walletsRepo.getBalance(config.debitAccountId);
+    if (walletBalance < config.amount) {
+      throw new Error(`Insufficient Funds: Source bounds [${config.debitAccountId}] critically underfunded.`);
     }
 
-    // 2. Pre-flight Balance Validation (Business Logic)
-    const walletBalance = await this.walletsRepo.getBalance(agentId);
-    if (walletBalance < amount) {
-      throw new Error('Insufficient Funds: Agent wallet cannot drop below 0.');
-    }
-
-    // Provision an idempotency key safely
-    const idempotencyReference = referenceKey || uuidv4();
-
-    // 3. Execute Transaction via strict Repository
     try {
-      const result = await this.repository.executeRentPaymentTransaction({
-        agentId,
-        tenantId,
-        amount,
-        reference: idempotencyReference
-      });
-
-      // 4. Fire Async Event ensuring decoupled listeners can process side-effects independently 
-      EventDispatcher.emit('payment.created', {
-          transactionGroupId: result.transactionGroupId,
-          agentId,
-          tenantId,
-          amount
-      });
-
+      // 2. Delegate to the Atom lock organically
+      const result = await this.repository.executeFinancialTransaction(config);
       return result;
     } catch (error: any) {
-      throw new Error(`Payment processing failed: ${error.message}`);
+      throw new Error(`Payment processing physically failed: ${error.message}`);
     }
   }
 }

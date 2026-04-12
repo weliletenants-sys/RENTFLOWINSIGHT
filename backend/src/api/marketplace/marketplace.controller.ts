@@ -47,7 +47,7 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
        return problemResponse(res, 400, 'Bad Request', 'Your cart array cannot be empty.', 'validation-error');
      }
 
-     const userWallet = await prisma.wallets.findFirst({ where: { user_id: userId } });
+     const userWallet = await prisma.wallets.findFirst({ where: { account_id: userId } });
      if (!userWallet) {
        return problemResponse(res, 404, 'Wallet Missing', 'Your Triple-State wallet has not been registered.', 'wallet-missing');
      }
@@ -108,11 +108,11 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
                 amount: totalCartValue,
                 category: 'marketplace_purchase',
                 created_at: timestamp,
-                direction: 'DEBIT',
+                entry_type: 'debit',
                 source_table: 'wallets',
                 source_id: userWallet.id,
                 transaction_date: timestamp,
-                user_id: userId
+                account_id: userId
              }
          });
 
@@ -126,7 +126,7 @@ export const createCheckoutSession = async (req: Request, res: Response) => {
              status: 'paid_pending_fulfillment',
              total_price: i.runningItemSum,
              unit_price: i.product.price,
-             user_id: userId,
+             account_id: userId,
              product_id: i.product.id
          }));
 

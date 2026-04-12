@@ -37,14 +37,14 @@ export async function runCeoAggregator() {
     const rent_financed = rentFinancedAgg._sum.rent_amount || 0;
 
     const rentRepaidAgg = await prisma.rentRequests.aggregate({
-      _sum: { amount_repaid: true }
+      _sum: { remaining_balance: true }
     });
-    const rent_repaid = rentRepaidAgg._sum.amount_repaid || 0;
+    const rent_repaid = rentRepaidAgg._sum.remaining_balance || 0;
 
     // Platform Revenue (General Ledger platform fees)
     const revenueAgg = await prisma.generalLedger.aggregate({
       _sum: { amount: true },
-      where: { category: 'platform_fee', direction: 'credit' }
+      where: { category: 'platform_fee', entry_type: 'credit' }
     });
     const revenue = revenueAgg._sum.amount || 0;
 

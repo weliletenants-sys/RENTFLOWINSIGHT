@@ -11,6 +11,10 @@ dotenv.config();
 
 const app = express();
 
+// Initialize Event Listeners
+import './events/listeners/commission.listener';
+import './events/listeners/pipeline.listener';
+
 app.use(helmet());
 
 const appUrl = process.env.APP_URL || 'http://localhost:5173';
