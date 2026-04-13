@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 
 // Strict throttling mechanism defending monetary mutations from brute-forcing, spam, or broken loops.
 export const paymentLimiter = rateLimit({
@@ -10,8 +10,8 @@ export const paymentLimiter = rateLimit({
       detail: 'This endpoint is strictly rate limited to protect transaction concurrency bounds. Please wait a minute before retrying.'
   },
   keyGenerator: (req) => {
-    // Generate context-aware keys locking abuse per specific user and endpoint context, rather than globally
-    const identifier = (req as any).user?.id || req.ip;
+    // Generate context-aware keys locking abuse per specific user and endpoint context safely generating IPv6 identifiers
+    const identifier = (req as any).user?.id || ipKeyGenerator(req);
     const idempotency = req.body?.idempotencyKey ? `_${req.body.idempotencyKey}` : '';
     return `${identifier}_${req.originalUrl}${idempotency}`;
   },

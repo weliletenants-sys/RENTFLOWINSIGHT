@@ -10,10 +10,16 @@ import fs from 'fs';
 dotenv.config();
 
 const app = express();
+app.set('trust proxy', 1); // Respect X-Forwarded-For headers from ALBs
 
-// Initialize Event Listeners
-import './events/listeners/commission.listener';
-import './events/listeners/pipeline.listener';
+// Initialize Event Listeners exclusively if Redis is locally configured or forced
+if (process.env.NODE_ENV === 'production' || process.env.ENABLE_REDIS_WORKERS === 'true') {
+  console.log('[System] Booting Background Redis Workers...');
+  require('./events/listeners/commission.listener');
+  require('./events/listeners/pipeline.listener');
+} else {
+  console.log('[System] Redis Background Workers gracefully Disabled (ENABLE_REDIS_WORKERS=false)');
+}
 
 app.use(helmet());
 
@@ -51,8 +57,11 @@ app.use('/api/v2', modulesRouter);
 
 // Supabase Proxy Fallbacks for Lovable Syncing
 import { dynamicRpcCatcher, dynamicRestCatcher } from './shared/dynamic.routes';
-app.use('/api/rpc', dynamicRpcCatcher);
-app.use('/api/rest', dynamicRestCatcher);
+import { supabaseAuthGuard } from './middlewares/auth.middleware';
+
+// Hard-guard these proxies! The AuthGuard ensures `req.user.id` is cryptographically validated and natively populated.
+app.use('/api/rpc', supabaseAuthGuard, dynamicRpcCatcher);
+app.use('/api/rest', supabaseAuthGuard, dynamicRestCatcher);
 
 import { errorHandler } from './middlewares/errorHandler.middleware';
 app.use(errorHandler);

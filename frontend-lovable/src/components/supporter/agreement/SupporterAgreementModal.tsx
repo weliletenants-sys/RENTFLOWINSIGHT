@@ -20,6 +20,7 @@ import { format } from 'date-fns';
 import { QUICK_SUMMARY_CONTENT, FULL_AGREEMENT_CONTENT } from './AgreementContent';
 import { cn } from '@/lib/utils';
 import { hapticSuccess } from '@/lib/haptics';
+import { useToast } from '@/hooks/use-toast';
 
 interface SupporterAgreementModalProps {
   open: boolean;
@@ -36,7 +37,9 @@ export function SupporterAgreementModal({
 }: SupporterAgreementModalProps) {
   const [activeTab, setActiveTab] = useState<string>('full');
   const [isAccepting, setIsAccepting] = useState(false);
+  const [localChecked, setLocalChecked] = useState(false);
   const fullAgreementRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   const effectiveDate = format(new Date(), 'MMMM d, yyyy');
 
@@ -47,16 +50,25 @@ export function SupporterAgreementModal({
     }
   }, [open]);
 
-  // Auto-accept when checkbox is checked - no scroll requirement
+  // Auto-accept when checkbox is checked
   const handleCheckboxChange = async (checked: boolean) => {
+    setLocalChecked(checked);
     if (checked) {
       setIsAccepting(true);
-      const success = await onAccept();
-      setIsAccepting(false);
-      
-      if (success) {
-        hapticSuccess();
-        onOpenChange(false);
+      try {
+         const success = await onAccept();
+         if (success) {
+           hapticSuccess();
+           onOpenChange(false);
+         } else {
+           // If onAccept fails (throws or returns false), uncheck locally so they can try again
+           setLocalChecked(false);
+         }
+      } catch (e: any) {
+         setLocalChecked(false);
+         toast({ title: "Agreement Failed", description: e?.message || "There was an issue saving your response.", variant: 'destructive' });
+      } finally {
+         setIsAccepting(false);
       }
     }
   };
@@ -273,11 +285,15 @@ ${FULL_AGREEMENT_CONTENT}
           <motion.div 
             className="flex items-start gap-3 p-4 rounded-xl border-2 border-primary/30 bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors"
             whileTap={{ scale: 0.98 }}
-            onClick={() => !isAccepting && !loading && handleCheckboxChange(true)}
+            onClick={() => {
+              if (!isAccepting && !loading) {
+                 handleCheckboxChange(!localChecked);
+              }
+            }}
           >
             <Checkbox
               id="accept-terms"
-              checked={false}
+              checked={localChecked}
               onCheckedChange={handleCheckboxChange}
               disabled={isAccepting || loading}
               className="mt-0.5 h-5 w-5 border-2 border-primary"

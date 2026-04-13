@@ -12,7 +12,70 @@ declare global {
 }
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://wirntoujqoyjobfhyelc.supabase.co';
+const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpcm50b3VqcW95am9iZmh5ZWxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1NjE1MTYsImV4cCI6MjA4MjEzNzUxNn0.5-zxcRPVxvpxNiXhoo5VHpIuvbtuOLfiI3ph8jPIod8';
 
+import { getRedisClient } from '../config/redis.client';
+import crypto from 'crypto';
+
+export const supabaseAuthGuard = async (req: Request, res: Response, next: NextFunction) => {
+  let token = req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.split(' ')[1] : null;
+  
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized: Missing Bearer Token' });
+  }
+
+  try {
+    // 1. Check Redis Cache First to bypass Network Latency (5 Minute TTL)
+    const redis = getRedisClient();
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const cacheKey = `auth:token:${tokenHash}`;
+    
+    // Safety fallback: if redis is magically offline and returning null, it gracefully skips string evaluation
+    const cachedSession = await redis.get(cacheKey).catch(() => null);
+    
+    if (cachedSession) {
+       req.user = JSON.parse(cachedSession);
+       return next();
+    }
+
+    // 2. Cache Miss: Ask Supabase Auth Server directly to verify the token signature and expiration
+    const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'apikey': SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      return res.status(401).json({ error: 'Unauthorized: Invalid, expired, or rejected token' });
+    }
+
+    const userData = await response.json();
+    
+    // Deep Security Validation checks
+    if (!userData.id || userData.aud !== 'authenticated') {
+        return res.status(401).json({ error: 'Unauthorized: Invalid identity origin' });
+    }
+    
+    // 3. Attach clean, verified user identity strictly dynamically
+    req.user = {
+      id: userData.id,
+      email: userData.email,
+      role: userData.role || 'authenticated'
+    };
+
+    // Safely cache it defensively asynchronously so it doesn't block response cycle
+    redis.setex(cacheKey, 300, JSON.stringify(req.user)).catch(() => {});
+
+    next();
+  } catch (error) {
+    console.error('[Supabase Auth Guard] Validation crashed:', error);
+    return res.status(401).json({ error: 'Unauthorized: Validation failure' });
+  }
+};
 // Alias for legacy routes to prevent undefined runtime crashes
 export const authGuard = async (req: Request, res: Response, next: NextFunction) => {
   return ensureUserAuthenticated(req, res, next);
