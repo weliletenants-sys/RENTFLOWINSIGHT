@@ -1,0 +1,314 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Wallet, Send, Plus, ArrowUpRight, ArrowDownLeft, HandCoins, Bell, History, TrendingUp, TrendingDown, ArrowDownToLine } from 'lucide-react';
+import { useWallet } from '@/hooks/useWallet';
+import { getBalanceColorClass, getBalanceDotClass, formatSyncTime } from '@/lib/walletUtils';
+import { SendMoneyDialog } from './SendMoneyDialog';
+import DepositFlow from '@/components/payments/DepositFlow';
+import { RequestMoneyDialog } from './RequestMoneyDialog';
+import { PendingRequestsDialog } from './PendingRequestsDialog';
+import { TransactionReceipt } from './TransactionReceipt';
+import { UserDepositRequests } from './UserDepositRequests';
+import { WithdrawRequestDialog } from './WithdrawRequestDialog';
+import { UserWithdrawalRequests } from './UserWithdrawalRequests';
+import { AnimatedBalance } from './AnimatedBalance';
+import { WalletBreakdown } from './WalletBreakdown';
+import { WalletStatement } from './WalletStatement';
+import { MyReferralsCount } from './MyReferralsCount';
+
+import { RecentAutoCharges } from './RecentAutoCharges';
+import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
+import { UserAvatar } from '@/components/UserAvatar';
+import { SkeletonWallet } from '@/components/ui/skeleton';
+import { fetchPendingCounts, invalidatePendingCountsCache } from '@/lib/pendingCountsCache';
+
+export function WalletCard() {
+  const navigate = useNavigate();
+  const { wallet, transactions, loading, isOfflineData, lastSyncedAt, refreshWallet, refreshTransactions } = useWallet();
+  const { user } = useAuth();
+  const { profile } = useProfile();
+  const [sendOpen, setSendOpen] = useState(false);
+  const [depositOpen, setDepositOpen] = useState(false);
+  const [requestOpen, setRequestOpen] = useState(false);
+  const [pendingOpen, setPendingOpen] = useState(false);
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [selectedTransaction, setSelectedTransaction] = useState<typeof transactions[0] | null>(null);
+  const [receiptOpen, setReceiptOpen] = useState(false);
+
+  const fetchPendingCount = useCallback(async () => {
+    if (!user) return;
+    const counts = await fetchPendingCounts(user.id);
+    setPendingCount(counts.moneyRequests);
+  }, [user]);
+
+  useEffect(() => {
+    fetchPendingCount();
+  }, [fetchPendingCount]);
+
+
+  const handlePendingClose = (open: boolean) => {
+    setPendingOpen(open);
+    if (!open) {
+      invalidatePendingCountsCache();
+      fetchPendingCount();
+      refreshWallet();
+      refreshTransactions();
+    }
+  };
+
+  // Show cached balance immediately — never show skeleton if we have cached data
+  const balance = wallet?.balance || 0;
+  const dotColor = getBalanceDotClass(balance);
+
+  if (loading && !wallet) {
+    return <SkeletonWallet />;
+  }
+
+  // Calculate income/expense from recent transactions
+  const recentStats = transactions.reduce(
+    (acc, tx) => {
+      if (tx.sender_id === user?.id) {
+        acc.sent += tx.amount;
+      } else {
+        acc.received += tx.amount;
+      }
+      return acc;
+    },
+    { sent: 0, received: 0 }
+  );
+
+  const handleRefresh = async () => {
+    await Promise.all([refreshWallet(), refreshTransactions(), fetchPendingCount()]);
+  };
+
+  return (
+    <>
+      <div>
+        <Card className="overflow-hidden border-border/50 shadow-lg rounded-2xl">
+        {/* Header with gradient */}
+        <div className="bg-gradient-to-br from-primary via-primary to-primary/85 p-4 sm:p-5 text-primary-foreground">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2.5 rounded-xl bg-primary-foreground/15">
+                <Wallet className="h-5 w-5" />
+              </div>
+              <div>
+                <span className="font-semibold text-sm tracking-wide uppercase opacity-90">Wallet Balance</span>
+                <div className="mt-0.5 flex items-center gap-2">
+                  <WalletBreakdown />
+                  <WalletStatement />
+                </div>
+              </div>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="relative h-10 w-10 text-primary-foreground hover:bg-primary-foreground/15 rounded-xl"
+              onClick={() => setPendingOpen(true)}
+            >
+              <Bell className="h-5 w-5" />
+              {pendingCount > 0 && (
+                <Badge className="absolute -top-0.5 -right-0.5 h-5 w-5 p-0 flex items-center justify-center text-xs bg-warning text-warning-foreground animate-pulse">
+                  {pendingCount}
+                </Badge>
+              )}
+            </Button>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <UserAvatar 
+              avatarUrl={profile?.avatar_url} 
+              fullName={profile?.full_name} 
+              size="md" 
+            />
+            <div className="flex-1">
+              <p className="text-sm opacity-80 truncate font-medium">{profile?.full_name || 'User'}</p>
+              <div className="flex items-center gap-2 mt-0.5">
+                {/* Traffic-light dot indicator */}
+                <span className={`inline-block h-3 w-3 rounded-full ${dotColor} animate-pulse`} />
+                <AnimatedBalance 
+                  value={balance} 
+                  className="text-3xl sm:text-2xl font-bold tracking-tight block"
+                />
+              </div>
+              {/* Sync status - subtle, non-intrusive */}
+              <p className="text-[10px] opacity-60 mt-0.5">
+                {isOfflineData ? '📴 Offline • ' : ''}
+                Updated {formatSyncTime(lastSyncedAt)}
+              </p>
+            </div>
+          </div>
+
+          {/* Recent balance changes moved to CardContent for visibility */}
+
+
+          {/* Quick Stats Row */}
+          {transactions.length > 0 && (
+            <div className="flex gap-3 mt-4 pt-3 border-t border-primary-foreground/20">
+              <div className="flex items-center gap-2 flex-1">
+                <div className="p-1.5 rounded-full bg-success/20">
+                  <TrendingUp className="h-3.5 w-3.5 text-success" />
+                </div>
+                <div>
+                  <p className="text-[10px] opacity-70 uppercase tracking-wide">In</p>
+                  <p className="text-sm font-semibold">
+                    {recentStats.received >= 1000 
+                      ? `${(recentStats.received / 1000).toFixed(0)}K` 
+                      : recentStats.received}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-1">
+                <div className="p-1.5 rounded-full bg-destructive/20">
+                  <TrendingDown className="h-3.5 w-3.5 text-destructive" />
+                </div>
+                <div>
+                  <p className="text-[10px] opacity-70 uppercase tracking-wide">Out</p>
+                  <p className="text-sm font-semibold">
+                    {recentStats.sent >= 1000 
+                      ? `${(recentStats.sent / 1000).toFixed(0)}K` 
+                      : recentStats.sent}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        <CardContent className="p-3.5 sm:p-4 space-y-3.5">
+          {/* Action buttons - Large touch targets */}
+          <div className="grid grid-cols-4 gap-2">
+            <Button 
+              onClick={() => setSendOpen(true)} 
+              className="flex-col gap-1 h-auto py-3 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
+            >
+              <Send className="h-4 w-4" />
+              <span className="text-[10px] font-semibold tracking-wide">Send</span>
+            </Button>
+            <Button 
+              onClick={() => setRequestOpen(true)} 
+              variant="secondary"
+              className="flex-col gap-1 h-auto py-3 rounded-xl active:scale-95 transition-all"
+            >
+              <HandCoins className="h-4 w-4" />
+              <span className="text-[10px] font-semibold tracking-wide">Request</span>
+            </Button>
+            <Button 
+              onClick={() => setDepositOpen(true)} 
+              variant="outline" 
+              className="flex-col gap-1 h-auto py-3 rounded-xl active:scale-95 transition-all border-border/60"
+            >
+              <Plus className="h-4 w-4" />
+              <span className="text-[10px] font-semibold tracking-wide">Add</span>
+            </Button>
+            <Button 
+              onClick={() => setWithdrawOpen(true)} 
+              variant="outline" 
+              className="flex-col gap-1 h-auto py-3 rounded-xl active:scale-95 transition-all border-warning/50 text-warning hover:bg-warning/10"
+            >
+              <ArrowDownToLine className="h-4 w-4" />
+              <span className="text-[10px] font-semibold tracking-wide">Withdraw</span>
+            </Button>
+          </div>
+
+          {/* Recent Auto-Deductions */}
+          <RecentAutoCharges />
+
+          {/* My Referrals Count */}
+          <MyReferralsCount />
+
+          {/* Minimum Withdrawal Policy Notice */}
+          <div className="flex items-center gap-2 px-3 py-2.5 bg-warning/10 border border-warning/30 rounded-xl">
+            <span className="text-base">🚫</span>
+            <p className="text-[11px] font-semibold text-warning-foreground leading-tight">
+              Min. withdrawal balance: <span className="font-bold">UGX 5,000</span>. Requests below this are automatically rejected.
+            </p>
+          </div>
+
+          {/* Recent transactions - Simplified */}
+          {transactions.length > 0 && (
+            <div className="pt-3 border-t border-border/50">
+              <div className="flex items-center justify-between mb-2.5">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Recent</p>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => navigate('/transactions')}
+                  className="gap-1 h-auto py-1 px-2 text-xs"
+                >
+                  All
+                  <History className="h-3 w-3" />
+                </Button>
+              </div>
+              <div className="space-y-1">
+                {transactions.slice(0, 3).map((tx) => {
+                  const isSent = tx.sender_id === user?.id;
+                  return (
+                    <button 
+                      key={tx.id} 
+                      onClick={() => {
+                        setSelectedTransaction(tx);
+                        setReceiptOpen(true);
+                      }}
+                      className="flex items-center justify-between p-2.5 rounded-xl w-full hover:bg-muted/50 active:scale-[0.98] transition-all"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className={`p-2 rounded-full ${isSent ? 'bg-destructive/10' : 'bg-success/10'}`}>
+                          {isSent ? (
+                            <ArrowUpRight className="h-4 w-4 text-destructive" />
+                          ) : (
+                            <ArrowDownLeft className="h-4 w-4 text-success" />
+                          )}
+                        </div>
+                        <div className="text-left">
+                          <p className="text-sm font-semibold truncate max-w-[120px]">
+                            {isSent ? tx.recipient_name?.split(' ')[0] : tx.sender_name?.split(' ')[0]}
+                          </p>
+                        </div>
+                      </div>
+                      <p className={`text-sm font-bold tabular-nums ${isSent ? 'text-destructive' : 'text-success'}`}>
+                        {isSent ? '-' : '+'}
+                        {tx.amount >= 1000 ? `${(tx.amount / 1000).toFixed(0)}K` : tx.amount}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      </div>
+
+      {/* User's Requests */}
+      <UserDepositRequests />
+      <UserWithdrawalRequests />
+
+      <SendMoneyDialog open={sendOpen} onOpenChange={setSendOpen} />
+      <DepositFlow open={depositOpen} onOpenChange={setDepositOpen} />
+      <RequestMoneyDialog 
+        open={requestOpen} 
+        onOpenChange={setRequestOpen} 
+        onSuccess={fetchPendingCount}
+      />
+      <PendingRequestsDialog open={pendingOpen} onOpenChange={handlePendingClose} />
+      <WithdrawRequestDialog 
+        open={withdrawOpen} 
+        onOpenChange={setWithdrawOpen} 
+        walletBalance={wallet?.balance || 0}
+        onSuccess={refreshWallet}
+      />
+      <TransactionReceipt 
+        open={receiptOpen} 
+        onOpenChange={setReceiptOpen} 
+        transaction={selectedTransaction}
+        currentUserId={user?.id || ''}
+      />
+    </>
+  );
+}
