@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { cooSidebarConfig } from '../../components/layout/executiveSidebarConfig';
+import { cooSidebarConfig } from '../../../components/layout/executiveSidebarConfig';
 
 export default function QuickNavigationGrid() {
   const navigate = useNavigate();
