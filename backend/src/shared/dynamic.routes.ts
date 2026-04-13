@@ -4,6 +4,11 @@ import prisma from '../prisma/prisma.client';
 export const dynamicRpcCatcher = Router();
 export const dynamicRestCatcher = Router();
 
+// Utility to securely map Supabase REST snake_case paths to Prisma camelCase models natively
+const toCamelCase = (str: string) => {
+    return str.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+};
+
 dynamicRpcCatcher.post('/:method', async (req, res) => {
   const { method } = req.params;
   const verifiedUserId = req.user?.id;
@@ -68,8 +73,13 @@ dynamicRestCatcher.get('/:table', async (req, res) => {
         query.where.user_id = verifiedUserId;
      }
      
-     const prismaTable = Object.keys(prisma).find(k => k.toLowerCase() === table.toLowerCase());
-     if (!prismaTable) return res.json([]);
+     const prismaTable = toCamelCase(table.toLowerCase());
+     
+     if (!(prisma as any)[prismaTable]) {
+         console.warn(`[Proxy Sandbox] Unmapped table lookup on GET: ${prismaTable}`);
+         return res.json([]);
+     }
+     
      const data = await (prisma as any)[prismaTable].findMany(query);
      
      // AUTO-SYNC: If a Live User logs in but doesn't exist in local AWS RDS, auto-stub them!
@@ -118,7 +128,10 @@ dynamicRestCatcher.post('/:table', async (req, res) => {
         return res.status(403).json({ error: "Forbidden: Table INSERT restricted by backend sandbox." });
      }
 
-     const prismaTable = Object.keys(prisma).find(k => k.toLowerCase() === table.toLowerCase()) || table;
+     const prismaTable = toCamelCase(table.toLowerCase());
+     if (!(prisma as any)[prismaTable]) {
+         return res.status(400).json({ error: `Internal Engine Error: The mapped Prisma table '${prismaTable}' does not exist.` });
+     }
      
      // 1. Defensively resolve the array vs object POST payload mappings correctly.
      let rawBody = Array.isArray(req.body) ? req.body[0] : req.body;
