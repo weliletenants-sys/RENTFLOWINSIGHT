@@ -1,0 +1,562 @@
+[
+  {
+    "id": "7438073e-53e9-406f-a061-7e979a6cd79d",
+    "user_id": "64c312f3-d719-416e-aa6a-492adfaca861",
+    "agent_id": "99890a2e-b842-4d44-8516-e2eafe0711ff",
+    "amount": 500,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-01-19 11:44:34.857572+00"
+  },
+  {
+    "id": "7de92ab6-03a2-439b-bbb9-98501297b2c0",
+    "user_id": "e4f07815-7991-422f-946f-7f351b38e954",
+    "agent_id": "e4f07815-7991-422f-946f-7f351b38e954",
+    "amount": 50000000000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-01-20 11:24:31.366302+00"
+  },
+  {
+    "id": "7762b3d6-cb3d-4082-a71d-74fb9c11dea8",
+    "user_id": "672ff8f3-8e23-4b76-b7e1-3a50309208a0",
+    "agent_id": "672ff8f3-8e23-4b76-b7e1-3a50309208a0",
+    "amount": 5000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-10 10:52:20.057431+00"
+  },
+  {
+    "id": "d44529eb-dfd6-4698-ad77-c1ab15db16d8",
+    "user_id": "2c879fc9-f249-4c98-8eb0-7d51435473dd",
+    "agent_id": "2c879fc9-f249-4c98-8eb0-7d51435473dd",
+    "amount": 5000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-10 15:48:59.203548+00"
+  },
+  {
+    "id": "953392eb-a400-490f-8bc8-4f25bfef3582",
+    "user_id": "73c85aa0-a814-4c81-b91b-7fa3470f1684",
+    "agent_id": "73c85aa0-a814-4c81-b91b-7fa3470f1684",
+    "amount": 10000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-11 18:39:25.020472+00"
+  },
+  {
+    "id": "73853f69-80c4-4aa2-a285-5d865da47c54",
+    "user_id": "1d1fd989-1afe-4782-b56b-f08d52711c78",
+    "agent_id": "1d1fd989-1afe-4782-b56b-f08d52711c78",
+    "amount": 50000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-12 06:41:42.27688+00"
+  },
+  {
+    "id": "ea07b795-a906-4a6d-a299-e7ed0ea9b032",
+    "user_id": "1d1fd989-1afe-4782-b56b-f08d52711c78",
+    "agent_id": "1d1fd989-1afe-4782-b56b-f08d52711c78",
+    "amount": 10000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-17 10:56:20.173247+00"
+  },
+  {
+    "id": "d9a62579-d489-429c-9ab7-200e490fc2c6",
+    "user_id": "1d1fd989-1afe-4782-b56b-f08d52711c78",
+    "agent_id": "1d1fd989-1afe-4782-b56b-f08d52711c78",
+    "amount": 20000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-17 10:58:45.979029+00"
+  },
+  {
+    "id": "6aa696e6-d15b-4348-8449-cbdc9c609ee1",
+    "user_id": "1d1fd989-1afe-4782-b56b-f08d52711c78",
+    "agent_id": "1d1fd989-1afe-4782-b56b-f08d52711c78",
+    "amount": 40000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-19 06:59:27.707866+00"
+  },
+  {
+    "id": "b9e1a957-5aaf-445a-8bd6-dbcce5cca2cd",
+    "user_id": "1d1fd989-1afe-4782-b56b-f08d52711c78",
+    "agent_id": "1d1fd989-1afe-4782-b56b-f08d52711c78",
+    "amount": 50000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-20 01:39:15.20115+00"
+  },
+  {
+    "id": "04562b64-9301-4c23-9caf-a4718fd5e30a",
+    "user_id": "1d1fd989-1afe-4782-b56b-f08d52711c78",
+    "agent_id": "1d1fd989-1afe-4782-b56b-f08d52711c78",
+    "amount": 50000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-20 12:13:17.794933+00"
+  },
+  {
+    "id": "eb777dd0-5e04-4f7c-a509-5c48455b1e3a",
+    "user_id": "155ff63b-de64-4602-9de9-84c7d2f71f6b",
+    "agent_id": "155ff63b-de64-4602-9de9-84c7d2f71f6b",
+    "amount": 300000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-20 19:38:33.183708+00"
+  },
+  {
+    "id": "bbb617dd-d722-4948-84f8-5463e0242156",
+    "user_id": "f0c37f23-265d-481a-b1b2-d728e09447be",
+    "agent_id": "f0c37f23-265d-481a-b1b2-d728e09447be",
+    "amount": 30000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-20 19:56:07.194806+00"
+  },
+  {
+    "id": "cc2b443d-ed21-4f0f-a8e5-a040548efbe3",
+    "user_id": "64c312f3-d719-416e-aa6a-492adfaca861",
+    "agent_id": "99890a2e-b842-4d44-8516-e2eafe0711ff",
+    "amount": 5000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-23 14:22:02.803553+00"
+  },
+  {
+    "id": "2289317f-e7ec-45e0-aba8-9faf3a2b731b",
+    "user_id": "7c0bd264-49d4-4614-a617-0fe8ebf9d005",
+    "agent_id": "fbcebe2e-f3da-41d9-bf53-ab4dc1cc55fa",
+    "amount": 9900,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-24 04:05:27.032453+00"
+  },
+  {
+    "id": "6f7f2ced-cd6b-4871-8035-7a9064d2af39",
+    "user_id": "b3f97805-92ec-4d85-9e3c-af0dcccd35b3",
+    "agent_id": "fbcebe2e-f3da-41d9-bf53-ab4dc1cc55fa",
+    "amount": 14652,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-24 05:58:36.825134+00"
+  },
+  {
+    "id": "f0569e50-a46e-4976-ace4-551679ad5194",
+    "user_id": "64c312f3-d719-416e-aa6a-492adfaca861",
+    "agent_id": "99890a2e-b842-4d44-8516-e2eafe0711ff",
+    "amount": 25000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-24 07:13:57.43936+00"
+  },
+  {
+    "id": "c11df344-f3a1-4c10-a2f2-0e1403431213",
+    "user_id": "64c312f3-d719-416e-aa6a-492adfaca861",
+    "agent_id": "99890a2e-b842-4d44-8516-e2eafe0711ff",
+    "amount": 69000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-24 07:15:31.062068+00"
+  },
+  {
+    "id": "2e7426b7-9ded-4649-a436-d87a59d18ae8",
+    "user_id": "64c312f3-d719-416e-aa6a-492adfaca861",
+    "agent_id": "99890a2e-b842-4d44-8516-e2eafe0711ff",
+    "amount": 1000000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-24 08:37:32.832353+00"
+  },
+  {
+    "id": "d9984faa-f2a3-4358-96ba-bb08a4842e50",
+    "user_id": "e2a286e8-03f9-4dac-8717-962311ab252c",
+    "agent_id": "816c95ae-a486-43e0-bce5-46036b3ac51e",
+    "amount": 5000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-24 17:03:22.836147+00"
+  },
+  {
+    "id": "87fc94a8-e117-4b0e-bb50-332773d43655",
+    "user_id": "7c0bd264-49d4-4614-a617-0fe8ebf9d005",
+    "agent_id": "fbcebe2e-f3da-41d9-bf53-ab4dc1cc55fa",
+    "amount": 9900,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-25 18:37:54.34266+00"
+  },
+  {
+    "id": "b6fabc10-9f1e-4d0e-b24d-9cda4f999c83",
+    "user_id": "3b293a8d-6046-429b-8295-0eb121e88577",
+    "agent_id": "7e506ac9-6c46-4fdf-b888-c972bad7350f",
+    "amount": 13601,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-26 07:05:14.07475+00"
+  },
+  {
+    "id": "2fc1552d-e89f-4ad1-ac69-2d3f80514a6d",
+    "user_id": "dbc12143-44ad-4546-9fc9-d35b696df3a4",
+    "agent_id": "7e506ac9-6c46-4fdf-b888-c972bad7350f",
+    "amount": 4884,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-26 07:08:51.859447+00"
+  },
+  {
+    "id": "33dfbd1b-70b9-495f-956c-9112e296bbc9",
+    "user_id": "611ce374-3ba0-4e95-9a85-e2014820882b",
+    "agent_id": "7e506ac9-6c46-4fdf-b888-c972bad7350f",
+    "amount": 4884,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-26 08:07:06.297317+00"
+  },
+  {
+    "id": "298a675f-484f-4a85-8e11-6b15d4349040",
+    "user_id": "7c0bd264-49d4-4614-a617-0fe8ebf9d005",
+    "agent_id": "fbcebe2e-f3da-41d9-bf53-ab4dc1cc55fa",
+    "amount": 5000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-26 20:15:15.840712+00"
+  },
+  {
+    "id": "88134ab8-8ede-4c3d-8946-2edeaa45a9d2",
+    "user_id": "b3f97805-92ec-4d85-9e3c-af0dcccd35b3",
+    "agent_id": "99890a2e-b842-4d44-8516-e2eafe0711ff",
+    "amount": 14652,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-27 08:27:29.646787+00"
+  },
+  {
+    "id": "2ba66f82-7e69-4944-b725-91fe546f025f",
+    "user_id": "7c0bd264-49d4-4614-a617-0fe8ebf9d005",
+    "agent_id": "99890a2e-b842-4d44-8516-e2eafe0711ff",
+    "amount": 5000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-27 08:49:25.325682+00"
+  },
+  {
+    "id": "5c4f89f2-4b3d-42f8-9741-59746d19104d",
+    "user_id": "3b293a8d-6046-429b-8295-0eb121e88577",
+    "agent_id": "99890a2e-b842-4d44-8516-e2eafe0711ff",
+    "amount": 13601,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-27 20:26:25.861707+00"
+  },
+  {
+    "id": "d6183bd8-524b-42b0-ab0c-fdc7ce426ac7",
+    "user_id": "611ce374-3ba0-4e95-9a85-e2014820882b",
+    "agent_id": "99890a2e-b842-4d44-8516-e2eafe0711ff",
+    "amount": 5000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-28 15:46:28.504223+00"
+  },
+  {
+    "id": "f0d233be-3249-4011-a374-13ff269ea247",
+    "user_id": "972f4990-1c4e-4c96-a220-9c9463f58dbf",
+    "agent_id": "99890a2e-b842-4d44-8516-e2eafe0711ff",
+    "amount": 9500,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-02-28 17:21:24.533626+00"
+  },
+  {
+    "id": "dc7825d2-c64f-4bbf-a0dc-6754e3121cd7",
+    "user_id": "dbc12143-44ad-4546-9fc9-d35b696df3a4",
+    "agent_id": "99890a2e-b842-4d44-8516-e2eafe0711ff",
+    "amount": 9000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-01 18:55:44.391803+00"
+  },
+  {
+    "id": "881d9a1c-857c-489c-9435-5be4425baed3",
+    "user_id": "dbc12143-44ad-4546-9fc9-d35b696df3a4",
+    "agent_id": "99890a2e-b842-4d44-8516-e2eafe0711ff",
+    "amount": 18000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-02 09:22:04.130858+00"
+  },
+  {
+    "id": "c29de959-2720-4256-b5ef-141b72cfcb6f",
+    "user_id": "fbcebe2e-f3da-41d9-bf53-ab4dc1cc55fa",
+    "agent_id": "99890a2e-b842-4d44-8516-e2eafe0711ff",
+    "amount": 2000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-02 09:23:29.791667+00"
+  },
+  {
+    "id": "53e509de-cd46-45bc-aaa1-c19105e6df8f",
+    "user_id": "7c0bd264-49d4-4614-a617-0fe8ebf9d005",
+    "agent_id": "99890a2e-b842-4d44-8516-e2eafe0711ff",
+    "amount": 5000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-02 19:48:35.636946+00"
+  },
+  {
+    "id": "2edd9421-f49f-435f-af4d-e65cc92c1608",
+    "user_id": "fbcebe2e-f3da-41d9-bf53-ab4dc1cc55fa",
+    "agent_id": "99890a2e-b842-4d44-8516-e2eafe0711ff",
+    "amount": 18000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-10 08:46:01.582167+00"
+  },
+  {
+    "id": "75411a50-5896-4a9f-a3f0-4a8e82cd84b6",
+    "user_id": "7f5c1d63-75c4-4b29-9f60-95f357f17f1e",
+    "agent_id": "99890a2e-b842-4d44-8516-e2eafe0711ff",
+    "amount": 55868,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-12 07:55:18.003766+00"
+  },
+  {
+    "id": "eb6cd800-bcf9-466e-873f-a992f0e01344",
+    "user_id": "533e1d60-bbbe-4aaf-8534-419e1e1e73aa",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 21000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-23 16:50:36.472262+00"
+  },
+  {
+    "id": "7a16fa14-91f1-401b-b5ed-3de4ebd7a6f4",
+    "user_id": "b3f97805-92ec-4d85-9e3c-af0dcccd35b3",
+    "agent_id": "e610a33d-c1cc-46e0-9395-a8c01a9a98ab",
+    "amount": 14652,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-24 11:54:52.794405+00"
+  },
+  {
+    "id": "5cc3bb39-2363-4e0a-91ec-e122ffc8113b",
+    "user_id": "5c2616a1-770d-452a-805e-ef7a5cb6e29b",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 18000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-24 13:11:44.019436+00"
+  },
+  {
+    "id": "7acabfe0-4693-48c7-8a9a-156722269197",
+    "user_id": "bc5c8ec0-2ff7-4d7d-9d8b-7dd1270f8b72",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 15000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-24 13:13:56.698468+00"
+  },
+  {
+    "id": "8a5575b5-4e8a-41c5-b05c-84533b225bfb",
+    "user_id": "c64f6ad4-18b3-4cbf-a77e-e079310623c9",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 30000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-24 13:18:42.898397+00"
+  },
+  {
+    "id": "67eacc3a-7dd8-4f15-a567-4ee8af13015c",
+    "user_id": "85f547d1-d279-4ca0-852a-2e8d35b42fba",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 120000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-26 14:25:28.576241+00"
+  },
+  {
+    "id": "4bba1059-739c-4a02-8b0f-2dae285f826b",
+    "user_id": "7f5c1d63-75c4-4b29-9f60-95f357f17f1e",
+    "agent_id": "e4f07815-7991-422f-946f-7f351b38e954",
+    "amount": 38000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-28 19:39:33.561368+00"
+  },
+  {
+    "id": "4569c45e-8b15-4356-b1ec-cdb432e16671",
+    "user_id": "7f5c1d63-75c4-4b29-9f60-95f357f17f1e",
+    "agent_id": "e4f07815-7991-422f-946f-7f351b38e954",
+    "amount": 7000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-28 19:40:36.49787+00"
+  },
+  {
+    "id": "192a1776-1c9a-40c8-9c9d-9dc25a570a09",
+    "user_id": "bc5c8ec0-2ff7-4d7d-9d8b-7dd1270f8b72",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 20000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-30 09:39:45.224438+00"
+  },
+  {
+    "id": "3d48bde7-4319-4418-890c-ab68039da2e2",
+    "user_id": "7f5c1d63-75c4-4b29-9f60-95f357f17f1e",
+    "agent_id": "e4f07815-7991-422f-946f-7f351b38e954",
+    "amount": 14000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-30 10:52:34.634433+00"
+  },
+  {
+    "id": "13bfdf13-03c6-4e30-8cb7-f1353f5c9fca",
+    "user_id": "85f547d1-d279-4ca0-852a-2e8d35b42fba",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 200000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-30 11:16:07.499452+00"
+  },
+  {
+    "id": "8fd27689-c5c5-49a0-bd39-b0485decd166",
+    "user_id": "b1f7de11-01fa-4cde-975e-43a09086bfb2",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 20000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-30 11:23:23.161999+00"
+  },
+  {
+    "id": "8bb529ca-91d1-4316-a451-3c9cb5907e2c",
+    "user_id": "0df8a220-624e-4008-92fb-e31774f8b908",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 30000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-30 13:25:37.278013+00"
+  },
+  {
+    "id": "72b9ff0f-8fe6-418b-b1c5-2b73c4f0e0ea",
+    "user_id": "b1f7de11-01fa-4cde-975e-43a09086bfb2",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 10000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-30 15:59:26.880827+00"
+  },
+  {
+    "id": "f6831e8f-b1e5-420d-b6af-b951492220f8",
+    "user_id": "c64f6ad4-18b3-4cbf-a77e-e079310623c9",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 10000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-30 16:00:07.473484+00"
+  },
+  {
+    "id": "1ffafbfc-f8af-4307-8d9e-03a9f583703e",
+    "user_id": "0df8a220-624e-4008-92fb-e31774f8b908",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 30000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-30 16:00:26.269536+00"
+  },
+  {
+    "id": "97b424cc-9560-4703-a4f4-300268db32a7",
+    "user_id": "5c2616a1-770d-452a-805e-ef7a5cb6e29b",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 10000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-30 16:04:39.412975+00"
+  },
+  {
+    "id": "8c33e7f2-c526-44ef-93fe-b488735cb9ff",
+    "user_id": "7f5c1d63-75c4-4b29-9f60-95f357f17f1e",
+    "agent_id": "e4f07815-7991-422f-946f-7f351b38e954",
+    "amount": 14000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-31 19:01:21.704775+00"
+  },
+  {
+    "id": "9f6464c3-669d-4538-b714-f5ce07fdbe2f",
+    "user_id": "36d512c6-4864-4e03-94cb-dc1c1263de10",
+    "agent_id": "e4f07815-7991-422f-946f-7f351b38e954",
+    "amount": 7000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-03-31 19:11:46.468895+00"
+  },
+  {
+    "id": "3160d69b-5011-4373-8112-c26878b044b8",
+    "user_id": "5c2616a1-770d-452a-805e-ef7a5cb6e29b",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 11000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-04-02 07:47:41.821071+00"
+  },
+  {
+    "id": "ac2d4189-ed74-4aad-a22c-d541fe533af9",
+    "user_id": "7f5c1d63-75c4-4b29-9f60-95f357f17f1e",
+    "agent_id": "e4f07815-7991-422f-946f-7f351b38e954",
+    "amount": 14000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-04-02 09:14:00.85181+00"
+  },
+  {
+    "id": "95430e18-8563-4c3e-b9f1-ce900f02c7cc",
+    "user_id": "7f5c1d63-75c4-4b29-9f60-95f357f17f1e",
+    "agent_id": "e4f07815-7991-422f-946f-7f351b38e954",
+    "amount": 14000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-04-02 12:34:20.529805+00"
+  },
+  {
+    "id": "c4d1cee4-9054-458e-9a19-5278f436010e",
+    "user_id": "533e1d60-bbbe-4aaf-8534-419e1e1e73aa",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 4000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-04-03 14:37:45.191057+00"
+  },
+  {
+    "id": "279b0f99-fe80-4561-b0ea-1da209cfc12b",
+    "user_id": "972f4990-1c4e-4c96-a220-9c9463f58dbf",
+    "agent_id": "99890a2e-b842-4d44-8516-e2eafe0711ff",
+    "amount": 500,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-04-03 20:47:37.187748+00"
+  },
+  {
+    "id": "0de9b4b3-6e58-42fb-8ee1-e2f4aff875a7",
+    "user_id": "c64f6ad4-18b3-4cbf-a77e-e079310623c9",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 50000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-04-04 10:41:38.199909+00"
+  },
+  {
+    "id": "3236d0e2-2dc0-4a25-b765-6df391a2f409",
+    "user_id": "36d512c6-4864-4e03-94cb-dc1c1263de10",
+    "agent_id": "e4f07815-7991-422f-946f-7f351b38e954",
+    "amount": 7000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-04-06 05:05:28.34265+00"
+  },
+  {
+    "id": "35453f52-58b4-4b13-9b9c-0fc9b216063b",
+    "user_id": "1de81952-c170-423d-bbcc-08a7b11f9f67",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 30000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-04-07 13:49:39.981071+00"
+  },
+  {
+    "id": "9c130e8b-c778-4913-881f-da6d57847fe7",
+    "user_id": "629a54c6-7146-4c6e-b593-58f5b49ac2df",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 50000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-04-07 14:14:29.533382+00"
+  },
+  {
+    "id": "d888ebc3-7e6b-4399-8670-42c102fc3e50",
+    "user_id": "0df8a220-624e-4008-92fb-e31774f8b908",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 10000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-04-07 14:26:24.940074+00"
+  },
+  {
+    "id": "23683f3a-353a-4954-bb6a-2d9d3c392fcf",
+    "user_id": "9b9ff2eb-59ab-403e-8994-5111100741a5",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 21000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-04-09 11:26:13.900745+00"
+  },
+  {
+    "id": "f12f5eed-3e93-461b-bf7a-b55d55107be2",
+    "user_id": "1ad64cdc-54a9-4c62-b903-7fab6c99f861",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 21200,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-04-09 11:30:33.819201+00"
+  },
+  {
+    "id": "cd874272-7e80-4c63-a4a2-7699df497fe4",
+    "user_id": "3881a75b-ea5a-417f-b421-fa84e1cc3fca",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 19200,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-04-09 11:33:42.265255+00"
+  },
+  {
+    "id": "ececc96c-757c-40ba-9ccc-32fe7b56ee29",
+    "user_id": "7e2346be-f15f-4c81-839f-f4004576de03",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 19500,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-04-09 11:35:54.812384+00"
+  },
+  {
+    "id": "a85bf891-3f3d-45c4-a5d5-4a23b2ec28e8",
+    "user_id": "b1f7de11-01fa-4cde-975e-43a09086bfb2",
+    "agent_id": "e3cf4d3a-d021-49e4-b815-7e1938166eeb",
+    "amount": 40000,
+    "deposit_type": "cash_deposit",
+    "created_at": "2026-04-09 11:39:06.767743+00"
+  }
+]

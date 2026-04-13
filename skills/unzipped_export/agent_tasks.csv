@@ -1,0 +1,1 @@
+id,agent_id,assigned_by,task_type,title,description,priority,status,due_date,completed_at,tenant_id,rent_request_id,gps_required,completion_latitude,completion_longitude,completion_notes,created_at,updated_at

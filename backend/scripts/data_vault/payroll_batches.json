@@ -1,0 +1,22 @@
+[
+  {
+    "id": "1e44eaeb-1a96-4353-8e72-5d272a99075e",
+    "batch_month": "2026-03",
+    "status": "draft",
+    "total_amount": 0,
+    "total_employees": 0,
+    "processed_count": 0,
+    "created_by": "cf561688-b3a2-4f62-b9c1-67ee7b36ff2b",
+    "processed_at": "",
+    "created_at": "2026-03-23 10:47:14.212757+00",
+    "updated_at": "2026-03-23 10:47:14.212757+00",
+    "period_start": "",
+    "period_end": "",
+    "prepared_by": "",
+    "approved_by": "",
+    "employee_count": 0,
+    "notes": "",
+    "submitted_at": "",
+    "approved_at": ""
+  }
+]

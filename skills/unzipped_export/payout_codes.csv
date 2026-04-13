@@ -1,0 +1,1 @@
+id,withdrawal_request_id,user_id,code,qr_data,amount,status,claimed_by,claimed_at,paid_at,paid_by,expires_at,created_at

@@ -1,0 +1,1779 @@
+column_default;column_name;data_type;is_nullable;table_name
+gen_random_uuid();id;uuid;NO;agent_advance_ledger
+;advance_id;uuid;NO;agent_advance_ledger
+;date;date;NO;agent_advance_ledger
+0;opening_balance;numeric;NO;agent_advance_ledger
+0;interest_accrued;numeric;NO;agent_advance_ledger
+0;amount_deducted;numeric;NO;agent_advance_ledger
+0;closing_balance;numeric;NO;agent_advance_ledger
+'none'::text;deduction_status;text;NO;agent_advance_ledger
+now();created_at;timestamp with time zone;NO;agent_advance_ledger
+gen_random_uuid();id;uuid;NO;agent_advance_topups
+;advance_id;uuid;NO;agent_advance_topups
+;amount;numeric;NO;agent_advance_topups
+;topped_up_by;uuid;NO;agent_advance_topups
+now();created_at;timestamp with time zone;NO;agent_advance_topups
+0.33;monthly_rate;numeric;NO;agent_advance_topups
+gen_random_uuid();id;uuid;NO;agent_advances
+;agent_id;uuid;NO;agent_advances
+0;principal;numeric;NO;agent_advances
+0;outstanding_balance;numeric;NO;agent_advances
+0.33;daily_rate;numeric;NO;agent_advances
+30;cycle_days;integer;NO;agent_advances
+now();issued_at;timestamp with time zone;NO;agent_advances
+(now() + '30 days'::interval);expires_at;timestamp with time zone;NO;agent_advances
+'active'::text;status;text;NO;agent_advances
+;issued_by;uuid;NO;agent_advances
+now();created_at;timestamp with time zone;NO;agent_advances
+now();updated_at;timestamp with time zone;NO;agent_advances
+0;registration_fee;numeric;YES;agent_advances
+0;access_fee;numeric;YES;agent_advances
+0;access_fee_collected;numeric;YES;agent_advances
+'unpaid'::text;access_fee_status;text;YES;agent_advances
+0.33;monthly_rate;numeric;NO;agent_advances
+gen_random_uuid();id;uuid;NO;agent_collection_streaks
+;agent_id;uuid;NO;agent_collection_streaks
+0;current_streak;integer;YES;agent_collection_streaks
+0;longest_streak;integer;YES;agent_collection_streaks
+;last_collection_date;date;YES;agent_collection_streaks
+1.0;streak_multiplier;numeric;YES;agent_collection_streaks
+0;total_badges;integer;YES;agent_collection_streaks
+'[]'::jsonb;badges;jsonb;YES;agent_collection_streaks
+now();updated_at;timestamp with time zone;YES;agent_collection_streaks
+gen_random_uuid();id;uuid;NO;agent_collections
+;agent_id;uuid;NO;agent_collections
+;tenant_id;uuid;NO;agent_collections
+;token_id;uuid;YES;agent_collections
+;amount;numeric;NO;agent_collections
+;payment_method;USER-DEFINED;NO;agent_collections
+0;float_before;numeric;NO;agent_collections
+0;float_after;numeric;NO;agent_collections
+now();created_at;timestamp with time zone;NO;agent_collections
+;visit_id;uuid;YES;agent_collections
+;momo_provider;text;YES;agent_collections
+;momo_phone;text;YES;agent_collections
+;momo_payer_name;text;YES;agent_collections
+;momo_transaction_id;text;YES;agent_collections
+;tracking_id;text;YES;agent_collections
+;location_name;text;YES;agent_collections
+false;sms_sent_agent;boolean;YES;agent_collections
+false;sms_sent_tenant;boolean;YES;agent_collections
+;notes;text;YES;agent_collections
+gen_random_uuid();id;uuid;NO;agent_commission_payouts
+;agent_id;uuid;NO;agent_commission_payouts
+;amount;numeric;NO;agent_commission_payouts
+;mobile_money_number;text;NO;agent_commission_payouts
+;mobile_money_provider;text;NO;agent_commission_payouts
+'pending'::text;status;text;NO;agent_commission_payouts
+;transaction_id;text;YES;agent_commission_payouts
+;rejection_reason;text;YES;agent_commission_payouts
+now();requested_at;timestamp with time zone;NO;agent_commission_payouts
+;processed_at;timestamp with time zone;YES;agent_commission_payouts
+;processed_by;uuid;YES;agent_commission_payouts
+now();created_at;timestamp with time zone;NO;agent_commission_payouts
+now();updated_at;timestamp with time zone;NO;agent_commission_payouts
+gen_random_uuid();id;uuid;NO;agent_delivery_confirmations
+;disbursement_id;uuid;NO;agent_delivery_confirmations
+;agent_id;uuid;NO;agent_delivery_confirmations
+;rent_request_id;uuid;NO;agent_delivery_confirmations
+'receipt_collected'::text;confirmation_type;text;NO;agent_delivery_confirmations
+'{}'::text[];photo_urls;ARRAY;YES;agent_delivery_confirmations
+;latitude;numeric;YES;agent_delivery_confirmations
+;longitude;numeric;YES;agent_delivery_confirmations
+;location_accuracy;numeric;YES;agent_delivery_confirmations
+;landlord_signature_url;text;YES;agent_delivery_confirmations
+;notes;text;YES;agent_delivery_confirmations
+now();confirmed_at;timestamp with time zone;NO;agent_delivery_confirmations
+now();created_at;timestamp with time zone;NO;agent_delivery_confirmations
+gen_random_uuid();id;uuid;NO;agent_earnings
+;agent_id;uuid;NO;agent_earnings
+;amount;numeric;NO;agent_earnings
+;earning_type;text;NO;agent_earnings
+;source_user_id;uuid;YES;agent_earnings
+;rent_request_id;uuid;YES;agent_earnings
+;description;text;YES;agent_earnings
+now();created_at;timestamp with time zone;NO;agent_earnings
+gen_random_uuid();id;uuid;NO;agent_escalations
+;agent_id;uuid;NO;agent_escalations
+;escalation_type;text;NO;agent_escalations
+'medium'::text;severity;text;NO;agent_escalations
+;title;text;NO;agent_escalations
+;description;text;YES;agent_escalations
+'open'::text;status;text;NO;agent_escalations
+;resolved_at;timestamp with time zone;YES;agent_escalations
+;resolved_by;uuid;YES;agent_escalations
+;resolution_notes;text;YES;agent_escalations
+;tenant_id;uuid;YES;agent_escalations
+'{}'::jsonb;metadata;jsonb;YES;agent_escalations
+now();created_at;timestamp with time zone;NO;agent_escalations
+now();updated_at;timestamp with time zone;NO;agent_escalations
+gen_random_uuid();id;uuid;NO;agent_float_funding
+;agent_id;uuid;NO;agent_float_funding
+;amount;numeric;NO;agent_float_funding
+;funded_by;uuid;YES;agent_float_funding
+;notes;text;YES;agent_float_funding
+now();created_at;timestamp with time zone;NO;agent_float_funding
+;bank_reference;text;YES;agent_float_funding
+'Equity Bank Uganda'::text;bank_name;text;YES;agent_float_funding
+'active'::text;status;text;NO;agent_float_funding
+gen_random_uuid();id;uuid;NO;agent_float_limits
+;agent_id;uuid;NO;agent_float_limits
+0;float_limit;numeric;NO;agent_float_limits
+0;collected_today;numeric;NO;agent_float_limits
+CURRENT_DATE;last_reset_date;date;NO;agent_float_limits
+;assigned_by;uuid;YES;agent_float_limits
+now();created_at;timestamp with time zone;NO;agent_float_limits
+now();updated_at;timestamp with time zone;NO;agent_float_limits
+0;cash_on_hand;numeric;YES;agent_float_limits
+20;low_threshold_pct;numeric;YES;agent_float_limits
+10;critical_threshold_pct;numeric;YES;agent_float_limits
+5000000;daily_txn_limit;numeric;YES;agent_float_limits
+false;is_paused;boolean;YES;agent_float_limits
+gen_random_uuid();id;uuid;NO;agent_float_withdrawals
+;agent_id;uuid;NO;agent_float_withdrawals
+;rent_request_id;uuid;NO;agent_float_withdrawals
+;landlord_id;uuid;NO;agent_float_withdrawals
+;tenant_id;uuid;YES;agent_float_withdrawals
+;amount;numeric;NO;agent_float_withdrawals
+;landlord_name;text;NO;agent_float_withdrawals
+;landlord_phone;text;NO;agent_float_withdrawals
+;mobile_money_provider;text;NO;agent_float_withdrawals
+;transaction_id;text;YES;agent_float_withdrawals
+;receipt_photo_urls;ARRAY;YES;agent_float_withdrawals
+;agent_latitude;numeric;YES;agent_float_withdrawals
+;agent_longitude;numeric;YES;agent_float_withdrawals
+;agent_location_accuracy;numeric;YES;agent_float_withdrawals
+;landlord_latitude;numeric;YES;agent_float_withdrawals
+;landlord_longitude;numeric;YES;agent_float_withdrawals
+;landlord_location_accuracy;numeric;YES;agent_float_withdrawals
+;property_latitude;numeric;YES;agent_float_withdrawals
+;property_longitude;numeric;YES;agent_float_withdrawals
+false;gps_match;boolean;YES;agent_float_withdrawals
+;gps_distance_meters;numeric;YES;agent_float_withdrawals
+'pending_agent_ops'::text;status;text;NO;agent_float_withdrawals
+;agent_ops_reviewed_by;uuid;YES;agent_float_withdrawals
+;agent_ops_reviewed_at;timestamp with time zone;YES;agent_float_withdrawals
+;agent_ops_notes;text;YES;agent_float_withdrawals
+;manager_reviewed_by;uuid;YES;agent_float_withdrawals
+;manager_reviewed_at;timestamp with time zone;YES;agent_float_withdrawals
+;manager_notes;text;YES;agent_float_withdrawals
+;notes;text;YES;agent_float_withdrawals
+now();created_at;timestamp with time zone;NO;agent_float_withdrawals
+now();updated_at;timestamp with time zone;NO;agent_float_withdrawals
+gen_random_uuid();id;uuid;NO;agent_form_tokens
+;agent_id;uuid;NO;agent_form_tokens
+;token;text;NO;agent_form_tokens
+(now() + '72:00:00'::interval);expires_at;timestamp with time zone;NO;agent_form_tokens
+50;max_uses;integer;NO;agent_form_tokens
+0;uses_count;integer;NO;agent_form_tokens
+true;is_active;boolean;NO;agent_form_tokens
+now();created_at;timestamp with time zone;NO;agent_form_tokens
+gen_random_uuid();id;uuid;NO;agent_goals
+;agent_id;uuid;NO;agent_goals
+;goal_month;date;NO;agent_goals
+10;target_registrations;integer;NO;agent_goals
+;target_activations;integer;YES;agent_goals
+;notes;text;YES;agent_goals
+now();created_at;timestamp with time zone;NO;agent_goals
+now();updated_at;timestamp with time zone;NO;agent_goals
+gen_random_uuid();id;uuid;NO;agent_incentive_bonuses
+;agent_id;uuid;NO;agent_incentive_bonuses
+;bonus_type;text;NO;agent_incentive_bonuses
+0;amount;numeric;YES;agent_incentive_bonuses
+;description;text;YES;agent_incentive_bonuses
+'{}'::jsonb;metadata;jsonb;YES;agent_incentive_bonuses
+now();awarded_at;timestamp with time zone;YES;agent_incentive_bonuses
+now();created_at;timestamp with time zone;YES;agent_incentive_bonuses
+gen_random_uuid();id;uuid;NO;agent_landlord_assignments
+;agent_id;uuid;NO;agent_landlord_assignments
+;landlord_id;uuid;NO;agent_landlord_assignments
+;rent_request_id;uuid;YES;agent_landlord_assignments
+now();assigned_at;timestamp with time zone;NO;agent_landlord_assignments
+'active'::text;status;text;NO;agent_landlord_assignments
+now();created_at;timestamp with time zone;NO;agent_landlord_assignments
+gen_random_uuid();id;uuid;NO;agent_landlord_float
+;agent_id;uuid;NO;agent_landlord_float
+0;balance;numeric;NO;agent_landlord_float
+0;total_funded;numeric;NO;agent_landlord_float
+0;total_paid_out;numeric;NO;agent_landlord_float
+now();created_at;timestamp with time zone;NO;agent_landlord_float
+now();updated_at;timestamp with time zone;NO;agent_landlord_float
+gen_random_uuid();id;uuid;NO;agent_landlord_payouts
+;agent_id;uuid;YES;agent_landlord_payouts
+;rent_request_id;uuid;NO;agent_landlord_payouts
+;landlord_id;uuid;NO;agent_landlord_payouts
+;tenant_id;uuid;NO;agent_landlord_payouts
+;amount;numeric;NO;agent_landlord_payouts
+;landlord_phone;text;NO;agent_landlord_payouts
+;landlord_name;text;NO;agent_landlord_payouts
+;mobile_money_provider;text;NO;agent_landlord_payouts
+;transaction_id;text;YES;agent_landlord_payouts
+'{}'::text[];receipt_photo_urls;ARRAY;YES;agent_landlord_payouts
+;latitude;numeric;YES;agent_landlord_payouts
+;longitude;numeric;YES;agent_landlord_payouts
+;location_accuracy;numeric;YES;agent_landlord_payouts
+;property_latitude;numeric;YES;agent_landlord_payouts
+;property_longitude;numeric;YES;agent_landlord_payouts
+false;gps_match;boolean;YES;agent_landlord_payouts
+;gps_distance_meters;numeric;YES;agent_landlord_payouts
+'pending_receipt'::text;status;text;NO;agent_landlord_payouts
+;landlord_ops_approved_by;uuid;YES;agent_landlord_payouts
+;landlord_ops_approved_at;timestamp with time zone;YES;agent_landlord_payouts
+;landlord_ops_notes;text;YES;agent_landlord_payouts
+;cfo_approved_by;uuid;YES;agent_landlord_payouts
+;cfo_approved_at;timestamp with time zone;YES;agent_landlord_payouts
+;cfo_notes;text;YES;agent_landlord_payouts
+;rejection_reason;text;YES;agent_landlord_payouts
+;notes;text;YES;agent_landlord_payouts
+now();created_at;timestamp with time zone;NO;agent_landlord_payouts
+now();updated_at;timestamp with time zone;NO;agent_landlord_payouts
+gen_random_uuid();id;uuid;NO;agent_rebalance_records
+;agent_id;uuid;NO;agent_rebalance_records
+;amount;numeric;NO;agent_rebalance_records
+;direction;text;NO;agent_rebalance_records
+;method;text;YES;agent_rebalance_records
+;reference_id;text;YES;agent_rebalance_records
+;approved_by;uuid;YES;agent_rebalance_records
+now();created_at;timestamp with time zone;NO;agent_rebalance_records
+gen_random_uuid();id;uuid;NO;agent_receipts
+;agent_id;uuid;NO;agent_receipts
+;payer_name;text;NO;agent_receipts
+;payer_phone;text;NO;agent_receipts
+;amount;numeric;NO;agent_receipts
+'cash'::text;payment_method;text;NO;agent_receipts
+;transaction_id;text;YES;agent_receipts
+;receipt_image_url;text;YES;agent_receipts
+;notes;text;YES;agent_receipts
+now();created_at;timestamp with time zone;NO;agent_receipts
+gen_random_uuid();id;uuid;NO;agent_subagents
+;parent_agent_id;uuid;NO;agent_subagents
+;sub_agent_id;uuid;NO;agent_subagents
+now();created_at;timestamp with time zone;NO;agent_subagents
+'invite'::text;source;text;NO;agent_subagents
+'pending'::text;status;text;NO;agent_subagents
+;verified_by;uuid;YES;agent_subagents
+;verified_at;timestamp with time zone;YES;agent_subagents
+;rejection_reason;text;YES;agent_subagents
+gen_random_uuid();id;uuid;NO;agent_tasks
+;agent_id;uuid;NO;agent_tasks
+;assigned_by;uuid;YES;agent_tasks
+'general'::text;task_type;text;NO;agent_tasks
+;title;text;NO;agent_tasks
+;description;text;YES;agent_tasks
+'medium'::text;priority;text;NO;agent_tasks
+'pending'::text;status;text;NO;agent_tasks
+;due_date;timestamp with time zone;YES;agent_tasks
+;completed_at;timestamp with time zone;YES;agent_tasks
+;tenant_id;uuid;YES;agent_tasks
+;rent_request_id;uuid;YES;agent_tasks
+false;gps_required;boolean;YES;agent_tasks
+;completion_latitude;double precision;YES;agent_tasks
+;completion_longitude;double precision;YES;agent_tasks
+;completion_notes;text;YES;agent_tasks
+now();created_at;timestamp with time zone;NO;agent_tasks
+now();updated_at;timestamp with time zone;NO;agent_tasks
+gen_random_uuid();id;uuid;NO;agent_visits
+;agent_id;uuid;NO;agent_visits
+;tenant_id;uuid;NO;agent_visits
+;latitude;double precision;NO;agent_visits
+;longitude;double precision;NO;agent_visits
+;accuracy;double precision;YES;agent_visits
+now();checked_in_at;timestamp with time zone;NO;agent_visits
+now();created_at;timestamp with time zone;NO;agent_visits
+;location_name;text;YES;agent_visits
+gen_random_uuid();id;uuid;NO;ai_chat_messages
+;user_id;uuid;NO;ai_chat_messages
+;role;text;NO;ai_chat_messages
+;content;text;NO;ai_chat_messages
+now();created_at;timestamp with time zone;NO;ai_chat_messages
+gen_random_uuid();id;uuid;NO;angel_pool_config
+500000000;total_pool_ugx;bigint;NO;angel_pool_config
+25000;total_shares;integer;NO;angel_pool_config
+20000;price_per_share;integer;NO;angel_pool_config
+8.00;pool_equity_percent;numeric;NO;angel_pool_config
+now();updated_at;timestamp with time zone;YES;angel_pool_config
+;updated_by;uuid;YES;angel_pool_config
+gen_random_uuid();id;uuid;NO;angel_pool_investments
+;investor_id;uuid;NO;angel_pool_investments
+;amount;bigint;NO;angel_pool_investments
+;shares;integer;NO;angel_pool_investments
+;pool_ownership_percent;numeric;NO;angel_pool_investments
+;company_ownership_percent;numeric;NO;angel_pool_investments
+'confirmed'::text;status;text;NO;angel_pool_investments
+;transaction_group_id;uuid;YES;angel_pool_investments
+;reference_id;text;YES;angel_pool_investments
+now();created_at;timestamp with time zone;NO;angel_pool_investments
+;agent_id;uuid;YES;angel_pool_investments
+;payment_method;text;YES;angel_pool_investments
+;investment_reference;text;YES;angel_pool_investments
+gen_random_uuid();id;uuid;NO;audit_logs
+;user_id;uuid;YES;audit_logs
+;action_type;text;NO;audit_logs
+;table_name;text;YES;audit_logs
+;record_id;text;YES;audit_logs
+'{}'::jsonb;metadata;jsonb;YES;audit_logs
+now();created_at;timestamp with time zone;YES;audit_logs
+;action;text;YES;audit_logs
+gen_random_uuid();id;uuid;NO;cart_items
+;user_id;uuid;NO;cart_items
+;product_id;uuid;NO;cart_items
+1;quantity;integer;NO;cart_items
+now();created_at;timestamp with time zone;NO;cart_items
+now();updated_at;timestamp with time zone;NO;cart_items
+gen_random_uuid();id;uuid;NO;cashout_agents
+;agent_id;uuid;NO;cashout_agents
+;assigned_by;uuid;NO;cashout_agents
+true;is_active;boolean;NO;cashout_agents
+true;handles_cash;boolean;NO;cashout_agents
+true;handles_bank;boolean;NO;cashout_agents
+;label;text;YES;cashout_agents
+now();created_at;timestamp with time zone;NO;cashout_agents
+now();updated_at;timestamp with time zone;NO;cashout_agents
+50;max_daily_payouts;integer;YES;cashout_agents
+0;current_queue_count;integer;YES;cashout_agents
+true;handles_mtn;boolean;YES;cashout_agents
+true;handles_airtel;boolean;YES;cashout_agents
+500000;priority_threshold;numeric;YES;cashout_agents
+gen_random_uuid();id;uuid;NO;cfo_threshold_alerts
+;alert_type;text;NO;cfo_threshold_alerts
+'warning'::text;severity;text;NO;cfo_threshold_alerts
+;title;text;NO;cfo_threshold_alerts
+;description;text;YES;cfo_threshold_alerts
+;threshold_value;numeric;YES;cfo_threshold_alerts
+;current_value;numeric;YES;cfo_threshold_alerts
+false;acknowledged;boolean;YES;cfo_threshold_alerts
+;acknowledged_by;uuid;YES;cfo_threshold_alerts
+;acknowledged_at;timestamp with time zone;YES;cfo_threshold_alerts
+now();created_at;timestamp with time zone;NO;cfo_threshold_alerts
+gen_random_uuid();id;uuid;NO;commission_accrual_ledger
+;agent_id;uuid;YES;commission_accrual_ledger
+;source_type;text;NO;commission_accrual_ledger
+;source_id;text;YES;commission_accrual_ledger
+;tenant_id;uuid;YES;commission_accrual_ledger
+;amount;numeric;NO;commission_accrual_ledger
+'earned'::text;status;text;NO;commission_accrual_ledger
+now();earned_at;timestamp with time zone;NO;commission_accrual_ledger
+;approved_at;timestamp with time zone;YES;commission_accrual_ledger
+;approved_by;uuid;YES;commission_accrual_ledger
+;paid_at;timestamp with time zone;YES;commission_accrual_ledger
+;rejected_at;timestamp with time zone;YES;commission_accrual_ledger
+;rejection_reason;text;YES;commission_accrual_ledger
+;description;text;YES;commission_accrual_ledger
+now();created_at;timestamp with time zone;NO;commission_accrual_ledger
+;percentage;numeric;YES;commission_accrual_ledger
+'repayment'::text;event_type;text;YES;commission_accrual_ledger
+;commission_role;text;YES;commission_accrual_ledger
+;rent_request_id;uuid;YES;commission_accrual_ledger
+;repayment_amount;numeric;YES;commission_accrual_ledger
+gen_random_uuid();id;uuid;NO;conversation_participants
+;conversation_id;uuid;NO;conversation_participants
+;user_id;uuid;NO;conversation_participants
+now();joined_at;timestamp with time zone;NO;conversation_participants
+;last_read_at;timestamp with time zone;YES;conversation_participants
+gen_random_uuid();id;uuid;NO;conversations
+now();created_at;timestamp with time zone;NO;conversations
+now();updated_at;timestamp with time zone;NO;conversations
+gen_random_uuid();id;uuid;NO;credit_access_draws
+;user_id;uuid;NO;credit_access_draws
+;agent_id;uuid;YES;credit_access_draws
+;amount;numeric;NO;credit_access_draws
+1;duration_months;integer;NO;credit_access_draws
+;duration_days;integer;YES;credit_access_draws
+0.33;monthly_rate;numeric;NO;credit_access_draws
+0;access_fee;numeric;NO;credit_access_draws
+0;total_payable;numeric;NO;credit_access_draws
+0;daily_charge;numeric;NO;credit_access_draws
+0;outstanding_balance;numeric;NO;credit_access_draws
+0;amount_repaid;numeric;NO;credit_access_draws
+'active'::text;status;text;NO;credit_access_draws
+now();started_at;timestamp with time zone;NO;credit_access_draws
+;expires_at;timestamp with time zone;NO;credit_access_draws
+;completed_at;timestamp with time zone;YES;credit_access_draws
+now();created_at;timestamp with time zone;NO;credit_access_draws
+now();updated_at;timestamp with time zone;NO;credit_access_draws
+gen_random_uuid();id;uuid;NO;credit_access_limits
+;user_id;uuid;NO;credit_access_limits
+30000;base_limit;numeric;NO;credit_access_limits
+0;bonus_from_ratings;numeric;NO;credit_access_limits
+0;bonus_from_receipts;numeric;NO;credit_access_limits
+0;bonus_from_rent_history;numeric;NO;credit_access_limits
+0;bonus_from_landlord_rent;numeric;NO;credit_access_limits
+now();created_at;timestamp with time zone;NO;credit_access_limits
+now();updated_at;timestamp with time zone;NO;credit_access_limits
+0;bonus_from_houses_listed;numeric;NO;credit_access_limits
+0;bonus_from_partners_onboarded;numeric;NO;credit_access_limits
+;total_limit;numeric;YES;credit_access_limits
+gen_random_uuid();id;uuid;NO;credit_draw_ledger
+;draw_id;uuid;NO;credit_draw_ledger
+;date;date;NO;credit_draw_ledger
+0;opening_balance;numeric;NO;credit_draw_ledger
+0;daily_charge;numeric;NO;credit_draw_ledger
+0;amount_deducted;numeric;NO;credit_draw_ledger
+0;agent_deducted;numeric;NO;credit_draw_ledger
+0;closing_balance;numeric;NO;credit_draw_ledger
+'none'::text;deduction_status;text;NO;credit_draw_ledger
+now();created_at;timestamp with time zone;NO;credit_draw_ledger
+gen_random_uuid();id;uuid;NO;credit_request_details
+;loan_id;uuid;YES;credit_request_details
+;borrower_id;uuid;NO;credit_request_details
+;borrower_phone;text;NO;credit_request_details
+;borrower_mm_name;text;NO;credit_request_details
+;landlord_name;text;NO;credit_request_details
+;landlord_phone;text;NO;credit_request_details
+false;landlord_on_platform;boolean;YES;credit_request_details
+;landlord_id;uuid;YES;credit_request_details
+;electricity_meter_number;text;YES;credit_request_details
+;water_meter_number;text;YES;credit_request_details
+;location_latitude;double precision;YES;credit_request_details
+;location_longitude;double precision;YES;credit_request_details
+;location_address;text;YES;credit_request_details
+'daily'::text;repayment_frequency;text;NO;credit_request_details
+30;duration_days;integer;NO;credit_request_details
+5;platform_fee_rate;numeric;NO;credit_request_details
+0;funder_interest_rate;numeric;NO;credit_request_details
+0;platform_fee_amount;numeric;NO;credit_request_details
+0;total_with_fees;numeric;NO;credit_request_details
+;agent_id;uuid;YES;credit_request_details
+false;agent_verified;boolean;YES;credit_request_details
+;agent_verified_at;timestamp with time zone;YES;credit_request_details
+now();created_at;timestamp with time zone;NO;credit_request_details
+now();updated_at;timestamp with time zone;NO;credit_request_details
+gen_random_uuid();id;uuid;NO;daily_platform_stats
+CURRENT_DATE;stat_date;date;NO;daily_platform_stats
+0;total_users;integer;NO;daily_platform_stats
+0;active_users_30d;integer;NO;daily_platform_stats
+0;new_users_today;integer;NO;daily_platform_stats
+0;retention_pct;numeric;NO;daily_platform_stats
+0;referral_pct;numeric;NO;daily_platform_stats
+0;daily_transaction_volume;numeric;NO;daily_platform_stats
+'{}'::jsonb;users_by_role;jsonb;YES;daily_platform_stats
+now();created_at;timestamp with time zone;NO;daily_platform_stats
+now();updated_at;timestamp with time zone;NO;daily_platform_stats
+gen_random_uuid();id;uuid;NO;default_recovery_ledger
+;tenant_id;uuid;YES;default_recovery_ledger
+;agent_id;uuid;YES;default_recovery_ledger
+;rent_request_id;uuid;YES;default_recovery_ledger
+0;default_amount;numeric;NO;default_recovery_ledger
+0;recovered_amount;numeric;NO;default_recovery_ledger
+0;written_off_amount;numeric;NO;default_recovery_ledger
+0;platform_loss;numeric;NO;default_recovery_ledger
+'defaulted'::text;status;text;NO;default_recovery_ledger
+now();default_date;timestamp with time zone;NO;default_recovery_ledger
+;last_recovery_date;timestamp with time zone;YES;default_recovery_ledger
+;write_off_date;timestamp with time zone;YES;default_recovery_ledger
+;write_off_approved_by;uuid;YES;default_recovery_ledger
+;notes;text;YES;default_recovery_ledger
+now();created_at;timestamp with time zone;NO;default_recovery_ledger
+now();updated_at;timestamp with time zone;NO;default_recovery_ledger
+gen_random_uuid();id;uuid;NO;departments
+;name;text;NO;departments
+;description;text;YES;departments
+;head_user_id;uuid;YES;departments
+true;is_active;boolean;NO;departments
+now();created_at;timestamp with time zone;NO;departments
+now();updated_at;timestamp with time zone;NO;departments
+gen_random_uuid();id;uuid;NO;deposit_requests
+;user_id;uuid;NO;deposit_requests
+;agent_id;uuid;YES;deposit_requests
+;amount;numeric;NO;deposit_requests
+'pending'::text;status;text;NO;deposit_requests
+now();created_at;timestamp with time zone;NO;deposit_requests
+now();updated_at;timestamp with time zone;NO;deposit_requests
+;approved_at;timestamp with time zone;YES;deposit_requests
+;rejected_at;timestamp with time zone;YES;deposit_requests
+;rejection_reason;text;YES;deposit_requests
+;processed_by;uuid;YES;deposit_requests
+;provider;text;YES;deposit_requests
+;transaction_id;text;YES;deposit_requests
+;transaction_date;timestamp with time zone;YES;deposit_requests
+;notes;text;YES;deposit_requests
+false;audit_flagged;boolean;YES;deposit_requests
+false;auto_approved;boolean;YES;deposit_requests
+;batch_run_id;uuid;YES;deposit_requests
+gen_random_uuid();id;uuid;NO;disbursement_records
+;rent_request_id;uuid;NO;disbursement_records
+;tenant_id;uuid;NO;disbursement_records
+;landlord_id;uuid;YES;disbursement_records
+;agent_id;uuid;YES;disbursement_records
+;amount;numeric;NO;disbursement_records
+'wallet'::text;payout_method;text;NO;disbursement_records
+;transaction_reference;text;YES;disbursement_records
+;disbursed_by;uuid;YES;disbursement_records
+now();disbursed_at;timestamp with time zone;NO;disbursement_records
+false;landlord_confirmed;boolean;YES;disbursement_records
+;landlord_confirmed_at;timestamp with time zone;YES;disbursement_records
+false;agent_confirmed;boolean;YES;disbursement_records
+;agent_confirmed_at;timestamp with time zone;YES;disbursement_records
+'pending'::text;reconciliation_status;text;NO;disbursement_records
+;notes;text;YES;disbursement_records
+now();created_at;timestamp with time zone;NO;disbursement_records
+gen_random_uuid();id;uuid;NO;disciplinary_records
+;employee_id;uuid;NO;disciplinary_records
+;action_type;USER-DEFINED;NO;disciplinary_records
+'low'::text;severity;text;NO;disciplinary_records
+;description;text;NO;disciplinary_records
+;issued_by;uuid;NO;disciplinary_records
+CURRENT_DATE;effective_date;date;NO;disciplinary_records
+;expiry_date;date;YES;disciplinary_records
+'active'::text;status;text;NO;disciplinary_records
+;resolution_note;text;YES;disciplinary_records
+now();created_at;timestamp with time zone;NO;disciplinary_records
+;user_id;uuid;NO;earning_baselines
+0;avg_daily_earnings;numeric;YES;earning_baselines
+0;avg_weekly_earnings;numeric;YES;earning_baselines
+0;avg_receipts_per_day;numeric;YES;earning_baselines
+0;avg_referrals_per_week;numeric;YES;earning_baselines
+0;total_agent_earnings;numeric;YES;earning_baselines
+0;receipt_count_7d;integer;YES;earning_baselines
+0;referral_count_7d;integer;YES;earning_baselines
+now();last_calculated_at;timestamp with time zone;YES;earning_baselines
+gen_random_uuid();id;uuid;NO;earning_predictions
+;user_id;uuid;NO;earning_predictions
+;period;text;NO;earning_predictions
+0;predicted_earnings;numeric;NO;earning_predictions
+0.5;confidence;numeric;NO;earning_predictions
+'{}'::jsonb;assumptions;jsonb;YES;earning_predictions
+now();created_at;timestamp with time zone;NO;earning_predictions
+gen_random_uuid();id;uuid;NO;fee_revenue_ledger
+;rent_request_id;uuid;YES;fee_revenue_ledger
+;tenant_id;uuid;YES;fee_revenue_ledger
+;fee_type;text;NO;fee_revenue_ledger
+;total_amount;numeric;NO;fee_revenue_ledger
+0;recognized_amount;numeric;NO;fee_revenue_ledger
+0;deferred_amount;numeric;NO;fee_revenue_ledger
+'deferred'::text;status;text;NO;fee_revenue_ledger
+;recognition_date;timestamp with time zone;YES;fee_revenue_ledger
+;notes;text;YES;fee_revenue_ledger
+now();created_at;timestamp with time zone;NO;fee_revenue_ledger
+now();updated_at;timestamp with time zone;NO;fee_revenue_ledger
+gen_random_uuid();id;uuid;NO;financial_agents
+;agent_id;uuid;NO;financial_agents
+;assigned_by;uuid;NO;financial_agents
+'general'::expense_category;expense_category;USER-DEFINED;NO;financial_agents
+'Financial Agent'::text;label;text;NO;financial_agents
+true;is_active;boolean;NO;financial_agents
+;notes;text;YES;financial_agents
+now();created_at;timestamp with time zone;NO;financial_agents
+now();updated_at;timestamp with time zone;NO;financial_agents
+gen_random_uuid();id;uuid;NO;float_requests
+;agent_id;uuid;NO;float_requests
+;requested_amount;numeric;NO;float_requests
+;reason;text;YES;float_requests
+'pending'::text;status;text;NO;float_requests
+;approved_by;uuid;YES;float_requests
+;approved_at;timestamp with time zone;YES;float_requests
+;rejection_reason;text;YES;float_requests
+now();created_at;timestamp with time zone;NO;float_requests
+now();updated_at;timestamp with time zone;NO;float_requests
+gen_random_uuid();id;uuid;NO;funder_visits
+;agent_id;uuid;YES;funder_visits
+;funder_id;uuid;YES;funder_visits
+;latitude;double precision;NO;funder_visits
+;longitude;double precision;NO;funder_visits
+;accuracy;double precision;YES;funder_visits
+;location_name;text;YES;funder_visits
+;notes;text;YES;funder_visits
+'routine'::text;visit_type;text;NO;funder_visits
+now();created_at;timestamp with time zone;NO;funder_visits
+gen_random_uuid();id;uuid;NO;general_ledger
+now();created_at;timestamp with time zone;NO;general_ledger
+now();transaction_date;timestamp with time zone;NO;general_ledger
+;amount;numeric;NO;general_ledger
+;direction;text;NO;general_ledger
+;category;text;NO;general_ledger
+;description;text;YES;general_ledger
+;reference_id;text;YES;general_ledger
+;user_id;uuid;YES;general_ledger
+;linked_party;text;YES;general_ledger
+;source_table;text;NO;general_ledger
+;source_id;uuid;YES;general_ledger
+0;running_balance;numeric;YES;general_ledger
+;account;text;YES;general_ledger
+gen_random_uuid();transaction_group_id;uuid;YES;general_ledger
+'wallet'::text;ledger_scope;text;NO;general_ledger
+'UGX'::text;currency;text;NO;general_ledger
+'production'::text;classification;text;YES;general_ledger
+;idempotency_key;text;YES;general_ledger
+gen_random_uuid();id;uuid;NO;house_listings
+;landlord_id;uuid;YES;house_listings
+;agent_id;uuid;NO;house_listings
+;title;text;NO;house_listings
+;description;text;YES;house_listings
+'single_room'::text;house_category;text;NO;house_listings
+1;number_of_rooms;integer;NO;house_listings
+;monthly_rent;integer;NO;house_listings
+0;daily_rate;integer;NO;house_listings
+0;access_fee;integer;NO;house_listings
+0;platform_fee;integer;NO;house_listings
+0;total_monthly_cost;integer;NO;house_listings
+;region;text;NO;house_listings
+;district;text;YES;house_listings
+;sub_county;text;YES;house_listings
+;village;text;YES;house_listings
+;address;text;NO;house_listings
+;latitude;double precision;YES;house_listings
+;longitude;double precision;YES;house_listings
+false;has_water;boolean;YES;house_listings
+false;has_electricity;boolean;YES;house_listings
+false;has_security;boolean;YES;house_listings
+false;has_parking;boolean;YES;house_listings
+false;is_furnished;boolean;YES;house_listings
+;amenities;ARRAY;YES;house_listings
+;image_urls;ARRAY;YES;house_listings
+'available'::text;status;text;NO;house_listings
+;tenant_id;uuid;YES;house_listings
+false;landlord_accepted;boolean;YES;house_listings
+false;verified;boolean;YES;house_listings
+;verified_by;uuid;YES;house_listings
+;verified_at;timestamp with time zone;YES;house_listings
+now();created_at;timestamp with time zone;NO;house_listings
+now();updated_at;timestamp with time zone;NO;house_listings
+;geo_point;USER-DEFINED;YES;house_listings
+;caretaker_user_id;uuid;YES;house_listings
+;caretaker_name;text;YES;house_listings
+;caretaker_phone;text;YES;house_listings
+false;is_agent_caretaker;boolean;YES;house_listings
+true;landlord_has_smartphone;boolean;YES;house_listings
+;lc1_chairperson_name;text;YES;house_listings
+;lc1_chairperson_phone;text;YES;house_listings
+;lc1_chairperson_village;text;YES;house_listings
+false;listing_bonus_paid;boolean;YES;house_listings
+;listing_bonus_paid_at;timestamp with time zone;YES;house_listings
+;video_url;text;YES;house_listings
+;short_code;text;YES;house_listings
+gen_random_uuid();id;uuid;NO;house_questions
+;house_id;uuid;NO;house_questions
+;asker_id;uuid;NO;house_questions
+;question_text;text;NO;house_questions
+;answer_text;text;YES;house_questions
+;answered_by;uuid;YES;house_questions
+;answered_at;timestamp with time zone;YES;house_questions
+now();created_at;timestamp with time zone;NO;house_questions
+now();updated_at;timestamp with time zone;NO;house_questions
+gen_random_uuid();id;uuid;NO;house_reviews
+;house_id;uuid;NO;house_reviews
+;reviewer_id;uuid;NO;house_reviews
+;rating;integer;NO;house_reviews
+;review_text;text;YES;house_reviews
+;latitude;double precision;NO;house_reviews
+;longitude;double precision;NO;house_reviews
+;accuracy;double precision;YES;house_reviews
+now();created_at;timestamp with time zone;NO;house_reviews
+now();updated_at;timestamp with time zone;NO;house_reviews
+gen_random_uuid();id;uuid;NO;investment_withdrawal_requests
+;user_id;uuid;NO;investment_withdrawal_requests
+;amount;numeric;NO;investment_withdrawal_requests
+;reason;text;YES;investment_withdrawal_requests
+'pending'::text;status;text;NO;investment_withdrawal_requests
+now();requested_at;timestamp with time zone;NO;investment_withdrawal_requests
+(now() + '90 days'::interval);earliest_process_date;timestamp with time zone;NO;investment_withdrawal_requests
+;processed_at;timestamp with time zone;YES;investment_withdrawal_requests
+;processed_by;uuid;YES;investment_withdrawal_requests
+;rejection_reason;text;YES;investment_withdrawal_requests
+now();created_at;timestamp with time zone;NO;investment_withdrawal_requests
+now();updated_at;timestamp with time zone;NO;investment_withdrawal_requests
+true;rewards_paused;boolean;NO;investment_withdrawal_requests
+;partner_ops_approved_at;timestamp with time zone;YES;investment_withdrawal_requests
+;partner_ops_approved_by;uuid;YES;investment_withdrawal_requests
+;coo_approved_at;timestamp with time zone;YES;investment_withdrawal_requests
+;coo_approved_by;uuid;YES;investment_withdrawal_requests
+;cfo_processed_at;timestamp with time zone;YES;investment_withdrawal_requests
+;cfo_processed_by;uuid;YES;investment_withdrawal_requests
+gen_random_uuid();id;uuid;NO;investor_portfolios
+;investor_id;uuid;YES;investor_portfolios
+;invite_id;uuid;YES;investor_portfolios
+;agent_id;uuid;NO;investor_portfolios
+;portfolio_code;text;NO;investor_portfolios
+;investment_amount;numeric;NO;investor_portfolios
+;duration_months;integer;NO;investor_portfolios
+15;roi_percentage;numeric;NO;investor_portfolios
+'monthly_payout'::text;roi_mode;text;NO;investor_portfolios
+;payment_method;text;YES;investor_portfolios
+;mobile_network;text;YES;investor_portfolios
+;mobile_money_number;text;YES;investor_portfolios
+;bank_name;text;YES;investor_portfolios
+;account_name;text;YES;investor_portfolios
+;account_number;text;YES;investor_portfolios
+'active'::text;status;text;NO;investor_portfolios
+;portfolio_pin;text;NO;investor_portfolios
+gen_random_uuid();activation_token;uuid;NO;investor_portfolios
+now();created_at;timestamp with time zone;NO;investor_portfolios
+;maturity_date;date;YES;investor_portfolios
+;next_roi_date;date;YES;investor_portfolios
+0;total_roi_earned;numeric;NO;investor_portfolios
+15;payout_day;integer;YES;investor_portfolios
+'UGX'::text;display_currency;text;NO;investor_portfolios
+false;auto_reinvest;boolean;NO;investor_portfolios
+false;maturity_alert_30d;boolean;NO;investor_portfolios
+false;maturity_alert_7d;boolean;NO;investor_portfolios
+;bank_account_name;text;YES;investor_portfolios
+;investment_reference;text;YES;investor_portfolios
+;receipt_file_url;text;YES;investor_portfolios
+false;cfo_verified;boolean;YES;investor_portfolios
+;cfo_verified_at;timestamp with time zone;YES;investor_portfolios
+;cfo_verified_by;uuid;YES;investor_portfolios
+;cfo_rejection_reason;text;YES;investor_portfolios
+gen_random_uuid();id;uuid;NO;landlord_ambassador_referrals
+;referrer_landlord_id;uuid;NO;landlord_ambassador_referrals
+;referred_landlord_id;uuid;NO;landlord_ambassador_referrals
+;referred_landlord_name;text;NO;landlord_ambassador_referrals
+;referred_landlord_phone;text;NO;landlord_ambassador_referrals
+'pending'::text;status;text;NO;landlord_ambassador_referrals
+0;commission_earned;numeric;NO;landlord_ambassador_referrals
+0;rent_processed;numeric;NO;landlord_ambassador_referrals
+now();created_at;timestamp with time zone;NO;landlord_ambassador_referrals
+now();updated_at;timestamp with time zone;NO;landlord_ambassador_referrals
+gen_random_uuid();id;uuid;NO;landlords
+;name;text;NO;landlords
+;phone;text;NO;landlords
+;bank_name;text;YES;landlords
+;account_number;text;YES;landlords
+;mobile_money_number;text;YES;landlords
+;property_address;text;NO;landlords
+now();created_at;timestamp with time zone;NO;landlords
+;tenant_id;uuid;YES;landlords
+;monthly_rent;numeric;YES;landlords
+;registered_by;uuid;YES;landlords
+false;verified;boolean;YES;landlords
+;verified_at;timestamp with time zone;YES;landlords
+;verified_by;uuid;YES;landlords
+false;ready_to_receive;boolean;YES;landlords
+true;has_smartphone;boolean;YES;landlords
+;electricity_meter_number;text;YES;landlords
+1;number_of_houses;integer;YES;landlords
+;desired_rent_from_welile;numeric;YES;landlords
+;caretaker_name;text;YES;landlords
+;caretaker_phone;text;YES;landlords
+;water_meter_number;text;YES;landlords
+;latitude;numeric;YES;landlords
+;longitude;numeric;YES;landlords
+;location_captured_at;timestamp with time zone;YES;landlords
+;location_captured_by;uuid;YES;landlords
+;description;text;YES;landlords
+;number_of_rooms;integer;YES;landlords
+false;is_agent_managed;boolean;YES;landlords
+;managed_by_agent_id;uuid;YES;landlords
+0.02;management_fee_rate;numeric;YES;landlords
+;tin;text;YES;landlords
+;verification_pin_1;text;YES;landlords
+;verification_pin_2;text;YES;landlords
+0;rent_balance_due;numeric;NO;landlords
+;rent_last_paid_at;timestamp with time zone;YES;landlords
+;rent_last_paid_amount;numeric;YES;landlords
+;mobile_money_name;text;YES;landlords
+'Uganda'::text;country;text;YES;landlords
+;region;text;YES;landlords
+;district;text;YES;landlords
+;county;text;YES;landlords
+;sub_county;text;YES;landlords
+;town_council;text;YES;landlords
+;village;text;YES;landlords
+;cell;text;YES;landlords
+;house_number;text;YES;landlords
+'single_room'::text;house_category;text;YES;landlords
+false;is_occupied;boolean;NO;landlords
+gen_random_uuid();id;uuid;NO;lc1_chairpersons
+;name;text;NO;lc1_chairpersons
+;phone;text;NO;lc1_chairpersons
+;village;text;NO;lc1_chairpersons
+now();created_at;timestamp with time zone;NO;lc1_chairpersons
+gen_random_uuid();id;uuid;NO;leave_balances
+;employee_id;uuid;NO;leave_balances
+;leave_type;USER-DEFINED;NO;leave_balances
+;year;integer;NO;leave_balances
+21;total_days;integer;NO;leave_balances
+0;used_days;integer;NO;leave_balances
+21;remaining_days;integer;NO;leave_balances
+now();created_at;timestamp with time zone;NO;leave_balances
+now();updated_at;timestamp with time zone;NO;leave_balances
+gen_random_uuid();id;uuid;NO;leave_requests
+;employee_id;uuid;NO;leave_requests
+;leave_type;USER-DEFINED;NO;leave_requests
+;start_date;date;NO;leave_requests
+;end_date;date;NO;leave_requests
+;days_count;integer;NO;leave_requests
+;reason;text;NO;leave_requests
+'pending'::text;status;text;NO;leave_requests
+;reviewed_by;uuid;YES;leave_requests
+;reviewed_at;timestamp with time zone;YES;leave_requests
+;review_note;text;YES;leave_requests
+now();created_at;timestamp with time zone;NO;leave_requests
+gen_random_uuid();group_id;uuid;NO;ledger_account_groups
+;group_code;text;NO;ledger_account_groups
+;description;text;NO;ledger_account_groups
+gen_random_uuid();account_id;uuid;NO;ledger_accounts
+;group_id;uuid;NO;ledger_accounts
+;account_code;text;NO;ledger_accounts
+;owner_type;text;YES;ledger_accounts
+;owner_id;uuid;YES;ledger_accounts
+'UGX'::text;currency;text;YES;ledger_accounts
+false;allow_negative;boolean;YES;ledger_accounts
+now();created_at;timestamp with time zone;YES;ledger_accounts
+gen_random_uuid();entry_id;uuid;NO;ledger_entries
+;transaction_id;uuid;NO;ledger_entries
+;account_id;uuid;NO;ledger_entries
+;direction;text;NO;ledger_entries
+;amount;numeric;NO;ledger_entries
+'UGX'::text;currency;text;YES;ledger_entries
+now();created_at;timestamp with time zone;NO;ledger_entries
+gen_random_uuid();transaction_id;uuid;NO;ledger_transactions
+;transaction_group_id;uuid;YES;ledger_transactions
+;description;text;YES;ledger_transactions
+;initiated_by;uuid;YES;ledger_transactions
+;approved_by;uuid;YES;ledger_transactions
+;category;text;NO;ledger_transactions
+;source_table;text;YES;ledger_transactions
+;source_id;uuid;YES;ledger_transactions
+now();created_at;timestamp with time zone;NO;ledger_transactions
+gen_random_uuid();id;uuid;NO;liquidity_alerts
+;agent_id;uuid;NO;liquidity_alerts
+;alert_type;text;NO;liquidity_alerts
+'warning'::text;severity;text;NO;liquidity_alerts
+;message;text;NO;liquidity_alerts
+false;resolved;boolean;YES;liquidity_alerts
+;resolved_at;timestamp with time zone;YES;liquidity_alerts
+;resolved_by;uuid;YES;liquidity_alerts
+now();created_at;timestamp with time zone;NO;liquidity_alerts
+gen_random_uuid();id;uuid;NO;listing_bonus_approvals
+;listing_id;uuid;NO;listing_bonus_approvals
+;agent_id;uuid;NO;listing_bonus_approvals
+5000;amount;numeric;NO;listing_bonus_approvals
+'pending_landlord_ops'::text;status;text;NO;listing_bonus_approvals
+;landlord_ops_approved_by;uuid;YES;listing_bonus_approvals
+;landlord_ops_approved_at;timestamp with time zone;YES;listing_bonus_approvals
+;landlord_ops_notes;text;YES;listing_bonus_approvals
+;cfo_approved_by;uuid;YES;listing_bonus_approvals
+;cfo_approved_at;timestamp with time zone;YES;listing_bonus_approvals
+;cfo_notes;text;YES;listing_bonus_approvals
+;rejected_by;uuid;YES;listing_bonus_approvals
+;rejected_at;timestamp with time zone;YES;listing_bonus_approvals
+;rejection_reason;text;YES;listing_bonus_approvals
+;paid_at;timestamp with time zone;YES;listing_bonus_approvals
+;ledger_entry_id;uuid;YES;listing_bonus_approvals
+now();created_at;timestamp with time zone;NO;listing_bonus_approvals
+now();updated_at;timestamp with time zone;NO;listing_bonus_approvals
+gen_random_uuid();id;uuid;NO;loan_applications
+;user_id;uuid;NO;loan_applications
+;amount;numeric;NO;loan_applications
+'pending'::text;status;text;NO;loan_applications
+now();created_at;timestamp with time zone;NO;loan_applications
+now();updated_at;timestamp with time zone;NO;loan_applications
+gen_random_uuid();id;uuid;NO;location_requests
+gen_random_uuid();token;uuid;NO;location_requests
+;rent_request_id;uuid;NO;location_requests
+;target_role;text;NO;location_requests
+;target_user_id;uuid;NO;location_requests
+;requested_by;uuid;NO;location_requests
+;latitude;double precision;YES;location_requests
+;longitude;double precision;YES;location_requests
+;accuracy;double precision;YES;location_requests
+;captured_at;timestamp with time zone;YES;location_requests
+now();created_at;timestamp with time zone;NO;location_requests
+'pending'::text;status;text;NO;location_requests
+;user_id;uuid;YES;manager_profiles
+;full_name;text;YES;manager_profiles
+;email;text;YES;manager_profiles
+;phone;text;YES;manager_profiles
+;avatar_url;text;YES;manager_profiles
+gen_random_uuid();id;uuid;NO;messages
+;conversation_id;uuid;NO;messages
+;sender_id;uuid;NO;messages
+;content;text;NO;messages
+now();created_at;timestamp with time zone;NO;messages
+;read_at;timestamp with time zone;YES;messages
+gen_random_uuid();id;uuid;NO;money_requests
+;requester_id;uuid;NO;money_requests
+;recipient_id;uuid;NO;money_requests
+;amount;numeric;NO;money_requests
+;description;text;YES;money_requests
+'pending'::text;status;text;NO;money_requests
+now();created_at;timestamp with time zone;NO;money_requests
+;responded_at;timestamp with time zone;YES;money_requests
+gen_random_uuid();id;uuid;NO;notifications
+;user_id;uuid;NO;notifications
+;title;text;NO;notifications
+;message;text;NO;notifications
+'info'::text;type;text;NO;notifications
+'{}'::jsonb;metadata;jsonb;YES;notifications
+false;is_read;boolean;YES;notifications
+now();created_at;timestamp with time zone;YES;notifications
+now();updated_at;timestamp with time zone;YES;notifications
+gen_random_uuid();id;uuid;NO;onboarding_targets
+;agent_id;uuid;NO;onboarding_targets
+;target_month;date;NO;onboarding_targets
+10;target_count;integer;NO;onboarding_targets
+0;achieved_count;integer;NO;onboarding_targets
+now();created_at;timestamp with time zone;NO;onboarding_targets
+now();updated_at;timestamp with time zone;NO;onboarding_targets
+gen_random_uuid();id;uuid;NO;operations_departments
+;user_id;uuid;NO;operations_departments
+;department;text;NO;operations_departments
+;assigned_by;uuid;YES;operations_departments
+now();created_at;timestamp with time zone;NO;operations_departments
+gen_random_uuid();id;uuid;NO;opportunity_summaries
+0;total_rent_requested;numeric;NO;opportunity_summaries
+0;total_requests;integer;NO;opportunity_summaries
+0;total_landlords;integer;NO;opportunity_summaries
+0;total_agents;integer;NO;opportunity_summaries
+;notes;text;YES;opportunity_summaries
+;posted_by;uuid;NO;opportunity_summaries
+now();created_at;timestamp with time zone;NO;opportunity_summaries
+now();updated_at;timestamp with time zone;NO;opportunity_summaries
+gen_random_uuid();id;uuid;NO;otp_verifications
+;phone;text;NO;otp_verifications
+;otp_code;text;NO;otp_verifications
+;expires_at;timestamp with time zone;NO;otp_verifications
+0;attempts;integer;NO;otp_verifications
+false;verified;boolean;NO;otp_verifications
+;verified_at;timestamp with time zone;YES;otp_verifications
+now();created_at;timestamp with time zone;NO;otp_verifications
+now();updated_at;timestamp with time zone;NO;otp_verifications
+gen_random_uuid();id;uuid;NO;partner_escalations
+;portfolio_id;uuid;NO;partner_escalations
+;escalation_type;text;NO;partner_escalations
+'open'::text;status;text;NO;partner_escalations
+'{}'::jsonb;details;jsonb;YES;partner_escalations
+now();created_at;timestamp with time zone;NO;partner_escalations
+;resolved_at;timestamp with time zone;YES;partner_escalations
+;resolved_by;uuid;YES;partner_escalations
+gen_random_uuid();id;uuid;NO;payment_tokens
+;agent_id;uuid;NO;payment_tokens
+;tenant_id;uuid;NO;payment_tokens
+;token_code;text;NO;payment_tokens
+;amount;numeric;NO;payment_tokens
+;expires_at;timestamp with time zone;NO;payment_tokens
+false;used;boolean;NO;payment_tokens
+;used_at;timestamp with time zone;YES;payment_tokens
+;visit_id;uuid;YES;payment_tokens
+now();created_at;timestamp with time zone;NO;payment_tokens
+gen_random_uuid();id;uuid;NO;payout_codes
+;withdrawal_request_id;uuid;NO;payout_codes
+;user_id;uuid;YES;payout_codes
+;code;text;NO;payout_codes
+;qr_data;text;NO;payout_codes
+;amount;numeric;NO;payout_codes
+'pending'::text;status;text;NO;payout_codes
+;claimed_by;uuid;YES;payout_codes
+;claimed_at;timestamp with time zone;YES;payout_codes
+;paid_at;timestamp with time zone;YES;payout_codes
+;paid_by;uuid;YES;payout_codes
+(now() + '72:00:00'::interval);expires_at;timestamp with time zone;NO;payout_codes
+now();created_at;timestamp with time zone;NO;payout_codes
+gen_random_uuid();id;uuid;NO;payroll_batches
+;batch_month;text;NO;payroll_batches
+'draft'::text;status;text;NO;payroll_batches
+0;total_amount;numeric;NO;payroll_batches
+0;total_employees;integer;NO;payroll_batches
+0;processed_count;integer;NO;payroll_batches
+;created_by;uuid;NO;payroll_batches
+;processed_at;timestamp with time zone;YES;payroll_batches
+now();created_at;timestamp with time zone;NO;payroll_batches
+now();updated_at;timestamp with time zone;NO;payroll_batches
+;period_start;date;YES;payroll_batches
+;period_end;date;YES;payroll_batches
+;prepared_by;uuid;YES;payroll_batches
+;approved_by;uuid;YES;payroll_batches
+0;employee_count;integer;YES;payroll_batches
+;notes;text;YES;payroll_batches
+;submitted_at;timestamp with time zone;YES;payroll_batches
+;approved_at;timestamp with time zone;YES;payroll_batches
+gen_random_uuid();id;uuid;NO;payroll_items
+;batch_id;uuid;NO;payroll_items
+;employee_id;uuid;NO;payroll_items
+;amount;numeric;NO;payroll_items
+'salary'::text;category;text;NO;payroll_items
+;description;text;YES;payroll_items
+'pending'::text;status;text;NO;payroll_items
+;paid_at;timestamp with time zone;YES;payroll_items
+;ledger_reference_id;text;YES;payroll_items
+now();created_at;timestamp with time zone;NO;payroll_items
+'{}'::jsonb;deductions;jsonb;NO;payroll_items
+'{}'::jsonb;bonuses;jsonb;NO;payroll_items
+gen_random_uuid();id;uuid;NO;pending_wallet_operations
+;user_id;uuid;YES;pending_wallet_operations
+;amount;numeric;NO;pending_wallet_operations
+;direction;text;NO;pending_wallet_operations
+;category;text;NO;pending_wallet_operations
+;description;text;YES;pending_wallet_operations
+;source_table;text;NO;pending_wallet_operations
+;source_id;uuid;YES;pending_wallet_operations
+;transaction_group_id;uuid;YES;pending_wallet_operations
+;linked_party;text;YES;pending_wallet_operations
+;reference_id;text;YES;pending_wallet_operations
+;account;text;YES;pending_wallet_operations
+'pending'::text;status;text;NO;pending_wallet_operations
+;reviewed_by;uuid;YES;pending_wallet_operations
+;reviewed_at;timestamp with time zone;YES;pending_wallet_operations
+;rejection_reason;text;YES;pending_wallet_operations
+now();created_at;timestamp with time zone;NO;pending_wallet_operations
+now();updated_at;timestamp with time zone;NO;pending_wallet_operations
+'{}'::jsonb;metadata;jsonb;YES;pending_wallet_operations
+'standard'::text;operation_type;text;NO;pending_wallet_operations
+;target_wallet_user_id;uuid;YES;pending_wallet_operations
+;payment_method;text;YES;pending_wallet_operations
+;payment_reference;text;YES;pending_wallet_operations
+gen_random_uuid();id;uuid;NO;platform_expense_transfers
+;financial_agent_id;uuid;NO;platform_expense_transfers
+;agent_id;uuid;NO;platform_expense_transfers
+;amount;numeric;NO;platform_expense_transfers
+;expense_category;USER-DEFINED;NO;platform_expense_transfers
+;description;text;NO;platform_expense_transfers
+;approved_by;uuid;NO;platform_expense_transfers
+;ledger_reference_id;text;YES;platform_expense_transfers
+now();created_at;timestamp with time zone;NO;platform_expense_transfers
+gen_random_uuid();id;uuid;NO;portfolio_renewals
+;portfolio_id;uuid;NO;portfolio_renewals
+;renewed_by;uuid;NO;portfolio_renewals
+;reason;text;NO;portfolio_renewals
+;old_created_at;timestamp with time zone;NO;portfolio_renewals
+;new_created_at;timestamp with time zone;NO;portfolio_renewals
+;old_maturity_date;text;YES;portfolio_renewals
+;new_maturity_date;text;YES;portfolio_renewals
+;old_roi_percentage;numeric;NO;portfolio_renewals
+;new_roi_percentage;numeric;NO;portfolio_renewals
+;old_duration_months;integer;NO;portfolio_renewals
+;new_duration_months;integer;NO;portfolio_renewals
+0;top_up_amount;numeric;NO;portfolio_renewals
+now();created_at;timestamp with time zone;NO;portfolio_renewals
+gen_random_uuid();id;uuid;NO;pre_registered_tids
+;transaction_id;text;NO;pre_registered_tids
+;amount;numeric;NO;pre_registered_tids
+'mtn'::text;provider;text;YES;pre_registered_tids
+;registered_by;uuid;NO;pre_registered_tids
+;notes;text;YES;pre_registered_tids
+'waiting'::text;status;text;NO;pre_registered_tids
+;matched_deposit_id;uuid;YES;pre_registered_tids
+;matched_at;timestamp with time zone;YES;pre_registered_tids
+now();created_at;timestamp with time zone;NO;pre_registered_tids
+gen_random_uuid();id;uuid;NO;product_categories
+;agent_id;uuid;NO;product_categories
+;name;text;NO;product_categories
+'#6366f1'::text;color;text;YES;product_categories
+now();created_at;timestamp with time zone;NO;product_categories
+gen_random_uuid();id;uuid;NO;product_images
+;product_id;uuid;NO;product_images
+;image_url;text;NO;product_images
+0;display_order;integer;NO;product_images
+now();created_at;timestamp with time zone;NO;product_images
+gen_random_uuid();id;uuid;NO;product_orders
+;product_id;uuid;NO;product_orders
+;buyer_id;uuid;NO;product_orders
+;agent_id;uuid;NO;product_orders
+1;quantity;integer;NO;product_orders
+;unit_price;numeric;NO;product_orders
+;total_price;numeric;NO;product_orders
+;agent_commission;numeric;NO;product_orders
+'completed'::text;status;text;NO;product_orders
+now();created_at;timestamp with time zone;NO;product_orders
+now();status_updated_at;timestamp with time zone;YES;product_orders
+;delivery_notes;text;YES;product_orders
+;estimated_delivery_date;date;YES;product_orders
+gen_random_uuid();id;uuid;NO;product_reviews
+;product_id;uuid;NO;product_reviews
+;buyer_id;uuid;NO;product_reviews
+;order_id;uuid;YES;product_reviews
+;rating;integer;NO;product_reviews
+;comment;text;YES;product_reviews
+now();created_at;timestamp with time zone;NO;product_reviews
+now();updated_at;timestamp with time zone;NO;product_reviews
+gen_random_uuid();id;uuid;NO;products
+;agent_id;uuid;NO;products
+;name;text;NO;products
+;description;text;YES;products
+;price;numeric;NO;products
+'general'::text;category;text;NO;products
+;image_url;text;YES;products
+0;stock;integer;NO;products
+true;active;boolean;NO;products
+now();created_at;timestamp with time zone;NO;products
+now();updated_at;timestamp with time zone;NO;products
+0;discount_percentage;integer;YES;products
+;discount_ends_at;timestamp with time zone;YES;products
+;id;uuid;NO;profiles
+;full_name;text;NO;profiles
+;phone;text;NO;profiles
+;email;text;NO;profiles
+now();created_at;timestamp with time zone;NO;profiles
+now();updated_at;timestamp with time zone;NO;profiles
+;avatar_url;text;YES;profiles
+false;verified;boolean;NO;profiles
+;referrer_id;uuid;YES;profiles
+false;rent_discount_active;boolean;NO;profiles
+;monthly_rent;numeric;YES;profiles
+;country;text;YES;profiles
+;city;text;YES;profiles
+;country_code;text;YES;profiles
+;mobile_money_number;text;YES;profiles
+;mobile_money_provider;text;YES;profiles
+now();last_active_at;timestamp with time zone;YES;profiles
+false;whatsapp_verified;boolean;YES;profiles
+;whatsapp_verified_at;timestamp with time zone;YES;profiles
+;agent_type;text;YES;profiles
+;national_id;text;YES;profiles
+false;is_frozen;boolean;NO;profiles
+;frozen_reason;text;YES;profiles
+;frozen_at;timestamp with time zone;YES;profiles
+;territory;text;YES;profiles
+false;is_seller;boolean;NO;profiles
+;seller_application_status;text;YES;profiles
+false;must_change_password;boolean;YES;profiles
+gen_random_uuid();id;uuid;NO;property_viewings
+;house_listing_id;uuid;NO;property_viewings
+;tenant_id;uuid;NO;property_viewings
+;agent_id;uuid;NO;property_viewings
+;landlord_id;uuid;YES;property_viewings
+;scheduled_date;date;YES;property_viewings
+;scheduled_time;text;YES;property_viewings
+'matched'::text;status;text;NO;property_viewings
+false;agent_confirmed;boolean;YES;property_viewings
+false;tenant_confirmed;boolean;YES;property_viewings
+false;landlord_confirmed;boolean;YES;property_viewings
+;agent_confirmed_at;timestamp with time zone;YES;property_viewings
+;tenant_confirmed_at;timestamp with time zone;YES;property_viewings
+;landlord_confirmed_at;timestamp with time zone;YES;property_viewings
+;confirmation_count;integer;YES;property_viewings
+;agent_checkin_lat;double precision;YES;property_viewings
+;agent_checkin_lng;double precision;YES;property_viewings
+;notes;text;YES;property_viewings
+;assigned_by;uuid;YES;property_viewings
+false;sms_sent;boolean;YES;property_viewings
+false;confirmation_sms_sent;boolean;YES;property_viewings
+now();created_at;timestamp with time zone;YES;property_viewings
+now();updated_at;timestamp with time zone;YES;property_viewings
+lpad((floor((random() * (10000)::double precision)))::text, 4, '0'::text);viewing_pin;text;YES;property_viewings
+false;pin_verified;boolean;YES;property_viewings
+;pin_verified_at;timestamp with time zone;YES;property_viewings
+false;proximity_verified;boolean;YES;property_viewings
+;proximity_distance_m;double precision;YES;property_viewings
+;agent_checkin_at;timestamp with time zone;YES;property_viewings
+;tenant_checkin_lat;double precision;YES;property_viewings
+;tenant_checkin_lng;double precision;YES;property_viewings
+;tenant_checkin_at;timestamp with time zone;YES;property_viewings
+;agent_rating;smallint;YES;property_viewings
+;tenant_rating;smallint;YES;property_viewings
+;agent_feedback;text;YES;property_viewings
+;tenant_feedback;text;YES;property_viewings
+;agent_rated_at;timestamp with time zone;YES;property_viewings
+;tenant_rated_at;timestamp with time zone;YES;property_viewings
+;meeting_verified;boolean;YES;property_viewings
+gen_random_uuid();id;uuid;NO;proxy_agent_assignments
+;agent_id;uuid;NO;proxy_agent_assignments
+;beneficiary_id;uuid;NO;proxy_agent_assignments
+;beneficiary_role;text;NO;proxy_agent_assignments
+;assigned_by;uuid;NO;proxy_agent_assignments
+'No smartphone access'::text;reason;text;YES;proxy_agent_assignments
+true;is_active;boolean;NO;proxy_agent_assignments
+;expires_at;timestamp with time zone;YES;proxy_agent_assignments
+now();created_at;timestamp with time zone;NO;proxy_agent_assignments
+now();updated_at;timestamp with time zone;NO;proxy_agent_assignments
+false;is_managed_account;boolean;NO;proxy_agent_assignments
+'pending'::text;approval_status;text;NO;proxy_agent_assignments
+;approved_by;uuid;YES;proxy_agent_assignments
+;approved_at;timestamp with time zone;YES;proxy_agent_assignments
+;rejection_reason;text;YES;proxy_agent_assignments
+gen_random_uuid();id;uuid;NO;push_subscriptions
+;user_id;uuid;NO;push_subscriptions
+;endpoint;text;NO;push_subscriptions
+;p256dh;text;NO;push_subscriptions
+;auth;text;NO;push_subscriptions
+now();created_at;timestamp with time zone;NO;push_subscriptions
+now();updated_at;timestamp with time zone;NO;push_subscriptions
+gen_random_uuid();id;uuid;NO;receipt_numbers
+;receipt_code;text;NO;receipt_numbers
+;vendor_id;uuid;NO;receipt_numbers
+;created_by;uuid;NO;receipt_numbers
+now();created_at;timestamp with time zone;NO;receipt_numbers
+;vendor_amount;numeric;YES;receipt_numbers
+;vendor_marked_at;timestamp with time zone;YES;receipt_numbers
+'available'::text;status;text;NO;receipt_numbers
+;user_id;uuid;YES;referral_leaderboard
+;full_name;text;YES;referral_leaderboard
+;avatar_url;text;YES;referral_leaderboard
+;referral_count;bigint;YES;referral_leaderboard
+;total_earned;numeric;YES;referral_leaderboard
+gen_random_uuid();id;uuid;NO;referral_rewards
+;user_id;uuid;NO;referral_rewards
+;reward_month;date;NO;referral_rewards
+;rank;integer;NO;referral_rewards
+;reward_amount;numeric;NO;referral_rewards
+;referral_count;integer;NO;referral_rewards
+false;credited;boolean;NO;referral_rewards
+;credited_at;timestamp with time zone;YES;referral_rewards
+now();created_at;timestamp with time zone;NO;referral_rewards
+gen_random_uuid();id;uuid;NO;referrals
+;referrer_id;uuid;NO;referrals
+;referred_id;uuid;NO;referrals
+100;bonus_amount;numeric;NO;referrals
+false;credited;boolean;NO;referrals
+;credited_at;timestamp with time zone;YES;referrals
+now();created_at;timestamp with time zone;NO;referrals
+false;first_transaction_bonus_credited;boolean;YES;referrals
+;first_transaction_bonus_credited_at;timestamp with time zone;YES;referrals
+200;first_transaction_bonus_amount;numeric;YES;referrals
+gen_random_uuid();id;uuid;NO;rent_history_records
+;tenant_id;uuid;NO;rent_history_records
+;landlord_name;text;NO;rent_history_records
+;landlord_phone;text;NO;rent_history_records
+;property_location;text;NO;rent_history_records
+0;rent_amount;numeric;NO;rent_history_records
+1;months_paid;integer;NO;rent_history_records
+;start_date;date;YES;rent_history_records
+;end_date;date;YES;rent_history_records
+'pending'::text;status;text;NO;rent_history_records
+;verified_at;timestamp with time zone;YES;rent_history_records
+;verified_by;uuid;YES;rent_history_records
+;rejection_reason;text;YES;rent_history_records
+now();created_at;timestamp with time zone;NO;rent_history_records
+now();updated_at;timestamp with time zone;NO;rent_history_records
+gen_random_uuid();id;uuid;NO;rent_request_deletions
+;rent_request_id;uuid;NO;rent_request_deletions
+;tenant_id;uuid;NO;rent_request_deletions
+;tenant_name;text;NO;rent_request_deletions
+;tenant_phone;text;YES;rent_request_deletions
+;agent_id;uuid;YES;rent_request_deletions
+;agent_name;text;YES;rent_request_deletions
+;agent_phone;text;YES;rent_request_deletions
+0;rent_amount;numeric;NO;rent_request_deletions
+0;amount_repaid;numeric;NO;rent_request_deletions
+0;outstanding;numeric;NO;rent_request_deletions
+0;total_repayment;numeric;NO;rent_request_deletions
+0;daily_repayment;numeric;NO;rent_request_deletions
+0;tenant_wallet;numeric;NO;rent_request_deletions
+;disbursed_at;timestamp with time zone;YES;rent_request_deletions
+;request_status;text;YES;rent_request_deletions
+;deleted_by;uuid;NO;rent_request_deletions
+;deleted_by_name;text;YES;rent_request_deletions
+;deletion_reason;text;YES;rent_request_deletions
+;snapshot_json;jsonb;YES;rent_request_deletions
+now();created_at;timestamp with time zone;NO;rent_request_deletions
+(now() + '7 days'::interval);expires_at;timestamp with time zone;NO;rent_request_deletions
+gen_random_uuid();id;uuid;NO;rent_requests
+;tenant_id;uuid;NO;rent_requests
+;agent_id;uuid;YES;rent_requests
+;landlord_id;uuid;NO;rent_requests
+;lc1_id;uuid;NO;rent_requests
+;rent_amount;numeric;NO;rent_requests
+;duration_days;integer;NO;rent_requests
+;access_fee;numeric;NO;rent_requests
+;request_fee;numeric;NO;rent_requests
+;total_repayment;numeric;NO;rent_requests
+;daily_repayment;numeric;NO;rent_requests
+'pending'::text;status;text;YES;rent_requests
+;supporter_id;uuid;YES;rent_requests
+;approved_by;uuid;YES;rent_requests
+;approved_at;timestamp with time zone;YES;rent_requests
+;funded_at;timestamp with time zone;YES;rent_requests
+;disbursed_at;timestamp with time zone;YES;rent_requests
+now();created_at;timestamp with time zone;NO;rent_requests
+now();updated_at;timestamp with time zone;NO;rent_requests
+;approval_comment;text;YES;rent_requests
+;rejected_reason;text;YES;rent_requests
+false;agent_verified;boolean;YES;rent_requests
+;agent_verified_at;timestamp with time zone;YES;rent_requests
+;agent_verified_by;uuid;YES;rent_requests
+false;manager_verified;boolean;YES;rent_requests
+;manager_verified_at;timestamp with time zone;YES;rent_requests
+;manager_verified_by;uuid;YES;rent_requests
+'pending_acceptance'::text;schedule_status;text;YES;rent_requests
+1;number_of_payments;integer;YES;rent_requests
+;fund_recipient_type;text;YES;rent_requests
+;fund_recipient_id;uuid;YES;rent_requests
+;fund_recipient_name;text;YES;rent_requests
+;fund_routed_at;timestamp with time zone;YES;rent_requests
+;tenant_water_meter;text;YES;rent_requests
+;tenant_electricity_meter;text;YES;rent_requests
+;request_latitude;double precision;YES;rent_requests
+;request_longitude;double precision;YES;rent_requests
+;request_city;text;YES;rent_requests
+;request_country;text;YES;rent_requests
+;house_category;text;YES;rent_requests
+0;amount_repaid;numeric;NO;rent_requests
+;next_roi_due_date;timestamp with time zone;YES;rent_requests
+0;total_roi_paid;numeric;YES;rent_requests
+0;roi_payments_count;integer;YES;rent_requests
+false;tenant_no_smartphone;boolean;NO;rent_requests
+;tenant_ops_reviewed_by;uuid;YES;rent_requests
+;tenant_ops_reviewed_at;timestamp with time zone;YES;rent_requests
+;assigned_agent_id;uuid;YES;rent_requests
+;landlord_ops_reviewed_by;uuid;YES;rent_requests
+;landlord_ops_reviewed_at;timestamp with time zone;YES;rent_requests
+;coo_reviewed_by;uuid;YES;rent_requests
+;coo_reviewed_at;timestamp with time zone;YES;rent_requests
+;cfo_reviewed_by;uuid;YES;rent_requests
+;cfo_reviewed_at;timestamp with time zone;YES;rent_requests
+;payout_transaction_reference;text;YES;rent_requests
+'wallet'::text;payout_method;text;YES;rent_requests
+'{}'::text[];house_image_urls;ARRAY;YES;rent_requests
+'normal'::text;registration_type;text;NO;rent_requests
+0;initial_outstanding_balance;numeric;YES;rent_requests
+gen_random_uuid();id;uuid;NO;repayments
+;tenant_id;uuid;NO;repayments
+;rent_request_id;uuid;NO;repayments
+;amount;numeric;NO;repayments
+now();created_at;timestamp with time zone;NO;repayments
+gen_random_uuid();id;uuid;NO;review_images
+;review_id;uuid;NO;review_images
+;image_url;text;NO;review_images
+0;display_order;integer;NO;review_images
+now();created_at;timestamp with time zone;NO;review_images
+gen_random_uuid();id;uuid;NO;review_responses
+;review_id;uuid;NO;review_responses
+;agent_id;uuid;NO;review_responses
+;response_text;text;NO;review_responses
+now();created_at;timestamp with time zone;NO;review_responses
+now();updated_at;timestamp with time zone;NO;review_responses
+gen_random_uuid();id;uuid;NO;review_votes
+;review_id;uuid;NO;review_votes
+;user_id;uuid;NO;review_votes
+;vote_type;text;NO;review_votes
+now();created_at;timestamp with time zone;NO;review_votes
+gen_random_uuid();id;uuid;NO;role_access_requests
+;user_id;uuid;NO;role_access_requests
+;requested_role;text;NO;role_access_requests
+'pending'::text;status;text;NO;role_access_requests
+;reason;text;YES;role_access_requests
+;reviewed_by;uuid;YES;role_access_requests
+;reviewed_at;timestamp with time zone;YES;role_access_requests
+;rejection_reason;text;YES;role_access_requests
+now();created_at;timestamp with time zone;NO;role_access_requests
+now();updated_at;timestamp with time zone;NO;role_access_requests
+gen_random_uuid();id;uuid;NO;saved_houses
+;user_id;uuid;NO;saved_houses
+;house_id;uuid;NO;saved_houses
+now();created_at;timestamp with time zone;NO;saved_houses
+gen_random_uuid();id;uuid;NO;service_centre_setups
+;agent_id;uuid;NO;service_centre_setups
+;photo_url;text;NO;service_centre_setups
+;latitude;numeric;NO;service_centre_setups
+;longitude;numeric;NO;service_centre_setups
+;location_name;text;YES;service_centre_setups
+;agent_name;text;NO;service_centre_setups
+;agent_phone;text;NO;service_centre_setups
+'pending'::text;status;text;NO;service_centre_setups
+;verified_by;uuid;YES;service_centre_setups
+;verified_at;timestamp with time zone;YES;service_centre_setups
+;approved_by;uuid;YES;service_centre_setups
+;approved_at;timestamp with time zone;YES;service_centre_setups
+;rejection_reason;text;YES;service_centre_setups
+now();created_at;timestamp with time zone;YES;service_centre_setups
+gen_random_uuid();id;uuid;NO;settlement_reconciliation_ledger
+;channel;text;NO;settlement_reconciliation_ledger
+;period_date;date;NO;settlement_reconciliation_ledger
+;external_reference;text;YES;settlement_reconciliation_ledger
+0;external_amount;numeric;NO;settlement_reconciliation_ledger
+0;system_amount;numeric;NO;settlement_reconciliation_ledger
+0;discrepancy_amount;numeric;NO;settlement_reconciliation_ledger
+'pending'::text;status;text;NO;settlement_reconciliation_ledger
+;reconciled_at;timestamp with time zone;YES;settlement_reconciliation_ledger
+;reconciled_by;uuid;YES;settlement_reconciliation_ledger
+;notes;text;YES;settlement_reconciliation_ledger
+now();created_at;timestamp with time zone;NO;settlement_reconciliation_ledger
+now();updated_at;timestamp with time zone;NO;settlement_reconciliation_ledger
+gen_random_uuid();id;uuid;NO;shadow_audit_logs
+;function_name;text;NO;shadow_audit_logs
+;primary_passed;boolean;NO;shadow_audit_logs
+;shadow_passed;boolean;NO;shadow_audit_logs
+;is_match;boolean;NO;shadow_audit_logs
+'[]'::jsonb;shadow_errors;jsonb;YES;shadow_audit_logs
+now();created_at;timestamp with time zone;NO;shadow_audit_logs
+gen_random_uuid();id;uuid;NO;shadow_config
+10;sample_percentage;integer;NO;shadow_config
+true;enabled;boolean;NO;shadow_config
+now();updated_at;timestamp with time zone;NO;shadow_config
+gen_random_uuid();id;uuid;NO;staff_access_passwords
+;user_id;uuid;NO;staff_access_passwords
+;password_hash;text;NO;staff_access_passwords
+true;must_change;boolean;YES;staff_access_passwords
+now();created_at;timestamp with time zone;YES;staff_access_passwords
+now();updated_at;timestamp with time zone;YES;staff_access_passwords
+gen_random_uuid();id;uuid;NO;staff_permissions
+;user_id;uuid;NO;staff_permissions
+;permitted_dashboard;text;NO;staff_permissions
+;granted_by;uuid;YES;staff_permissions
+now();granted_at;timestamp with time zone;YES;staff_permissions
+gen_random_uuid();id;uuid;NO;staff_profiles
+;user_id;uuid;NO;staff_profiles
+;employee_id;text;NO;staff_profiles
+'General'::text;department;text;NO;staff_profiles
+'Staff'::text;position;text;NO;staff_profiles
+true;must_change_password;boolean;YES;staff_profiles
+;created_by;uuid;YES;staff_profiles
+now();created_at;timestamp with time zone;YES;staff_profiles
+now();updated_at;timestamp with time zone;YES;staff_profiles
+gen_random_uuid();id;uuid;NO;subscription_charge_logs
+;subscription_id;uuid;NO;subscription_charge_logs
+;tenant_id;uuid;NO;subscription_charge_logs
+;charge_amount;numeric;NO;subscription_charge_logs
+0;amount_deducted;numeric;NO;subscription_charge_logs
+0;debt_added;numeric;NO;subscription_charge_logs
+;wallet_balance_before;numeric;YES;subscription_charge_logs
+;wallet_balance_after;numeric;YES;subscription_charge_logs
+;status;text;NO;subscription_charge_logs
+CURRENT_DATE;charge_date;date;NO;subscription_charge_logs
+now();created_at;timestamp with time zone;NO;subscription_charge_logs
+gen_random_uuid();id;uuid;NO;subscription_charges
+;tenant_id;uuid;NO;subscription_charges
+;rent_request_id;uuid;YES;subscription_charges
+'rent_facilitation'::text;service_type;text;NO;subscription_charges
+;charge_amount;numeric;NO;subscription_charges
+;frequency;text;NO;subscription_charges
+;next_charge_date;date;NO;subscription_charges
+CURRENT_DATE;start_date;date;NO;subscription_charges
+;end_date;date;YES;subscription_charges
+0;total_charges_due;numeric;NO;subscription_charges
+0;total_charged;numeric;NO;subscription_charges
+0;accumulated_debt;numeric;NO;subscription_charges
+0;charges_completed;integer;NO;subscription_charges
+0;charges_remaining;integer;NO;subscription_charges
+'active'::text;status;text;NO;subscription_charges
+now();created_at;timestamp with time zone;NO;subscription_charges
+now();updated_at;timestamp with time zone;NO;subscription_charges
+;agent_id;uuid;YES;subscription_charges
+0;agent_charged_amount;numeric;NO;subscription_charges
+0;agent_charge_count;integer;NO;subscription_charges
+false;charge_agent_wallet;boolean;NO;subscription_charges
+;tenant_failed_at;timestamp with time zone;YES;subscription_charges
+0;consecutive_failures;integer;NO;subscription_charges
+gen_random_uuid();id;uuid;NO;supporter_agreement_acceptance
+;supporter_id;uuid;NO;supporter_agreement_acceptance
+'v1.0'::text;agreement_version;text;NO;supporter_agreement_acceptance
+now();accepted_at;timestamp with time zone;NO;supporter_agreement_acceptance
+;ip_address;text;YES;supporter_agreement_acceptance
+;device_info;text;YES;supporter_agreement_acceptance
+'accepted'::text;status;text;NO;supporter_agreement_acceptance
+now();created_at;timestamp with time zone;NO;supporter_agreement_acceptance
+gen_random_uuid();id;uuid;NO;supporter_capital_ledger
+;supporter_id;uuid;NO;supporter_capital_ledger
+;transaction_type;text;NO;supporter_capital_ledger
+;amount;numeric;NO;supporter_capital_ledger
+0;balance_after;numeric;NO;supporter_capital_ledger
+;reference_id;text;YES;supporter_capital_ledger
+;rent_request_id;uuid;YES;supporter_capital_ledger
+;description;text;YES;supporter_capital_ledger
+now();created_at;timestamp with time zone;NO;supporter_capital_ledger
+gen_random_uuid();id;uuid;NO;supporter_invites
+;email;text;NO;supporter_invites
+;full_name;text;NO;supporter_invites
+;phone;text;NO;supporter_invites
+;temp_password;text;YES;supporter_invites
+gen_random_uuid();activation_token;uuid;NO;supporter_invites
+;created_by;uuid;NO;supporter_invites
+now();created_at;timestamp with time zone;NO;supporter_invites
+;activated_at;timestamp with time zone;YES;supporter_invites
+;activated_user_id;uuid;YES;supporter_invites
+'pending'::text;status;text;NO;supporter_invites
+'supporter'::text;role;text;NO;supporter_invites
+;parent_agent_id;uuid;YES;supporter_invites
+;latitude;numeric;YES;supporter_invites
+;longitude;numeric;YES;supporter_invites
+;location_accuracy;real;YES;supporter_invites
+;property_address;text;YES;supporter_invites
+;national_id;text;YES;supporter_invites
+'Uganda'::text;country;text;YES;supporter_invites
+;district_city;text;YES;supporter_invites
+;next_of_kin_name;text;YES;supporter_invites
+;next_of_kin_relationship;text;YES;supporter_invites
+;next_of_kin_phone;text;YES;supporter_invites
+;payment_method;text;YES;supporter_invites
+;mobile_network;text;YES;supporter_invites
+;mobile_money_number;text;YES;supporter_invites
+;bank_name;text;YES;supporter_invites
+;account_name;text;YES;supporter_invites
+;account_number;text;YES;supporter_invites
+;user_id;uuid;YES;supporter_referral_leaderboard
+;full_name;text;YES;supporter_referral_leaderboard
+;avatar_url;text;YES;supporter_referral_leaderboard
+;referral_count;integer;YES;supporter_referral_leaderboard
+;converted_count;integer;YES;supporter_referral_leaderboard
+;total_earned;numeric;YES;supporter_referral_leaderboard
+gen_random_uuid();id;uuid;NO;supporter_referrals
+;referrer_id;uuid;NO;supporter_referrals
+;referred_id;uuid;NO;supporter_referrals
+5000;bonus_amount;numeric;YES;supporter_referrals
+false;bonus_credited;boolean;YES;supporter_referrals
+;bonus_credited_at;timestamp with time zone;YES;supporter_referrals
+;first_investment_at;timestamp with time zone;YES;supporter_referrals
+now();created_at;timestamp with time zone;NO;supporter_referrals
+gen_random_uuid();id;uuid;NO;supporter_roi_payments
+;rent_request_id;uuid;NO;supporter_roi_payments
+;supporter_id;uuid;NO;supporter_roi_payments
+;rent_amount;numeric;NO;supporter_roi_payments
+;roi_amount;numeric;NO;supporter_roi_payments
+1;payment_number;integer;NO;supporter_roi_payments
+;due_date;timestamp with time zone;NO;supporter_roi_payments
+;paid_at;timestamp with time zone;YES;supporter_roi_payments
+now();created_at;timestamp with time zone;NO;supporter_roi_payments
+'pending'::text;status;text;NO;supporter_roi_payments
+gen_random_uuid();id;uuid;NO;suspense_ledger
+;amount;numeric;NO;suspense_ledger
+'unknown'::text;source_channel;text;NO;suspense_ledger
+;reference_id;text;YES;suspense_ledger
+;depositor_phone;text;YES;suspense_ledger
+;depositor_name;text;YES;suspense_ledger
+'unmatched'::text;status;text;NO;suspense_ledger
+;matched_to_user_id;uuid;YES;suspense_ledger
+;matched_at;timestamp with time zone;YES;suspense_ledger
+;matched_by;uuid;YES;suspense_ledger
+;refunded_at;timestamp with time zone;YES;suspense_ledger
+;written_off_at;timestamp with time zone;YES;suspense_ledger
+;written_off_by;uuid;YES;suspense_ledger
+;notes;text;YES;suspense_ledger
+now();created_at;timestamp with time zone;NO;suspense_ledger
+now();updated_at;timestamp with time zone;NO;suspense_ledger
+gen_random_uuid();id;uuid;NO;system_events
+;event_type;USER-DEFINED;NO;system_events
+;user_id;uuid;YES;system_events
+;related_entity_type;text;YES;system_events
+;related_entity_id;uuid;YES;system_events
+'{}'::jsonb;metadata;jsonb;YES;system_events
+false;processed;boolean;YES;system_events
+;processed_at;timestamp with time zone;YES;system_events
+now();created_at;timestamp with time zone;YES;system_events
+gen_random_uuid();id;uuid;NO;tenant_agreement_acceptance
+;tenant_id;uuid;NO;tenant_agreement_acceptance
+'v1.0'::text;agreement_version;text;NO;tenant_agreement_acceptance
+now();accepted_at;timestamp with time zone;NO;tenant_agreement_acceptance
+;ip_address;text;YES;tenant_agreement_acceptance
+;device_info;text;YES;tenant_agreement_acceptance
+'accepted'::text;status;text;NO;tenant_agreement_acceptance
+now();created_at;timestamp with time zone;NO;tenant_agreement_acceptance
+gen_random_uuid();id;uuid;NO;tenant_merchant_payments
+;agent_id;uuid;NO;tenant_merchant_payments
+;tenant_id;uuid;YES;tenant_merchant_payments
+;tenant_phone;text;YES;tenant_merchant_payments
+;transaction_id;text;NO;tenant_merchant_payments
+;amount;numeric;NO;tenant_merchant_payments
+;merchant_name;text;NO;tenant_merchant_payments
+CURRENT_DATE;payment_date;date;NO;tenant_merchant_payments
+;notes;text;YES;tenant_merchant_payments
+now();created_at;timestamp with time zone;NO;tenant_merchant_payments
+now();updated_at;timestamp with time zone;NO;tenant_merchant_payments
+gen_random_uuid();id;uuid;NO;tenant_ratings
+;tenant_id;uuid;NO;tenant_ratings
+;landlord_id;uuid;NO;tenant_ratings
+;rating;integer;NO;tenant_ratings
+now();created_at;timestamp with time zone;NO;tenant_ratings
+now();updated_at;timestamp with time zone;NO;tenant_ratings
+gen_random_uuid();id;uuid;NO;tenant_replacements
+;rent_request_id;uuid;NO;tenant_replacements
+;landlord_id;text;NO;tenant_replacements
+;old_tenant_id;uuid;NO;tenant_replacements
+;new_tenant_id;uuid;NO;tenant_replacements
+;replaced_by;uuid;NO;tenant_replacements
+'non_payment'::text;reason;text;NO;tenant_replacements
+0;outstanding_balance;numeric;NO;tenant_replacements
+now();created_at;timestamp with time zone;NO;tenant_replacements
+gen_random_uuid();id;uuid;NO;tenant_transfers
+;tenant_id;uuid;YES;tenant_transfers
+;from_agent_id;uuid;YES;tenant_transfers
+;to_agent_id;uuid;YES;tenant_transfers
+;transferred_by;uuid;YES;tenant_transfers
+;reason;text;NO;tenant_transfers
+;flag_type;text;YES;tenant_transfers
+0;rent_requests_updated;integer;YES;tenant_transfers
+0;subscriptions_updated;integer;YES;tenant_transfers
+now();created_at;timestamp with time zone;NO;tenant_transfers
+gen_random_uuid();approval_id;uuid;NO;transaction_approvals
+;transaction_id;uuid;YES;transaction_approvals
+;approved_by;uuid;NO;transaction_approvals
+;approval_notes;text;YES;transaction_approvals
+now();approved_at;timestamp with time zone;NO;transaction_approvals
+gen_random_uuid();id;uuid;NO;treasury_controls
+;control_key;text;NO;treasury_controls
+false;enabled;boolean;NO;treasury_controls
+;updated_by;uuid;YES;treasury_controls
+now();updated_at;timestamp with time zone;NO;treasury_controls
+gen_random_uuid();id;uuid;NO;user_activity_log
+;user_id;uuid;NO;user_activity_log
+;activity_type;text;NO;user_activity_log
+;description;text;NO;user_activity_log
+'{}'::jsonb;metadata;jsonb;YES;user_activity_log
+;performed_by;uuid;YES;user_activity_log
+now();created_at;timestamp with time zone;NO;user_activity_log
+gen_random_uuid();id;uuid;NO;user_loan_repayments
+;loan_id;uuid;NO;user_loan_repayments
+;borrower_id;uuid;NO;user_loan_repayments
+;amount;numeric;NO;user_loan_repayments
+'wallet'::text;payment_method;text;NO;user_loan_repayments
+now();created_at;timestamp with time zone;NO;user_loan_repayments
+gen_random_uuid();id;uuid;NO;user_loans
+;borrower_id;uuid;NO;user_loans
+;lender_id;uuid;NO;user_loans
+;amount;numeric;NO;user_loans
+10;interest_rate;numeric;NO;user_loans
+;total_repayment;numeric;NO;user_loans
+'active'::text;status;text;NO;user_loans
+;due_date;date;NO;user_loans
+now();created_at;timestamp with time zone;NO;user_loans
+;repaid_at;timestamp with time zone;YES;user_loans
+0;paid_amount;numeric;NO;user_loans
+false;agent_verified;boolean;YES;user_loans
+;agent_verified_by;uuid;YES;user_loans
+;agent_verified_at;timestamp with time zone;YES;user_loans
+false;ai_insurance_accepted;boolean;YES;user_loans
+;ai_insurance_accepted_at;timestamp with time zone;YES;user_loans
+'daily'::text;repayment_frequency;text;YES;user_loans
+gen_random_uuid();id;uuid;NO;user_locations
+;user_id;uuid;NO;user_locations
+;latitude;double precision;NO;user_locations
+;longitude;double precision;NO;user_locations
+;accuracy;double precision;YES;user_locations
+;address;text;YES;user_locations
+;city;text;YES;user_locations
+;country;text;YES;user_locations
+now();captured_at;timestamp with time zone;NO;user_locations
+false;verified;boolean;YES;user_locations
+;verified_by;uuid;YES;user_locations
+;verified_at;timestamp with time zone;YES;user_locations
+;verification_notes;text;YES;user_locations
+now();created_at;timestamp with time zone;NO;user_locations
+gen_random_uuid();id;uuid;NO;user_receipts
+;user_id;uuid;NO;user_receipts
+;receipt_number_id;uuid;NO;user_receipts
+;items_description;text;NO;user_receipts
+;claimed_amount;numeric;NO;user_receipts
+false;verified;boolean;NO;user_receipts
+;verified_at;timestamp with time zone;YES;user_receipts
+;rejection_reason;text;YES;user_receipts
+;loan_contribution;numeric;YES;user_receipts
+now();created_at;timestamp with time zone;NO;user_receipts
+gen_random_uuid();id;uuid;NO;user_reviews
+;reviewer_id;uuid;NO;user_reviews
+;reviewed_user_id;uuid;NO;user_reviews
+;rating;integer;NO;user_reviews
+;review_text;text;YES;user_reviews
+;reviewer_role;text;YES;user_reviews
+now();created_at;timestamp with time zone;NO;user_reviews
+now();updated_at;timestamp with time zone;NO;user_reviews
+gen_random_uuid();id;uuid;NO;user_risk_scores
+;user_id;uuid;NO;user_risk_scores
+50;risk_score;integer;YES;user_risk_scores
+;risk_level;text;YES;user_risk_scores
+0;consecutive_on_time_payments;integer;YES;user_risk_scores
+0;consecutive_missed_payments;integer;YES;user_risk_scores
+0;total_missed_payments;integer;YES;user_risk_scores
+0;total_on_time_payments;integer;YES;user_risk_scores
+;last_payment_date;timestamp with time zone;YES;user_risk_scores
+now();last_risk_update;timestamp with time zone;YES;user_risk_scores
+;notes;text;YES;user_risk_scores
+now();created_at;timestamp with time zone;YES;user_risk_scores
+now();updated_at;timestamp with time zone;YES;user_risk_scores
+gen_random_uuid();id;uuid;NO;user_roles
+;user_id;uuid;NO;user_roles
+;role;USER-DEFINED;NO;user_roles
+now();created_at;timestamp with time zone;NO;user_roles
+true;enabled;boolean;NO;user_roles
+gen_random_uuid();id;uuid;NO;vendors
+;name;text;NO;vendors
+;location;text;YES;vendors
+;phone;text;YES;vendors
+;created_by;uuid;NO;vendors
+now();created_at;timestamp with time zone;NO;vendors
+true;active;boolean;NO;vendors
+;pin;text;YES;vendors
+;pin_hash;text;YES;vendors
+gen_random_uuid();id;uuid;NO;voided_ledger_entries
+;original_ledger_id;uuid;NO;voided_ledger_entries
+;transaction_date;timestamp with time zone;NO;voided_ledger_entries
+;amount;numeric;NO;voided_ledger_entries
+;direction;text;NO;voided_ledger_entries
+;category;text;NO;voided_ledger_entries
+;description;text;YES;voided_ledger_entries
+;reference_id;text;YES;voided_ledger_entries
+;linked_party;text;YES;voided_ledger_entries
+;running_balance;numeric;YES;voided_ledger_entries
+;user_id;uuid;YES;voided_ledger_entries
+;source_table;text;NO;voided_ledger_entries
+;source_id;uuid;YES;voided_ledger_entries
+;account;text;YES;voided_ledger_entries
+;transaction_group_id;uuid;YES;voided_ledger_entries
+now();voided_at;timestamp with time zone;NO;voided_ledger_entries
+;voided_by;uuid;NO;voided_ledger_entries
+;void_reason;text;NO;voided_ledger_entries
+now();created_at;timestamp with time zone;NO;voided_ledger_entries
+gen_random_uuid();id;uuid;NO;wallet_deductions
+;target_user_id;uuid;NO;wallet_deductions
+;deducted_by;uuid;NO;wallet_deductions
+;amount;numeric;NO;wallet_deductions
+'general_adjustment'::text;category;text;NO;wallet_deductions
+;reason;text;NO;wallet_deductions
+;ledger_entry_id;uuid;YES;wallet_deductions
+now();created_at;timestamp with time zone;NO;wallet_deductions
+gen_random_uuid();id;uuid;NO;wallet_deposits
+;user_id;uuid;NO;wallet_deposits
+;agent_id;uuid;NO;wallet_deposits
+;amount;numeric;NO;wallet_deposits
+'cash_deposit'::text;deposit_type;text;NO;wallet_deposits
+now();created_at;timestamp with time zone;NO;wallet_deposits
+gen_random_uuid();id;uuid;NO;wallet_transactions
+;sender_id;uuid;NO;wallet_transactions
+;recipient_id;uuid;NO;wallet_transactions
+;amount;numeric;NO;wallet_transactions
+;description;text;YES;wallet_transactions
+now();created_at;timestamp with time zone;NO;wallet_transactions
+gen_random_uuid();id;uuid;NO;wallets
+;user_id;uuid;NO;wallets
+0;balance;numeric;NO;wallets
+now();created_at;timestamp with time zone;NO;wallets
+now();updated_at;timestamp with time zone;NO;wallets
+0;locked_balance;numeric;NO;wallets
+'UGX'::text;currency;text;NO;wallets
+gen_random_uuid();id;uuid;NO;welile_homes_subscriptions
+;tenant_id;uuid;NO;welile_homes_subscriptions
+;landlord_id;uuid;YES;welile_homes_subscriptions
+0;monthly_rent;numeric;NO;welile_homes_subscriptions
+'active'::text;subscription_status;text;NO;welile_homes_subscriptions
+false;landlord_registered;boolean;NO;welile_homes_subscriptions
+0;total_savings;numeric;NO;welile_homes_subscriptions
+0;months_enrolled;integer;NO;welile_homes_subscriptions
+;notes;text;YES;welile_homes_subscriptions
+now();created_at;timestamp with time zone;NO;welile_homes_subscriptions
+now();updated_at;timestamp with time zone;NO;welile_homes_subscriptions
+now();last_interest_applied_at;timestamp with time zone;YES;welile_homes_subscriptions
+false;email_statements_enabled;boolean;YES;welile_homes_subscriptions
+;last_statement_sent_at;timestamp with time zone;YES;welile_homes_subscriptions
+gen_random_uuid();id;uuid;NO;wishlists
+;user_id;uuid;NO;wishlists
+;product_id;uuid;NO;wishlists
+now();created_at;timestamp with time zone;NO;wishlists
+gen_random_uuid();id;uuid;NO;withdrawal_requests
+;user_id;uuid;NO;withdrawal_requests
+;amount;numeric;NO;withdrawal_requests
+'pending'::text;status;text;NO;withdrawal_requests
+;processed_by;uuid;YES;withdrawal_requests
+;processed_at;timestamp with time zone;YES;withdrawal_requests
+;rejection_reason;text;YES;withdrawal_requests
+now();created_at;timestamp with time zone;NO;withdrawal_requests
+now();updated_at;timestamp with time zone;NO;withdrawal_requests
+;mobile_money_number;text;YES;withdrawal_requests
+;mobile_money_provider;text;YES;withdrawal_requests
+;transaction_id;text;YES;withdrawal_requests
+;mobile_money_name;text;YES;withdrawal_requests
+;manager_approved_at;timestamp with time zone;YES;withdrawal_requests
+;manager_approved_by;uuid;YES;withdrawal_requests
+;cfo_approved_at;timestamp with time zone;YES;withdrawal_requests
+;cfo_approved_by;uuid;YES;withdrawal_requests
+;coo_approved_at;timestamp with time zone;YES;withdrawal_requests
+;coo_approved_by;uuid;YES;withdrawal_requests
+;transaction_time;text;YES;withdrawal_requests
+'mobile_money'::text;payout_method;text;NO;withdrawal_requests
+;bank_name;text;YES;withdrawal_requests
+;bank_account_number;text;YES;withdrawal_requests
+;bank_account_name;text;YES;withdrawal_requests
+;agent_location;text;YES;withdrawal_requests
+;agent_id;uuid;YES;withdrawal_requests
+;payout_proof;text;YES;withdrawal_requests
+;payout_proof_type;text;YES;withdrawal_requests
+;payout_code;text;YES;withdrawal_requests
+;assigned_cashout_agent_id;uuid;YES;withdrawal_requests
+'standard'::text;priority_level;text;YES;withdrawal_requests
+false;auto_dispatched;boolean;YES;withdrawal_requests
+;dispatched_at;timestamp with time zone;YES;withdrawal_requests
+;fin_ops_reference;text;YES;withdrawal_requests
+;fin_ops_verified_by;uuid;YES;withdrawal_requests
+;fin_ops_verified_at;timestamp with time zone;YES;withdrawal_requests
+;fin_ops_approved_at;timestamp with time zone;YES;withdrawal_requests
+;fin_ops_approved_by;uuid;YES;withdrawal_requests
+;reason;text;YES;withdrawal_requests
+;fin_ops_payment_method;text;YES;withdrawal_requests
+;linked_party;uuid;YES;withdrawal_requests

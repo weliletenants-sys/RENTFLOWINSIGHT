@@ -10,6 +10,26 @@ const ADMIN_ROLES = ['ADMIN', 'SUPERADMIN', 'CFO', 'COO', 'EXECUTIVE'];
 export class AdminAuthService {
   private repository = new AuthRepository();
 
+  private generateUserResponse(user: any, token: string) {
+    const defaultFirstName = user.full_name ? user.full_name.split(' ')[0] : 'User';
+    const defaultLastName = user.full_name && user.full_name.includes(' ') 
+      ? user.full_name.substring(user.full_name.indexOf(' ') + 1) 
+      : '';
+
+    return {
+      access_token: token,
+      user: {
+        id: user.id,
+        phone: user.phone,
+        email: `${user.phone}@welile.local`,
+        firstName: defaultFirstName,
+        lastName: defaultLastName,
+        role: user.role,
+        isVerified: user.verified || false
+      }
+    };
+  }
+
   /**
    * Processes the Login payload for administrative users strictly.
    */
@@ -48,14 +68,6 @@ export class AdminAuthService {
 
     const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
-    return {
-      token,
-      profile: {
-        id: user.id,
-        phone: user.phone,
-        fullName: user.full_name,
-        role: user.role
-      }
-    };
+    return this.generateUserResponse(user, token);
   }
 }

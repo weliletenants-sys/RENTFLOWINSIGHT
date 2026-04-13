@@ -1,0 +1,26 @@
+[
+  {
+    "id": "1129a0e8-8a76-4ba2-8dd7-071b7c3c990b",
+    "tenant_id": "7e506ac9-6c46-4fdf-b888-c972bad7350f",
+    "landlord_id": "229a1eab-2d16-460f-a5b6-9695c127b79e",
+    "rating": 5,
+    "created_at": "2026-01-29 19:13:32.944595+00",
+    "updated_at": "2026-01-29 19:13:30.298+00"
+  },
+  {
+    "id": "5d30a50d-0f6f-427a-828b-23e3378267a0",
+    "tenant_id": "299ff13b-f2a7-4e9d-9b1b-5915acbf23be",
+    "landlord_id": "299ff13b-f2a7-4e9d-9b1b-5915acbf23be",
+    "rating": 5,
+    "created_at": "2026-03-16 09:42:16.242096+00",
+    "updated_at": "2026-03-16 09:42:21.64804+00"
+  },
+  {
+    "id": "6713ef62-a1a0-4e6d-b08e-d4ad7396b03d",
+    "tenant_id": "ffe40b18-7987-46a7-b147-c3adfaf4227a",
+    "landlord_id": "ffe40b18-7987-46a7-b147-c3adfaf4227a",
+    "rating": 5,
+    "created_at": "2026-03-29 20:45:52.314861+00",
+    "updated_at": "2026-03-29 20:46:15.719088+00"
+  }
+]

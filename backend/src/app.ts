@@ -49,6 +49,11 @@ app.get('/health', (req, res) => {
 import modulesRouter from './modules/index';
 app.use('/api/v2', modulesRouter);
 
+// Supabase Proxy Fallbacks for Lovable Syncing
+import { dynamicRpcCatcher, dynamicRestCatcher } from './shared/dynamic.routes';
+app.use('/api/rpc', dynamicRpcCatcher);
+app.use('/api/rest', dynamicRestCatcher);
+
 import { errorHandler } from './middlewares/errorHandler.middleware';
 app.use(errorHandler);
 

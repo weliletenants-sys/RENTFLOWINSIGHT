@@ -1,0 +1,2 @@
+id,agent_id,photo_url,latitude,longitude,location_name,agent_name,agent_phone,status,verified_by,verified_at,approved_by,approved_at,rejection_reason,created_at
+fe752d76-b2ab-4302-8ac8-eef1590bad42,cf561688-b3a2-4f62-b9c1-67ee7b36ff2b,https://wirntoujqoyjobfhyelc.supabase.co/storage/v1/object/public/service-centre-photos/cf561688-b3a2-4f62-b9c1-67ee7b36ff2b/1775195053596.jpg,0.1043751,32.4866691,Welile HQ,Benjamin Muhanguzi,0783673998,verified,cf561688-b3a2-4f62-b9c1-67ee7b36ff2b,2026-04-03 05:45:49.468+00,,,,2026-04-03 05:44:17.880306+00

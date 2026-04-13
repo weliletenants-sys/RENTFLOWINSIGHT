@@ -1,0 +1,122 @@
+[
+  {
+    "id": "7f897767-e1b0-4583-89e0-bdc7816812c5",
+    "agent_id": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "token": "ce7e8130-2f69-4145-8607-ce9a27c9b401",
+    "expires_at": "2026-04-12 09:05:22.764213+00",
+    "max_uses": 50,
+    "uses_count": 0,
+    "is_active": "t",
+    "created_at": "2026-04-09 09:05:22.764213+00"
+  },
+  {
+    "id": "ccb70564-1c06-43d5-a4b5-1a071217a39d",
+    "agent_id": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "token": "e79f06b4-69f4-4b23-af06-c85991c39b47",
+    "expires_at": "2026-04-12 09:10:59.906869+00",
+    "max_uses": 50,
+    "uses_count": 0,
+    "is_active": "t",
+    "created_at": "2026-04-09 09:10:59.906869+00"
+  },
+  {
+    "id": "de80d847-6026-43e6-9c75-691a0b6b8d0d",
+    "agent_id": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "token": "f57eb596-92f6-4149-a93d-10052bf48d2c",
+    "expires_at": "2026-04-12 09:13:29.038342+00",
+    "max_uses": 50,
+    "uses_count": 0,
+    "is_active": "t",
+    "created_at": "2026-04-09 09:13:29.038342+00"
+  },
+  {
+    "id": "06792de0-6a27-4af1-b4fd-22f7bd810363",
+    "agent_id": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "token": "e410a04f-305b-4f5b-8b0e-1640a2b50d37",
+    "expires_at": "2026-04-12 09:15:08.902818+00",
+    "max_uses": 50,
+    "uses_count": 0,
+    "is_active": "t",
+    "created_at": "2026-04-09 09:15:08.902818+00"
+  },
+  {
+    "id": "337bf46b-ac76-4d15-9c92-ba5afd6d430b",
+    "agent_id": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "token": "37f7d71e-1d1d-434b-8fb0-58b0307a774b",
+    "expires_at": "2026-04-12 10:08:46.641818+00",
+    "max_uses": 50,
+    "uses_count": 0,
+    "is_active": "t",
+    "created_at": "2026-04-09 10:08:46.641818+00"
+  },
+  {
+    "id": "6fba0cdc-dfdc-4c21-9780-f359cc111bad",
+    "agent_id": "cf561688-b3a2-4f62-b9c1-67ee7b36ff2b",
+    "token": "f1cdcda6-05d1-4fe6-b3c5-6f2ef14e83a7",
+    "expires_at": "2026-04-12 10:58:16.64589+00",
+    "max_uses": 50,
+    "uses_count": 0,
+    "is_active": "t",
+    "created_at": "2026-04-09 10:58:16.64589+00"
+  },
+  {
+    "id": "1245f5ee-22fa-43f7-9768-b41160a9c09f",
+    "agent_id": "cf561688-b3a2-4f62-b9c1-67ee7b36ff2b",
+    "token": "eaab24ef-d663-4b3e-8484-2d65fb7b6b1e",
+    "expires_at": "2026-04-12 11:04:06.094494+00",
+    "max_uses": 50,
+    "uses_count": 0,
+    "is_active": "t",
+    "created_at": "2026-04-09 11:04:06.094494+00"
+  },
+  {
+    "id": "97b6caea-7c15-465a-9482-4b42f2a6065e",
+    "agent_id": "b4d7c324-1f7e-4e1c-91a8-3f0e10e0b25c",
+    "token": "bf8ef92c-4b6d-4bb3-9397-ec0eb7d5b17a",
+    "expires_at": "2026-04-12 11:07:26.659371+00",
+    "max_uses": 50,
+    "uses_count": 0,
+    "is_active": "t",
+    "created_at": "2026-04-09 11:07:26.659371+00"
+  },
+  {
+    "id": "ddc0144d-af31-4476-bee5-afd94b86f5e8",
+    "agent_id": "cf561688-b3a2-4f62-b9c1-67ee7b36ff2b",
+    "token": "a0d19185-5743-45e3-aa04-8e45fbabeb61",
+    "expires_at": "2026-04-13 09:02:41.210928+00",
+    "max_uses": 50,
+    "uses_count": 0,
+    "is_active": "t",
+    "created_at": "2026-04-10 09:02:41.210928+00"
+  },
+  {
+    "id": "56b14bc6-d311-4e85-a0e8-7f23b6f33720",
+    "agent_id": "cf561688-b3a2-4f62-b9c1-67ee7b36ff2b",
+    "token": "65a62435-3d1f-40cd-8fee-e2787b33cc57",
+    "expires_at": "2026-04-13 09:03:01.229678+00",
+    "max_uses": 50,
+    "uses_count": 0,
+    "is_active": "t",
+    "created_at": "2026-04-10 09:03:01.229678+00"
+  },
+  {
+    "id": "0df166c9-b50b-433e-97e1-6e046b22c7c3",
+    "agent_id": "2d3cdd17-3831-40fa-8011-8646a97fbfb0",
+    "token": "89a77d5f-850c-4624-9b45-488687ba5ace",
+    "expires_at": "2026-04-16 08:27:56.139829+00",
+    "max_uses": 50,
+    "uses_count": 0,
+    "is_active": "t",
+    "created_at": "2026-04-13 08:27:56.139829+00"
+  },
+  {
+    "id": "5c63db13-8f39-48df-9737-a1b263bb15b0",
+    "agent_id": "2d3cdd17-3831-40fa-8011-8646a97fbfb0",
+    "token": "91732378-edb1-43e9-bb3c-4335061c54a0",
+    "expires_at": "2026-04-16 08:28:04.434045+00",
+    "max_uses": 50,
+    "uses_count": 0,
+    "is_active": "t",
+    "created_at": "2026-04-13 08:28:04.434045+00"
+  }
+]

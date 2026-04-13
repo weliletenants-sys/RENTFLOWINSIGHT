@@ -1,0 +1,50 @@
+[
+  {
+    "id": "72a660b5-6014-4676-a877-c1514c5e4517",
+    "tenant_id": "a840990b-8239-4c59-a0cb-175a134026fd",
+    "landlord_id": "a840990b-8239-4c59-a0cb-175a134026fd",
+    "monthly_rent": 100000,
+    "subscription_status": "active",
+    "landlord_registered": "t",
+    "total_savings": 0,
+    "months_enrolled": 0,
+    "notes": "Guaranteed rent subscription. Landlord: turyaguma Ronald. Property: kibuli. 10% platform fee auto-saved to Welile Homes.",
+    "created_at": "2026-02-11 18:12:31.949546+00",
+    "updated_at": "2026-02-11 18:12:31.949546+00",
+    "last_interest_applied_at": "2026-02-11 18:12:31.949546+00",
+    "email_statements_enabled": "f",
+    "last_statement_sent_at": ""
+  },
+  {
+    "id": "7cbd8891-5156-4abf-94cd-0a1f6a200a9f",
+    "tenant_id": "50eb0d4a-e3fe-4340-81b5-905be27e1dbe",
+    "landlord_id": "50eb0d4a-e3fe-4340-81b5-905be27e1dbe",
+    "monthly_rent": 50000,
+    "subscription_status": "active",
+    "landlord_registered": "t",
+    "total_savings": 0,
+    "months_enrolled": 0,
+    "notes": "Guaranteed rent subscription. Landlord: KAKURU FILIBERT . Property: bayita kasenyi road. 10% platform fee auto-saved to Welile Homes.",
+    "created_at": "2026-02-12 12:00:44.591304+00",
+    "updated_at": "2026-02-12 12:00:44.591304+00",
+    "last_interest_applied_at": "2026-02-12 12:00:44.591304+00",
+    "email_statements_enabled": "f",
+    "last_statement_sent_at": ""
+  },
+  {
+    "id": "d95e0a79-4f56-41cb-ac5a-420286dfb68c",
+    "tenant_id": "fbcebe2e-f3da-41d9-bf53-ab4dc1cc55fa",
+    "landlord_id": "",
+    "monthly_rent": 500000,
+    "subscription_status": "active",
+    "landlord_registered": "f",
+    "total_savings": 0,
+    "months_enrolled": 0,
+    "notes": "",
+    "created_at": "2026-02-19 17:26:52.347183+00",
+    "updated_at": "2026-02-19 17:26:52.347183+00",
+    "last_interest_applied_at": "2026-02-19 17:26:52.347183+00",
+    "email_statements_enabled": "f",
+    "last_statement_sent_at": ""
+  }
+]

@@ -1,0 +1,4 @@
+id,agent_id,assigned_by,is_active,handles_cash,handles_bank,label,created_at,updated_at,max_daily_payouts,current_queue_count,handles_mtn,handles_airtel,priority_threshold
+b14a763a-e0d3-4808-81fa-9c5bc9a19e89,7e201db3-d770-44f1-87db-f236febb5678,cf561688-b3a2-4f62-b9c1-67ee7b36ff2b,f,t,t,Cash-Out Agent,2026-03-23 12:35:44.089138+00,2026-03-23 12:35:44.089138+00,50,0,t,t,500000
+b7cf4ce1-6bfc-42ff-a67c-8f23af3db6cf,cb798acb-68bc-4b4e-a414-a3d374e030b6,cb798acb-68bc-4b4e-a414-a3d374e030b6,f,t,t,ENTEBBE CASH POINT ,2026-04-07 09:29:32.795938+00,2026-04-07 09:29:32.795938+00,50,0,t,t,500000
+62d3baa0-28b1-4055-8d1b-9cc78c9c345c,2d3cdd17-3831-40fa-8011-8646a97fbfb0,cf561688-b3a2-4f62-b9c1-67ee7b36ff2b,t,t,t,Cash-Out Agent,2026-04-08 06:48:06.871007+00,2026-04-08 06:48:06.871007+00,50,0,t,t,500000

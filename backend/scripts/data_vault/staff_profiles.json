@@ -1,0 +1,123 @@
+[
+  {
+    "id": "86541316-424c-4e38-afff-f677cd02fff0",
+    "user_id": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "employee_id": "Wel-SP71498",
+    "department": "General",
+    "position": "Manager",
+    "must_change_password": "f",
+    "created_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "created_at": "2026-03-09 09:56:38.719482+00",
+    "updated_at": "2026-03-09 09:56:38.719482+00"
+  },
+  {
+    "id": "53e278d7-fffd-473a-a0ba-e4881512f913",
+    "user_id": "3233aa76-4611-48b6-bd46-5412feef46e7",
+    "employee_id": "Wel-RRO32140",
+    "department": "General",
+    "position": "Manager",
+    "must_change_password": "f",
+    "created_by": "3233aa76-4611-48b6-bd46-5412feef46e7",
+    "created_at": "2026-03-09 09:56:38.719482+00",
+    "updated_at": "2026-03-09 09:56:38.719482+00"
+  },
+  {
+    "id": "96d0189a-7f40-4ea7-a315-9a146601a652",
+    "user_id": "506fe801-a72c-43ec-96c9-2b00a99d9258",
+    "employee_id": "Wel-EL75311",
+    "department": "General",
+    "position": "Manager",
+    "must_change_password": "f",
+    "created_by": "506fe801-a72c-43ec-96c9-2b00a99d9258",
+    "created_at": "2026-03-09 09:56:38.719482+00",
+    "updated_at": "2026-03-09 09:56:38.719482+00"
+  },
+  {
+    "id": "52f66026-d6eb-4d55-ac5a-2d1a667e837d",
+    "user_id": "7e201db3-d770-44f1-87db-f236febb5678",
+    "employee_id": "Wel-BM62896",
+    "department": "General",
+    "position": "Manager",
+    "must_change_password": "f",
+    "created_by": "7e201db3-d770-44f1-87db-f236febb5678",
+    "created_at": "2026-03-09 09:56:38.719482+00",
+    "updated_at": "2026-03-09 09:56:38.719482+00"
+  },
+  {
+    "id": "7104b554-97af-4896-b0e0-2f3cb411347b",
+    "user_id": "7e506ac9-6c46-4fdf-b888-c972bad7350f",
+    "employee_id": "Wel-AC49915",
+    "department": "General",
+    "position": "Manager",
+    "must_change_password": "f",
+    "created_by": "7e506ac9-6c46-4fdf-b888-c972bad7350f",
+    "created_at": "2026-03-09 09:56:38.719482+00",
+    "updated_at": "2026-03-09 09:56:38.719482+00"
+  },
+  {
+    "id": "b8ece03a-d8ba-425a-b7a4-07e24c5ae47a",
+    "user_id": "99890a2e-b842-4d44-8516-e2eafe0711ff",
+    "employee_id": "Wel-GP51167",
+    "department": "General",
+    "position": "Manager",
+    "must_change_password": "f",
+    "created_by": "99890a2e-b842-4d44-8516-e2eafe0711ff",
+    "created_at": "2026-03-09 09:56:38.719482+00",
+    "updated_at": "2026-03-09 09:56:38.719482+00"
+  },
+  {
+    "id": "b32f9e04-8f14-469f-a05e-830efc88ef4b",
+    "user_id": "b4d7c324-1f7e-4e1c-91a8-3f0e10e0b25c",
+    "employee_id": "Wel-LJ37479",
+    "department": "General",
+    "position": "Manager",
+    "must_change_password": "f",
+    "created_by": "b4d7c324-1f7e-4e1c-91a8-3f0e10e0b25c",
+    "created_at": "2026-03-09 09:56:38.719482+00",
+    "updated_at": "2026-03-09 09:56:38.719482+00"
+  },
+  {
+    "id": "6f9ba225-c3e1-45e3-b299-5ef07850ffd3",
+    "user_id": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "employee_id": "Wel-JW90323",
+    "department": "General",
+    "position": "Manager",
+    "must_change_password": "f",
+    "created_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "created_at": "2026-03-09 09:56:38.719482+00",
+    "updated_at": "2026-03-09 09:56:38.719482+00"
+  },
+  {
+    "id": "c97267d3-b1fc-474c-99f8-9555f7da1db1",
+    "user_id": "cfa56623-e6cb-4023-b601-3dbd4fdbc027",
+    "employee_id": "Wel-BM33947",
+    "department": "General",
+    "position": "Manager",
+    "must_change_password": "f",
+    "created_by": "cfa56623-e6cb-4023-b601-3dbd4fdbc027",
+    "created_at": "2026-03-09 09:56:38.719482+00",
+    "updated_at": "2026-03-09 09:56:38.719482+00"
+  },
+  {
+    "id": "09a98de6-d6a2-4ea8-afbc-25d53cf21852",
+    "user_id": "d6ba70d0-0562-45c1-894a-0e537cd958cd",
+    "employee_id": "Wel-MME78976",
+    "department": "General",
+    "position": "Manager",
+    "must_change_password": "f",
+    "created_by": "d6ba70d0-0562-45c1-894a-0e537cd958cd",
+    "created_at": "2026-03-09 09:56:38.719482+00",
+    "updated_at": "2026-03-09 09:56:38.719482+00"
+  },
+  {
+    "id": "203facfb-9124-47c7-acef-7394ab680176",
+    "user_id": "e4f07815-7991-422f-946f-7f351b38e954",
+    "employee_id": "Wel-LF17221",
+    "department": "General",
+    "position": "Manager",
+    "must_change_password": "f",
+    "created_by": "e4f07815-7991-422f-946f-7f351b38e954",
+    "created_at": "2026-03-09 09:56:38.719482+00",
+    "updated_at": "2026-03-09 09:56:38.719482+00"
+  }
+]

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "8e29593d-c409-4923-a107-8bb0695e6d96",
+    "agent_id": "9b9e3213-aee7-44e0-8b35-88849ff5d095",
+    "goal_month": "2026-02-01",
+    "target_registrations": 10,
+    "target_activations": 5,
+    "notes": "",
+    "created_at": "2026-02-04 08:33:30.782346+00",
+    "updated_at": "2026-02-04 08:33:30.782346+00"
+  },
+  {
+    "id": "84590aec-0079-4660-b28c-9fbd399d532a",
+    "agent_id": "7375c4db-74ce-46c8-8c52-4523e06d5161",
+    "goal_month": "2026-02-01",
+    "target_registrations": 10,
+    "target_activations": 5,
+    "notes": "",
+    "created_at": "2026-02-06 13:49:40.888762+00",
+    "updated_at": "2026-02-06 13:49:40.888762+00"
+  },
+  {
+    "id": "9565045f-b653-420c-9edd-e0d403cd50ed",
+    "agent_id": "90b1267b-0291-491e-bed1-539ee6262700",
+    "goal_month": "2026-02-01",
+    "target_registrations": 10,
+    "target_activations": 5,
+    "notes": "",
+    "created_at": "2026-02-10 06:30:12.517775+00",
+    "updated_at": "2026-02-10 06:30:12.517775+00"
+  },
+  {
+    "id": "e22ecd59-5c06-48c2-89e4-34de463a0b8c",
+    "agent_id": "c7ed6ee1-fe21-4215-92e5-a6e6a9c14cf2",
+    "goal_month": "2026-02-01",
+    "target_registrations": 10,
+    "target_activations": 5,
+    "notes": "",
+    "created_at": "2026-02-11 21:29:05.408671+00",
+    "updated_at": "2026-02-11 21:29:05.408671+00"
+  },
+  {
+    "id": "d4ac814d-699f-4513-a54b-3c021c1fadf6",
+    "agent_id": "fbcebe2e-f3da-41d9-bf53-ab4dc1cc55fa",
+    "goal_month": "2026-02-01",
+    "target_registrations": 10,
+    "target_activations": 5,
+    "notes": "",
+    "created_at": "2026-02-13 19:50:20.681013+00",
+    "updated_at": "2026-02-13 19:50:20.681013+00"
+  },
+  {
+    "id": "723455ee-ef2f-46ed-9da1-c7b7fcc6a88a",
+    "agent_id": "8c5b2c34-8bdc-42f6-bae4-99e4182286d0",
+    "goal_month": "2026-02-01",
+    "target_registrations": 150,
+    "target_activations": 10,
+    "notes": "",
+    "created_at": "2026-02-19 08:42:03.942987+00",
+    "updated_at": "2026-02-19 08:42:03.942987+00"
+  }
+]

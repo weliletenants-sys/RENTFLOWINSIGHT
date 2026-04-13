@@ -1,0 +1,50 @@
+[
+  {
+    "id": "1a327dc9-6846-4371-9e7a-774352b948b3",
+    "user_id": "16d52ad2-92e0-4348-af46-17612afa4d49",
+    "requested_role": "agent",
+    "status": "pending",
+    "reason": "Requesting access to agent dashboard",
+    "reviewed_by": "",
+    "reviewed_at": "",
+    "rejection_reason": "",
+    "created_at": "2026-03-25 07:14:38.943127+00",
+    "updated_at": "2026-03-25 07:14:38.943127+00"
+  },
+  {
+    "id": "c6823f55-4651-499c-946d-8426dabc5986",
+    "user_id": "419df5ae-4f2d-4670-97a5-21545dd955b0",
+    "requested_role": "agent",
+    "status": "pending",
+    "reason": "Requesting access to agent dashboard",
+    "reviewed_by": "",
+    "reviewed_at": "",
+    "rejection_reason": "",
+    "created_at": "2026-04-09 07:59:59.677658+00",
+    "updated_at": "2026-04-09 07:59:59.677658+00"
+  },
+  {
+    "id": "14c1a88e-95a2-45d3-87e2-898f8e9916ee",
+    "user_id": "475c6ccb-166c-41cd-b2a8-386c99777138",
+    "requested_role": "agent",
+    "status": "pending",
+    "reason": "To dissect the feature and attain the right language for Marketing purposes",
+    "reviewed_by": "",
+    "reviewed_at": "",
+    "rejection_reason": "",
+    "created_at": "2026-04-09 11:17:11.792348+00",
+    "updated_at": "2026-04-09 11:17:11.792348+00"
+  },
+  {
+    "id": "51a97006-1211-4b2a-af6e-a2b8074d36fe",
+    "user_id": "a5fdeba7-13ef-48e9-b93a-a82b8d02807f",
+    "requested_role": "agent",
+    "status": "pending",
+    "reason": "To pay tenants rent easily",
+    "reviewed_by": "",
+    "reviewed_at": "",
+    "rejection_reason": "",
+    "created_at": "2026-04-09 11:30:02.257736+00",
+    "updated_at": "2026-04-09 11:30:02.257736+00"
+  }
+]

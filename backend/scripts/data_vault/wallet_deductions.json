@@ -1,0 +1,222 @@
+[
+  {
+    "id": "a7c7fd87-7581-4808-a9aa-047be88b74da",
+    "target_user_id": "f5a84af1-249f-436f-87d3-bc78a6ffb4d1",
+    "deducted_by": "f5a84af1-249f-436f-87d3-bc78a6ffb4d1",
+    "amount": 1050000,
+    "category": "general_adjustment",
+    "reason": "Money was paid out to user",
+    "ledger_entry_id": "fd85f4de-9ba7-4c13-bc26-cc6d493eefab",
+    "created_at": "2026-04-02 07:21:52.941582+00"
+  },
+  {
+    "id": "eb7b5e81-9d67-4a8d-9ea6-8958757c845c",
+    "target_user_id": "0f27c113-3e22-474c-99e5-7ccfe66859b7",
+    "deducted_by": "0f27c113-3e22-474c-99e5-7ccfe66859b7",
+    "amount": 1000000,
+    "category": "general_adjustment",
+    "reason": "Money was paid out to user",
+    "ledger_entry_id": "a482083a-91b7-4c15-9e9a-8f0ad1d0dc96",
+    "created_at": "2026-04-02 07:21:52.941582+00"
+  },
+  {
+    "id": "a4e12129-ddf6-4cf6-8c51-3903d1613cb2",
+    "target_user_id": "6aac6c81-b0f8-45eb-a67b-6483e7dcf82f",
+    "deducted_by": "6aac6c81-b0f8-45eb-a67b-6483e7dcf82f",
+    "amount": 900000,
+    "category": "general_adjustment",
+    "reason": "Money was paid out to user",
+    "ledger_entry_id": "722df9b6-a7b3-4bc0-b41f-450dba7931b2",
+    "created_at": "2026-04-02 07:21:52.941582+00"
+  },
+  {
+    "id": "3e6dec0e-3f19-4fa0-8c26-add332aee476",
+    "target_user_id": "7400fbae-3aab-4869-9cf3-5c21b57f8e75",
+    "deducted_by": "7400fbae-3aab-4869-9cf3-5c21b57f8e75",
+    "amount": 750000,
+    "category": "general_adjustment",
+    "reason": "Money was paid out to user",
+    "ledger_entry_id": "f32746a9-b5c1-4e73-aa40-fc247232ac31",
+    "created_at": "2026-04-02 07:21:52.941582+00"
+  },
+  {
+    "id": "92aa177f-739b-4a85-b426-d884b81aca20",
+    "target_user_id": "98e8c977-51a8-4e89-829c-c8066de6bff7",
+    "deducted_by": "98e8c977-51a8-4e89-829c-c8066de6bff7",
+    "amount": 600000,
+    "category": "general_adjustment",
+    "reason": "Money was paid out to user",
+    "ledger_entry_id": "77bb8300-8c63-4c5f-b422-ff6f51d99ffa",
+    "created_at": "2026-04-02 07:21:52.941582+00"
+  },
+  {
+    "id": "ed9067fb-2a75-4d52-a917-f2655152e82a",
+    "target_user_id": "0325350b-2fc1-4bf3-9429-94bf205bd627",
+    "deducted_by": "0325350b-2fc1-4bf3-9429-94bf205bd627",
+    "amount": 450000,
+    "category": "general_adjustment",
+    "reason": "Money was paid out to user",
+    "ledger_entry_id": "85311f34-99d9-4ad3-a5d2-a341f1249ebc",
+    "created_at": "2026-04-02 07:21:52.941582+00"
+  },
+  {
+    "id": "0a6b8498-7fb4-446b-b3b8-65908d3ac78a",
+    "target_user_id": "afb57ae6-316e-4446-aca1-460c2291d9e6",
+    "deducted_by": "afb57ae6-316e-4446-aca1-460c2291d9e6",
+    "amount": 320000,
+    "category": "general_adjustment",
+    "reason": "Money was paid out to user",
+    "ledger_entry_id": "cd4ab44c-cd19-44e3-b176-80d82233db75",
+    "created_at": "2026-04-02 07:21:52.941582+00"
+  },
+  {
+    "id": "f00c0529-675e-4d36-8bde-313e372ac8a4",
+    "target_user_id": "5fcaad3e-8963-442b-bf9c-cc3917d5f7b8",
+    "deducted_by": "5fcaad3e-8963-442b-bf9c-cc3917d5f7b8",
+    "amount": 105000,
+    "category": "general_adjustment",
+    "reason": "Money was paid out to user",
+    "ledger_entry_id": "50e1a869-eab9-4f08-b788-7bb5e94f29b7",
+    "created_at": "2026-04-02 07:21:52.941582+00"
+  },
+  {
+    "id": "2c5aebf3-1bd8-44bc-979b-6ce31b2dbb7a",
+    "target_user_id": "5d0e4a88-4374-4d71-8f3d-ddf0f6726a28",
+    "deducted_by": "5d0e4a88-4374-4d71-8f3d-ddf0f6726a28",
+    "amount": 75000,
+    "category": "general_adjustment",
+    "reason": "Money was paid out to user",
+    "ledger_entry_id": "279873c0-ff4d-4754-8f3c-272dabef2647",
+    "created_at": "2026-04-02 07:21:52.941582+00"
+  },
+  {
+    "id": "65a522d8-f779-4fdd-9cb4-c10b1b6f169d",
+    "target_user_id": "89787456-e4ec-4166-82eb-7b367e4ec353",
+    "deducted_by": "89787456-e4ec-4166-82eb-7b367e4ec353",
+    "amount": 75000,
+    "category": "general_adjustment",
+    "reason": "Money was paid out to user",
+    "ledger_entry_id": "949bac8a-4b9d-4668-af2b-972a8a52d204",
+    "created_at": "2026-04-02 07:28:56.273422+00"
+  },
+  {
+    "id": "e8040c8d-dc5e-492b-8c7a-a09b857c6297",
+    "target_user_id": "b4d7c324-1f7e-4e1c-91a8-3f0e10e0b25c",
+    "deducted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "amount": 50000000,
+    "category": "general_adjustment",
+    "reason": "TEST MONEY",
+    "ledger_entry_id": "0a04b59d-597b-4ca5-841e-ee5f4981ead8",
+    "created_at": "2026-04-03 10:19:03.67488+00"
+  },
+  {
+    "id": "2a903bed-f3fd-40bf-97ba-9f6b4c4cd9d1",
+    "target_user_id": "6155034a-a46b-4e16-93ce-a1d4aec2af34",
+    "deducted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "amount": 450000,
+    "category": "general_adjustment",
+    "reason": "PAID OUT RETURN ON INVESTMENT",
+    "ledger_entry_id": "9e49aaf9-beb3-47dc-abc9-baf4a25980fd",
+    "created_at": "2026-04-03 10:20:18.455793+00"
+  },
+  {
+    "id": "f94168d3-0a4c-47c6-91dc-30bc19f1f0ba",
+    "target_user_id": "064a241b-05fc-4c1f-9148-0f7f953316a3",
+    "deducted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "amount": 450000,
+    "category": "general_adjustment",
+    "reason": "PAID OUT RETURN ON INVESTEMENT",
+    "ledger_entry_id": "e77c6d0d-d38a-4497-8258-c8a113ecc0c4",
+    "created_at": "2026-04-03 10:20:53.019475+00"
+  },
+  {
+    "id": "42e8c489-267b-41e2-86f5-481e397145b5",
+    "target_user_id": "e4f07815-7991-422f-946f-7f351b38e954",
+    "deducted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "amount": 270000,
+    "category": "general_adjustment",
+    "reason": "TEST ACCOUNT MONEY",
+    "ledger_entry_id": "f8785b83-fc7e-43c7-b55e-a3a760e75b2d",
+    "created_at": "2026-04-03 10:21:24.648812+00"
+  },
+  {
+    "id": "931e7ccc-07ce-4491-9c78-1cc0e216927e",
+    "target_user_id": "c983f2b9-a407-4611-b710-3a2577a991eb",
+    "deducted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "amount": 10000,
+    "category": "general_adjustment",
+    "reason": "PAID RETURN ON INVESTMENT",
+    "ledger_entry_id": "ae284a06-b228-4600-a268-ab4f31177ba8",
+    "created_at": "2026-04-03 10:22:18.080468+00"
+  },
+  {
+    "id": "c0919498-9abf-47a2-93ea-861c9d9fb072",
+    "target_user_id": "107bdfc7-b8ee-4988-8fde-c6193677fcfe",
+    "deducted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "amount": 15000,
+    "category": "general_adjustment",
+    "reason": "PAID OT RETURN ON INVESTMENT",
+    "ledger_entry_id": "fa16f2ff-02e0-4e4c-be8c-494dd4066623",
+    "created_at": "2026-04-03 10:23:07.725497+00"
+  },
+  {
+    "id": "9cdb31df-6be1-46af-b4f7-4c34235b6984",
+    "target_user_id": "5a5324fe-72bd-4d60-9835-05bf96a4dfae",
+    "deducted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "amount": 50000,
+    "category": "general_adjustment",
+    "reason": "test account",
+    "ledger_entry_id": "e3cc8eaf-a586-4ce7-9a3c-c46c4197f6e4",
+    "created_at": "2026-04-03 10:26:33.912265+00"
+  },
+  {
+    "id": "dc19f840-0190-432b-addf-b7f91bf9cd54",
+    "target_user_id": "9a20da54-829f-435d-b717-ca59a5e22658",
+    "deducted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "amount": 15000000,
+    "category": "cash_payout_retraction",
+    "reason": "ROI PAID OUT",
+    "ledger_entry_id": "a45f8a35-83fb-4d80-8d5a-2da38fb6ccb0",
+    "created_at": "2026-04-07 08:03:02.166494+00"
+  },
+  {
+    "id": "cc00d348-c532-4a58-a014-42ef454c5fae",
+    "target_user_id": "3d60fe16-de0d-4c10-a92d-4917605e789e",
+    "deducted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "amount": 1064000,
+    "category": "cash_payout_retraction",
+    "reason": "already paid out",
+    "ledger_entry_id": "bb107610-ff0a-4692-98e7-590eeb2fafcd",
+    "created_at": "2026-04-07 14:11:32.945899+00"
+  },
+  {
+    "id": "e1d9dc94-e119-44c5-b12d-c74a5f856935",
+    "target_user_id": "1b4e9d66-85a4-4c59-bbbe-eb6a089942c9",
+    "deducted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "amount": 50000000,
+    "category": "cash_payout_retraction",
+    "reason": "CASH PAYOUT",
+    "ledger_entry_id": "b6530662-c393-4376-a3ad-4bbbbbb56810",
+    "created_at": "2026-04-09 06:48:01.303429+00"
+  },
+  {
+    "id": "8f2ce534-38ba-4a29-851a-0b8373fab312",
+    "target_user_id": "de3bce2b-7014-469b-b181-871fe1f1b766",
+    "deducted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "amount": 330000,
+    "category": "cash_payout_retraction",
+    "reason": "CASH PAYOUT",
+    "ledger_entry_id": "ad790174-dee2-423b-9262-c0d2943f6b85",
+    "created_at": "2026-04-09 08:45:14.863924+00"
+  },
+  {
+    "id": "b20d06de-5be4-4346-8564-7bccddb51f7d",
+    "target_user_id": "b0efbbe6-197d-477c-b8a0-cff02b951724",
+    "deducted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "amount": 200000,
+    "category": "cash_payout_retraction",
+    "reason": "CASH PAYOUT",
+    "ledger_entry_id": "1b8ab544-c100-4969-be7a-67715d5b9d27",
+    "created_at": "2026-04-09 09:03:14.082793+00"
+  }
+]

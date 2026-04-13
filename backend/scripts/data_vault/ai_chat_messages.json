@@ -1,0 +1,86 @@
+[
+  {
+    "id": "f634ce60-347b-401e-bc43-2bebc02ae124",
+    "user_id": "e92de540-f2f4-4243-ab52-8e239a92aab1",
+    "role": "user",
+    "content": "Withdraw earnings",
+    "created_at": "2026-02-16 15:46:55.812223+00"
+  },
+  {
+    "id": "25d99bf0-2d13-4605-80d4-8e9709fbc15a",
+    "user_id": "e92de540-f2f4-4243-ab52-8e239a92aab1",
+    "role": "assistant",
+    "content": "Hello Kendrick12! I see you're ready to enjoy the fruits of your hard work. \n\nTo withdraw your earnings on Welile, follow these simple steps:\n\n1. Open the Welile app and go to your **Wallet** or **Earnings** section.\n2. Select **Withdraw**.\n3. Enter the amount you wish to withdraw (ensure you have enough for any applicable transaction expenses).\n4. Choose your registered Mobile Money number.\n5. Confirm the transaction.\n\nSince your account is currently **not verified**, please make sure you have uploaded your National ID in the profile section. Verification is required to ensure your funds are sent securely to the right person.\n\n**Want to boost your next withdrawal?**\nAs an Agent, you can earn a **5,000 UGX commission** for every rent facilitation request you help a tenant complete and get approved. Helping just one more tenant today puts more money in your pocket! 🚀",
+    "created_at": "2026-02-16 15:46:59.04494+00"
+  },
+  {
+    "id": "8d129bed-088d-46e6-aec2-d9165821f590",
+    "user_id": "e92de540-f2f4-4243-ab52-8e239a92aab1",
+    "role": "user",
+    "content": "I tried to withdraw since last week thought I have refer some colleagues",
+    "created_at": "2026-02-16 15:47:43.43848+00"
+  },
+  {
+    "id": "733cb872-2fdd-415d-a964-cb7038e29be7",
+    "user_id": "e92de540-f2f4-4243-ab52-8e239a92aab1",
+    "role": "assistant",
+    "content": "Hello Kendrick12! I understand you're looking forward to your referral bonuses. \n\nIf your withdrawal hasn't gone through, it is likely because your account is currently **unverified**. On Welile, account verification with your National ID is a mandatory step before you can access funds. This ensures your earnings are sent safely to the correct owner.\n\nRegarding your referrals, please check two things:\n1. **Registration Bonus:** You earn 100 UGX when your colleague registers.\n2. **First Transaction Bonus:** You earn an extra 200 UGX once they complete their first transaction on the platform.\n\n**Here is how to fix this:** \nGo to your Profile and upload your National ID for verification. Once the team approves it, you will be able to process your withdrawal via mobile money.\n\n**Ready to grow your balance even faster?**\nNow that you have started referring colleagues, why not help them submit their first rent receipt? You'll earn more while helping them explore the platform! 📈",
+    "created_at": "2026-02-16 15:47:46.575504+00"
+  },
+  {
+    "id": "77617732-9873-47e5-9f57-788051c057e5",
+    "user_id": "2ce12b56-662a-415c-bfbc-aef3bc3490f0",
+    "role": "user",
+    "content": "How do I earn more?",
+    "created_at": "2026-02-16 16:00:12.36231+00"
+  },
+  {
+    "id": "224ca1ba-9379-4238-bb6d-24e2a718d061",
+    "user_id": "2ce12b56-662a-415c-bfbc-aef3bc3490f0",
+    "role": "assistant",
+    "content": "Hello **Bashiru Nasifu**, it is great to see you are ready to grow! Since you have multiple roles, you have the best chance to maximize your income.\n\nHere is how you can boost your earnings right now:\n*   **As an Agent:** Register new tenants. You earn **500 UGX** per registration and up to **15,000 UGX** for every rent request approved and delivered.\n*   **As a Supporter:** Facilitate rent requests to earn **platform rewards** on the total facilitated rent volume.\n*   **Referrals:** Invite friends to earn **100 UGX** for every signup and **200 UGX** after their first transaction.\n\nTo unlock full earnings, please **verify your account** first! Once verified, you can start processing rent requests for your 5% commission. 📈\n\nWhich role would you like to start earning from today?",
+    "created_at": "2026-02-16 16:00:15.979652+00"
+  },
+  {
+    "id": "3b895d89-618b-4c1e-8a1a-5d0dab489f87",
+    "user_id": "2ce12b56-662a-415c-bfbc-aef3bc3490f0",
+    "role": "user",
+    "content": "Become a Partner",
+    "created_at": "2026-02-16 16:01:19.415213+00"
+  },
+  {
+    "id": "21e08dba-278b-4ce5-86ed-3f865bcb1cd0",
+    "user_id": "2ce12b56-662a-415c-bfbc-aef3bc3490f0",
+    "role": "assistant",
+    "content": "Becoming a **Tenant Partner** is a great way to grow your wealth on Welile, **Bashiru Nasifu**!\n\nAs a partner (Supporter), you earn by facilitating rent requests for others:\n1. Go to the **Supporter** section in your app.\n2. Select an available **supporter package** to increase your facilitated rent volume.\n3. Earn **platform rewards** as tenants repay their facilitated rent.\n\nThe more rent volume you support, the higher your rewards. 🚀\n\nWould you like to see the available **supporter packages** to start earning rewards today?",
+    "created_at": "2026-02-16 16:01:21.82069+00"
+  },
+  {
+    "id": "9a5377b0-b11f-4b62-94a0-3e49fa370389",
+    "user_id": "d94d5c97-ecc6-4054-a5ea-a10d7a582a3c",
+    "role": "user",
+    "content": "How do I earn more?",
+    "created_at": "2026-02-16 16:15:37.769213+00"
+  },
+  {
+    "id": "2a1707b1-adfa-41ee-bf7f-dc6fcb7c6122",
+    "user_id": "d94d5c97-ecc6-4054-a5ea-a10d7a582a3c",
+    "role": "assistant",
+    "content": "Hello **EDINAS**, it's great to see you want to grow your income! \n\nSince you are both a **Tenant** and an **Agent**, here are the fastest ways to increase your earnings:\n\n1.  **Register Users**: Earn **500 UGX** for every registration and **5,000 UGX** for every approved rent request.\n2.  **Monitor Repayments**: You earn a **4% commission** on every daily repayment your tenants make.\n3.  **Upload Receipts**: Post receipts from partner vendors to earn **platform rewards**.\n4.  **Invite Friends**: Use your referral link to get **100 UGX** per signup and **200 UGX** on their first transaction.\n\nAim for **50 active tenants** to unlock an **Electric Bike** reward! Which of these would you like to start with today? 🚀",
+    "created_at": "2026-02-16 16:15:40.450111+00"
+  },
+  {
+    "id": "6660eaf3-bf63-4720-af40-52b06150ff2f",
+    "user_id": "e9e14ee4-2c02-438e-917e-bb9080cc6a99",
+    "role": "user",
+    "content": "Withdraw earnings",
+    "created_at": "2026-02-16 16:52:57.593915+00"
+  },
+  {
+    "id": "6ddb01a5-4db1-463f-bba9-5d06055656ea",
+    "user_id": "e9e14ee4-2c02-438e-917e-bb9080cc6a99",
+    "role": "assistant",
+    "content": "Hello **Mugume Veneranda**, I can help you access your money. \n\nTo withdraw your earnings via **Mobile Money**, follow these steps:\n1. Open the **Wallet** section in the app.\n2. Select **Withdraw** and enter the amount you wish to take out. \n3. Confirm your mobile money number and complete the request.\n\nPlease ensure your account is **verified** with your National ID to avoid delays. \n\n**Pro Tip:** Want to boost your balance? Refer a friend today to earn a **100 UGX** registration bonus instantly! 🚀",
+    "created_at": "2026-02-16 16:53:00.186117+00"
+  }
+]

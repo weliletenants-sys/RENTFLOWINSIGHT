@@ -1,0 +1,15 @@
+node_modules
+npm-debug.log properly
+dist
+uploads
+logs
+.env
+.git
+.gitignore
+README.md
+MIGRATION_PLAN.md
+scripts
+tests
+*.js
+!jest.config.js
+!eslint.config.mjs

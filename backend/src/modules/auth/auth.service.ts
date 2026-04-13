@@ -9,6 +9,26 @@ const JWT_EXPIRES_IN = '24h'; // Configurable duration
 export class AuthService {
   private repository = new AuthRepository();
 
+  private generateUserResponse(user: any, token: string) {
+    const defaultFirstName = user.full_name ? user.full_name.split(' ')[0] : 'User';
+    const defaultLastName = user.full_name && user.full_name.includes(' ') 
+      ? user.full_name.substring(user.full_name.indexOf(' ') + 1) 
+      : '';
+
+    return {
+      access_token: token,
+      user: {
+        id: user.id,
+        phone: user.phone,
+        email: `${user.phone}@welile.local`, // Fallback for interfaces expecting email
+        firstName: defaultFirstName,
+        lastName: defaultLastName,
+        role: user.role,
+        isVerified: user.verified || false
+      }
+    };
+  }
+
   /**
    * Processes the Login payload, extracts hashes native side, verifies them securely,
    * and dispatches a robust JWT containing the Role mapping.
@@ -18,7 +38,19 @@ export class AuthService {
       throw new Error('Phone and Password are strictly required');
     }
 
-    const user = await this.repository.findProfileByPhone(phone);
+    // NORMALIZE FRONTEND PAYLOAD
+    // The Lovable explicitly attaches '+254' or '+256'. 
+    // We parse the exact trailing 9 digits and prefix a standard 0 to match AWS RDS formatting.
+    const normalizedPhone = phone.replace(/[^0-9]/g, '').length >= 9 
+      ? '0' + phone.replace(/[^0-9]/g, '').slice(-9)
+      : phone;
+
+    let user = await this.repository.findProfileByPhone(normalizedPhone);
+    
+    // Fallback: If normalized failed, try strict frontend variant in case of absolute uniqueness
+    if (!user) {
+       user = await this.repository.findProfileByPhone(phone);
+    }
 
     if (!user || !user.password_hash) {
       throw new Error('Invalid credentials');
@@ -44,15 +76,7 @@ export class AuthService {
 
     const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
-    return {
-      token,
-      profile: {
-        id: user.id,
-        phone: user.phone,
-        fullName: user.full_name,
-        role: user.role
-      }
-    };
+    return this.generateUserResponse(user, token);
   }
 
   /**
@@ -77,6 +101,15 @@ export class AuthService {
       role
     });
 
-    return newUser;
+    // Provide automatic login on registration
+    const tokenPayload = {
+      sub: newUser.id,
+      id: newUser.id,
+      role: newUser.role,
+      phone: newUser.phone
+    };
+    const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+
+    return this.generateUserResponse(newUser, token);
   }
 }

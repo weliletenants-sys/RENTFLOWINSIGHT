@@ -1,0 +1,9 @@
+id,control_key,enabled,updated_by,updated_at
+f124c626-c6e0-4bbc-bdde-34e5efed58e0,auto_salaries,f,,2026-04-09 13:54:12.989898+00
+a5a2b4c1-5775-4cd6-ba25-f25c4e919653,auto_commissions,f,,2026-04-09 13:54:12.989898+00
+e8a145f9-89ab-461f-a6d8-74efab981c59,enforce_cash_guard,t,,2026-04-09 13:54:12.989898+00
+353291aa-b6fe-47f1-ba73-50bb3aac702c,enforce_roi_coverage,t,,2026-04-09 13:54:12.989898+00
+f3daeb59-ab88-4c7f-ba24-c3c0182fd0e3,enforce_wallet_lock,t,,2026-04-09 13:54:12.989898+00
+04fdf728-7ef9-49f3-a4e0-1e7703e55b89,strict_mode,t,,2026-04-09 15:19:15.296001+00
+e60bc5d1-1515-4c4b-8cc7-23cad2d78795,auto_roi,f,,2026-04-11 09:05:55.627+00
+e8eef722-77dc-4fdd-8846-b4ac4c17a1de,auto_advances,f,,2026-04-11 16:57:37.136+00

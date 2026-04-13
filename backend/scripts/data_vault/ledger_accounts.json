@@ -1,0 +1,92 @@
+[
+  {
+    "account_id": "cf62fdf6-bc43-4d29-987f-b14e2b3e4c4e",
+    "group_id": "29391f3b-671f-4dac-ad22-31e6b31960a8",
+    "account_code": "SUPPORTER_WALLET",
+    "owner_type": "supporter",
+    "owner_id": "",
+    "currency": "UGX",
+    "allow_negative": "f",
+    "created_at": "2026-02-23 04:49:50.53687+00"
+  },
+  {
+    "account_id": "26cfb602-2d0a-4450-bebd-850e5a139faa",
+    "group_id": "29391f3b-671f-4dac-ad22-31e6b31960a8",
+    "account_code": "TENANT_WALLET",
+    "owner_type": "tenant",
+    "owner_id": "",
+    "currency": "UGX",
+    "allow_negative": "f",
+    "created_at": "2026-02-23 04:49:50.53687+00"
+  },
+  {
+    "account_id": "f9344b04-adbc-470e-859c-870e0b4fb55e",
+    "group_id": "29391f3b-671f-4dac-ad22-31e6b31960a8",
+    "account_code": "AGENT_WALLET",
+    "owner_type": "agent",
+    "owner_id": "",
+    "currency": "UGX",
+    "allow_negative": "f",
+    "created_at": "2026-02-23 04:49:50.53687+00"
+  },
+  {
+    "account_id": "e6c6b232-c027-4d40-8f3e-98edee1b5ff6",
+    "group_id": "ca445a56-7ff1-4e42-9d80-b59e7d9925c9",
+    "account_code": "TENANT_RENT_OBLIGATION",
+    "owner_type": "tenant",
+    "owner_id": "",
+    "currency": "UGX",
+    "allow_negative": "t",
+    "created_at": "2026-02-23 04:49:50.53687+00"
+  },
+  {
+    "account_id": "8126a214-547d-4909-8a16-e23cc8a06dbf",
+    "group_id": "ca445a56-7ff1-4e42-9d80-b59e7d9925c9",
+    "account_code": "SUPPORTER_COMMITMENT",
+    "owner_type": "supporter",
+    "owner_id": "",
+    "currency": "UGX",
+    "allow_negative": "t",
+    "created_at": "2026-02-23 04:49:50.53687+00"
+  },
+  {
+    "account_id": "6b80e471-a592-4827-a33b-f0d9a6aaeccb",
+    "group_id": "d869cf5d-f900-4b07-8d23-daa5e84e3dc0",
+    "account_code": "BUFFER_ACCOUNT",
+    "owner_type": "system",
+    "owner_id": "",
+    "currency": "UGX",
+    "allow_negative": "f",
+    "created_at": "2026-02-23 04:49:50.53687+00"
+  },
+  {
+    "account_id": "43ffa81f-aca7-4013-af4a-f476c0cee157",
+    "group_id": "d869cf5d-f900-4b07-8d23-daa5e84e3dc0",
+    "account_code": "RENT_CONTROL_ACCOUNT",
+    "owner_type": "system",
+    "owner_id": "",
+    "currency": "UGX",
+    "allow_negative": "f",
+    "created_at": "2026-02-23 04:49:50.53687+00"
+  },
+  {
+    "account_id": "6bc4f73f-3f40-44c2-a0d0-fbaa048a7542",
+    "group_id": "5df4476e-0007-4ce4-aff3-3c417d389118",
+    "account_code": "DEFERRED_REVENUE",
+    "owner_type": "system",
+    "owner_id": "",
+    "currency": "UGX",
+    "allow_negative": "f",
+    "created_at": "2026-02-23 04:49:50.53687+00"
+  },
+  {
+    "account_id": "a7a05487-4eea-469d-a694-9a2c28985f9b",
+    "group_id": "5df4476e-0007-4ce4-aff3-3c417d389118",
+    "account_code": "RECOGNIZED_REVENUE",
+    "owner_type": "system",
+    "owner_id": "",
+    "currency": "UGX",
+    "allow_negative": "f",
+    "created_at": "2026-02-23 04:49:50.53687+00"
+  }
+]

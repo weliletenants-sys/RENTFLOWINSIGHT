@@ -1,0 +1,26 @@
+[
+  {
+    "id": "54525644-4253-4af4-90b0-b1d7e5e131b6",
+    "rent_request_id": "6be06a42-edfa-43f6-b642-f4a5ad5aa578",
+    "supporter_id": "7e506ac9-6c46-4fdf-b888-c972bad7350f",
+    "rent_amount": 450000,
+    "roi_amount": 67500,
+    "payment_number": 1,
+    "due_date": "2026-02-17 13:03:05.508+00",
+    "paid_at": "2026-02-23 06:53:47.969+00",
+    "created_at": "2026-02-23 06:53:48.098902+00",
+    "status": "paid"
+  },
+  {
+    "id": "3e73b7d6-14d4-4430-8b1d-9602d29ce5c0",
+    "rent_request_id": "6be06a42-edfa-43f6-b642-f4a5ad5aa578",
+    "supporter_id": "7e506ac9-6c46-4fdf-b888-c972bad7350f",
+    "rent_amount": 450000,
+    "roi_amount": 67500,
+    "payment_number": 2,
+    "due_date": "2026-03-20 06:00:05.645+00",
+    "paid_at": "2026-03-20 06:00:05.645+00",
+    "created_at": "2026-03-20 06:00:05.86188+00",
+    "status": "paid"
+  }
+]

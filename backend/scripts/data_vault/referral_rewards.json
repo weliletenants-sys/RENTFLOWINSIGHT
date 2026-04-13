@@ -1,0 +1,35 @@
+[
+  {
+    "id": "848d7ee0-7479-422c-9db2-be2437413503",
+    "user_id": "99890a2e-b842-4d44-8516-e2eafe0711ff",
+    "reward_month": "2026-01-01",
+    "rank": 1,
+    "reward_amount": 5000,
+    "referral_count": 74,
+    "credited": "t",
+    "credited_at": "2026-02-01 00:00:05.963415+00",
+    "created_at": "2026-02-01 00:00:05.963415+00"
+  },
+  {
+    "id": "246b80f2-d834-4f1f-a2a3-2f109c719f08",
+    "user_id": "e4f07815-7991-422f-946f-7f351b38e954",
+    "reward_month": "2026-01-01",
+    "rank": 2,
+    "reward_amount": 3000,
+    "referral_count": 63,
+    "credited": "t",
+    "credited_at": "2026-02-01 00:00:05.963415+00",
+    "created_at": "2026-02-01 00:00:05.963415+00"
+  },
+  {
+    "id": "6ef42b4e-1658-461b-b91b-0c67f156bca6",
+    "user_id": "675d70c6-2f67-492a-ac29-0b11d57b52ca",
+    "reward_month": "2026-01-01",
+    "rank": 3,
+    "reward_amount": 1000,
+    "referral_count": 52,
+    "credited": "t",
+    "credited_at": "2026-02-01 00:00:05.963415+00",
+    "created_at": "2026-02-01 00:00:05.963415+00"
+  }
+]

@@ -1,0 +1,373 @@
+[
+  {
+    "id": "d4509740-f7f4-4654-862c-772f9ec502db",
+    "user_id": "b0efbbe6-197d-477c-b8a0-cff02b951724",
+    "permitted_dashboard": "landlord-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-03-31 07:46:23.636972+00"
+  },
+  {
+    "id": "554e9a6c-af50-4fa4-9149-560d6ed52d28",
+    "user_id": "b0efbbe6-197d-477c-b8a0-cff02b951724",
+    "permitted_dashboard": "agent-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-03-31 07:46:24.64835+00"
+  },
+  {
+    "id": "91cfcf70-66b2-4d67-ab2d-aef76a5601e8",
+    "user_id": "b0efbbe6-197d-477c-b8a0-cff02b951724",
+    "permitted_dashboard": "tenant-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-03-31 07:46:46.631072+00"
+  },
+  {
+    "id": "5c55cbca-f356-46e1-9d81-c5615e985fca",
+    "user_id": "99890a2e-b842-4d44-8516-e2eafe0711ff",
+    "permitted_dashboard": "agent-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-03-31 07:53:53.495952+00"
+  },
+  {
+    "id": "e7676738-7d61-4ce0-aec0-7197ccd0f71b",
+    "user_id": "99890a2e-b842-4d44-8516-e2eafe0711ff",
+    "permitted_dashboard": "tenant-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-03-31 07:53:56.084003+00"
+  },
+  {
+    "id": "a23a98cd-05b6-4d0a-afc5-8585ad7e48d9",
+    "user_id": "e4f07815-7991-422f-946f-7f351b38e954",
+    "permitted_dashboard": "tenant-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-03-31 07:56:46.825982+00"
+  },
+  {
+    "id": "9bdbd140-d4f8-45e1-b159-8735063c9735",
+    "user_id": "b4d7c324-1f7e-4e1c-91a8-3f0e10e0b25c",
+    "permitted_dashboard": "coo",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-03-31 08:00:25.57943+00"
+  },
+  {
+    "id": "8b1a3788-359b-4366-aac8-b94f36dae2a1",
+    "user_id": "b4d7c324-1f7e-4e1c-91a8-3f0e10e0b25c",
+    "permitted_dashboard": "agent-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-03-31 08:00:33.364869+00"
+  },
+  {
+    "id": "b7b58172-6744-48db-a4a9-55f636a51a80",
+    "user_id": "b4d7c324-1f7e-4e1c-91a8-3f0e10e0b25c",
+    "permitted_dashboard": "partner-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-03-31 08:00:34.806885+00"
+  },
+  {
+    "id": "b8498ac1-958c-47d1-9115-ad38428e6824",
+    "user_id": "ae194750-4827-47e8-839e-5e772565138b",
+    "permitted_dashboard": "partner-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-03-31 08:07:30.619483+00"
+  },
+  {
+    "id": "07525768-2962-4a9b-bc55-8808d3b38a1c",
+    "user_id": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "permitted_dashboard": "cfo",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-03-31 09:47:09.23409+00"
+  },
+  {
+    "id": "43293075-6fb4-4b59-a915-c01c491562d2",
+    "user_id": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "permitted_dashboard": "cmo",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-03-31 09:47:09.440852+00"
+  },
+  {
+    "id": "0b0b70ba-198a-4c65-8e14-d4680826823d",
+    "user_id": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "permitted_dashboard": "cto",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-03-31 09:47:09.543662+00"
+  },
+  {
+    "id": "f98556d4-5b31-427c-9e08-50b9694ac43a",
+    "user_id": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "permitted_dashboard": "coo",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-03-31 09:47:09.82749+00"
+  },
+  {
+    "id": "4776c3b0-c74b-42d1-ac98-c58203bd4ee6",
+    "user_id": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "permitted_dashboard": "crm",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-03-31 09:47:10.089467+00"
+  },
+  {
+    "id": "cfcb0989-da2c-4ef2-9230-bb46c6e63e13",
+    "user_id": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "permitted_dashboard": "ceo",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-03-31 09:47:10.563927+00"
+  },
+  {
+    "id": "caa49241-73d3-469d-aaef-cc2a62ee64f7",
+    "user_id": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "permitted_dashboard": "financial-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-03-31 09:47:11.931372+00"
+  },
+  {
+    "id": "9dfb497d-eeea-4480-ab7f-da29f17554db",
+    "user_id": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "permitted_dashboard": "agent-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-03-31 09:47:12.115251+00"
+  },
+  {
+    "id": "0c086a7d-88c5-46c5-b799-d9d25f9ef008",
+    "user_id": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "permitted_dashboard": "landlord-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-03-31 09:47:12.586558+00"
+  },
+  {
+    "id": "fab88c61-d1e7-4f65-98b7-ddca951d69d2",
+    "user_id": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "permitted_dashboard": "tenant-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-03-31 09:47:13.123378+00"
+  },
+  {
+    "id": "2abceb57-f930-4a1e-82c4-e64bf3ade396",
+    "user_id": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "permitted_dashboard": "company-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-03-31 09:47:13.274977+00"
+  },
+  {
+    "id": "65b2a3f9-a471-446a-8339-fdd8699b3145",
+    "user_id": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "permitted_dashboard": "partner-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-03-31 09:47:15.131372+00"
+  },
+  {
+    "id": "db31d5b4-4c27-463c-80c1-3451b6ebc313",
+    "user_id": "59d45ad2-0d44-433c-b4ec-20927a25c281",
+    "permitted_dashboard": "financial-ops",
+    "granted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "granted_at": "2026-03-31 11:52:32.099803+00"
+  },
+  {
+    "id": "d5661683-03c7-4b7f-8055-7a25bb21e905",
+    "user_id": "59d45ad2-0d44-433c-b4ec-20927a25c281",
+    "permitted_dashboard": "cfo",
+    "granted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "granted_at": "2026-03-31 11:52:41.681909+00"
+  },
+  {
+    "id": "5a48e6a8-e743-46a1-b7d8-cdf822e11877",
+    "user_id": "cf561688-b3a2-4f62-b9c1-67ee7b36ff2b",
+    "permitted_dashboard": "ceo",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-04-01 05:44:44.55678+00"
+  },
+  {
+    "id": "d1793190-f2f7-49ad-94a3-0158d2a040ee",
+    "user_id": "cf561688-b3a2-4f62-b9c1-67ee7b36ff2b",
+    "permitted_dashboard": "cfo",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-04-01 05:44:45.402638+00"
+  },
+  {
+    "id": "15d8ae84-00c2-405c-bf72-088509aeeaf0",
+    "user_id": "cf561688-b3a2-4f62-b9c1-67ee7b36ff2b",
+    "permitted_dashboard": "cto",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-04-01 05:44:46.72612+00"
+  },
+  {
+    "id": "92cfb101-50ea-4660-822f-6a8b9ea0474a",
+    "user_id": "cf561688-b3a2-4f62-b9c1-67ee7b36ff2b",
+    "permitted_dashboard": "coo",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-04-01 05:44:47.556823+00"
+  },
+  {
+    "id": "8f016b5e-8eb3-470f-9bbc-68916da04b6c",
+    "user_id": "cf561688-b3a2-4f62-b9c1-67ee7b36ff2b",
+    "permitted_dashboard": "crm",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-04-01 05:44:49.174432+00"
+  },
+  {
+    "id": "92be5018-5dbb-413b-9632-0b7fa14c3ff3",
+    "user_id": "cf561688-b3a2-4f62-b9c1-67ee7b36ff2b",
+    "permitted_dashboard": "company-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-04-01 05:44:50.015737+00"
+  },
+  {
+    "id": "55dfb40a-5292-45a4-b3aa-aa44d8ca347d",
+    "user_id": "cf561688-b3a2-4f62-b9c1-67ee7b36ff2b",
+    "permitted_dashboard": "cmo",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-04-01 05:44:51.086581+00"
+  },
+  {
+    "id": "37392a36-8404-4c9d-bf96-ee42e57305e7",
+    "user_id": "cf561688-b3a2-4f62-b9c1-67ee7b36ff2b",
+    "permitted_dashboard": "financial-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-04-01 05:44:52.00761+00"
+  },
+  {
+    "id": "1b435f9c-273b-4e8a-b7f3-f8156cc381b6",
+    "user_id": "cf561688-b3a2-4f62-b9c1-67ee7b36ff2b",
+    "permitted_dashboard": "agent-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-04-01 05:45:05.133628+00"
+  },
+  {
+    "id": "fad7dd30-071e-4c5f-b1bf-26b056bbe87e",
+    "user_id": "cf561688-b3a2-4f62-b9c1-67ee7b36ff2b",
+    "permitted_dashboard": "tenant-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-04-01 05:45:06.288988+00"
+  },
+  {
+    "id": "1cb63b12-9f93-4269-aa38-5e7db0c489eb",
+    "user_id": "cf561688-b3a2-4f62-b9c1-67ee7b36ff2b",
+    "permitted_dashboard": "partner-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-04-01 05:45:07.611549+00"
+  },
+  {
+    "id": "7a66053e-18d0-4835-9227-f5b592eca916",
+    "user_id": "cf561688-b3a2-4f62-b9c1-67ee7b36ff2b",
+    "permitted_dashboard": "landlord-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-04-01 05:45:09.861715+00"
+  },
+  {
+    "id": "8014020d-35fd-4745-85a9-4fe64862ca0b",
+    "user_id": "b4d7c324-1f7e-4e1c-91a8-3f0e10e0b25c",
+    "permitted_dashboard": "cfo",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-04-01 06:13:15.794297+00"
+  },
+  {
+    "id": "b951e2b7-9835-4bd4-afa5-29c71a24fe31",
+    "user_id": "b4d7c324-1f7e-4e1c-91a8-3f0e10e0b25c",
+    "permitted_dashboard": "financial-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-04-01 06:16:41.07079+00"
+  },
+  {
+    "id": "7c6ac7bb-60f4-4309-b644-01ccc313d559",
+    "user_id": "b4d7c324-1f7e-4e1c-91a8-3f0e10e0b25c",
+    "permitted_dashboard": "ceo",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-04-01 06:17:41.937509+00"
+  },
+  {
+    "id": "6f0673a4-9556-42f7-b0b5-e0182cf7a946",
+    "user_id": "475c6ccb-166c-41cd-b2a8-386c99777138",
+    "permitted_dashboard": "cmo",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-04-09 11:26:04.833931+00"
+  },
+  {
+    "id": "f13bef65-f59a-4038-bf55-83a119558002",
+    "user_id": "6b7d9eee-4bc8-47ac-a2e6-b84cbaac8bb4",
+    "permitted_dashboard": "cfo",
+    "granted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "granted_at": "2026-04-09 12:23:36.739551+00"
+  },
+  {
+    "id": "12681aa2-bdeb-4374-a86a-680d32ca387d",
+    "user_id": "6b7d9eee-4bc8-47ac-a2e6-b84cbaac8bb4",
+    "permitted_dashboard": "financial-ops",
+    "granted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "granted_at": "2026-04-09 12:23:39.071049+00"
+  },
+  {
+    "id": "14a805a3-7f57-4622-97d9-337871729749",
+    "user_id": "99890a2e-b842-4d44-8516-e2eafe0711ff",
+    "permitted_dashboard": "landlord-ops",
+    "granted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "granted_at": "2026-04-09 12:25:27.774141+00"
+  },
+  {
+    "id": "ccbda546-518a-46e9-ad86-e4487733dc76",
+    "user_id": "7e1fc523-1444-4580-bf62-6a3c8bda01dd",
+    "permitted_dashboard": "agent-ops",
+    "granted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "granted_at": "2026-04-09 12:27:28.206428+00"
+  },
+  {
+    "id": "178412d1-a343-4c5c-8e06-c768a5a5ba79",
+    "user_id": "7e1fc523-1444-4580-bf62-6a3c8bda01dd",
+    "permitted_dashboard": "landlord-ops",
+    "granted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "granted_at": "2026-04-09 12:27:29.719354+00"
+  },
+  {
+    "id": "b5a86bb5-2189-44a8-9f26-2f780edc8cd5",
+    "user_id": "7e1fc523-1444-4580-bf62-6a3c8bda01dd",
+    "permitted_dashboard": "tenant-ops",
+    "granted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "granted_at": "2026-04-09 12:27:31.879484+00"
+  },
+  {
+    "id": "85eb3266-4c69-4a98-9f81-86568dbec43a",
+    "user_id": "e4f07815-7991-422f-946f-7f351b38e954",
+    "permitted_dashboard": "agent-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-04-09 12:37:51.948217+00"
+  },
+  {
+    "id": "f33b8bde-923e-44c2-968a-51cd7b0918cf",
+    "user_id": "e4f07815-7991-422f-946f-7f351b38e954",
+    "permitted_dashboard": "financial-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-04-09 12:37:54.884742+00"
+  },
+  {
+    "id": "9084ce4d-8856-4111-bc6e-c92db905d981",
+    "user_id": "e4f07815-7991-422f-946f-7f351b38e954",
+    "permitted_dashboard": "landlord-ops",
+    "granted_by": "0b109aad-212a-4fd0-ab03-3d7aee9cf397",
+    "granted_at": "2026-04-09 12:37:56.429984+00"
+  },
+  {
+    "id": "0cfdacb9-3819-4bbd-99b5-e886cbed7a5d",
+    "user_id": "6b7d9eee-4bc8-47ac-a2e6-b84cbaac8bb4",
+    "permitted_dashboard": "agent-ops",
+    "granted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "granted_at": "2026-04-10 06:09:56.923963+00"
+  },
+  {
+    "id": "5ea19719-5ff5-4df8-a991-6a9a4095f768",
+    "user_id": "6b7d9eee-4bc8-47ac-a2e6-b84cbaac8bb4",
+    "permitted_dashboard": "tenant-ops",
+    "granted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "granted_at": "2026-04-10 06:10:00.670727+00"
+  },
+  {
+    "id": "acd6ff27-648b-491c-997c-8d36f12204d7",
+    "user_id": "6b7d9eee-4bc8-47ac-a2e6-b84cbaac8bb4",
+    "permitted_dashboard": "landlord-ops",
+    "granted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "granted_at": "2026-04-10 06:10:02.635754+00"
+  },
+  {
+    "id": "228211f0-b603-4210-ae55-ae31d4016555",
+    "user_id": "6b7d9eee-4bc8-47ac-a2e6-b84cbaac8bb4",
+    "permitted_dashboard": "partner-ops",
+    "granted_by": "cb798acb-68bc-4b4e-a414-a3d374e030b6",
+    "granted_at": "2026-04-10 06:10:04.573808+00"
+  }
+]

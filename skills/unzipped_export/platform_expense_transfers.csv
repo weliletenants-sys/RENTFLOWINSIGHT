@@ -1,0 +1,3 @@
+id,financial_agent_id,agent_id,amount,expense_category,description,approved_by,ledger_reference_id,created_at
+9fe82b76-8529-4a6f-8f4d-55407c045743,82995f6e-8ae8-40aa-9bca-84333224c15c,7e201db3-d770-44f1-87db-f236febb5678,50000,operations,testing out the feature,cf561688-b3a2-4f62-b9c1-67ee7b36ff2b,032c8e64-7c04-482b-ac7d-bad86a446d98,2026-03-23 15:27:18.60989+00
+aab9c3ca-1425-428e-a94e-61c5876c0458,82995f6e-8ae8-40aa-9bca-84333224c15c,7e201db3-d770-44f1-87db-f236febb5678,125000,operations,testing out the feature,cf561688-b3a2-4f62-b9c1-67ee7b36ff2b,68f00131-fc8c-4840-b8c4-34f8c116ab14,2026-03-23 15:28:51.715578+00

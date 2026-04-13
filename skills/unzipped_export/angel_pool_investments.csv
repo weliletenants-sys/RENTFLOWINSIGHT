@@ -1,0 +1,4 @@
+id,investor_id,amount,shares,pool_ownership_percent,company_ownership_percent,status,transaction_group_id,reference_id,created_at,agent_id,payment_method,investment_reference
+59f50994-a551-464b-9de8-961274fb124c,0b109aad-212a-4fd0-ab03-3d7aee9cf397,40000,2,0.008000,0.000640,confirmed,34bbcc2f-74a0-4c7e-b52b-7dc6f7442868,ANG2604023236,2026-04-02 11:22:56.836221+00,,,
+ab704b81-5623-4ee6-8707-1f6aa0c70fd4,cf561688-b3a2-4f62-b9c1-67ee7b36ff2b,20000,1,0.004000,0.000320,confirmed,dc0a4b48-2112-4bb3-941c-441062c21643,ANG2604024046,2026-04-02 13:37:07.995586+00,,,
+6916c579-cfb3-48d3-9864-1275f569c163,cf561688-b3a2-4f62-b9c1-67ee7b36ff2b,20000,1,0.004000,0.000320,confirmed,6d51b0b6-c1e6-4ffb-a17e-1b845e446315,ANG2604026968,2026-04-02 13:37:29.286814+00,,,
