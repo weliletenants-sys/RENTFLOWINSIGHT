@@ -1,0 +1,186 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Investor Dashboard - Rent-Financing Fintech</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#7f13ec",
+                        "background-light": "#f7f6f8",
+                        "background-dark": "#191022",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="relative flex h-auto min-h-screen w-full max-w-md mx-auto flex-col bg-white dark:bg-background-dark shadow-xl overflow-x-hidden">
+<!-- Header -->
+<div class="flex items-center bg-white dark:bg-background-dark p-4 pb-2 justify-between">
+<div class="flex size-12 shrink-0 items-center">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20" data-alt="Professional headshot of John Doe" style="background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuD02xRovC5RiufsxJx-Um5u9G5wWQYuBJlTNp5zFLZyg__1YOoqxbNHehoZs3lYuX2ruCOGAdOMFnXu7EsgPM_XfHRcSzmWrGtiETiEZBmbLJAvIvnJD5JutIBFqqrxNT1StUXPb1_NftVK6xcCFjKcbqIItUKRjGbT-dgm3xGUelMkqAKrWU-KRalAgJugRuLPFA4Qj9Qj3K2yGSp1KgG9OLk1CN1z6rro9NlVKoDjO3j0M73c7HN-6LakvQKFhPBEQSP4xUj6u0k&quot;);"></div>
+</div>
+<div class="flex-1 px-3">
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight" style="">John Doe</h2>
+<p class="text-primary text-xs font-bold leading-none tracking-wider uppercase" style="">INVESTOR</p>
+</div>
+<div class="flex w-12 items-center justify-end">
+<button class="flex items-center justify-center rounded-lg h-10 w-10 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100" style="">
+<span class="material-symbols-outlined" style="">notifications</span>
+</button>
+</div>
+</div>
+<!-- Wallet Card Section -->
+<div class="p-4">
+<div class="flex flex-col items-stretch justify-start rounded-xl shadow-lg bg-primary text-white p-6 relative overflow-hidden">
+<!-- Decorative background circles -->
+<div class="absolute -right-10 -top-10 size-40 bg-white/10 rounded-full"></div>
+<div class="absolute -left-5 -bottom-5 size-20 bg-white/5 rounded-full"></div>
+<div class="relative z-10"><p class="text-white/80 text-sm font-medium mb-1" style="">Wallet Balance</p>
+<p class="text-white text-3xl font-bold leading-tight mb-6" style="">UGX 0</p>
+<div class="grid grid-cols-2 gap-4 pt-4 border-t border-white/20">
+<div class="flex flex-col">
+<p class="text-white/70 text-xs" style="">Principal</p>
+<p class="text-white text-lg font-semibold" style="">UGX 45M</p>
+</div>
+<div class="flex flex-col">
+<p class="text-white/70 text-xs" style="">Expected Amount</p>
+<p class="text-white text-lg font-semibold" style="">UGX 4.2M</p>
+</div>
+</div></div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex justify-center px-4 mb-6">
+<div class="flex flex-1 gap-3 w-full">
+<button class="flex-1 cursor-pointer items-center justify-center rounded-lg h-12 bg-primary text-white text-sm font-bold tracking-wide flex gap-2 shadow-md" style="">
+<span class="material-symbols-outlined text-xl" style="">add_circle</span>
+                    Deposit
+                </button>
+<button class="flex-1 cursor-pointer items-center justify-center rounded-lg h-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 text-sm font-bold tracking-wide flex gap-2 shadow-sm" style="">
+<span class="material-symbols-outlined text-xl" style="">account_balance_wallet</span>
+                    Withdraw
+                </button>
+</div>
+</div>
+<!-- Portfolio Section -->
+<div class="px-4 pb-2">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-slate-900 dark:text-slate-100 text-lg font-bold" style="">Investment Portfolios</h3>
+<button class="text-primary text-sm font-bold" style="">View All</button>
+</div>
+<!-- Investment List -->
+<div class="space-y-3 pb-24">
+<!-- Kampala Residential -->
+<div class="flex items-center gap-4 p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:border-primary/30 transition-colors">
+<div class="size-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="">home_work</span>
+</div>
+<div class="flex-1"><div class="flex justify-between items-start mb-2">
+<p class="text-slate-900 dark:text-slate-100 font-bold" style="">Kampala Residential</p>
+<span class="text-emerald-500 text-xs font-bold px-2 py-1 bg-emerald-50 dark:bg-emerald-500/10 rounded-full" style="">12.5% APY</span>
+</div>
+<div class="grid grid-cols-2 gap-2 mb-2">
+<div>
+<p class="text-slate-400 text-[10px] uppercase font-bold" style="">Invested</p>
+<p class="text-slate-900 dark:text-slate-100 text-sm font-semibold" style="">UGX 15M</p>
+</div>
+<div>
+<p class="text-slate-400 text-[10px] uppercase font-bold" style="">Expected Return</p>
+<p class="text-emerald-600 dark:text-emerald-400 text-sm font-semibold" style="">UGX 1.8M</p>
+</div>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-xs mb-3 italic" style="">Matures on Oct 12, 2026</p>
+<button class="w-full py-2 border border-primary text-primary text-xs font-bold rounded-lg hover:bg-primary hover:text-white transition-colors" style="">Cash out</button></div>
+</div>
+<!-- Entebbe Commercial -->
+<div class="flex items-center gap-4 p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:border-primary/30 transition-colors">
+<div class="size-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="">apartment</span>
+</div>
+<div class="flex-1"><div class="flex justify-between items-start mb-2">
+<p class="text-slate-900 dark:text-slate-100 font-bold" style="">Entebbe Commercial</p>
+<span class="text-emerald-500 text-xs font-bold px-2 py-1 bg-emerald-50 dark:bg-emerald-500/10 rounded-full" style="">15.2% APY</span>
+</div>
+<div class="grid grid-cols-2 gap-2 mb-2">
+<div>
+<p class="text-slate-400 text-[10px] uppercase font-bold" style="">Invested</p>
+<p class="text-slate-900 dark:text-slate-100 text-sm font-semibold" style="">UGX 20M</p>
+</div>
+<div>
+<p class="text-slate-400 text-[10px] uppercase font-bold" style="">Expected Return</p>
+<p class="text-emerald-600 dark:text-emerald-400 text-sm font-semibold" style="">UGX 3.0M</p>
+</div>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-xs mb-3 italic" style="">Matures on Jan 15, 2027</p>
+<button class="w-full py-2 border border-primary text-primary text-xs font-bold rounded-lg hover:bg-primary hover:text-white transition-colors" style="">Cash out</button></div>
+</div>
+<!-- Jinja Industrial -->
+<div class="flex items-center gap-4 p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:border-primary/30 transition-colors">
+<div class="size-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="">factory</span>
+</div>
+<div class="flex-1"><div class="flex justify-between items-start mb-2">
+<p class="text-slate-900 dark:text-slate-100 font-bold" style="">Jinja Industrial</p>
+<span class="text-emerald-500 text-xs font-bold px-2 py-1 bg-emerald-50 dark:bg-emerald-500/10 rounded-full" style="">18.0% APY</span>
+</div>
+<div class="grid grid-cols-2 gap-2 mb-2">
+<div>
+<p class="text-slate-400 text-[10px] uppercase font-bold" style="">Invested</p>
+<p class="text-slate-900 dark:text-slate-100 text-sm font-semibold" style="">UGX 10M</p>
+</div>
+<div>
+<p class="text-slate-400 text-[10px] uppercase font-bold" style="">Expected Return</p>
+<p class="text-emerald-600 dark:text-emerald-400 text-sm font-semibold" style="">UGX 1.8M</p>
+</div>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-xs mb-3 italic" style="">Matures on May 20, 2026</p>
+<button class="w-full py-2 border border-primary text-primary text-xs font-bold rounded-lg hover:bg-primary hover:text-white transition-colors" style="">Cash out</button></div>
+</div>
+<!-- Add New Asset Placeholder -->
+<button class="w-full flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-transparent text-slate-400 hover:text-primary hover:border-primary/50 transition-all" style="">
+<span class="material-symbols-outlined" style="">add</span>
+<span class="font-bold text-sm" style="">Add New Asset Class</span>
+</button>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-50">
+<div class="flex gap-2 border-t border-slate-100 dark:border-slate-800 bg-white/90 dark:bg-background-dark/90 backdrop-blur-md px-4 pb-6 pt-3">
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-primary" href="#" style="">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">home</span>
+<p class="text-xs font-bold" style="">Home</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500" href="#" style="">
+<span class="material-symbols-outlined" style="">pie_chart</span>
+<p class="text-xs font-medium" style="">Portfolio</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500" href="#" style="">
+<span class="material-symbols-outlined" style="">account_balance_wallet</span>
+<p class="text-xs font-medium" style="">Wallet</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500" href="#" style="">
+<span class="material-symbols-outlined" style="">person</span>
+<p class="text-xs font-medium" style="">Profile</p>
+</a>
+</div>
+</div>
+</div>
+</body></html>

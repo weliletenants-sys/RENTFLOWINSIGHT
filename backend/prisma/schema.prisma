@@ -8,6 +8,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum PaymentMethod {
+  WALLET
+  CASH
+  MOBILE_MONEY
+}
+
 model AgentAdvanceLedger {
   amount_deducted  Float
   closing_balance  Float
@@ -304,26 +310,25 @@ model EarningPredictions {
 }
 
 model GeneralLedger {
-  account              String?
+  id                   String   @id @default(uuid())
+  transaction_id       String   // Groups double-entry pairs
+  account_id           String   // Generic owner reference
+  entry_type           String   // 'debit' or 'credit'
   amount               Float
   category             String
-  created_at           String
   description          String?
-  direction            String
-  id                   String  @id @default(uuid())
   linked_party         String?
   reference_id         String?
   running_balance      Float?
   source_id            String?
   source_table         String
-  transaction_date     String
-  transaction_group_id String?
-  user_id              String?
+  transaction_date     String?
   from_bucket          String?
   to_bucket            String?
   role_type            String?
   scope                String?
   account_type         String?
+  created_at           DateTime @default(now())
 
   @@map("general_ledger")
 }
@@ -482,6 +487,7 @@ model LedgerEntries {
 
 model LedgerTransactions {
   id                   String  @id @default(uuid())
+  idempotency_key      String? @unique
   approved_by          String?
   category             String
   created_at           String
@@ -828,7 +834,7 @@ model RentRequests {
   agent_verified           Boolean?
   agent_verified_at        String?
   agent_verified_by        String?
-  amount_repaid            Float
+  remaining_balance        Float    @default(0)
   approval_comment         String?
   approved_at              String?
   approved_by              String?
@@ -872,14 +878,45 @@ model RentRequests {
   @@map("rent_requests")
 }
 
-model Repayments {
-  amount          Float
-  created_at      String
-  id              String  @id @default(uuid())
-  rent_request_id String?
-  tenant_id       String?
+model PipelineIdempotency {
+  id              String   @id @default(uuid())
+  repayment_id    String   @unique
+  rent_request_id String
+  created_at      DateTime @default(now())
+  
+  @@map("pipeline_idempotency")
+}
 
+model Repayments {
+  id                    String        @id @default(uuid())
+  tenant_id             String
+  paid_by_account_id    String
+  amount                Float
+  payment_method        PaymentMethod
+  ledger_transaction_id String
+  payment_id            String
+  rent_request_id       String?
+  status                String        @default("completed")
+  created_at            DateTime      @default(now())
+
+  @@index([payment_id])
+  @@index([ledger_transaction_id])
   @@map("repayments")
+}
+
+model Commissions {
+  id                    String   @id @default(uuid())
+  agent_id              String
+  tenant_id             String
+  repayment_id          String
+  amount                Float
+  rate                  Float
+  ledger_transaction_id String
+  created_at            DateTime @default(now())
+
+  @@index([repayment_id])
+  @@index([ledger_transaction_id])
+  @@map("commissions")
 }
 
 model ReviewImages {
@@ -1269,11 +1306,11 @@ model WalletTransactions {
 }
 
 model Wallets {
-  balance    Float
-  created_at String
-  id         String  @id @default(uuid())
-  updated_at String
-  user_id    String?
+  id         String   @id @default(uuid())
+  account_id String   @unique
+  balance    Float    @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   @@map("wallets")
 }
@@ -1326,6 +1363,16 @@ model WithdrawalRequests {
   user_id               String?
 
   @@map("withdrawal_requests")
+}
+
+model OutboxEvents {
+  id         String   @id @default(uuid())
+  event_type String
+  payload    Json
+  status     String   @default("pending")
+  created_at DateTime @default(now())
+
+  @@map("outbox_events")
 }
 
 model AuditLogs {

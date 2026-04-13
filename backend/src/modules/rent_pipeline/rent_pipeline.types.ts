@@ -1,0 +1,22 @@
+export type RentPipelineStatus = 
+  | 'REQUESTED'
+  | 'TENANT_APPROVED'
+  | 'AGENT_APPROVED'
+  | 'LANDLORD_APPROVED'
+  | 'COO_APPROVED'
+  | 'FUNDED'
+  | 'ACTIVE'
+  | 'REPAID'
+  | 'CLOSED';
+
+export const STATE_TRANSITIONS: Record<RentPipelineStatus, RentPipelineStatus[]> = {
+  REQUESTED: ["TENANT_APPROVED"],
+  TENANT_APPROVED: ["AGENT_APPROVED"],
+  AGENT_APPROVED: ["LANDLORD_APPROVED"],
+  LANDLORD_APPROVED: ["COO_APPROVED"],
+  COO_APPROVED: ["FUNDED"],
+  FUNDED: ["ACTIVE"],
+  ACTIVE: ["REPAID"],
+  REPAID: ["CLOSED"],
+  CLOSED: [],
+};

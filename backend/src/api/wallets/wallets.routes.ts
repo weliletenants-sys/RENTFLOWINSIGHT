@@ -1,14 +1,15 @@
-
 import { Router } from 'express';
 import { getMyWallet, deposit, withdraw, transfer, requestDeposit } from '../../controllers/wallets.controller';
-import { authGuard } from '../../middlewares/auth.middleware';
+import { ensureUserAuthenticated } from '../../middlewares/auth.middleware';
+import { validateSchema } from '../../middlewares/validation.middleware';
+import { amountSchema, transferSchema, requestDepositSchema } from './wallets.schemas';
 
 const router = Router();
 
-router.get('/my-wallet', authGuard, getMyWallet);
-router.post('/deposits', authGuard, deposit);
-router.post('/deposits/requests', authGuard, requestDeposit);
-router.post('/withdrawals', authGuard, withdraw);
-router.post('/transfers', authGuard, transfer);
+router.get('/my-wallet', ensureUserAuthenticated, getMyWallet);
+router.post('/deposits', ensureUserAuthenticated, validateSchema(amountSchema), deposit);
+router.post('/deposits/requests', ensureUserAuthenticated, validateSchema(requestDepositSchema), requestDeposit);
+router.post('/withdrawals', ensureUserAuthenticated, validateSchema(amountSchema), withdraw);
+router.post('/transfers', ensureUserAuthenticated, validateSchema(transferSchema), transfer);
 
 export default router;

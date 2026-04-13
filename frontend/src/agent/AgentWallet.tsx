@@ -8,7 +8,8 @@ import AgentWithdrawSheet from './components/AgentWithdrawSheet';
 
 export default function AgentWallet() {
   const navigate = useNavigate();
-  const [balance, setBalance] = useState(0);
+  const [floatBalance, setFloatBalance] = useState(0);
+  const [commissionBalance, setCommissionBalance] = useState(0);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [activeSheet, setActiveSheet] = useState<'deposit' | 'withdraw' | null>(null);
 
@@ -18,7 +19,8 @@ export default function AgentWallet() {
         getWalletBalance(),
         getTransactions()
       ]);
-      setBalance(walletData.balance || 0);
+      setFloatBalance(walletData.float_balance || 0);
+      setCommissionBalance(walletData.commission_balance || 0);
       setTransactions(txData.transactions || []);
     } catch (err: any) {
       console.error(err.isProblemDetail ? err.detail : 'Failed to load wallet data');
@@ -52,10 +54,22 @@ export default function AgentWallet() {
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full -ml-12 -mb-12 blur-xl"></div>
             
-            <div className="relative z-10">
-              <p className="text-white/80 text-sm font-medium uppercase tracking-widest">Available Balance</p>
-              <div className="flex items-center justify-between mt-1">
-                <h2 className="text-4xl font-extrabold tracking-tight">UGX {balance.toLocaleString()}</h2>
+            <div className="relative z-10 flex justify-between items-start">
+              <div>
+                <p className="text-white/80 text-sm font-medium uppercase tracking-widest flex items-center gap-2">
+                   <Wallet size={16} /> Float Balance
+                </p>
+                <div className="mt-1">
+                  <h2 className="text-4xl font-extrabold tracking-tight">UGX {floatBalance.toLocaleString()}</h2>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-white/80 text-xs font-medium uppercase tracking-widest flex items-center gap-1 justify-end">
+                   Commission
+                </p>
+                <div className="mt-1">
+                  <h3 className="text-xl font-bold text-green-300">UGX {commissionBalance.toLocaleString()}</h3>
+                </div>
               </div>
             </div>
             
@@ -184,7 +198,7 @@ export default function AgentWallet() {
         <AgentWithdrawSheet 
           isOpen={activeSheet === 'withdraw'} 
           onClose={() => setActiveSheet(null)} 
-          availableBalance={balance}
+          availableBalance={commissionBalance}
           onSuccess={() => fetchWalletData()} 
         />
       </div>

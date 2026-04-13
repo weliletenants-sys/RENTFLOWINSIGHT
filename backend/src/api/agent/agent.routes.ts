@@ -26,11 +26,12 @@ router.get('/earnings', authGuard, getEarnings);
 router.get('/leaderboard', authGuard, getAgentLeaderboard);
 
 // Module 2: Field Operations
-import { recordVisit, recordCollection, issueReceipt, generatePaymentToken, uploadDeliveryConfirmation } from '../../controllers/agent.operations.controller';
+import { recordVisit, recordCollection, issueReceipt, generatePaymentToken, generateTenantFormToken, uploadDeliveryConfirmation } from '../../controllers/agent.operations.controller';
 router.post('/visits', authGuard, recordVisit);
 router.post('/collections', authGuard, recordCollection);
 router.post('/receipts', authGuard, issueReceipt);
 router.post('/tokens', authGuard, generatePaymentToken);
+router.post('/tenants/tokens/generate', authGuard, generateTenantFormToken);
 router.post('/deliveries', authGuard, uploadDeliveryConfirmation);
 
 // Module 3: Identity & Network Registrations

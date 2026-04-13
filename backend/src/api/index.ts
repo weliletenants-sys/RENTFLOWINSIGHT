@@ -4,7 +4,6 @@ import { enforceAdminDomain, enforceUserDomain } from '../middlewares/domain.mid
 import { ensureAdminAuthenticated, ensureUserAuthenticated } from '../middlewares/auth.middleware';
 
 // ─── USER ROUTES (Standard Domain) ───
-import authRoutes from './auth/auth.routes';
 import walletsRoutes from './wallets/wallets.routes';
 import rentRequestsRoutes from './rent-requests/rent-requests.routes';
 import applicationsRoutes from './applications/applications.routes';
@@ -35,6 +34,21 @@ import finopsRoutes from './ops/finops.routes';
 import opsRoutes from './ops/index';
 
 const api = Router();
+
+// ==========================================
+// LEGACY LOCK: PHASE 1 MIGRATION BARRIER
+// ==========================================
+api.use((req, res, next) => {
+  res.setHeader('X-Deprecated', 'true');
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+    return res.status(403).json({ 
+      error: 'Legacy Systems Locked.', 
+      message: 'This legacy endpoint is strictly read-only during the V2 routing migration. State mutations must pass exclusively through /api/v2/ core routes.' 
+    });
+  }
+  next();
+});
+
 
 // ==========================================
 // ADMIN CONTEXT API ROUTING

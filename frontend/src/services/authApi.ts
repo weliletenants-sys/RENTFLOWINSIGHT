@@ -1,23 +1,13 @@
-import axios from 'axios';
-
-const api = axios.create({
-  baseURL: (import.meta.env.VITE_API_URL || (import.meta.env.VITE_API_URL || 'http://localhost:3000')) + '/api/auth',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+import { apiClient } from './apiClient';
 
 export const loginUser = async (credentials: { phone: string; password: string }) => {
-  const response = await api.post('/login', credentials);
+  const response = await apiClient.post('/auth/login', credentials);
   return response.data;
 };
 
 export const loginAdmin = async (credentials: { phone: string; password: string }) => {
-  const adminApi = axios.create({
-    baseURL: (import.meta.env.VITE_API_URL || 'http://localhost:3000') + '/api/admin/auth',
-    headers: { 'Content-Type': 'application/json' },
-  });
-  const response = await adminApi.post('/login', credentials);
+  // Now natively points to V2 Domain Admin Auth endpoint!
+  const response = await apiClient.post('/admin/auth/login', credentials);
   return response.data;
 };
 
@@ -30,22 +20,22 @@ export const registerUser = async (userData: {
   email?: string;
   referrer_id?: string;
 }) => {
-  const response = await api.post('/registrations', userData);
+  const response = await apiClient.post('/auth/register', userData);
   return response.data;
 };
 
 export const sendOTP = async (data: { phone: string }) => {
-  const response = await api.post('/otp', data);
+  const response = await apiClient.post('/auth/otp', data);
   return response.data;
 };
 
 export const verifyOTP = async (data: { phone: string; otp_code: string }) => {
-  const response = await api.post('/otp/verifications', data);
+  const response = await apiClient.post('/auth/otp/verifications', data);
   return response.data;
 };
 
 export const logoutUser = async (token: string) => {
-  const response = await api.post('/logout', {}, {
+  const response = await apiClient.post('/auth/logout', {}, {
     headers: { Authorization: `Bearer ${token}` }
   });
   return response.data;

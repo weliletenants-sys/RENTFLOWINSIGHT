@@ -1,4 +1,5 @@
-import axios from 'axios';
+import { apiClient } from './apiClient';
+
 import { v7 as uuidv7 } from 'uuid';
 
 const API = '/api';
