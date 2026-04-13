@@ -3,9 +3,6 @@ import { apiClient } from './apiClient';
 
 const API = (import.meta.env.VITE_API_URL || 'http://localhost:3000') + '/api';
 
-export 
-
-
 export const getTenantRentProgress = async () => {
   const { data } = await apiClient.get('/tenant/rent-progress');
   return data;
@@ -44,3 +41,4 @@ export const payRent = async (payload: { amount: number; paymentMethodToken?: st
   const { data } = await apiClient.post('/tenants/rent/pay', payload);
   return data;
 };
+
