@@ -10,10 +10,10 @@ const loginLimiter = rateLimit({
   message: {
       status: 'error',
       error: 'Too Many Requests',
-      detail: 'Too many admin login attempts. Please try again in 3 minutes.'
+    detail: 'Too many admin login attempts. Please try again in 3 minutes.'
   },
   keyGenerator: (req) => {
-    return req.ip + '_' + req.originalUrl;
+    return (req.ip?.replace(/^::ffff:/, '') || 'unknown') + '_' + req.originalUrl;
   }
 });
 
