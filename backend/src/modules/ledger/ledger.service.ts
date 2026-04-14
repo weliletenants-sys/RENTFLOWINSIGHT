@@ -68,7 +68,6 @@ export class LedgerService {
       HAVING count(*) > 1
     ` as any[];
 
-    // Orphaned records check (Transactions missing ledger links or ghost transactions)
     const orphans = await prisma.$queryRaw`
       SELECT t.id 
       FROM ledger_transactions t
@@ -85,5 +84,111 @@ export class LedgerService {
       last_checked_at: new Date().toISOString()
     };
   }
+
+  /**
+   * Executes a strict atomic double-entry transfer guaranteed exactly-once via PostgreSQL idempotency lock.
+   */
+  async transferWithIdempotency(
+    payload: {
+      idempotencyKey: string;
+      fromAccountId: string;
+      toAccountId: string;
+      amount: number;
+      category: string;
+      description?: string;
+      sourceTable?: string;
+      sourceId?: string;
+    },
+    actor: { id: string; role: string; scopes: string[] }
+  ) {
+    if (!actor.scopes.includes('ledger.transfer.execute') && actor.role !== 'SUPER_ADMIN') {
+      throw new Error(`Unauthorized ledger access. Actor [${actor.id}] lacks required scope 'ledger.transfer.execute'`);
+    }
+
+    if (payload.amount <= 0) {
+      throw new Error("Transfer amount must be strictly greater than 0");
+    }
+
+    const prisma = require('../../prisma/prisma.client').default;
+    const { v4: uuidv4 } = require('uuid');
+
+    return await prisma.$transaction(async (tx: TransactionClient) => {
+      // 1. Lock on Idempotency Key
+      const existingKey = await tx.idempotencyKeys.findUnique({
+        where: { key: payload.idempotencyKey }
+      });
+
+      if (existingKey) {
+        if (existingKey.status === 'completed') return existingKey.response; // Replay stored success
+        if (existingKey.status === 'processing') throw new Error('Transaction is currently processing.');
+      }
+
+      // Initialize the transaction lock processing state
+      await tx.idempotencyKeys.create({
+        data: { key: payload.idempotencyKey, status: 'processing' }
+      });
+
+      const txGroupId = uuidv4();
+
+      // 2. Perform Double Entry (Failures automatically trigger prisma rollback)
+      await this.recordDoubleEntry(tx, 
+        {
+          entryType: 'debit',
+          amount: payload.amount,
+          category: payload.category,
+          sourceTable: payload.sourceTable,
+          sourceId: payload.sourceId,
+          accountId: payload.fromAccountId,
+          transactionId: txGroupId
+        },
+        {
+          entryType: 'credit',
+          amount: payload.amount,
+          category: payload.category,
+          sourceTable: payload.sourceTable,
+          sourceId: payload.sourceId,
+          accountId: payload.toAccountId,
+          transactionId: txGroupId
+        }
+      );
+
+      const responsePayload = {
+        transaction_id: txGroupId,
+        amount: payload.amount,
+        status: 'SUCCESS'
+      };
+
+      // 3. Persist success result to idempotency keys
+      await tx.idempotencyKeys.update({
+        where: { key: payload.idempotencyKey },
+        data: { status: 'completed', response: responsePayload as any }
+      });
+
+      // 4. Audit Physical Money Movement explicitly
+      try {
+        await tx.auditLogs.create({
+           data: {
+              user_id: actor.id,
+              actor_role: actor.role,
+              action_type: 'ledger.transfer',
+              target_id: txGroupId,
+              metadata: {
+                 amount: payload.amount,
+                 category: payload.category,
+                 idempotencyKey: payload.idempotencyKey
+              }
+           }
+        });
+      } catch (e: any) {
+        // Safe fail: if audit logs table is missing/errors we still log it visibly
+        console.warn(`[AUDIT] Missing AuditLog table/failed log: Ledger transferred by ${actor.id}`);
+      }
+
+      return responsePayload;
+    });
+  }
 }
+
+
+
 

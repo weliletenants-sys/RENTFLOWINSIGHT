@@ -1,64 +1,70 @@
 import { Request, Response, NextFunction } from 'express';
-import { getRedisClient } from '../config/redis.client';
+import prisma from '../prisma/prisma.client';
+import logger from '../utils/logger';
 
 export const requireIdempotency = () => {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const idempotencyKey = req.headers['idempotency-key'];
+    const idempotencyKey = req.headers['x-idempotency-key'] || req.headers['idempotency-key'];
 
     if (!idempotencyKey || typeof idempotencyKey !== 'string') {
-      return res.status(400).json({ message: 'Idempotency-Key header is required for this operation.' });
+      return res.status(400).json({ 
+        title: 'Missing Idempotency Key',
+        detail: 'The X-Idempotency-Key header is strictly required for this mutating operation to prevent duplicates.'
+      });
     }
 
-    const redis = getRedisClient();
-    const redisKey = `idemp:req:${idempotencyKey}`;
+    try {
+      // 1. Check if key exists
+      const existingRecord = await prisma.idempotencyKeys.findUnique({
+        where: { key: idempotencyKey }
+      });
 
-    // Try to acquire the lock using SETNX (Set if Not eXists)
-    const acquired = await redis.setnx(redisKey, 'PROCESSING');
-    
-    if (acquired === 1) {
-      // Set TTL to 24 hours to prevent memory leaks in Redis
-      await redis.expire(redisKey, 86400);
+      if (existingRecord) {
+        if (existingRecord.status === 'completed') {
+          logger.info(`[Idempotency] Replaying cached response for key: ${idempotencyKey}`);
+          return res.status(200).json(existingRecord.response);
+        } else if (existingRecord.status === 'processing') {
+          return res.status(409).json({
+            title: 'Conflict',
+            detail: 'A request with this Idempotency-Key is currently being processed. Please wait.'
+          });
+        } else {
+           // If error status, allow a retry by falling through
+           logger.warn(`[Idempotency] Previous attempt failed for key: ${idempotencyKey}. Permitting retry.`);
+        }
+      } else {
+        // Create the processing lock
+        await prisma.idempotencyKeys.create({
+          data: { key: idempotencyKey, status: 'processing' }
+        });
+      }
 
-      // Hook into res.json to save the response on success
+      // 2. Hook into res.json to capture response on success
       const originalJson = res.json;
       
       res.json = function (body) {
-        // Only cache the response if it was a success (2xx)
         if (res.statusCode >= 200 && res.statusCode < 300) {
-           redis.setex(redisKey, 86400, JSON.stringify({
-               status: 'COMPLETED',
-               body,
-               statusCode: res.statusCode
-           })).catch(err => console.error('Failed to cache idempotency payload:', err));
+          // Success: finalize the idempotency record
+          prisma.idempotencyKeys.update({
+             where: { key: idempotencyKey },
+             data: { status: 'completed', response: body as any }
+          }).catch(err => logger.error(`[Idempotency] Failed to cache final response:`, err));
         } else {
-           // If the transaction failed natively, delete the lock so the user can naturally retry
-           redis.del(redisKey).catch(err => console.error('Failed to clear idempotency lock on error:', err));
+          // Failure: we either mark it as error or delete so the user can easily retry
+          prisma.idempotencyKeys.update({
+             where: { key: idempotencyKey },
+             data: { status: 'error' }
+          }).catch(err => logger.error(`[Idempotency] Failed to mark error status:`, err));
         }
-        
+
         return originalJson.call(this, body);
       };
 
       next();
-    } else {
-      // Key already exists. Check if it's currently processing or already cached.
-      const cachedResponse = await redis.get(redisKey);
-      
-      if (cachedResponse === 'PROCESSING') {
-        return res.status(409).json({ message: 'A request with this Idempotency-Key is currently being processed. Please wait.' });
-      }
 
-      // If it exists but is not 'PROCESSING', it means it completed successfully before.
-      try {
-         const { status, body, statusCode } = JSON.parse(cachedResponse!);
-         if (status === 'COMPLETED') {
-             // Replay the exact cached success response to satisfy the frontend gracefully
-             return res.status(statusCode).json(body);
-         }
-      } catch(e) {
-          console.error("Failed to parse idempotency cache:", e);
-      }
-
-      return res.status(409).json({ message: 'Duplicate request detected and blocked.' });
+    } catch (error) {
+      logger.error('[Idempotency Middleware] Fatal Error:', error);
+      next(error);
     }
   };
 };

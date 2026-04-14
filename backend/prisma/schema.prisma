@@ -2583,11 +2583,12 @@ model Commissions {
 }
 
 model OutboxEvents {
-  id         String   @id @default(uuid())
-  event_type String
+  id         String    @id @default(uuid())
+  type       String
   payload    Json
-  status     String   @default("pending")
-  created_at DateTime @default(now())
+  status     String    @default("pending")
+  locked_at  DateTime?
+  created_at DateTime  @default(now())
 
   @@map("outbox_events")
 }
@@ -3021,3 +3022,25 @@ model RolePermissions {
   @@unique([role_id, permission_id])
   @@map("role_permissions")
 }
+
+model IdempotencyKeys {
+  key        String   @id
+  response   Json?
+  status     String   @default("processing") // 'processing', 'completed', 'error'
+  created_at DateTime @default(now())
+  expires_at DateTime @default(dbgenerated("NOW() + interval '24 hours'"))
+
+  @@map("idempotency_keys")
+}
+
+
+
+model ProcessedEvents {
+  event_id   String   @id
+  created_at DateTime @default(now())
+
+  @@map("processed_events")
+}
+
+
+

@@ -36,6 +36,29 @@ import opsRoutes from './ops/index';
 const api = Router();
 
 // ==========================================
+// HEALTH CHECKS
+// ==========================================
+api.get('/health', (req, res) => {
+    res.json({ status: 'ok', service: 'financial-os', timestamp: new Date().toISOString() });
+});
+
+api.get('/health/auth', async (req, res) => {
+    try {
+        const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://wirntoujqoyjobfhyelc.supabase.co';
+        const JWKS_URI = `${SUPABASE_URL}/auth/v1/keys`;
+        const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
+
+        const probe = await fetch(JWKS_URI, { headers: { apikey: SUPABASE_ANON_KEY } });
+        if (probe.ok) {
+            return res.json({ jwks: 'ok', status: probe.status });
+        } else {
+            return res.status(502).json({ jwks: 'error', status: probe.status });
+        }
+    } catch (e: any) {
+        return res.status(500).json({ jwks: 'offline', error: e.message });
+    }
+});
+// ==========================================
 // LEGACY LOCK: PHASE 1 MIGRATION BARRIER
 // ==========================================
 api.use((req, res, next) => {
@@ -73,6 +96,14 @@ adminRouter.use('/finops', finopsRoutes);
 adminRouter.use('/ops', opsRoutes);
 
 api.use('/admin', adminRouter);
+
+import ledgerRoutes from '../modules/ledger/ledger.routes';
+
+// ==========================================
+// CORE DOMAINS (Zero-Trust)
+// ==========================================
+// The Ledger is the absolute truth layer. It has its own strict guards internally.
+api.use('/ledger', ledgerRoutes);
 
 // ==========================================
 // USER CONTEXT API ROUTING
