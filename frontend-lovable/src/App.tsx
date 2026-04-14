@@ -215,28 +215,45 @@ PageLoader.displayName = 'PageLoader';
 // Stable routes wrapper — no RoutePrefetcher (DOM overhead), no JS page transitions
 // Global banner - lazy loaded
 function AppRoutes() {
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const goOnline = () => setIsOnline(true);
+    const goOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', goOnline);
+    window.addEventListener('offline', goOffline);
+
+    return () => {
+      window.removeEventListener('online', goOnline);
+      window.removeEventListener('offline', goOffline);
+    };
+  }, []);
+
   const handlePullRefresh = async () => {
     try {
-      // Clear all caches
       if ('caches' in window) {
         const keys = await caches.keys();
         await Promise.all(keys.map(k => caches.delete(k)));
       }
-      // Unregister service workers so fresh content loads
       if ('serviceWorker' in navigator) {
         const regs = await navigator.serviceWorker.getRegistrations();
         await Promise.all(regs.map(r => r.unregister()));
       }
     } catch {
-      // ignore cache errors
+      // ignore
     }
-    // Hard reload to pick up new assets
     window.location.reload();
   };
 
   return (
     <PullToRefresh onRefresh={handlePullRefresh} className="min-h-screen">
       <div>
+        {!isOnline && (
+          <div className="bg-red-500 text-white text-center py-2 px-4 sticky top-0 z-50 text-sm font-medium animate-pulse">
+            You are offline. Showing cached content where available.
+          </div>
+        )}
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<Index />} />

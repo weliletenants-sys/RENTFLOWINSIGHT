@@ -62,8 +62,9 @@ export function useOfflineAgentDashboard(): UseOfflineAgentDashboardReturn {
         return true;
       }
       
+      const CACHE_KEY = `agent_dashboard_v2_${user.id}`;
       // Fallback to localStorage
-      const cached = localStorage.getItem(`agent_dashboard_${user.id}`);
+      const cached = localStorage.getItem(CACHE_KEY);
       if (cached) {
         const data = JSON.parse(cached);
         setStats(prev => ({ ...prev, ...data }));
@@ -117,8 +118,9 @@ export function useOfflineAgentDashboard(): UseOfflineAgentDashboardReturn {
       setHasLoadedOnce(true);
 
       // Cache for offline use - both IndexedDB and localStorage as fallback
+      const CACHE_KEY = `agent_dashboard_v2_${user.id}`;
       await cacheDashboardData(user.id, 'agent', newStats);
-      localStorage.setItem(`agent_dashboard_${user.id}`, JSON.stringify(newStats));
+      localStorage.setItem(CACHE_KEY, JSON.stringify(newStats));
       
     } catch (error) {
       console.error('[useOfflineAgentDashboard] Failed to fetch data:', error);

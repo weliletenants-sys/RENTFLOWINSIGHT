@@ -30,12 +30,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ? cachedRoles.includes('supporter') ? cachedRoles : ['supporter', ...cachedRoles] as AppRole[]
       : DEFAULT_ROLES;
 
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  // Synchronously hydrate shell state from local cache (Render first -> Fetch later)
+  const [user, setUser] = useState<User | null>(() => {
+    return cachedSession ? { id: cachedSession.userId, email: cachedSession.email } as unknown as User : null;
+  });
+  const [session, setSession] = useState<Session | null>(() => {
+    return cachedSession ? { user: { id: cachedSession.userId, email: cachedSession.email } } as unknown as Session : null;
+  });
   const [role, setRole] = useState<AppRole | null>(initialRoles.includes('supporter') ? 'supporter' : initialRoles[0]);
   const [roles, setRoles] = useState<AppRole[]>(initialRoles);
   const rolesRef = useRef<AppRole[]>(initialRoles);
-  const [loading, setLoading] = useState(true);
+  
+  // NEVER block the UI render cycle. Network runs quietly in background.
+  const [loading, setLoading] = useState(false);
 
   // Keep ref in sync with state
   const setRolesWithRef = (newRoles: AppRole[]) => {
@@ -94,12 +101,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     const initializeAuth = async () => {
-      const forceLoadingOff = setTimeout(() => {
-        if (isMounted) {
-          console.warn('[Auth] Init timeout after 8s — forcing loading off');
-          setLoading(false);
-        }
-      }, 8000);
+      // Use AbortController for explicit slow network fail-fast timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
 
       // Start role fetch early from cache in parallel with getSession
       let earlyRoleFetch: Promise<void> | null = null;
@@ -155,8 +159,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (err: any) {
         console.warn('[Auth] Init failed (keeping session for retry):', err?.message);
       } finally {
-        clearTimeout(forceLoadingOff);
-        if (isMounted) setLoading(false);
+        clearTimeout(timeoutId);
+        // Loading is already false, but if we need a flag for "background fetch done", we could set it here.
       }
     };
 

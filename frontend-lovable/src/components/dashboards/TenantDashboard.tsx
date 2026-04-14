@@ -92,17 +92,19 @@ export default function TenantDashboard({ user, signOut, currentRole, availableR
   const { toast } = useToast();
   const { isAccepted: hasAcceptedTerms, isLoading: agreementLoading, acceptAgreement } = useTenantAgreement();
 
+  const CACHE_KEY = `tenant_dashboard_v2_${user.id}`;
+  
   // Local-first: read cache synchronously for instant paint
   const [rentRequests, setRentRequests] = useState<RentRequest[]>(() => {
     try {
-      const raw = localStorage.getItem(`tenant_dashboard_${user.id}`);
+      const raw = localStorage.getItem(CACHE_KEY);
       if (raw) return JSON.parse(raw).rentRequests || [];
     } catch {}
     return [];
   });
   const [repayments, setRepayments] = useState<Repayment[]>(() => {
     try {
-      const raw = localStorage.getItem(`tenant_dashboard_${user.id}`);
+      const raw = localStorage.getItem(CACHE_KEY);
       if (raw) return JSON.parse(raw).repayments || [];
     } catch {}
     return [];
@@ -153,7 +155,7 @@ export default function TenantDashboard({ user, signOut, currentRole, availableR
         setRentRequests(newRentRequests);
         setRepayments(newRepayments);
         
-        localStorage.setItem(`tenant_dashboard_${user.id}`, JSON.stringify({
+        localStorage.setItem(CACHE_KEY, JSON.stringify({
           rentRequests: newRentRequests,
           repayments: newRepayments,
           timestamp: Date.now()
@@ -178,7 +180,7 @@ export default function TenantDashboard({ user, signOut, currentRole, availableR
       setRentRequests(newRentRequests);
       setRepayments([]);
       
-      localStorage.setItem(`tenant_dashboard_${user.id}`, JSON.stringify({
+      localStorage.setItem(CACHE_KEY, JSON.stringify({
         rentRequests: newRentRequests,
         repayments: [],
         timestamp: Date.now()

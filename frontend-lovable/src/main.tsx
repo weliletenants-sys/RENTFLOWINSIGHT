@@ -159,6 +159,10 @@ addEventListener('unhandledrejection', (e) => {
   const r = String((e as any).reason ?? '').toLowerCase();
   if (r.includes('dynamically imported') || r.includes('failed to fetch') || r.includes('loading chunk') || r.includes('import timeout') || r.includes('module script failed')) {
     e.preventDefault();
+    if (!sessionStorage.getItem('chunk_retry')) {
+      sessionStorage.setItem('chunk_retry', '1');
+      window.location.reload();
+    }
   }
 });
 

@@ -11,7 +11,11 @@ interface LocationData {
   permissionStatus: 'granted' | 'denied' | 'prompt' | 'unsupported';
 }
 
-export function useGeolocation(useGPS: boolean = false): LocationData & { requestGPSPermission: () => Promise<boolean> } {
+export function useGeolocation(useGPS: boolean = false): LocationData & { 
+  location: LocationData;
+  captureLocation: () => Promise<boolean>;
+  requestGPSPermission: () => Promise<boolean>;
+} {
   const [location, setLocation] = useState<LocationData>({
     country: null,
     city: null,
@@ -142,7 +146,12 @@ export function useGeolocation(useGPS: boolean = false): LocationData & { reques
     fetchLocation();
   }, [useGPS, requestGPSPermission]);
 
-  return { ...location, requestGPSPermission };
+  return { 
+    ...location, 
+    location, // Legacy fallback for wizards expecting nested location data
+    captureLocation: requestGPSPermission, // Legacy fallback alias
+    requestGPSPermission 
+  };
 }
 
 // Function to get location data (for use in non-hook contexts)
