@@ -26,12 +26,12 @@ const LandlordDashboard = lazy(() => import('@/components/dashboards/LandlordDas
 const ManagerDashboard = lazy(() => import('@/components/dashboards/ManagerDashboard'));
 
 // Progressive reveal loading layout matches App.tsx Smart Shell
-const DashboardLoadingFallback = memo(() => {
+const DashboardLoadingFallback = memo(({ role }: { role?: AppRole | null }) => {
   const [offlineMode, setOfflineMode] = useState(false);
   const [cachedName, setCachedName] = useState('');
   
   useEffect(() => {
-    const timer = setTimeout(() => setOfflineMode(true), 4000);
+    const timer = setTimeout(() => setOfflineMode(true), 8000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -47,10 +47,67 @@ const DashboardLoadingFallback = memo(() => {
     } catch {}
   }, []);
 
+  // Dedicated Funder (Supporter) Skeleton to maintain vibrant purple PWA aesthetic
+  if (role === 'supporter') {
+    return (
+      <div className="h-dvh bg-background flex flex-col overflow-hidden pb-24">
+        {/* Top Funder Header Area */}
+        <div className="h-14 flex items-center justify-between px-4 border-b border-border bg-[#7c3aed]">
+          <div className="w-24 h-6 bg-white/20 rounded-md animate-pulse"></div>
+          <div className="flex gap-3 text-white/50">
+            <div className="w-6 h-6 rounded-md bg-white/20 animate-pulse"></div>
+            <div className="w-6 h-6 rounded-md bg-white/20 animate-pulse"></div>
+          </div>
+        </div>
+
+        <div className="px-3 xs:px-4 py-4 xs:py-5 space-y-5 max-w-lg mx-auto w-full">
+          {/* Centered Avatar Greet */}
+          <div className="flex flex-col items-center gap-2 py-2">
+            <div className="w-[56px] h-[56px] rounded-full bg-muted/60 animate-pulse border-2 border-primary/20"></div>
+            <div className="flex flex-col items-center gap-1">
+              <div className="w-20 h-4 bg-muted/60 rounded animate-pulse"></div>
+              <div className="w-16 h-2 bg-muted/60 rounded animate-pulse"></div>
+            </div>
+            <div className="w-32 h-6 bg-muted/40 rounded-full animate-pulse mt-2"></div>
+          </div>
+
+          {/* Purple Wallet Hero Skeleton */}
+          <div className="w-full rounded-[24px] bg-[#6116ca] overflow-hidden shadow-xl p-5 relative animate-pulse flex flex-col gap-6">
+            <div className="flex justify-between items-start">
+               <div className="w-32 h-4 bg-white/20 rounded"></div>
+               <div className="w-16 h-5 bg-white/30 rounded-full"></div>
+            </div>
+            
+            <div className="w-32 h-7 bg-white/20 rounded"></div>
+            
+            <div className="grid grid-cols-3 gap-2 mt-4">
+              <div className="h-[60px] bg-white/10 rounded-xl"></div>
+              <div className="h-[60px] bg-white/10 rounded-xl"></div>
+              <div className="h-[60px] bg-white/10 rounded-xl"></div>
+            </div>
+          </div>
+
+          {/* Buttons Area */}
+          <div className="flex gap-2">
+            <div className="flex-1 h-12 bg-primary/20 rounded-2xl animate-pulse"></div>
+            <div className="w-[100px] h-12 bg-muted/60 rounded-2xl animate-pulse border-2 border-border/60"></div>
+            <div className="w-16 h-12 bg-muted/60 rounded-2xl animate-pulse border-2 border-border/60"></div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="w-40 h-6 bg-muted/60 rounded animate-pulse"></div>
+            <div className="h-16 bg-card/40 border border-border/60 rounded-xl animate-pulse"></div>
+            <div className="h-16 bg-card/40 border border-border/60 rounded-xl animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback generic grey skeleton for tenants/agents/etc
   return (
     <div className="min-h-screen bg-background relative font-sans antialiased pb-24">
-      {/* Structural Top Bar Anchor is handled by nested layout components usually, 
-          but if not, this fills the gap precisely matching the Smart Shell */}
+      {/* Structural Top Bar Anchor */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-border bg-card">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-muted/80 animate-pulse"></div>
@@ -73,7 +130,8 @@ const DashboardLoadingFallback = memo(() => {
                {offlineMode ? <>Limited connectivity</> : <><div className="w-2 h-2 rounded-full border border-current border-t-transparent animate-spin"/> syncing...</>}
             </div>
           </div>
-          <div className="text-3xl font-bold opacity-40 mb-6">UGX <span className="tracking-tight">---,---</span></div>
+          {/* Shimmer skeleton replaces fake balance to preserve trust */}
+          <div className="w-48 h-10 bg-muted/60 rounded-lg animate-pulse mb-6"></div>
           <div className="flex gap-3">
             <div className="flex-1 h-11 bg-muted/40 rounded-xl flex items-center justify-center text-xs font-semibold text-muted-foreground/50 border border-border/50">Send</div>
             <div className="flex-1 h-11 bg-muted/40 rounded-xl flex items-center justify-center text-xs font-semibold text-muted-foreground/50 border border-border/50">Receive</div>
@@ -365,7 +423,7 @@ function DashboardContent() {
 
     return (
       <>
-        <Suspense fallback={<DashboardLoadingFallback />}>
+        <Suspense fallback={<DashboardLoadingFallback role={cachedDisplayRole} />}>
           {cachedDisplayRole === 'tenant' && <TenantDashboard {...dashboardProps} />}
           {cachedDisplayRole === 'agent' && <AgentDashboard {...dashboardProps} />}
           {cachedDisplayRole === 'supporter' && <SupporterDashboard {...dashboardProps} />}
@@ -379,7 +437,7 @@ function DashboardContent() {
   if ((loading && !showCachedUI) || pendingRole) {
     return (
       <>
-        <DashboardLoadingFallback />
+        <DashboardLoadingFallback role={pendingRole || displayRole} />
         {/* Keep bottom nav visible during transition for continuity */}
         {pendingRole && displayRole && ['tenant', 'agent', 'landlord', 'supporter'].includes(pendingRole) && (
           <BottomRoleSwitcher currentRole={pendingRole} onRoleChange={handlePublicRoleSwitch} />
@@ -391,7 +449,7 @@ function DashboardContent() {
   // If no user and not loading, the redirect effect above will handle it.
   // Show loading fallback briefly while redirect kicks in.
   if (!user || !displayRole) {
-    return <DashboardLoadingFallback />;
+    return <DashboardLoadingFallback role={displayRole} />;
   }
 
   const isPublicRole = ['tenant', 'agent', 'landlord', 'supporter'].includes(displayRole);
@@ -428,7 +486,7 @@ function DashboardContent() {
 
   return (
     <>
-      <Suspense fallback={<DashboardLoadingFallback />}>
+      <Suspense fallback={<DashboardLoadingFallback role={displayRole} />}>
         {renderDashboard()}
       </Suspense>
       {isPublicRole && (

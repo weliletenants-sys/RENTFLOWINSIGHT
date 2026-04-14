@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 import prisma from '../prisma/prisma.client';
 import { PermissionService } from '../services/permission.service';
 
@@ -11,151 +11,98 @@ declare global {
   }
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://wirntoujqoyjobfhyelc.supabase.co';
-const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpcm50b3VqcW95am9iZmh5ZWxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1NjE1MTYsImV4cCI6MjA4MjEzNzUxNn0.5-zxcRPVxvpxNiXhoo5VHpIuvbtuOLfiI3ph8jPIod8';
+// Config variables strictly decoupled from frontend VITE_ namespace
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://wirntoujqoyjobfhyelc.supabase.co';
+const SUPABASE_ISSUER = process.env.SUPABASE_ISSUER || `${SUPABASE_URL}/auth/v1`;
+const SUPABASE_AUDIENCE = process.env.SUPABASE_AUDIENCE || 'authenticated';
 
-import { getRedisClient } from '../config/redis.client';
-import crypto from 'crypto';
+// 1. JWKS Store: Securely cache rotating Supabase asymmetric keys
+// Includes 3000ms timeout protection for 3G stalling
+const JWKS = createRemoteJWKSet(new URL(`${SUPABASE_URL}/auth/v1/keys`), {
+  timeoutDuration: 3000, 
+  cooldownDuration: 30000, // Wait 30s before retrying failed fetches
+});
+
+// Internal helper to extract and strictly verify tokens using jose
+const verifyAndExtractToken = async (req: Request) => {
+  let token = req.cookies?.user_session || req.cookies?.admin_session;
+  
+  if (!token && req.headers.authorization?.startsWith('Bearer ')) {
+    const authHead = req.headers.authorization.split(' ')[1];
+    if (authHead && authHead !== 'null' && authHead !== 'undefined') {
+        token = authHead;
+    }
+  }
+
+  if (!token) {
+    throw new Error('Missing or invalid Authorization header/cookie');
+  }
+
+  // Allow DEV bypass ONLY if explicitly configured (Critical for production safety)
+  if (token.startsWith('dummy-token') && process.env.NODE_ENV !== 'production') {
+    const role = token.split('_')[1];
+    return { sub: '999', role };
+  }
+
+  // 2. Strict Signature & Claims Validation (Replaces jwt.decode / jwt.verify)
+  const { payload } = await jwtVerify(token, JWKS, {
+    issuer: SUPABASE_ISSUER,
+    audience: SUPABASE_AUDIENCE,
+  });
+
+  return payload;
+};
 
 export const supabaseAuthGuard = async (req: Request, res: Response, next: NextFunction) => {
-  let token = req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.split(' ')[1] : null;
-  
-  if (!token) {
-    return res.status(401).json({ error: 'Unauthorized: Missing Bearer Token' });
-  }
-
   try {
-    // 1. Check Redis Cache First to bypass Network Latency (5 Minute TTL)
-    const redis = getRedisClient();
-    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
-    const cacheKey = `auth:token:${tokenHash}`;
-    
-    // Safety fallback: if redis is magically offline and returning null, it gracefully skips string evaluation
-    const cachedSession = await redis.get(cacheKey).catch(() => null);
-    
-    if (cachedSession) {
-       req.user = JSON.parse(cachedSession);
-       return next();
-    }
+    const payload = await verifyAndExtractToken(req);
 
-    // 2. Cache Miss: Ask Supabase Auth Server directly to verify the token signature and expiration
-    const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'apikey': SUPABASE_ANON_KEY,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (!response.ok) {
-      return res.status(401).json({ error: 'Unauthorized: Invalid, expired, or rejected token' });
-    }
-
-    const userData = await response.json();
-    
-    // Deep Security Validation checks
-    if (!userData.id || userData.aud !== 'authenticated') {
-        return res.status(401).json({ error: 'Unauthorized: Invalid identity origin' });
-    }
-    
-    // 3. Attach clean, verified user identity strictly dynamically
+    // 3. Map secure identity strictly
     req.user = {
-      id: userData.id,
-      email: userData.email,
-      role: userData.role || 'authenticated'
+      id: payload.sub,
+      email: payload.email || undefined,
+      phone: payload.phone || undefined,
+      role: payload.role || 'authenticated'
     };
 
-    // Safely cache it defensively asynchronously so it doesn't block response cycle
-    redis.setex(cacheKey, 300, JSON.stringify(req.user)).catch(() => {});
-
     next();
-  } catch (error) {
-    console.error('[Supabase Auth Guard] Validation crashed:', error);
-    return res.status(401).json({ error: 'Unauthorized: Validation failure' });
+  } catch (err: any) {
+    console.error('[JWT Verification Failed]', {
+      message: err.message,
+      path: req.path,
+    });
+    return res.status(401).json({ error: 'Unauthorized: Invalid or expired token' });
   }
 };
+
 // Alias for legacy routes to prevent undefined runtime crashes
 export const authGuard = async (req: Request, res: Response, next: NextFunction) => {
-  return ensureUserAuthenticated(req, res, next);
+  return supabaseAuthGuard(req, res, next);
 };
 
 export const ensureUserAuthenticated = async (req: Request, res: Response, next: NextFunction) => {
-  let token = req.cookies?.user_session;
-  
-  // Fallback map legacy headers only if they are strictly not null strings
-  if (!token && req.headers.authorization?.startsWith('Bearer ')) {
-    const authHead = req.headers.authorization.split(' ')[1];
-    if (authHead && authHead !== 'null' && authHead !== 'undefined') {
-        token = authHead;
-    }
-  }
-  
-  if (!token) {
-    return res.status(401).json({ message: 'Unauthorized: No user session found' });
-  }
-
-  // DEVELOPMENT BYPASS
-  if (token.startsWith('dummy-token_')) {
-    const role = token.split('_')[1];
-    req.user = { id: '999', role };
-    return next();
-  }
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const session = await prisma.sessions.findUnique({ where: { token } });
-    if (session && session.is_revoked) {
-      return res.status(401).json({ message: 'Unauthorized: Session revoked' });
-    }
-
-    req.user = decoded;
-    next();
-  } catch (error) {
-    return res.status(401).json({ message: 'Unauthorized: Invalid token' });
-  }
+  return supabaseAuthGuard(req, res, next);
 };
 
 export const ensureAdminAuthenticated = async (req: Request, res: Response, next: NextFunction) => {
-  let token = req.cookies?.admin_session;
-  
-  if (!token && req.headers.authorization?.startsWith('Bearer ')) {
-    const authHead = req.headers.authorization.split(' ')[1];
-    if (authHead && authHead !== 'null' && authHead !== 'undefined') {
-        token = authHead;
-    }
-  }
-  
-  if (!token) {
-    // DO NOT REDIRECT, return 401. The domain Guard React component handles redirection.
-    return res.status(401).json({ message: 'Unauthorized: No admin session found' });
-  }
-
-  // DEVELOPMENT BYPASS
-  if (token.startsWith('dummy-token-admin_')) {
-    const role = token.split('_')[1];
-    req.user = { id: '999', role };
-    return next();
-  }
-
   try {
-    const decoded: any = jwt.verify(token, JWT_SECRET);
-    const session = await prisma.sessions.findUnique({ where: { token } });
-    if (session && session.is_revoked) {
-      return res.status(401).json({ message: 'Unauthorized: Session revoked' });
-    }
+    // 1. Strict Identity Verification via jose JWKS
+    const payload = await verifyAndExtractToken(req);
 
-    req.user = decoded;
+    // Initialize req.user with strictly mapped values
+    req.user = {
+      id: payload.sub,
+      email: payload.email || undefined,
+      phone: payload.phone || undefined,
+    };
     
-    // Explicit server-side role validation against the database as Source of Truth
-    const userId = req.user.id || req.user.sub || req.user.userId;
-    
-    if (!userId) {
+    // 2. Explicit server-side role validation against the database as Source of Truth
+    // DO NOT trust JWT embedded roles blindly!
+    if (!req.user.id) {
        return res.status(401).json({ message: 'Unauthorized: Invalid token payload format' });
     }
     
-    const dbUser = await prisma.profiles.findUnique({ where: { id: userId } });
+    const dbUser = await prisma.profiles.findUnique({ where: { id: req.user.id } });
     
     if (!dbUser || !dbUser.role) {
        return res.status(403).json({ message: 'Forbidden: Unauthorized payload in Database.' });
@@ -173,7 +120,11 @@ export const ensureAdminAuthenticated = async (req: Request, res: Response, next
     req.user.role = dbUser.role;
 
     next();
-  } catch (error) {
+  } catch (err: any) {
+    console.error('[Admin JWT Verification Failed]', {
+      message: err.message,
+      path: req.path,
+    });
     return res.status(401).json({ message: 'Unauthorized: Invalid admin token' });
   }
 };

@@ -187,85 +187,12 @@ const queryClient = new QueryClient({
   },
 });
 
-// Progressive Reveal App Shell - replaces blank loading screens
+// Full Screen Splash Loader for Auth + Global Routing Suspense
 const PageLoader = memo(() => {
-  const [offlineMode, setOfflineMode] = useState(false);
-  const [cachedName, setCachedName] = useState<string>('');
-  
-  useEffect(() => {
-    // Switch to offline-first tone if slow > 4s
-    const timer = setTimeout(() => setOfflineMode(true), 4000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    try {
-      const authStr = localStorage.getItem('sb-wirntoujqoyjobfhyelc-auth-token');
-      if (authStr) {
-        const { user } = JSON.parse(authStr);
-        if (user?.user_metadata?.full_name) {
-          setCachedName(user.user_metadata.full_name.split(' ')[0]);
-        }
-      }
-    } catch {}
-  }, []);
-  
   return (
-    <div className="min-h-screen flex flex-col bg-background relative font-sans antialiased">
-      {/* Top App Bar - Structural Anchor */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-border bg-card">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-muted/80 animate-pulse"></div>
-          <div className="flex flex-col gap-1.5">
-            <div className="w-32 h-3 rounded-md bg-muted/80 animate-pulse"></div>
-          </div>
-        </div>
-        <div className="w-8 h-8 rounded-full bg-muted/80 animate-pulse"></div>
-      </div>
-      
-      {/* Main Structural Content */}
-      <div className="p-5 flex-1 flex flex-col gap-6 max-w-lg mx-auto w-full">
-        
-        <div>
-          <h1 className="text-xl font-bold">👋 Welcome back{cachedName ? `, ${cachedName}` : ''}</h1>
-        </div>
-
-        {/* Semantic Wallet Placeholder */}
-        <div className="w-full rounded-3xl bg-card border shadow-sm p-5 relative overflow-hidden">
-          <div className="flex justify-between items-start mb-4">
-            <div className="text-sm font-medium text-muted-foreground">Balance</div>
-            <div className="flex items-center gap-1.5 text-[10px] bg-muted px-2.5 py-1 rounded-full text-foreground/70">
-               {offlineMode ? (
-                 <>Limited connectivity</>
-               ) : (
-                 <><div className="w-2 h-2 rounded-full border border-current border-t-transparent animate-spin"/> syncing...</>
-               )}
-            </div>
-          </div>
-          <div className="text-3xl font-bold opacity-40 mb-6">UGX <span className="tracking-tight">---,---</span></div>
-          
-          <div className="flex gap-3">
-            <div className="flex-1 h-11 bg-muted/40 rounded-xl flex items-center justify-center text-xs font-semibold text-muted-foreground/50 border border-border/50">Send</div>
-            <div className="flex-1 h-11 bg-muted/40 rounded-xl flex items-center justify-center text-xs font-semibold text-muted-foreground/50 border border-border/50">Receive</div>
-          </div>
-        </div>
-        
-        {/* Semantic Activity Placeholder */}
-        <div>
-          <h2 className="text-sm font-bold mb-3">Recent Activity</h2>
-          <div className="space-y-3">
-            {[1, 2].map((i) => (
-              <div key={i} className="flex gap-3 items-center p-3 rounded-2xl border bg-card/40">
-                <div className="w-10 h-10 rounded-full bg-muted/60 animate-pulse" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-3 bg-muted/60 rounded w-1/3 animate-pulse" />
-                  <div className="h-2 bg-muted/60 rounded w-1/4 animate-pulse" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+      <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground font-bold text-2xl animate-pulse shadow-sm">
+        W
       </div>
     </div>
   );
