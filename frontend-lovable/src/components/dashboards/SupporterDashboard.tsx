@@ -57,8 +57,9 @@ import { FunderCapitalOpportunities } from '@/components/supporter/FunderCapital
 import AiIdButton from '@/components/ai-id/AiIdButton';
 import { NotificationBell } from '@/components/supporter/NotificationBell';
 import { InviteAndEarnCard } from '@/components/shared/InviteAndEarnCard';
-import { useInactivityLock } from '@/hooks/useInactivityLock';
 import { SupporterInactivityLock } from '@/components/supporter/SupporterInactivityLock';
+import { DataSyncIndicator, STALE_THRESHOLD_MS } from '@/components/shared/DataSyncIndicator';
+import { cn } from '@/lib/utils';
 
 
 interface SupporterDashboardProps {
@@ -99,17 +100,28 @@ export default function SupporterDashboard({
   const { fireSuccess, fireFirstFunding } = useConfetti();
   const [hasEverFunded, setHasEverFunded] = useState<boolean | null>(null);
 
+  const CACHE_KEY = `supporter_dashboard_v2_${user.id}`;
+
   // Local-first: read cache synchronously in useState init
   const [virtualHouses, setVirtualHouses] = useState<VirtualHouse[]>(() => {
     try {
-      const raw = localStorage.getItem(`supporter_houses_${user.id}`);
+      const raw = localStorage.getItem(CACHE_KEY);
       if (raw) return JSON.parse(raw).houses || [];
     } catch {}
     return [];
   });
+  const [lastUpdated, setLastUpdated] = useState<number | null>(() => {
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      if (raw) return JSON.parse(raw).timestamp || null;
+    } catch {}
+    return null;
+  });
+  const isStale = lastUpdated ? (Date.now() - lastUpdated) > STALE_THRESHOLD_MS : false;
+  
   const [totalRentContributed, setTotalRentContributed] = useState(() => {
     try {
-      const raw = localStorage.getItem(`supporter_houses_${user.id}`);
+      const raw = localStorage.getItem(CACHE_KEY);
       if (raw) return JSON.parse(raw).totalRent || 0;
     } catch {}
     return 0;
@@ -254,7 +266,7 @@ export default function SupporterDashboard({
       setLoading(false);
       // Check TTL — skip network if fresh
       try {
-        const cached = localStorage.getItem(`supporter_houses_${user.id}`);
+        const cached = localStorage.getItem(CACHE_KEY);
         if (cached) {
           const { timestamp } = JSON.parse(cached);
           if (Date.now() - timestamp < HOUSES_CACHE_TTL) return;
@@ -305,9 +317,11 @@ export default function SupporterDashboard({
         setTotalRentContributed(prev => prev || totalRent); // fallback, prefer ledger
         setHasEverFunded(houses.length > 0);
 
-        localStorage.setItem(`supporter_houses_${user.id}`, JSON.stringify({
-          houses, totalRent, timestamp: Date.now(),
+        const now = Date.now();
+        localStorage.setItem(CACHE_KEY, JSON.stringify({
+          houses, totalRent, timestamp: now,
         }));
+        setLastUpdated(now);
         setHasCachedData(true);
       }
     } catch (error) {
@@ -380,14 +394,17 @@ export default function SupporterDashboard({
               <UserAvatar avatarUrl={profile?.avatar_url} fullName={profile?.full_name} size="lg" />
             </button>
             <div className="flex flex-col items-center gap-0.5">
-              <h1 className="font-bold text-lg leading-tight flex items-center gap-1.5">
-                <span className="break-words">{profile?.full_name?.split(' ')[0] || 'Supporter'}</span>
-                {profile?.verified ? (
-                  <BadgeCheck className="h-4 w-4 text-primary fill-primary/20 shrink-0" />
-                ) : (
-                  <BadgeCheck className="h-4 w-4 text-muted-foreground/30 shrink-0" />
-                )}
-              </h1>
+              <div className="flex items-center gap-2">
+                <h1 className="font-bold text-lg leading-tight flex items-center gap-1.5">
+                  <span className="break-words">{profile?.full_name?.split(' ')[0] || 'Supporter'}</span>
+                  {profile?.verified ? (
+                    <BadgeCheck className="h-4 w-4 text-primary fill-primary/20 shrink-0" />
+                  ) : (
+                    <BadgeCheck className="h-4 w-4 text-muted-foreground/30 shrink-0" />
+                  )}
+                </h1>
+                <DataSyncIndicator lastUpdated={lastUpdated} isSyncing={loading} />
+              </div>
               <p className="text-[11px] text-muted-foreground font-medium">Welcome back</p>
             </div>
             <AiIdButton variant="compact" />
@@ -396,15 +413,17 @@ export default function SupporterDashboard({
           <MerchantCodePills />
 
           {/* ═══ PORTFOLIO HERO CARD ═══ */}
-          <UnifiedWalletHeroCard
-            balance={wallet?.balance ?? 0}
-            role="supporter"
-            secondaryLabel="Invested"
-            secondaryValue={_formatUGX(totalRentContributed)}
-            houses={virtualHouses.length}
-            returnPerMonth={_formatUGX(totalRoiEarned)}
-            deployed={_formatUGX(totalRentContributed)}
-          />
+          <div className={cn("transition-opacity duration-500", isStale && "opacity-80")}>
+            <UnifiedWalletHeroCard
+              balance={wallet?.balance ?? 0}
+              role="supporter"
+              secondaryLabel="Invested"
+              secondaryValue={_formatUGX(totalRentContributed)}
+              houses={virtualHouses.length}
+              returnPerMonth={_formatUGX(totalRoiEarned)}
+              deployed={_formatUGX(totalRentContributed)}
+            />
+          </div>
 
           <VerificationChecklist userId={user.id} highlightRole="supporter" compact />
 

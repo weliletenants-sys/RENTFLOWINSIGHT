@@ -12,27 +12,17 @@ export function OfflineBanner() {
 
   return (
     <AnimatePresence>
-      {!isOnline && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          className="bg-destructive/90 text-destructive-foreground px-4 py-2 flex items-center justify-center gap-2 text-sm"
-        >
-          <WifiOff className="h-4 w-4" />
-          <span>You're offline - viewing cached data</span>
-        </motion.div>
-      )}
+      {/* Offline state relies on the global pill in App.tsx. We don't render a big red banner anymore. */}
 
       {isOnline && isSlowConnection && (
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          className="bg-yellow-500/90 text-yellow-950 px-4 py-2 flex items-center justify-center gap-2 text-sm"
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          className="bg-muted text-muted-foreground px-4 py-1.5 flex items-center justify-center gap-2 text-[11px] font-medium border-b border-border/50"
         >
-          <CloudOff className="h-4 w-4" />
-          <span>Slow connection - using cached data when possible</span>
+          <CloudOff className="h-3 w-3" />
+          <span>Limited connectivity</span>
         </motion.div>
       )}
 

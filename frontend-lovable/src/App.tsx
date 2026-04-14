@@ -9,6 +9,7 @@ import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ChunkErrorBoundary from "@/components/ChunkErrorBoundary";
 import { PullToRefresh } from "@/components/PullToRefresh";
+import { offlineQueue } from "@/lib/offlineQueue";
 
 // Critical providers — loaded eagerly for instant auth/routing
 import { AuthProvider } from "@/hooks/useAuth";
@@ -186,27 +187,86 @@ const queryClient = new QueryClient({
   },
 });
 
-// Ultra-minimal page loader - shows retry after 5s
+// Progressive Reveal App Shell - replaces blank loading screens
 const PageLoader = memo(() => {
-  const [showRetry, setShowRetry] = useState(false);
+  const [offlineMode, setOfflineMode] = useState(false);
+  const [cachedName, setCachedName] = useState<string>('');
   
   useEffect(() => {
-    const timer = setTimeout(() => setShowRetry(true), 3500);
+    // Switch to offline-first tone if slow > 4s
+    const timer = setTimeout(() => setOfflineMode(true), 4000);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    try {
+      const authStr = localStorage.getItem('sb-wirntoujqoyjobfhyelc-auth-token');
+      if (authStr) {
+        const { user } = JSON.parse(authStr);
+        if (user?.user_metadata?.full_name) {
+          setCachedName(user.user_metadata.full_name.split(' ')[0]);
+        }
+      }
+    } catch {}
   }, []);
   
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-3">
-      <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      {showRetry && (
-        <button
-          onClick={() => { sessionStorage.removeItem('chunk_retry'); location.reload(); }}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm"
-          style={{ minHeight: '44px' }}
-        >
-          Tap to Retry
-        </button>
-      )}
+    <div className="min-h-screen flex flex-col bg-background relative font-sans antialiased">
+      {/* Top App Bar - Structural Anchor */}
+      <div className="h-16 flex items-center justify-between px-4 border-b border-border bg-card">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-muted/80 animate-pulse"></div>
+          <div className="flex flex-col gap-1.5">
+            <div className="w-32 h-3 rounded-md bg-muted/80 animate-pulse"></div>
+          </div>
+        </div>
+        <div className="w-8 h-8 rounded-full bg-muted/80 animate-pulse"></div>
+      </div>
+      
+      {/* Main Structural Content */}
+      <div className="p-5 flex-1 flex flex-col gap-6 max-w-lg mx-auto w-full">
+        
+        <div>
+          <h1 className="text-xl font-bold">👋 Welcome back{cachedName ? `, ${cachedName}` : ''}</h1>
+        </div>
+
+        {/* Semantic Wallet Placeholder */}
+        <div className="w-full rounded-3xl bg-card border shadow-sm p-5 relative overflow-hidden">
+          <div className="flex justify-between items-start mb-4">
+            <div className="text-sm font-medium text-muted-foreground">Balance</div>
+            <div className="flex items-center gap-1.5 text-[10px] bg-muted px-2.5 py-1 rounded-full text-foreground/70">
+               {offlineMode ? (
+                 <>Limited connectivity</>
+               ) : (
+                 <><div className="w-2 h-2 rounded-full border border-current border-t-transparent animate-spin"/> syncing...</>
+               )}
+            </div>
+          </div>
+          <div className="text-3xl font-bold opacity-40 mb-6">UGX <span className="tracking-tight">---,---</span></div>
+          
+          <div className="flex gap-3">
+            <div className="flex-1 h-11 bg-muted/40 rounded-xl flex items-center justify-center text-xs font-semibold text-muted-foreground/50 border border-border/50">Send</div>
+            <div className="flex-1 h-11 bg-muted/40 rounded-xl flex items-center justify-center text-xs font-semibold text-muted-foreground/50 border border-border/50">Receive</div>
+          </div>
+        </div>
+        
+        {/* Semantic Activity Placeholder */}
+        <div>
+          <h2 className="text-sm font-bold mb-3">Recent Activity</h2>
+          <div className="space-y-3">
+            {[1, 2].map((i) => (
+              <div key={i} className="flex gap-3 items-center p-3 rounded-2xl border bg-card/40">
+                <div className="w-10 h-10 rounded-full bg-muted/60 animate-pulse" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3 bg-muted/60 rounded w-1/3 animate-pulse" />
+                  <div className="h-2 bg-muted/60 rounded w-1/4 animate-pulse" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 });
@@ -218,7 +278,10 @@ function AppRoutes() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   useEffect(() => {
-    const goOnline = () => setIsOnline(true);
+    const goOnline = () => {
+      setIsOnline(true);
+      offlineQueue.processQueue();
+    };
     const goOffline = () => setIsOnline(false);
 
     window.addEventListener('online', goOnline);
@@ -248,10 +311,11 @@ function AppRoutes() {
 
   return (
     <PullToRefresh onRefresh={handlePullRefresh} className="min-h-screen">
-      <div>
+      <div className="relative">
         {!isOnline && (
-          <div className="bg-red-500 text-white text-center py-2 px-4 sticky top-0 z-50 text-sm font-medium animate-pulse">
-            You are offline. Showing cached content where available.
+          <div className="fixed top-2 right-2 md:top-4 md:right-4 z-[100] bg-muted/60 backdrop-blur-md border border-border text-foreground/70 px-3 py-1 rounded-full text-[10px] font-medium shadow-sm pointer-events-none flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-warning/80"></div>
+            Offline mode
           </div>
         )}
       <Suspense fallback={<PageLoader />}>

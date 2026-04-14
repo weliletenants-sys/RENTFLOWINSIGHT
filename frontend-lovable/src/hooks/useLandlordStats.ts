@@ -7,12 +7,12 @@ export interface LandlordStats {
   totalRentReceivable: number;
 }
 
-const CACHE_KEY_PREFIX = 'lf_landlord_stats_';
+const CACHE_KEY_PREFIX = 'lf_landlord_stats_v2_';
 
-function readCache(userId: string): LandlordStats | null {
+function readCache(userId: string): { data: LandlordStats; timestamp: number } | null {
   try {
     const raw = localStorage.getItem(CACHE_KEY_PREFIX + userId);
-    if (raw) return JSON.parse(raw).data;
+    if (raw) return JSON.parse(raw);
   } catch {}
   return null;
 }
@@ -28,11 +28,22 @@ export function useLandlordStats(userId: string | undefined) {
   const [stats, setStats] = useState<LandlordStats>(() => {
     if (userId) {
       const cached = readCache(userId);
-      if (cached) return cached;
+      if (cached) return cached.data;
     }
     return { totalProperties: 0, emptyHouses: 0, totalRentReceivable: 0 };
   });
+  const [lastUpdated, setLastUpdated] = useState<number | null>(() => {
+    if (userId) {
+      const cached = readCache(userId);
+      if (cached) return cached.timestamp;
+    }
+    return null;
+  });
   const [loading, setLoading] = useState(() => {
+    if (userId) return !readCache(userId);
+    return true;
+  });
+  const [isSyncing, setIsSyncing] = useState(() => {
     if (userId) return !readCache(userId);
     return true;
   });
@@ -59,12 +70,15 @@ export function useLandlordStats(userId: string | undefined) {
       }, 0);
 
       const newStats = { totalProperties, emptyHouses, totalRentReceivable };
+      const now = Date.now();
       setStats(newStats);
+      setLastUpdated(now);
       writeCache(userId, newStats);
     } catch (err) {
       console.error('Error fetching landlord stats:', err);
     } finally {
       setLoading(false);
+      setIsSyncing(false);
     }
   }, [userId]);
 
@@ -72,11 +86,13 @@ export function useLandlordStats(userId: string | undefined) {
     if (!userId) return;
     // Background fetch — never blocks UI if cache exists
     if (navigator.onLine) {
+      setIsSyncing(true);
       fetchStats();
     } else {
       setLoading(false);
+      setIsSyncing(false);
     }
   }, [fetchStats, userId]);
 
-  return { stats, loading, refreshStats: fetchStats };
+  return { stats, loading, refreshStats: fetchStats, lastUpdated, isSyncing };
 }

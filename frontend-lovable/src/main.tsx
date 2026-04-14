@@ -7,11 +7,7 @@ const isPreviewHost =
   host.includes('preview--') ||
   host.endsWith('.lovableproject.com');
 
-// Show branded loader immediately — inline SVG spinner, no network requests at all
-root.innerHTML = `<div style="min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f8fafc;gap:12px">
-  <div style="width:20px;height:20px;border:2px solid #7c3aed;border-top-color:transparent;border-radius:50%;animation:s .6s linear infinite"></div>
-  <style>@keyframes s{to{transform:rotate(360deg)}}@media(prefers-color-scheme:dark){div[style*=f8fafc]{background:#0f172a!important}}</style>
-</div>`;
+// The native App Skeleton is now pre-rendered directly in index.html
 
 // Unregister service workers in preview/iframe to prevent stale cache issues
 const isInIframe = (() => {
@@ -142,16 +138,16 @@ function showErrorUI() {
 
 loadApp();
 
-// Show retry UI after 6s on slow networks
+// Show retry UI after 8s on slow networks
 setTimeout(() => {
-  if (root.innerHTML.includes('animation:')) {
+  if (root.querySelector('.app-shell-skeleton')) { // checks if skeleton is still in DOM meaning React hasn't mounted
     const retryBtn = document.createElement('button');
     retryBtn.textContent = 'Tap to Retry';
     retryBtn.onclick = () => location.reload();
-    retryBtn.style.cssText = 'padding:12px 24px;background:#7c3aed;color:white;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;min-height:44px;margin-top:8px';
-    root.firstElementChild?.appendChild(retryBtn);
+    retryBtn.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:12px 24px;background:#7c3aed;color:white;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;min-height:44px;z-index:9999;box-shadow:0 10px 15px -3px rgba(124,58,237,0.3)';
+    root.appendChild(retryBtn);
   }
-}, 6000);
+}, 8000);
 
 // Suppress chunk/import errors — user can pull-to-refresh manually
 addEventListener('vite:preloadError', (e) => e.preventDefault());

@@ -101,6 +101,20 @@ export default function Settings() {
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [activeSection, setActiveSection] = useState<SettingsSection>('account');
   const [deferredReady, setDeferredReady] = useState(false);
+  const [pendingActionsCount, setPendingActionsCount] = useState(0);
+
+  useEffect(() => {
+    import('@/lib/offlineQueue').then(({ offlineQueue }) => {
+      setPendingActionsCount(offlineQueue.getPendingCount());
+      const updateCount = () => setPendingActionsCount(offlineQueue.getPendingCount());
+      window.addEventListener('offline-action-queued', updateCount as EventListener);
+      window.addEventListener('offline-queue-processed', updateCount as EventListener);
+      return () => {
+        window.removeEventListener('offline-action-queued', updateCount as EventListener);
+        window.removeEventListener('offline-queue-processed', updateCount as EventListener);
+      };
+    });
+  }, []);
 
   useEffect(() => { if (!authLoading && !user) navigate('/auth'); }, [user, authLoading, navigate]);
   useEffect(() => { if (user) fetchProfile(); }, [user]);
@@ -140,12 +154,26 @@ export default function Settings() {
     if (!user || !profile) return;
     if (!fullName.trim()) { toast.error('Full name is required'); return; }
     if (!phone.trim()) { toast.error('Phone number is required'); return; }
+    
     setSaving(true);
-    const { error } = await supabase.from('profiles').update({ full_name: fullName.trim(), phone: phone.trim() }).eq('id', user.id);
+    const targetFullName = fullName.trim();
+    const targetPhone = phone.trim();
+
+    if (!navigator.onLine) {
+      const { offlineQueue } = await import('@/lib/offlineQueue');
+      offlineQueue.enqueue('UPDATE_PROFILE', { userId: user.id, updateData: { full_name: targetFullName, phone: targetPhone } });
+      
+      toast.success('Profile update queued (Offline mode)');
+      setProfile({ ...profile, full_name: targetFullName, phone: targetPhone });
+      setSaving(false);
+      return;
+    }
+
+    const { error } = await supabase.from('profiles').update({ full_name: targetFullName, phone: targetPhone }).eq('id', user.id);
     setSaving(false);
     if (error) { toast.error('Failed to update profile'); return; }
     toast.success('Profile updated successfully');
-    setProfile({ ...profile, full_name: fullName.trim(), phone: phone.trim() });
+    setProfile({ ...profile, full_name: targetFullName, phone: targetPhone });
   };
 
   const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
@@ -392,6 +420,20 @@ export default function Settings() {
                     </div>
                   </CardContent>
                 </Card>
+                
+                <Card className="border-border/40 rounded-2xl bg-muted/20">
+                  <CardContent className="py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                       <RefreshCw className={cn("h-4 w-4 text-muted-foreground", pendingActionsCount > 0 && "animate-spin text-primary")} />
+                       <div>
+                         <p className="font-medium text-sm">Offline Queue</p>
+                         <p className="text-xs text-muted-foreground">Pending actions awaiting sync</p>
+                       </div>
+                    </div>
+                    <Badge variant={pendingActionsCount > 0 ? "default" : "secondary"}>{pendingActionsCount}</Badge>
+                  </CardContent>
+                </Card>
+
                 <LazySection name="Diagnostics"><DiagnosticsSection /></LazySection>
               </div>
             )}

@@ -6,6 +6,8 @@ import { hapticTap } from '@/lib/haptics';
 import { motion, AnimatePresence } from 'framer-motion';
 import welileLogo from '@/assets/welile-logo.png';
 import { globalDeferredPrompt, clearGlobalPrompt } from '@/hooks/usePWAInstall';
+import { useOffline } from '@/contexts/OfflineContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -65,6 +67,8 @@ const itemVariants = {
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { isOnline } = useOffline();
+  const { toast } = useToast();
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(
     globalDeferredPrompt as BeforeInstallPromptEvent | null
   );
@@ -142,6 +146,10 @@ export default function Landing() {
 
   const handleIntent = (role: string) => {
     hapticTap();
+    if (!isOnline) {
+      toast({ title: 'Limited connectivity', description: 'Connect to internet to continue' });
+      return;
+    }
     navigate(`/auth?role=${role}`);
   };
 
@@ -326,7 +334,15 @@ export default function Landing() {
       {/* Footer — Sign in CTA */}
       <footer className="px-5 py-5 pb-safe-bottom max-w-lg mx-auto w-full">
         <button
-          onClick={() => { hapticTap(); navigate('/auth'); }}
+          onClick={(e) => { 
+            hapticTap(); 
+            if (!isOnline) {
+              e.preventDefault();
+              toast({ title: 'Limited connectivity', description: 'Connect to internet to continue' });
+              return;
+            }
+            navigate('/auth'); 
+          }}
           className="w-full flex items-center justify-center gap-2 h-14 rounded-2xl bg-primary text-primary-foreground font-bold text-base shadow-md hover:shadow-lg hover:brightness-110 active:scale-[0.97] transition-all touch-manipulation"
         >
           Sign in to your account

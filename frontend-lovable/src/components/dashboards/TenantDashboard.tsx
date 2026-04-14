@@ -32,6 +32,7 @@ import { CreditAccessCard } from '@/components/CreditAccessCard';
 import { InviteAndEarnCard } from '@/components/shared/InviteAndEarnCard';
 import { SubscriptionStatusCard } from '@/components/tenant/SubscriptionStatusCard';
 import { VerificationChecklist } from '@/components/shared/VerificationChecklist';
+import { DataSyncIndicator, STALE_THRESHOLD_MS } from '@/components/shared/DataSyncIndicator';
 
 import { RentRequestButton } from '@/components/tenant/RentRequestButton';
 import RentRequestForm from '@/components/tenant/RentRequestForm';
@@ -109,8 +110,18 @@ export default function TenantDashboard({ user, signOut, currentRole, availableR
     } catch {}
     return [];
   });
+  const [lastUpdated, setLastUpdated] = useState<number | null>(() => {
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      if (raw) return JSON.parse(raw).timestamp || null;
+    } catch {}
+    return null;
+  });
   const hasCachedData = rentRequests.length > 0;
   const [loading, setLoading] = useState(!hasCachedData);
+  const [isSyncing, setIsSyncing] = useState(!hasCachedData);
+  
+  const isStale = lastUpdated ? (Date.now() - lastUpdated) > STALE_THRESHOLD_MS : false;
 
   // Dialog states
   const [showWallet, setShowWallet] = useState(false);
@@ -155,21 +166,25 @@ export default function TenantDashboard({ user, signOut, currentRole, availableR
         setRentRequests(newRentRequests);
         setRepayments(newRepayments);
         
+        const now = Date.now();
+        setLastUpdated(now);
         localStorage.setItem(CACHE_KEY, JSON.stringify({
           rentRequests: newRentRequests,
           repayments: newRepayments,
-          timestamp: Date.now()
+          timestamp: now
         }));
       } catch (error) {
         console.error('[TenantDashboard] Error fetching data:', error);
       }
       setLoading(false);
+      setIsSyncing(false);
     })();
   }, [user.id]);
 
   const fetchData = async () => {
     if (!navigator.onLine) return;
     try {
+      setIsSyncing(true);
       const { data: requests } = await supabase
         .from('rent_requests')
         .select('*')
@@ -180,13 +195,17 @@ export default function TenantDashboard({ user, signOut, currentRole, availableR
       setRentRequests(newRentRequests);
       setRepayments([]);
       
+      const now = Date.now();
+      setLastUpdated(now);
       localStorage.setItem(CACHE_KEY, JSON.stringify({
         rentRequests: newRentRequests,
         repayments: [],
-        timestamp: Date.now()
+        timestamp: now
       }));
     } catch (error) {
       console.error('[TenantDashboard] Error fetching data:', error);
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -246,7 +265,10 @@ export default function TenantDashboard({ user, signOut, currentRole, availableR
               <UserAvatar avatarUrl={profile?.avatar_url} fullName={profile?.full_name} size="md" />
             </button>
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] text-muted-foreground font-medium">Welcome back</p>
+              <div className="flex items-center gap-2">
+                <p className="text-[11px] text-muted-foreground font-medium">Welcome back</p>
+                <DataSyncIndicator lastUpdated={lastUpdated} isSyncing={isSyncing} />
+              </div>
               <h1 className="font-bold text-lg leading-tight flex items-center gap-1.5 flex-wrap">
                 <span className="break-words">{profile?.full_name || 'Welcome'}</span>
                 {profile?.verified ? (
@@ -260,12 +282,14 @@ export default function TenantDashboard({ user, signOut, currentRole, availableR
           </motion.div>
 
           {/* Wallet Hero Card */}
-          <UnifiedWalletHeroCard
-            balance={wallet?.balance ?? 0}
-            role="tenant"
-            secondaryLabel="Used for Rent"
-            secondaryValue={formatUGX(rentRequests.find(r => ['approved', 'funded', 'disbursed', 'repaying'].includes(r.status))?.rent_amount ?? 0)}
-          />
+          <div className={cn("transition-opacity duration-500", isStale && "opacity-80")}>
+            <UnifiedWalletHeroCard
+              balance={wallet?.balance ?? 0}
+              role="tenant"
+              secondaryLabel="Used for Rent"
+              secondaryValue={formatUGX(rentRequests.find(r => ['approved', 'funded', 'disbursed', 'repaying'].includes(r.status))?.rent_amount ?? 0)}
+            />
+          </div>
           
 
           {/* Verification Checklist */}
