@@ -10,7 +10,6 @@ const router = Router();
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
-  keyGenerator: (req) => (req.ip?.replace(/^::ffff:/, '') || 'unknown'),
   handler: (req, res) => {
     const resetTime = (req as any).rateLimit?.resetTime;
     const remainingMs = resetTime ? resetTime.getTime() - Date.now() : 15 * 60 * 1000;
@@ -35,7 +34,6 @@ const loginLimiter = rateLimit({
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
-  keyGenerator: (req) => (req.ip?.replace(/^::ffff:/, '') || 'unknown'),
   message: { type: 'https://api.example.com/errors/too-many-requests', title: 'Too Many Requests', status: 429, detail: 'Too many requests, please try again later' }
 });
 
