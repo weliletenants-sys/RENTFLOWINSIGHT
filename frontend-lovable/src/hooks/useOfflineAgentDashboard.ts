@@ -24,9 +24,8 @@ interface UseOfflineAgentDashboardReturn {
   isLoading: boolean;
   isOfflineData: boolean;
   refreshData: () => Promise<void>;
-  lastUpdated: number | null;
+  lastUpdated: Date | null;
   hasLoadedOnce: boolean;
-  isSyncing: boolean;
 }
 
 const defaultStats: AgentDashboardStats = {
@@ -43,9 +42,8 @@ export function useOfflineAgentDashboard(): UseOfflineAgentDashboardReturn {
   const { snapshot } = useUserSnapshot(user?.id);
   const [stats, setStats] = useState<AgentDashboardStats>(defaultStats);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSyncing, setIsSyncing] = useState(false);
   const [isOfflineData, setIsOfflineData] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<number | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const fetchInProgress = useRef(false);
 
@@ -59,19 +57,16 @@ export function useOfflineAgentDashboard(): UseOfflineAgentDashboardReturn {
       
       if (cachedStats) {
         setStats(prev => ({ ...prev, ...cachedStats }));
-        setLastUpdated(cachedStats.timestamp || null);
         setIsOfflineData(true);
         setHasLoadedOnce(true);
         return true;
       }
       
-      const CACHE_KEY = `agent_dashboard_v2_${user.id}`;
       // Fallback to localStorage
-      const cached = localStorage.getItem(CACHE_KEY);
+      const cached = localStorage.getItem(`agent_dashboard_${user.id}`);
       if (cached) {
         const data = JSON.parse(cached);
-        setStats(prev => ({ ...prev, ...data.stats }));
-        setLastUpdated(data.timestamp || null);
+        setStats(prev => ({ ...prev, ...data }));
         setIsOfflineData(true);
         setHasLoadedOnce(true);
         return true;
@@ -116,16 +111,14 @@ export function useOfflineAgentDashboard(): UseOfflineAgentDashboardReturn {
       };
 
       // Update state
-      const now = Date.now();
       setStats(newStats);
       setIsOfflineData(false);
-      setLastUpdated(now);
+      setLastUpdated(new Date());
       setHasLoadedOnce(true);
 
-      // Cache for offline use
-      const CACHE_KEY = `agent_dashboard_v2_${user.id}`;
-      await cacheDashboardData(user.id, 'agent', { ...newStats, timestamp: now });
-      localStorage.setItem(CACHE_KEY, JSON.stringify({ stats: newStats, timestamp: now }));
+      // Cache for offline use - both IndexedDB and localStorage as fallback
+      await cacheDashboardData(user.id, 'agent', newStats);
+      localStorage.setItem(`agent_dashboard_${user.id}`, JSON.stringify(newStats));
       
     } catch (error) {
       console.error('[useOfflineAgentDashboard] Failed to fetch data:', error);
@@ -154,9 +147,7 @@ export function useOfflineAgentDashboard(): UseOfflineAgentDashboardReturn {
 
     // Fetch fresh data in background if online
     if (navigator.onLine) {
-      setIsSyncing(true);
       await fetchFreshData();
-      setIsSyncing(false);
     }
 
     setIsLoading(false);
@@ -185,6 +176,5 @@ export function useOfflineAgentDashboard(): UseOfflineAgentDashboardReturn {
     refreshData,
     lastUpdated,
     hasLoadedOnce,
-    isSyncing,
   };
 }

@@ -90,7 +90,8 @@ import { AgentVerificationOpportunitiesCard } from '@/components/agent/AgentVeri
 import { TodayCollectionsCard } from '@/components/agent/TodayCollectionsCard';
 import { useIsFinancialAgent } from '@/hooks/useIsFinancialAgent';
 import { FinancialAgentSection } from '@/components/agent/FinancialAgentSection';
-import { DataSyncIndicator, STALE_THRESHOLD_MS } from '@/components/shared/DataSyncIndicator';
+import { PromissoryNoteDialog } from '@/components/agent/PromissoryNoteDialog';
+import { AgentPromissoryNotesList } from '@/components/agent/AgentPromissoryNotesList';
 
 // New Phase 1 components
 import { AgentDailyOpsCard } from '@/components/agent/AgentDailyOpsCard';
@@ -113,21 +114,19 @@ interface AgentDashboardProps {
 export default function AgentDashboard({ user, signOut, currentRole, availableRoles, onRoleChange, addRoleComponent }: AgentDashboardProps) {
   const navigate = useNavigate();
   const { profile } = useProfile();
+  const { refreshEarnings, totalEarnings } = useAgentEarnings();
+  const { wallet, refreshWallet } = useWallet();
+  const { floatBalance, commissionBalance, refetch: refreshBalances } = useAgentBalances();
   const { isOnline } = useOffline();
   
   const { 
     stats, 
     isLoading: loading, 
     refreshData: refreshOfflineData, 
-    hasLoadedOnce,
-    lastUpdated,
-    isSyncing
+    hasLoadedOnce 
   } = useOfflineAgentDashboard();
   
-  const isStale = lastUpdated ? (Date.now() - lastUpdated) > STALE_THRESHOLD_MS : false;
-  const { refreshEarnings } = useAgentEarnings();
-  const { refreshWallet } = useWallet();
-  const { floatBalance, commissionBalance, refetch: refreshBalances } = useAgentBalances();
+  const { tenantsCount, referralCount, subAgentCount } = stats;
   
   const [depositOpen, setDepositOpen] = useState(false);
   const [registerUserOpen, setRegisterUserOpen] = useState(false);
@@ -172,6 +171,8 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
   const [floatHistoryOpen, setFloatHistoryOpen] = useState(false);
   const [requisitionOpen, setRequisitionOpen] = useState(false);
   const [angelPoolInvestOpen, setAngelPoolInvestOpen] = useState(false);
+  const [promissoryNoteOpen, setPromissoryNoteOpen] = useState(false);
+  const [promissoryListOpen, setPromissoryListOpen] = useState(false);
 
   const { isFinancialAgent } = useIsFinancialAgent();
   // Check if this agent is a CFO-assigned cashout agent
@@ -189,9 +190,32 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
     },
   });
 
+  const handleApplyToSell = async () => {
+    setApplyingToSell(true);
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { error } = await supabase
+        .from('profiles')
+        .update({ seller_application_status: 'pending' })
+        .eq('id', user.id);
+      if (error) throw error;
+      const { toast } = await import('sonner');
+      toast.success('Application submitted! A manager will review your request.');
+    } catch (err) {
+      const { toast } = await import('sonner');
+      toast.error('Failed to submit application');
+    } finally {
+      setApplyingToSell(false);
+    }
+  };
+
   if (loading && isOnline && !hasLoadedOnce) {
     return <AgentDashboardSkeleton />;
   }
+
+  const handleRefresh = async () => {
+    await Promise.all([refreshOfflineData(), refreshEarnings(), refreshWallet(), refreshBalances()]);
+  };
 
   const handleRegisterUser = () => { hapticTap(); setRegisterUserOpen(true); };
   const handleDeposit = () => { hapticTap(); setDepositOpen(true); };
@@ -202,6 +226,8 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
   const menuItems = [
     { icon: UserPlus, label: 'Register User', onClick: handleRegisterUser },
   ];
+
+  const quickActions = [] as any[];
 
   return (
     <div className="h-[100dvh] bg-background flex flex-col overflow-hidden">
@@ -236,10 +262,6 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
             <UserAvatar avatarUrl={profile?.avatar_url} fullName={profile?.full_name} size="lg" />
           </button>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <p className="text-[11px] text-muted-foreground font-medium">Agent ID: AG-{user.id.substring(0,6).toUpperCase()}</p>
-              <DataSyncIndicator lastUpdated={lastUpdated} isSyncing={isSyncing} />
-            </div>
             <h1 className="font-bold text-xl leading-tight flex items-center gap-1.5 flex-wrap">
               <span className="break-words">{profile?.full_name || 'Agent'}</span>
               {profile?.verified && (
@@ -252,14 +274,13 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
         </div>
 
         {/* Wallet Hero Card */}
-        <div className={cn("transition-opacity duration-500", isStale && "opacity-80")}>
-          <UnifiedWalletHeroCard
-            balance={floatBalance + commissionBalance}
-            role="agent"
-            secondaryLabel="Withdrawable"
-            secondaryValue={formatUGX(commissionBalance)}
-          />
-        </div>
+         <UnifiedWalletHeroCard
+           balance={floatBalance + commissionBalance}
+           role="agent"
+           secondaryLabel="Withdrawable"
+           secondaryValue={formatUGX(commissionBalance)}
+           onOpenWallet={() => setShowWallet(true)}
+         />
 
         {/* Verification Checklist */}
         <VerificationChecklist userId={user.id} highlightRole="agent" compact />
@@ -436,6 +457,14 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
             toast.error(err.message || 'Failed to generate link');
           }
         }}
+        onCreatePromissoryNote={() => {
+          setMenuOpen(false);
+          setPromissoryNoteOpen(true);
+        }}
+        onViewPromissoryNotes={() => {
+          setMenuOpen(false);
+          setPromissoryListOpen(true);
+        }}
       />
 
       {/* Existing Dialogs */}
@@ -503,7 +532,9 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
         </DialogContent>
       </Dialog>
 
-      
+      <PromissoryNoteDialog open={promissoryNoteOpen} onOpenChange={setPromissoryNoteOpen} />
+      <AgentPromissoryNotesList open={promissoryListOpen} onOpenChange={setPromissoryListOpen} />
+
     </div>
   );
 }

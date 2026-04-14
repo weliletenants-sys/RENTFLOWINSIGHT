@@ -8,14 +8,21 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Loader2, PiggyBank, TrendingUp, Briefcase, Wallet, Sparkles,
-  ArrowDownToLine, ChevronRight, ArrowUpRight, RefreshCw, Calendar, Clock, Hash
+  ArrowDownToLine, ChevronRight, ArrowUpRight, RefreshCw, Calendar, Clock, Hash,
+  Pencil, Check, X, Download, Share2, FileText
 } from 'lucide-react';
 import { formatUGX } from '@/lib/rentCalculations';
-import { formatDateOnlyForDisplay } from '@/lib/portfolioDates';
+import { formatDateOnlyForDisplay, extractDateOnly, dateOnlyToLocalDate } from '@/lib/portfolioDates';
 import { hapticTap } from '@/lib/haptics';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { downloadPortfolioPdf, type PortfolioPdfData } from '@/lib/portfolioPdf';
+import { differenceInCalendarDays } from 'date-fns';
 
 const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'success' | 'warning' | 'destructive' | 'muted'; dot: string }> = {
   active: { label: 'Active', variant: 'success', dot: 'bg-success animate-pulse' },
@@ -24,6 +31,28 @@ const statusConfig: Record<string, { label: string; variant: 'default' | 'second
   matured: { label: 'Matured', variant: 'default', dot: 'bg-primary' },
   withdrawn: { label: 'Withdrawn', variant: 'muted', dot: 'bg-muted-foreground/40' },
 };
+
+/** Returns days until next ROI date, or null if not available */
+function daysUntilNextRoi(nextRoiDate: string | null | undefined): number | null {
+  const dateOnly = extractDateOnly(nextRoiDate);
+  if (!dateOnly) return null;
+  const target = dateOnlyToLocalDate(dateOnly);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return differenceInCalendarDays(target, today);
+}
+
+function NextRoiIndicator({ nextRoiDate }: { nextRoiDate: string | null | undefined }) {
+  const days = daysUntilNextRoi(nextRoiDate);
+  if (days === null) return null;
+  const isUrgent = days <= 5;
+  return (
+    <span className={`text-[10px] font-semibold flex items-center gap-1 ${isUrgent ? 'text-destructive' : 'text-success'}`}>
+      <Calendar className={`h-2.5 w-2.5 ${isUrgent ? 'animate-pulse' : ''}`} />
+      {days <= 0 ? 'Due today' : `${days}d to ROI`}
+    </span>
+  );
+}
 
 function PortfolioRow({ p, onTap }: { p: PortfolioRecord; onTap: () => void }) {
   const roi = (Number(p.investment_amount) * Number(p.roi_percentage)) / 100;
@@ -56,11 +85,14 @@ function PortfolioRow({ p, onTap }: { p: PortfolioRecord; onTap: () => void }) {
               {p.roi_percentage}% → {formatUGX(roi)}/mo
             </span>
           </div>
-          {Number(p.total_roi_earned) > 0 && (
-            <p className="text-[10px] text-success mt-0.5">
-              Earned: {formatUGX(Number(p.total_roi_earned))}
-            </p>
-          )}
+          <div className="flex items-center justify-between mt-0.5">
+            {Number(p.total_roi_earned) > 0 && (
+              <p className="text-[10px] text-success">
+                Earned: {formatUGX(Number(p.total_roi_earned))}
+              </p>
+            )}
+            <NextRoiIndicator nextRoiDate={p.next_roi_date} />
+          </div>
         </div>
         <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
       </Card>
@@ -68,19 +100,31 @@ function PortfolioRow({ p, onTap }: { p: PortfolioRecord; onTap: () => void }) {
   );
 }
 
-function DetailRow({ label, value, icon: Icon }: { label: string; value: string; icon?: React.ElementType }) {
+function DetailRow({ label, value, icon: Icon, valueClassName }: { label: string; value: string; icon?: React.ElementType; valueClassName?: string }) {
   return (
     <div className="flex items-center justify-between py-2.5 border-b border-border/40 last:border-0">
       <span className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
         {Icon && <Icon className="h-3.5 w-3.5" />}
         {label}
       </span>
-      <span className="text-xs font-bold text-foreground">{value}</span>
+      <span className={`text-xs font-bold text-foreground ${valueClassName || ''}`}>{value}</span>
     </div>
   );
 }
 
-function PortfolioDetailSheet({ portfolio, open, onOpenChange }: { portfolio: PortfolioRecord | null; open: boolean; onOpenChange: (o: boolean) => void }) {
+function PortfolioDetailSheet({ portfolio, open, onOpenChange, onRenamed }: {
+  portfolio: PortfolioRecord | null;
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  onRenamed: () => void;
+}) {
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [togglingReinvest, setTogglingReinvest] = useState(false);
+  const [localAutoReinvest, setLocalAutoReinvest] = useState<boolean | null>(null);
+
   if (!portfolio) return null;
   const amount = Number(portfolio.investment_amount);
   const roiPct = Number(portfolio.roi_percentage);
@@ -91,6 +135,106 @@ function PortfolioDetailSheet({ portfolio, open, onOpenChange }: { portfolio: Po
   const name = portfolio.account_name || portfolio.portfolio_code || 'Investment Account';
   const isActive = portfolio.status === 'active';
 
+  // Next ROI date urgency
+  const roiDays = daysUntilNextRoi(portfolio.next_roi_date);
+  const roiUrgent = roiDays !== null && roiDays <= 5;
+
+  const handleRename = async () => {
+    const trimmed = newName.trim();
+    if (!trimmed || !portfolio.id) return;
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('investor_portfolios')
+        .update({ account_name: trimmed } as any)
+        .eq('id', portfolio.id);
+      if (error) throw error;
+      // Update local state immediately so UI reflects the change
+      (portfolio as any).account_name = trimmed;
+      toast.success('Account renamed successfully');
+      setIsRenaming(false);
+      onRenamed(); // triggers list refetch
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to rename account');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const buildPdfData = (): PortfolioPdfData => ({
+    portfolioCode: portfolio.portfolio_code || portfolio.id,
+    accountName: portfolio.account_name,
+    investmentAmount: amount,
+    roiPercentage: roiPct,
+    roiMode: portfolio.roi_mode || 'monthly_payout',
+    totalRoiEarned: totalEarned,
+    status: portfolio.status,
+    createdAt: portfolio.created_at || '',
+    durationMonths: portfolio.duration_months || 0,
+    nextRoiDate: portfolio.next_roi_date,
+    maturityDate: portfolio.maturity_date,
+    autoReinvest: portfolio.auto_reinvest ?? false,
+  });
+
+  const handleDownloadPdf = async () => {
+    setDownloading(true);
+    try {
+      await downloadPortfolioPdf(buildPdfData());
+      toast.success('PDF downloaded');
+    } catch {
+      toast.error('Failed to generate PDF');
+    }
+    setDownloading(false);
+  };
+
+  const handleToggleAutoReinvest = async () => {
+    if (!portfolio.id) return;
+    setTogglingReinvest(true);
+    const currentValue = localAutoReinvest ?? portfolio.auto_reinvest ?? false;
+    const newValue = !currentValue;
+    try {
+      const { error } = await supabase
+        .from('investor_portfolios')
+        .update({ auto_reinvest: newValue })
+        .eq('id', portfolio.id);
+      if (error) throw error;
+      setLocalAutoReinvest(newValue);
+      toast.success(`Auto-reinvest ${newValue ? 'enabled' : 'disabled'}`);
+      onRenamed(); // triggers refetch
+    } catch {
+      toast.error('Failed to update auto-reinvest setting');
+    } finally {
+      setTogglingReinvest(false);
+    }
+  };
+
+  const handleShare = () => {
+    const displayName = portfolio.account_name || portfolio.portfolio_code || 'Investment Account';
+    const monthlyROI = Math.round(amount * (roiPct / 100));
+    const message = [
+      `📊 *Investment Portfolio: ${displayName}*`,
+      ``,
+      `💰 Capital: ${formatUGX(amount)}`,
+      `📈 ROI Rate: ${roiPct}% per month`,
+      `💵 Monthly Return: ${formatUGX(monthlyROI)}`,
+      `📅 Duration: ${portfolio.duration_months || '—'} months`,
+      `🔄 Mode: ${portfolio.roi_mode === 'monthly_compounding' ? 'Compounding' : 'Monthly Payout'}`,
+      `✅ Status: ${cfg.label}`,
+      ``,
+      `💰 Total Earned So Far: ${formatUGX(totalEarned)}`,
+      ``,
+      `_Welile Technologies Limited_`,
+      `_Investment Portfolio Report_`,
+    ].join('\n');
+
+    const encoded = encodeURIComponent(message);
+    // Open WhatsApp with prefilled message
+    window.open(`https://wa.me/?text=${encoded}`, '_blank', 'noopener');
+    toast.success('Opening WhatsApp with portfolio details');
+  };
+
+  const autoReinvestValue = localAutoReinvest ?? portfolio.auto_reinvest ?? false;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto p-0">
@@ -99,8 +243,37 @@ function PortfolioDetailSheet({ portfolio, open, onOpenChange }: { portfolio: Po
             <div className="p-2.5 rounded-xl bg-primary shadow-lg">
               <Wallet className="h-5 w-5 text-primary-foreground" />
             </div>
-            <div className="min-w-0">
-              <span className="text-base font-black block truncate">{name}</span>
+            <div className="min-w-0 flex-1">
+              {isRenaming ? (
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    placeholder="New account name"
+                    className="h-8 text-sm"
+                    autoFocus
+                    onKeyDown={(e) => e.key === 'Enter' && handleRename()}
+                  />
+                  <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={handleRename} disabled={saving || !newName.trim()}>
+                    {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5 text-success" />}
+                  </Button>
+                  <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={() => setIsRenaming(false)}>
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-base font-black block truncate">{name}</span>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6 shrink-0"
+                    onClick={() => { setNewName(portfolio.account_name || ''); setIsRenaming(true); }}
+                  >
+                    <Pencil className="h-3 w-3 text-muted-foreground" />
+                  </Button>
+                </div>
+              )}
               <div className="flex items-center gap-2 mt-0.5">
                 {portfolio.portfolio_code && (
                   <span className="text-[10px] font-mono text-muted-foreground">{portfolio.portfolio_code}</span>
@@ -152,19 +325,66 @@ function PortfolioDetailSheet({ portfolio, open, onOpenChange }: { portfolio: Po
               <DetailRow label="Maturity Date" value={formatDateOnlyForDisplay(portfolio.maturity_date)} icon={Calendar} />
             )}
             {portfolio.next_roi_date && (
-              <DetailRow label="Next ROI Date" value={formatDateOnlyForDisplay(portfolio.next_roi_date)} icon={Calendar} />
+              <DetailRow
+                label="Next ROI Date"
+                value={formatDateOnlyForDisplay(portfolio.next_roi_date)}
+                icon={Calendar}
+                valueClassName={roiUrgent ? 'text-destructive font-black' : 'text-success'}
+              />
             )}
             {portfolio.funded_at && (
               <DetailRow label="Funded" value={formatDateOnlyForDisplay(portfolio.funded_at)} icon={Calendar} />
             )}
             <DetailRow
               label="Auto-Reinvest"
-              value={portfolio.auto_reinvest ? 'Enabled' : 'Disabled'}
+              value={autoReinvestValue ? 'Enabled' : 'Disabled'}
               icon={RefreshCw}
+              valueClassName={autoReinvestValue ? 'text-primary' : ''}
             />
           </div>
 
-          {/* Action Buttons */}
+          {/* Share & Download */}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              className="flex-1 h-10 gap-2 text-xs font-semibold"
+              onClick={handleDownloadPdf}
+              disabled={downloading}
+            >
+              {downloading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+              Download PDF
+            </Button>
+            <Button
+              variant="outline"
+              className="flex-1 h-10 gap-2 text-xs font-semibold"
+              onClick={handleShare}
+            >
+              <Share2 className="h-3.5 w-3.5" />
+              Share
+            </Button>
+          </div>
+
+          {/* Auto-Reinvest Toggle */}
+          {isActive && (
+            <div className="flex items-center justify-between p-3.5 rounded-xl border border-border/60 bg-muted/30">
+              <div className="flex items-center gap-2">
+                <RefreshCw className={`h-4 w-4 ${autoReinvestValue ? 'text-primary' : 'text-muted-foreground'}`} />
+                <div>
+                  <p className="text-xs font-bold">Auto-Reinvest</p>
+                  <p className="text-[10px] text-muted-foreground">Automatically compound your returns</p>
+                </div>
+              </div>
+              <Button
+                size="sm"
+                variant={autoReinvestValue ? 'default' : 'outline'}
+                className="h-8 text-xs font-semibold min-w-[70px]"
+                onClick={handleToggleAutoReinvest}
+                disabled={togglingReinvest}
+              >
+                {togglingReinvest ? <Loader2 className="h-3 w-3 animate-spin" /> : autoReinvestValue ? 'On' : 'Off'}
+              </Button>
+            </div>
+          )}
           {isActive && (
             <div className="flex gap-3">
               <Button
@@ -176,17 +396,6 @@ function PortfolioDetailSheet({ portfolio, open, onOpenChange }: { portfolio: Po
               >
                 <Sparkles className="h-4 w-4" />
                 Top Up
-              </Button>
-              <Button
-                variant="soft"
-                onClick={() => {
-                  window.dispatchEvent(new CustomEvent('open-compound', { detail: { portfolioId: portfolio.id } }));
-                  onOpenChange(false);
-                }}
-                className="flex-1 h-11 font-semibold gap-2"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Compound
               </Button>
               <Button
                 variant="outline"
@@ -224,7 +433,7 @@ interface InvestmentAccountsDrawerProps {
 }
 
 export function InvestmentAccountsDrawer({ open, onOpenChange, defaultTab = 'accounts' }: InvestmentAccountsDrawerProps) {
-  const { portfolios, totalInvested, loading } = useCapitalOpportunities();
+  const { portfolios, totalInvested, loading, refetch } = useCapitalOpportunities();
   const { hasShares, totalShares, companyOwnershipPct, totalInvested: angelInvested, poolOwnershipPct, records, valuations } = useMyAngelShares();
   const { formatAmount } = useCurrency();
   const [selectedPortfolio, setSelectedPortfolio] = useState<PortfolioRecord | null>(null);
@@ -375,6 +584,7 @@ export function InvestmentAccountsDrawer({ open, onOpenChange, defaultTab = 'acc
         portfolio={selectedPortfolio}
         open={showDetail}
         onOpenChange={setShowDetail}
+        onRenamed={refetch}
       />
     </>
   );

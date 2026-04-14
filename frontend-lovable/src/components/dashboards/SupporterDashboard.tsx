@@ -53,13 +53,13 @@ import { CreditRequestsFeed } from '@/components/supporter/CreditRequestsFeed';
 import { InvestmentPackageSheet } from '@/components/supporter/InvestmentPackageSheet';
 // FundingPoolCard removed from direct import
 import { FunderCapitalOpportunities } from '@/components/supporter/FunderCapitalOpportunities';
+import { InvestmentAccountsDrawer } from '@/components/supporter/InvestmentAccountsDrawer';
 
 import AiIdButton from '@/components/ai-id/AiIdButton';
 import { NotificationBell } from '@/components/supporter/NotificationBell';
 import { InviteAndEarnCard } from '@/components/shared/InviteAndEarnCard';
+import { useInactivityLock } from '@/hooks/useInactivityLock';
 import { SupporterInactivityLock } from '@/components/supporter/SupporterInactivityLock';
-import { DataSyncIndicator, STALE_THRESHOLD_MS } from '@/components/shared/DataSyncIndicator';
-import { cn } from '@/lib/utils';
 
 
 interface SupporterDashboardProps {
@@ -95,33 +95,24 @@ export default function SupporterDashboard({
   const [selectedPackageCategory, setSelectedPackageCategory] = useState<RentCategory | null>(null);
   const [showPackageSheet, setShowPackageSheet] = useState(false);
   const [showWallet, setShowWallet] = useState(false);
+  const [showInvestments, setShowInvestments] = useState(false);
+  const [investmentsTab, setInvestmentsTab] = useState<'accounts' | 'angel'>('accounts');
   const { toast } = useToast();
   const { wallet, refreshWallet } = useWallet();
   const { fireSuccess, fireFirstFunding } = useConfetti();
   const [hasEverFunded, setHasEverFunded] = useState<boolean | null>(null);
 
-  const CACHE_KEY = `supporter_dashboard_v2_${user.id}`;
-
   // Local-first: read cache synchronously in useState init
   const [virtualHouses, setVirtualHouses] = useState<VirtualHouse[]>(() => {
     try {
-      const raw = localStorage.getItem(CACHE_KEY);
+      const raw = localStorage.getItem(`supporter_houses_${user.id}`);
       if (raw) return JSON.parse(raw).houses || [];
     } catch {}
     return [];
   });
-  const [lastUpdated, setLastUpdated] = useState<number | null>(() => {
-    try {
-      const raw = localStorage.getItem(CACHE_KEY);
-      if (raw) return JSON.parse(raw).timestamp || null;
-    } catch {}
-    return null;
-  });
-  const isStale = lastUpdated ? (Date.now() - lastUpdated) > STALE_THRESHOLD_MS : false;
-  
   const [totalRentContributed, setTotalRentContributed] = useState(() => {
     try {
-      const raw = localStorage.getItem(CACHE_KEY);
+      const raw = localStorage.getItem(`supporter_houses_${user.id}`);
       if (raw) return JSON.parse(raw).totalRent || 0;
     } catch {}
     return 0;
@@ -266,7 +257,7 @@ export default function SupporterDashboard({
       setLoading(false);
       // Check TTL — skip network if fresh
       try {
-        const cached = localStorage.getItem(CACHE_KEY);
+        const cached = localStorage.getItem(`supporter_houses_${user.id}`);
         if (cached) {
           const { timestamp } = JSON.parse(cached);
           if (Date.now() - timestamp < HOUSES_CACHE_TTL) return;
@@ -317,11 +308,9 @@ export default function SupporterDashboard({
         setTotalRentContributed(prev => prev || totalRent); // fallback, prefer ledger
         setHasEverFunded(houses.length > 0);
 
-        const now = Date.now();
-        localStorage.setItem(CACHE_KEY, JSON.stringify({
-          houses, totalRent, timestamp: now,
+        localStorage.setItem(`supporter_houses_${user.id}`, JSON.stringify({
+          houses, totalRent, timestamp: Date.now(),
         }));
-        setLastUpdated(now);
         setHasCachedData(true);
       }
     } catch (error) {
@@ -394,17 +383,14 @@ export default function SupporterDashboard({
               <UserAvatar avatarUrl={profile?.avatar_url} fullName={profile?.full_name} size="lg" />
             </button>
             <div className="flex flex-col items-center gap-0.5">
-              <div className="flex items-center gap-2">
-                <h1 className="font-bold text-lg leading-tight flex items-center gap-1.5">
-                  <span className="break-words">{profile?.full_name?.split(' ')[0] || 'Supporter'}</span>
-                  {profile?.verified ? (
-                    <BadgeCheck className="h-4 w-4 text-primary fill-primary/20 shrink-0" />
-                  ) : (
-                    <BadgeCheck className="h-4 w-4 text-muted-foreground/30 shrink-0" />
-                  )}
-                </h1>
-                <DataSyncIndicator lastUpdated={lastUpdated} isSyncing={loading} />
-              </div>
+              <h1 className="font-bold text-lg leading-tight flex items-center gap-1.5">
+                <span className="break-words">{profile?.full_name?.split(' ')[0] || 'Supporter'}</span>
+                {profile?.verified ? (
+                  <BadgeCheck className="h-4 w-4 text-primary fill-primary/20 shrink-0" />
+                ) : (
+                  <BadgeCheck className="h-4 w-4 text-muted-foreground/30 shrink-0" />
+                )}
+              </h1>
               <p className="text-[11px] text-muted-foreground font-medium">Welcome back</p>
             </div>
             <AiIdButton variant="compact" />
@@ -413,19 +399,31 @@ export default function SupporterDashboard({
           <MerchantCodePills />
 
           {/* ═══ PORTFOLIO HERO CARD ═══ */}
-          <div className={cn("transition-opacity duration-500", isStale && "opacity-80")}>
-            <UnifiedWalletHeroCard
-              balance={wallet?.balance ?? 0}
-              role="supporter"
-              secondaryLabel="Invested"
-              secondaryValue={_formatUGX(totalRentContributed)}
-              houses={virtualHouses.length}
-              returnPerMonth={_formatUGX(totalRoiEarned)}
-              deployed={_formatUGX(totalRentContributed)}
-            />
-          </div>
+          <UnifiedWalletHeroCard
+            balance={wallet?.balance ?? 0}
+            role="supporter"
+            secondaryLabel="Invested"
+            secondaryValue={_formatUGX(totalRentContributed)}
+            houses={virtualHouses.length}
+            returnPerMonth={_formatUGX(totalRoiEarned)}
+            deployed={_formatUGX(totalRentContributed)}
+            onOpenWallet={() => setShowWallet(true)}
+            onHousesTap={() => {
+              const el = document.getElementById('my-houses');
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+            onReturnTap={() => {
+              setInvestmentsTab('accounts');
+              setShowInvestments(true);
+            }}
+            onDeployedTap={() => {
+              setInvestmentsTab('accounts');
+              setShowInvestments(true);
+            }}
+          />
 
           <VerificationChecklist userId={user.id} highlightRole="supporter" compact />
+
 
           {/* ═══ QUICK ACTIONS — Pill Style ═══ */}
           <div className="flex gap-2">
@@ -469,7 +467,7 @@ export default function SupporterDashboard({
 
           {/* ═══ MY FUNDED HOUSES (collapsible) ═══ */}
           {virtualHouses.length > 0 && (
-            <div className="space-y-3">
+            <div id="my-houses" className="space-y-3 scroll-mt-4">
               <div className="flex items-center gap-2 px-1">
                 <div className="w-1 h-5 rounded-full bg-success" />
                 <h2 className="text-sm font-black text-foreground tracking-tight">My Houses</h2>
@@ -582,6 +580,7 @@ export default function SupporterDashboard({
       />
 
       <FullScreenWalletSheet open={showWallet} onOpenChange={setShowWallet} />
+      <InvestmentAccountsDrawer open={showInvestments} onOpenChange={setShowInvestments} defaultTab={investmentsTab} />
       
       
     </div>

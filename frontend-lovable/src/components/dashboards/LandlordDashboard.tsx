@@ -35,8 +35,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CreditAccessCard } from '@/components/CreditAccessCard';
 import { InviteAndEarnCard } from '@/components/shared/InviteAndEarnCard';
 import { VerificationChecklist } from '@/components/shared/VerificationChecklist';
-import { DataSyncIndicator, STALE_THRESHOLD_MS } from '@/components/shared/DataSyncIndicator';
-import { cn } from '@/lib/utils';
 
 interface LandlordDashboardProps {
   user: User;
@@ -51,9 +49,7 @@ export default function LandlordDashboard({ user, signOut, currentRole, availabl
   const navigate = useNavigate();
   const { profile } = useProfile();
   const { wallet, refreshWallet } = useWallet();
-  const { stats: landlordStats, loading: statsLoading, lastUpdated, isSyncing, refreshStats } = useLandlordStats(user.id);
-  
-  const isStale = lastUpdated ? (Date.now() - lastUpdated) > STALE_THRESHOLD_MS : false;
+  const { stats: landlordStats, loading: statsLoading, refreshStats } = useLandlordStats(user.id);
   const [menuOpen, setMenuOpen] = useState(false);
   const [registerPropertyOpen, setRegisterPropertyOpen] = useState(false);
   const [addTenantOpen, setAddTenantOpen] = useState(false);
@@ -85,21 +81,14 @@ export default function LandlordDashboard({ user, signOut, currentRole, availabl
 
       <div className="flex-1 overflow-y-auto pb-16 md:pb-4">
         <main className="px-4 py-5 space-y-5 animate-fade-in max-w-lg mx-auto">
-        
-          <div className="flex items-center justify-between">
-            <h1 className="font-bold text-xl leading-tight">Landlord Dashboard</h1>
-            <DataSyncIndicator lastUpdated={lastUpdated} isSyncing={isSyncing} />
-          </div>
 
           {/* Portfolio Hero Card */}
-          <div className={cn("transition-opacity duration-500", isStale && "opacity-80")}>
-            <UnifiedWalletHeroCard
-              balance={wallet?.balance ?? 0}
-              role="landlord"
-              secondaryLabel="Withdrawable"
-              secondaryValue={formatUGX(wallet?.balance ?? 0)}
-            />
-          </div>
+          <UnifiedWalletHeroCard
+            balance={wallet?.balance ?? 0}
+            role="landlord"
+            secondaryLabel="Withdrawable"
+            secondaryValue={formatUGX(wallet?.balance ?? 0)}
+          />
 
           {/* Verification Checklist */}
           <VerificationChecklist userId={user.id} highlightRole="landlord" compact />

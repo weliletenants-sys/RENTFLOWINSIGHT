@@ -67,19 +67,14 @@ export function useSupporterAgreement() {
       // Get device info
       const deviceInfo = `${navigator.userAgent}`;
       
-      // Try to get IP address with a strict 3-second timeout so WSL dev doesn't hang!
+      // Try to get IP address (will be null if it fails, which is fine)
       let ipAddress: string | null = null;
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
-        
-        const ipResponse = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
-        clearTimeout(timeoutId);
-        
+        const ipResponse = await fetch('https://api.ipify.org?format=json');
         const ipData = await ipResponse.json();
         ipAddress = ipData.ip;
       } catch {
-        // IP fetch failed or timed out, continue without it gracefully
+        // IP fetch failed, continue without it
       }
 
       const { data, error: insertError } = await supabase
@@ -94,18 +89,14 @@ export function useSupporterAgreement() {
         .select()
         .single();
 
-      if (insertError) {
-         console.error('[Supporter Agreement] Insert rejected by Supabase:', insertError);
-         throw new Error(insertError.message || 'Server rejected agreement signing (Code: ' + insertError.code + ')');
-      }
+      if (insertError) throw insertError;
 
       setHasAccepted(true);
       setAcceptance(data);
       return true;
     } catch (err: any) {
-      console.error('[Supporter Agreement] Failure surfaced:', err);
       setError(err.message || 'Acceptance failed. Please try again.');
-      throw err; // Ensure modal catches the visual toast!
+      return false;
     } finally {
       setLoading(false);
     }

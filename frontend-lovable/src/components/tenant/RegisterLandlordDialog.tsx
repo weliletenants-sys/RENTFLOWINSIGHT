@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useGeolocation } from '@/hooks/useGeolocation';
+import { useGeoLocation } from '@/hooks/useGeoLocation';
 import {
   Dialog,
   DialogContent,

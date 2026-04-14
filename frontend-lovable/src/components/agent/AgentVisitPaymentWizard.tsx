@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useGeolocation } from '@/hooks/useGeolocation';
+import { useGeoLocation } from '@/hooks/useGeoLocation';
 import { useProfile } from '@/hooks/useProfile';
 import { hapticTap } from '@/lib/haptics';
 import { formatUGX } from '@/lib/rentCalculations';
@@ -57,7 +57,7 @@ function getDistanceMeters(lat1: number, lon1: number, lat2: number, lon2: numbe
 export function AgentVisitPaymentWizard({ open, onOpenChange, onSuccess, preselectedTenant }: AgentVisitPaymentWizardProps) {
   const { profile } = useProfile();
   const { toast } = useToast();
-  const { loading: gpsLoading, captureLocation } = useGeolocation();
+  const { loading: gpsLoading, captureLocation } = useGeoLocation();
 
   // Wizard state
   const [step, setStep] = useState<WizardStep>('search');
@@ -87,7 +87,7 @@ export function AgentVisitPaymentWizard({ open, onOpenChange, onSuccess, presele
   const [submitting, setSubmitting] = useState(false);
   const [trackingId, setTrackingId] = useState('');
   const [completed, setCompleted] = useState(false);
-  const [smsSending, setSmsSending] = useState(false);
+  const [smsSending] = useState(false);
 
   // Reset on close
   useEffect(() => {
@@ -111,7 +111,7 @@ export function AgentVisitPaymentWizard({ open, onOpenChange, onSuccess, presele
       setTrackingId('');
       setCompleted(false);
       setGpsCapturing(false);
-      setSmsSending(false);
+      // smsSending no longer managed locally
     }
   }, [open]);
 
@@ -293,27 +293,20 @@ export function AgentVisitPaymentWizard({ open, onOpenChange, onSuccess, presele
       setCompleted(true);
       toast({ title: 'Payment recorded successfully!' });
 
-      // Send SMS in background
-      setSmsSending(true);
-      try {
-        await supabase.functions.invoke('send-collection-sms', {
-          body: {
-            tenant_name: selectedTenant.full_name,
-            tenant_phone: selectedTenant.phone,
-            agent_name: profile.full_name,
-            agent_phone: profile.phone,
-            amount: paidAmount,
-            payment_mode: paymentMode,
-            tracking_id: txnId,
-            date: format(new Date(), 'dd MMM yyyy'),
-            collection_id: collection?.id,
-          },
-        });
-      } catch {
-        console.warn('SMS sending failed silently');
-      } finally {
-        setSmsSending(false);
-      }
+      // Fire SMS via Inngest (fire-and-forget, retries handled by Inngest)
+      supabase.functions.invoke('inngest-send-sms', {
+        body: {
+          tenant_name: selectedTenant.full_name,
+          tenant_phone: selectedTenant.phone,
+          agent_name: profile.full_name,
+          agent_phone: profile.phone,
+          amount: paidAmount,
+          payment_mode: paymentMode,
+          tracking_id: txnId,
+          date: format(new Date(), 'dd MMM yyyy'),
+          collection_id: collection?.id,
+        },
+      }).catch(() => console.warn('Inngest SMS dispatch failed silently'));
 
       onSuccess?.();
     } catch (err: any) {

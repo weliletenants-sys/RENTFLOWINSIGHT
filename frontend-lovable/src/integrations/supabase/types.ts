@@ -3363,6 +3363,126 @@ export type Database = {
         }
         Relationships: []
       }
+      email_send_log: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          message_id: string | null
+          metadata: Json | null
+          recipient_email: string
+          status: string
+          template_name: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message_id?: string | null
+          metadata?: Json | null
+          recipient_email: string
+          status: string
+          template_name: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message_id?: string | null
+          metadata?: Json | null
+          recipient_email?: string
+          status?: string
+          template_name?: string
+        }
+        Relationships: []
+      }
+      email_send_state: {
+        Row: {
+          auth_email_ttl_minutes: number
+          batch_size: number
+          id: number
+          retry_after_until: string | null
+          send_delay_ms: number
+          transactional_email_ttl_minutes: number
+          updated_at: string
+        }
+        Insert: {
+          auth_email_ttl_minutes?: number
+          batch_size?: number
+          id?: number
+          retry_after_until?: string | null
+          send_delay_ms?: number
+          transactional_email_ttl_minutes?: number
+          updated_at?: string
+        }
+        Update: {
+          auth_email_ttl_minutes?: number
+          batch_size?: number
+          id?: number
+          retry_after_until?: string | null
+          send_delay_ms?: number
+          transactional_email_ttl_minutes?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      email_unsubscribe_tokens: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          token: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          token?: string
+          used_at?: string | null
+        }
+        Relationships: []
+      }
+      employee_agreement_acceptance: {
+        Row: {
+          accepted_at: string
+          agreement_version: string
+          created_at: string
+          device_info: string | null
+          id: string
+          ip_address: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string
+          agreement_version?: string
+          created_at?: string
+          device_info?: string | null
+          id?: string
+          ip_address?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string
+          agreement_version?: string
+          created_at?: string
+          device_info?: string | null
+          id?: string
+          ip_address?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       fee_revenue_ledger: {
         Row: {
           created_at: string
@@ -6433,6 +6553,66 @@ export type Database = {
         }
         Relationships: []
       }
+      promissory_notes: {
+        Row: {
+          activation_token: string
+          agent_id: string
+          amount: number
+          contribution_type: string
+          created_at: string
+          deduction_day: number | null
+          email: string | null
+          id: string
+          next_deduction_date: string | null
+          notes: string | null
+          partner_name: string
+          partner_user_id: string | null
+          phone_number: string | null
+          status: string
+          total_collected: number
+          updated_at: string
+          whatsapp_number: string
+        }
+        Insert: {
+          activation_token?: string
+          agent_id: string
+          amount: number
+          contribution_type?: string
+          created_at?: string
+          deduction_day?: number | null
+          email?: string | null
+          id?: string
+          next_deduction_date?: string | null
+          notes?: string | null
+          partner_name: string
+          partner_user_id?: string | null
+          phone_number?: string | null
+          status?: string
+          total_collected?: number
+          updated_at?: string
+          whatsapp_number: string
+        }
+        Update: {
+          activation_token?: string
+          agent_id?: string
+          amount?: number
+          contribution_type?: string
+          created_at?: string
+          deduction_day?: number | null
+          email?: string | null
+          id?: string
+          next_deduction_date?: string | null
+          notes?: string | null
+          partner_name?: string
+          partner_user_id?: string | null
+          phone_number?: string | null
+          status?: string
+          total_collected?: number
+          updated_at?: string
+          whatsapp_number?: string
+        }
+        Relationships: []
+      }
       property_viewings: {
         Row: {
           agent_checkin_at: string | null
@@ -7734,6 +7914,33 @@ export type Database = {
         }
         Relationships: []
       }
+      short_links: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          target_params: Json
+          target_path: string
+          user_id: string
+        }
+        Insert: {
+          code?: string
+          created_at?: string
+          id?: string
+          target_params?: Json
+          target_path: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          target_params?: Json
+          target_path?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       staff_access_passwords: {
         Row: {
           created_at: string | null
@@ -7787,33 +7994,39 @@ export type Database = {
       }
       staff_profiles: {
         Row: {
+          agreement_accepted: boolean
           created_at: string | null
           created_by: string | null
           department: string
           employee_id: string
           id: string
+          job_title: string | null
           must_change_password: boolean | null
           position: string
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          agreement_accepted?: boolean
           created_at?: string | null
           created_by?: string | null
           department?: string
           employee_id: string
           id?: string
+          job_title?: string | null
           must_change_password?: boolean | null
           position?: string
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          agreement_accepted?: boolean
           created_at?: string | null
           created_by?: string | null
           department?: string
           employee_id?: string
           id?: string
+          job_title?: string | null
           must_change_password?: boolean | null
           position?: string
           updated_at?: string | null
@@ -8237,6 +8450,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      suppressed_emails: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          metadata: Json | null
+          reason: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          metadata?: Json | null
+          reason: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          metadata?: Json | null
+          reason?: string
+        }
+        Relationships: []
       }
       suspense_ledger: {
         Row: {
@@ -9701,25 +9938,15 @@ export type Database = {
             }
             Returns: Json
           }
-      credit_agent_rent_commission:
-        | {
-            Args: {
-              p_event_reference_id?: string
-              p_rent_request_id: string
-              p_repayment_amount: number
-              p_tenant_id: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              p_event_reference_id?: string
-              p_rent_request_id: string
-              p_repayment_amount: number
-              p_tenant_id: string
-            }
-            Returns: Json
-          }
+      credit_agent_rent_commission: {
+        Args: {
+          p_event_reference_id?: string
+          p_rent_request_id: string
+          p_repayment_amount: number
+          p_tenant_id: string
+        }
+        Returns: Json
+      }
       credit_proxy_approval:
         | {
             Args: {
@@ -9747,12 +9974,20 @@ export type Database = {
         Args: { p_amount: number; p_summary_id: string }
         Returns: undefined
       }
+      delete_email: {
+        Args: { message_id: number; queue_name: string }
+        Returns: boolean
+      }
       detect_velocity_abuse: {
         Args: { p_threshold?: number; p_window_minutes?: number }
         Returns: {
           deposit_count: number
           user_id: string
         }[]
+      }
+      enqueue_email: {
+        Args: { payload: Json; queue_name: string }
+        Returns: number
       }
       find_duplicate_phones: {
         Args: never
@@ -10119,12 +10354,29 @@ export type Database = {
           phone: string
         }[]
       }
+      move_to_dlq: {
+        Args: {
+          dlq_name: string
+          message_id: number
+          payload: Json
+          source_queue: string
+        }
+        Returns: number
+      }
       normalize_phone_last9: { Args: { phone: string }; Returns: string }
       notify_landlord_registration_helper: {
         Args: { p_landlord_id: string }
         Returns: undefined
       }
       process_monthly_referral_rewards: { Args: never; Returns: undefined }
+      read_email_batch: {
+        Args: { batch_size: number; queue_name: string; vt: number }
+        Returns: {
+          message: Json
+          msg_id: number
+          read_ct: number
+        }[]
+      }
       recalculate_credit_limit: { Args: { p_user_id: string }; Returns: number }
       record_double_entry: {
         Args: {

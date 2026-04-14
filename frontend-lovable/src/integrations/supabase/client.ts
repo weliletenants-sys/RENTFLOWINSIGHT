@@ -18,18 +18,24 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
       const urlStr = url.toString();
       let targetUrl = urlStr;
       
-      // Detour PostgREST REST endpoints
-      if (urlStr.includes('/rest/v1/')) {
-        // EXCEPTION: Let the legacy Supabase Auth Email Lookups hit Live Supabase properly to map Live user credentials!
-        if (urlStr.includes('/rest/v1/rpc/get_email_by_phone')) {
-             return fetch(urlStr, options);
+      // We only intercept mutating requests ensuring they pass through Zero-Trust backend.
+      // Safe reads (GET) can utilize direct Supabase CDN/Edge for speed.
+      const method = options?.method?.toUpperCase() || 'GET';
+      const isMutation = ['POST', 'PATCH', 'PUT', 'DELETE'].includes(method);
+
+      if (isMutation) {
+        // Detour PostgREST REST mutating endpoints
+        if (urlStr.includes('/rest/v1/')) {
+          // EXCEPTION: Let the legacy Supabase Auth Email Lookups hit Live Supabase properly to map Live user credentials!
+          if (urlStr.includes('/rest/v1/rpc/get_email_by_phone')) {
+               return fetch(urlStr, options);
+          }
+          targetUrl = urlStr.replace(SUPABASE_URL + '/rest/v1/', 'http://localhost:3000/api/rest/');
+        } 
+        // Detour PostgREST RPC endpoints
+        else if (urlStr.includes('/rest/v1/rpc/')) {
+          targetUrl = urlStr.replace(SUPABASE_URL + '/rest/v1/rpc/', 'http://localhost:3000/api/rpc/');
         }
-        
-        targetUrl = urlStr.replace(SUPABASE_URL + '/rest/v1/', 'http://localhost:3000/api/rest/');
-      } 
-      // Detour PostgREST RPC endpoints
-      else if (urlStr.includes('/rest/v1/rpc/')) {
-        targetUrl = urlStr.replace(SUPABASE_URL + '/rest/v1/rpc/', 'http://localhost:3000/api/rpc/');
       }
 
       // The raw supabase-js auth client completely governs token injections naturally into 'options' 
