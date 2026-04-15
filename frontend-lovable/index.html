@@ -12,7 +12,6 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
     
     <!-- Critical: Preconnect early — full TCP+TLS handshake saved -->
-    <link rel="preload" href="/src/main.tsx" as="script" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://wirntoujqoyjobfhyelc.supabase.co" crossorigin>
@@ -68,21 +67,11 @@
       @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;scroll-behavior:auto!important}}
       /* Data saver mode */
       @media(prefers-reduced-data:reduce){img[save-data-hidden],video,.decorative{display:none!important}}
-      
-      /* Splash Screen CSS */
-      .splash-container { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; }
-      .splash-logo { width: 64px; height: 64px; border-radius: 16px; background: #7c3aed; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 24px; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-      @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .7; transform: scale(0.95); } }
-      @media(prefers-color-scheme:dark){ .splash-container { background: #0f172a; } }
     </style>
   </head>
 
   <body>
-    <div id="root">
-      <div class="splash-container">
-        <div class="splash-logo">W</div>
-      </div>
-    </div>
+    <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

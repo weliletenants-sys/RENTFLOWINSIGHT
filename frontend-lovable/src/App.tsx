@@ -9,7 +9,6 @@ import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ChunkErrorBoundary from "@/components/ChunkErrorBoundary";
 import { PullToRefresh } from "@/components/PullToRefresh";
-import { offlineQueue } from "@/lib/offlineQueue";
 
 // Critical providers — loaded eagerly for instant auth/routing
 import { AuthProvider } from "@/hooks/useAuth";
@@ -89,6 +88,8 @@ const PublicRentCalculator = lazy(() => import('./pages/PublicRentCalculator'));
 
 const RegisterTenantPublic = lazy(() => import('./pages/RegisterTenantPublic'));
 const RegisterPartnerPublic = lazy(() => import('./pages/RegisterPartnerPublic'));
+const ActivatePartner = lazy(() => import('./pages/ActivatePartner'));
+const ResolveShortLink = lazy(() => import('./pages/ResolveShortLink'));
 const HouseDetail = lazy(() => import('./pages/HouseDetail'));
 const ShopEntry = lazy(() => import('./pages/ShopEntry'));
 const ManagerLogin = lazy(() => import('./pages/ManagerLogin'));
@@ -187,13 +188,27 @@ const queryClient = new QueryClient({
   },
 });
 
-// Full Screen Splash Loader for Auth + Global Routing Suspense
+// Ultra-minimal page loader - shows retry after 5s
 const PageLoader = memo(() => {
+  const [showRetry, setShowRetry] = useState(false);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => setShowRetry(true), 3500);
+    return () => clearTimeout(timer);
+  }, []);
+  
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background">
-      <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground font-bold text-2xl animate-pulse shadow-sm">
-        W
-      </div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-3">
+      <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      {showRetry && (
+        <button
+          onClick={() => { sessionStorage.removeItem('chunk_retry'); location.reload(); }}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm"
+          style={{ minHeight: '44px' }}
+        >
+          Tap to Retry
+        </button>
+      )}
     </div>
   );
 });
@@ -202,54 +217,34 @@ PageLoader.displayName = 'PageLoader';
 // Stable routes wrapper — no RoutePrefetcher (DOM overhead), no JS page transitions
 // Global banner - lazy loaded
 function AppRoutes() {
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
-
-  useEffect(() => {
-    const goOnline = () => {
-      setIsOnline(true);
-      offlineQueue.processQueue();
-    };
-    const goOffline = () => setIsOnline(false);
-
-    window.addEventListener('online', goOnline);
-    window.addEventListener('offline', goOffline);
-
-    return () => {
-      window.removeEventListener('online', goOnline);
-      window.removeEventListener('offline', goOffline);
-    };
-  }, []);
-
   const handlePullRefresh = async () => {
     try {
+      // Clear all caches
       if ('caches' in window) {
         const keys = await caches.keys();
         await Promise.all(keys.map(k => caches.delete(k)));
       }
+      // Unregister service workers so fresh content loads
       if ('serviceWorker' in navigator) {
         const regs = await navigator.serviceWorker.getRegistrations();
         await Promise.all(regs.map(r => r.unregister()));
       }
     } catch {
-      // ignore
+      // ignore cache errors
     }
+    // Hard reload to pick up new assets
     window.location.reload();
   };
 
   return (
     <PullToRefresh onRefresh={handlePullRefresh} className="min-h-screen">
-      <div className="relative">
-        {!isOnline && (
-          <div className="fixed top-2 right-2 md:top-4 md:right-4 z-[100] bg-muted/60 backdrop-blur-md border border-border text-foreground/70 px-3 py-1 rounded-full text-[10px] font-medium shadow-sm pointer-events-none flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-warning/80"></div>
-            Offline mode
-          </div>
-        )}
+      <div>
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/welcome" element={<Landing />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/r/:code" element={<ResolveShortLink />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/select-role" element={<SelectRole />} />
           <Route path="/transactions" element={<TransactionHistory />} />
@@ -345,6 +340,7 @@ function AppRoutes() {
           <Route path="/investor/portfolio/:token" element={<InvestorPortfolioPublic />} />
           <Route path="/register-tenant" element={<RegisterTenantPublic />} />
           <Route path="/register-partner" element={<RegisterPartnerPublic />} />
+          <Route path="/activate" element={<ActivatePartner />} />
           <Route path="/rent-money" element={<RentMoney />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
