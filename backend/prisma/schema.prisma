@@ -3073,6 +3073,8 @@ model RiskReview {
   execution_attempts Int       @default(0)
   last_execution_at  DateTime?
   locked_at          DateTime?
+  locked_by          String?
+  last_heartbeat_at  DateTime?
   createdAt          DateTime  @default(now())
   decidedAt          DateTime?
   decidedBy          String?
@@ -3080,6 +3082,63 @@ model RiskReview {
   @@map("risk_reviews")
 }
 
+// ------------------------------------------------------------------------------------
+// TRUE FINANCIAL LEDGER LAYER (v2 - LIVE DATA SAFE)
+// ------------------------------------------------------------------------------------
 
+model FinancialAccounts {
+  id         String   @id @default(uuid())
+  user_id    String?
+  type       String   // e.g., WALLET, ESCROW, SUSPENSE, SYSTEM
+  balance    Float    @default(0)
+  currency   String?  @default("UGX")
+  status     String   @default("ACTIVE") // ACTIVE, FROZEN
+  created_at DateTime @default(now())
 
+  entries FinancialEntries[]
 
+  @@map("financial_accounts")
+}
+
+model FinancialTransactions {
+  id              String   @id @default(uuid())
+  idempotency_key String   @unique
+  status          String   // PENDING, COMPLETED, FAILED
+  reference       String?  // RENT_PAYMENT, BACKFILL
+  metadata        Json?
+  created_at      DateTime @default(now())
+
+  entries FinancialEntries[]
+
+  @@map("financial_transactions")
+}
+
+model FinancialEntries {
+  id             String   @id @default(uuid())
+  transaction_id String
+  account_id     String
+  amount         Float    // Absolute unsigned amount
+  type           String   // DEBIT | CREDIT
+  created_at     DateTime @default(now())
+
+  transaction FinancialTransactions @relation(fields: [transaction_id], references: [id])
+  account     FinancialAccounts     @relation(fields: [account_id], references: [id])
+
+  @@map("financial_entries")
+}
+
+model PaymentIntents {
+  id                     String   @id @default(uuid())
+  user_id                String
+  amount                 Float
+  status                 String   // INITIATED, PROCESSING, COMPLETED, FAILED
+  risk_review_id         String?
+  idempotency_key        String   @unique
+  source_account_id      String?
+  destination_account_id String?
+  reference              String?
+  metadata               Json?
+  created_at             DateTime @default(now())
+
+  @@map("payment_intents")
+}

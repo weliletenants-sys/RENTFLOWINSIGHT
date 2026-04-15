@@ -1,0 +1,2 @@
+id,supporter_id,transaction_type,amount,balance_after,reference_id,rent_request_id,description,created_at
+0c525900-a8e4-481a-8cdc-d5ba6affadb1,cf561688-b3a2-4f62-b9c1-67ee7b36ff2b,inflow,100000,0,3479da20-5b5c-4db0-88c1-5fb87182b28f,,"Portfolio WPF-9344 created by Benjamin Muhanguzi. UGX 100,000 investment pending approval.",2026-04-07 06:39:19.776274+00

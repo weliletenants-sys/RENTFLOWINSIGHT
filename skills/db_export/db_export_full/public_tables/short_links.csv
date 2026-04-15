@@ -1,0 +1,5 @@
+id,code,user_id,target_path,target_params,created_at
+a1822182-1bbb-488e-9e9a-405f917a1385,89XmWJ,0b109aad-212a-4fd0-ab03-3d7aee9cf397,/activate,"{""token"": ""02369c12af7e58c5d8e8bcb0a2e6b51e4e950a9f2b272efb6c9b0e578e59e264""}",2026-04-14 12:51:36.419365+00
+3a7b3e0b-3bb6-4ea3-899e-7ea8fec65af8,FwZmf4,0b109aad-212a-4fd0-ab03-3d7aee9cf397,/register-partner,"{""agent"": ""0b109aad-212a-4fd0-ab03-3d7aee9cf397"", ""token"": ""3bebc1da-e617-4d7a-a4d0-fc6bf223728c""}",2026-04-14 12:59:03.952378+00
+ac9c5950-7706-42b7-b3cd-0d4acd5f0700,j52Wyu,0b109aad-212a-4fd0-ab03-3d7aee9cf397,/activate,"{""token"": ""bd1be83bad53f2a68262150a94272e414bc6c75274b7093586814f208698b0c4""}",2026-04-14 13:07:58.879188+00
+b8336632-fcd4-4fb4-9af2-ceb147facec0,Qs4daT,2d3cdd17-3831-40fa-8011-8646a97fbfb0,/register-partner,"{""agent"": ""2d3cdd17-3831-40fa-8011-8646a97fbfb0"", ""token"": ""b8c5b21a-32b3-4ea5-888f-659d88f35d00""}",2026-04-15 09:51:40.917162+00

@@ -100,6 +100,12 @@ async function runTests() {
         // Restore Prisma
         prisma.riskReview.update = originalUpdate;
 
+        // Bypassing our own Exponential Backoff for the speed of the unit test:
+        await prisma.riskReview.update({
+             where: { event_id: testEventId },
+             data: { last_execution_at: new Date(Date.now() - 5000) }
+        });
+
         // Run worker second time. It should succeed, but LedgerService will use the same idempotency key 
         // to prevent duplicate payout natively.
         await processApprovedRiskReviews();
@@ -111,15 +117,46 @@ async function runTests() {
 
         console.log('✅ Passed. Worker successfully recovered the previous failure without double logging.');
 
+        console.log('\n--- 4. Stuck Lock Recovery Test ---');
+        const stuckEventId = uuidv4();
+        await prisma.riskReview.create({
+             data: {
+                 event_id: stuckEventId,
+                 user_id: 'tenant-stuck',
+                 action: 'rent.request',
+                 amount: 250000,
+                 status: 'APPROVED_PENDING_EXECUTION',
+                 // Simulate a worker 40 seconds ago locking it and crashing completely
+                 locked_at: new Date(Date.now() - 40 * 1000), 
+                 execution_attempts: 0,
+                 last_execution_at: new Date(Date.now() - 40 * 1000)
+             }
+        });
+
+        await prisma.outboxEvents.create({
+            data: { id: stuckEventId, type: 'rent.request', payload: { tenantId: 't3', landlordId: 'l3', amount: 250000 } }
+        });
+
+        // The worker should see the 40-second old lock and forcibly reclaim it
+        await processApprovedRiskReviews();
+
+        const recoveredReview = await prisma.riskReview.findUnique({ where: { event_id: stuckEventId } });
+        if(recoveredReview?.status !== 'COMPLETED') {
+             throw new Error(`Worker failed to steal and run stuck lock: status is ${recoveredReview?.status}`);
+        }
+
+        console.log('✅ Passed. Worker successfully evicted a dead 40s lock and executed cleanly.');
+
         // Cleanup
-        await prisma.riskReview.delete({ where: { event_id: testEventId } });
-        await prisma.outboxEvents.delete({ where: { id: testEventId } });
+        await prisma.riskReview.delete({ where: { event_id: stuckEventId } });
+        await prisma.outboxEvents.delete({ where: { id: stuckEventId } });
+
     } catch (error: any) {
          console.error('❌ SIMULATION FAILED:', error);
          process.exit(1);
     }
 
-    console.log('\n==============\nRESULTS: 3 Passed, 0 Failed');
+    console.log('\n==============\nRESULTS: 4 Passed, 0 Failed');
 }
 
 runTests();

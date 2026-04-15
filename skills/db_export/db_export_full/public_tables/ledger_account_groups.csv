@@ -1,0 +1,7 @@
+group_id,group_code,description
+29391f3b-671f-4dac-ad22-31e6b31960a8,USER_OWNED,User owned wallets – never negative
+ca445a56-7ff1-4e42-9d80-b59e7d9925c9,OBLIGATION,Explicit debts and commitments
+d869cf5d-f900-4b07-8d23-daa5e84e3dc0,SYSTEM_CONTROL,"Buffer, escrow, rent control"
+5df4476e-0007-4ce4-aff3-3c417d389118,REVENUE,Deferred and recognized revenue
+278d69b2-7da3-443a-8176-65e975e95102,EXPENSE,Costs and partner rewards
+9d61357e-678f-4548-b571-56e7213b7724,SETTLEMENT,Bank and mobile money settlement

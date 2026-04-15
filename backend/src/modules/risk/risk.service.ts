@@ -33,7 +33,7 @@ export class RiskService {
                 throw new Error('Risk engine failure'); // Forces safe callback retry. FAIL CLOSED.
             }
 
-            const { decision, score, reasons } = result;
+            const { decision, score, reasons, rule_version } = result;
 
             // 2.5 Dynamic metadata payload enhancement
             const enrichedMetadata = {
@@ -55,6 +55,7 @@ export class RiskService {
                     amount: input.amount,
                     score,
                     decision,
+                    rule_version,
                     reasons,
                     metadata: enrichedMetadata
                 }

@@ -1,0 +1,1 @@
+id,agent_id,float_limit,collected_today,last_reset_date,assigned_by,created_at,updated_at,cash_on_hand,low_threshold_pct,critical_threshold_pct,daily_txn_limit,is_paused

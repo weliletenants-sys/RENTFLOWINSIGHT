@@ -4,6 +4,8 @@ import { RiskInput, RiskResult } from './risk.types';
 // We allow either raw Prisma or Transaction client to ensure full atomicity
 type PrismaTx = Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">;
 
+const CURRENT_RULE_VERSION = '1.0';
+
 export const evaluateRules = async (tx: PrismaTx | PrismaClient, input: RiskInput): Promise<RiskResult> => {
     let score = 0;
     const reasons: string[] = [];
@@ -31,12 +33,12 @@ export const evaluateRules = async (tx: PrismaTx | PrismaClient, input: RiskInpu
 
     // Default Deterministic Gates
     if (score >= 70) {
-        return { decision: 'BLOCK', score, reasons };
+        return { decision: 'BLOCK', score, reasons, rule_version: CURRENT_RULE_VERSION };
     }
 
     if (score >= 40) {
-        return { decision: 'REVIEW', score, reasons };
+        return { decision: 'REVIEW', score, reasons, rule_version: CURRENT_RULE_VERSION };
     }
 
-    return { decision: 'ALLOW', score, reasons };
+    return { decision: 'ALLOW', score, reasons, rule_version: CURRENT_RULE_VERSION };
 };

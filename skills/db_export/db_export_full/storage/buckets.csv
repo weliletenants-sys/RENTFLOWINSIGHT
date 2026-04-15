@@ -1,0 +1,10 @@
+id,name,owner,created_at,updated_at,public,avif_autodetection,file_size_limit,allowed_mime_types,owner_id,type
+payment-proofs,payment-proofs,,2026-01-21 13:13:04.28548+00,2026-01-21 13:13:04.28548+00,f,f,,,,STANDARD
+avatars,avatars,,2025-12-24 14:17:39.907915+00,2025-12-24 14:17:39.907915+00,f,f,,,,STANDARD
+products,products,,2025-12-31 08:46:36.812147+00,2025-12-31 08:46:36.812147+00,f,f,,,,STANDARD
+reviews,reviews,,2025-12-31 13:51:30.697473+00,2025-12-31 13:51:30.697473+00,f,f,,,,STANDARD
+agent-receipts,agent-receipts,,2026-03-04 04:21:06.236463+00,2026-03-04 04:21:06.236463+00,f,f,,,,STANDARD
+house-images,house-images,,2026-03-14 15:28:27.455763+00,2026-03-14 15:28:27.455763+00,t,f,,,,STANDARD
+house-videos,house-videos,,2026-03-21 09:36:57.136541+00,2026-03-21 09:36:57.136541+00,t,f,52428800,,,STANDARD
+service-centre-photos,service-centre-photos,,2026-04-02 14:12:49.217222+00,2026-04-02 14:12:49.217222+00,t,f,,,,STANDARD
+investment-receipts,investment-receipts,,2026-04-07 08:54:54.646803+00,2026-04-07 08:54:54.646803+00,f,f,,,,STANDARD

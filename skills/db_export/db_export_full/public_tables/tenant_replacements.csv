@@ -1,0 +1,1 @@
+id,rent_request_id,landlord_id,old_tenant_id,new_tenant_id,replaced_by,reason,outstanding_balance,created_at

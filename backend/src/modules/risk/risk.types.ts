@@ -11,4 +11,5 @@ export type RiskResult = {
     decision: 'ALLOW' | 'BLOCK' | 'REVIEW';
     score: number;
     reasons: string[];
+    rule_version: string;
 };

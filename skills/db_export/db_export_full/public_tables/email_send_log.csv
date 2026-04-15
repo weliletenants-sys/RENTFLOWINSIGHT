@@ -1,0 +1,199 @@
+id,message_id,template_name,recipient_email,status,error_message,metadata,created_at
+112c63e9-8cad-4da8-ac60-ebaee235f163,6483b23e-ffed-4f2a-a2a0-15607cc6b9cc,recovery,benjaminmuhanguzi29@gmail.com,pending,,,2026-04-13 15:45:45.323008+00
+05028107-3486-457a-9a89-801a56dea6cf,6483b23e-ffed-4f2a-a2a0-15607cc6b9cc,recovery,benjaminmuhanguzi29@gmail.com,sent,,,2026-04-13 15:45:50.829302+00
+9f200d1a-2862-431b-baf8-33b591bd7d3e,230d7b8c-ee53-48bb-b22a-714bf1cac8a3,supporter_agreement_copy,earlalan83@gmail.com,pending,,,2026-04-13 15:54:27.917379+00
+9edcb7ca-27c6-493f-98e5-b75cd54f6aff,230d7b8c-ee53-48bb-b22a-714bf1cac8a3,supporter_agreement_copy,earlalan83@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 15:54:31.343662+00
+e2d617e7-5731-4521-9d64-2e459815131d,230d7b8c-ee53-48bb-b22a-714bf1cac8a3,supporter_agreement_copy,earlalan83@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 15:55:01.508105+00
+5caffec3-18e6-4468-b9e6-d55f75d5fa91,230d7b8c-ee53-48bb-b22a-714bf1cac8a3,supporter_agreement_copy,earlalan83@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 15:55:31.460907+00
+b1358ae3-a6f2-4ab6-bb3b-df0194369fab,230d7b8c-ee53-48bb-b22a-714bf1cac8a3,supporter_agreement_copy,earlalan83@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 15:56:01.638026+00
+3ccd9e28-bda5-41ea-8eb3-0620397acd42,230d7b8c-ee53-48bb-b22a-714bf1cac8a3,supporter_agreement_copy,earlalan83@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 15:56:36.484868+00
+ec3c018f-21de-412f-8656-7aaebfa91261,230d7b8c-ee53-48bb-b22a-714bf1cac8a3,supporter_agreement_copy,earlalan83@gmail.com,dlq,Max retries (5) exceeded (attempted 5 times),,2026-04-13 15:57:06.402032+00
+29795cd2-47b0-42af-8c7d-6eeb2ba3bce9,505199c9-abaf-45c7-8241-36ea2b5bf551,supporter_agreement_copy,ssekatteronald45@gmail.com,pending,,,2026-04-13 16:15:16.291576+00
+7544ccee-7f1c-4dd0-8171-08ffebac91fc,3e7613a7-31b2-40bb-8936-02c31c727298,supporter_agreement_copy,ssekatteronald45@gmail.com,pending,,,2026-04-13 16:15:16.311821+00
+5c8e02b9-2d93-437f-89fa-f0167b81d631,505199c9-abaf-45c7-8241-36ea2b5bf551,supporter_agreement_copy,ssekatteronald45@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 16:15:20.155994+00
+a7be9014-90ca-4b9f-86b3-c9a0985e95dd,3e7613a7-31b2-40bb-8936-02c31c727298,supporter_agreement_copy,ssekatteronald45@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 16:15:20.504105+00
+0368f2a1-a26f-4f47-9f03-01346dd6f9cf,505199c9-abaf-45c7-8241-36ea2b5bf551,supporter_agreement_copy,ssekatteronald45@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 16:15:54.937816+00
+bc85c558-d9c7-42c3-b842-26cf56fc298e,3e7613a7-31b2-40bb-8936-02c31c727298,supporter_agreement_copy,ssekatteronald45@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 16:15:55.306428+00
+694a1edd-e70e-4137-94f5-486f164f7f50,505199c9-abaf-45c7-8241-36ea2b5bf551,supporter_agreement_copy,ssekatteronald45@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 16:16:25.038941+00
+e15730b4-2df9-4df4-8ac9-5b13ac86d199,3e7613a7-31b2-40bb-8936-02c31c727298,supporter_agreement_copy,ssekatteronald45@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 16:16:25.380136+00
+c94f9c07-a521-403f-95a4-0879b7d65e5b,505199c9-abaf-45c7-8241-36ea2b5bf551,supporter_agreement_copy,ssekatteronald45@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 16:16:55.099958+00
+0b864586-3c60-4b6c-a13c-85b465ea8f69,3e7613a7-31b2-40bb-8936-02c31c727298,supporter_agreement_copy,ssekatteronald45@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 16:16:55.46601+00
+6d93f8c0-7cdf-44c6-8ab9-6dc6c2866ca8,505199c9-abaf-45c7-8241-36ea2b5bf551,supporter_agreement_copy,ssekatteronald45@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 16:17:25.200003+00
+75d7ca40-6bdb-4eb7-8276-1cc5c45cca3f,3e7613a7-31b2-40bb-8936-02c31c727298,supporter_agreement_copy,ssekatteronald45@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 16:17:25.602617+00
+df16ed0f-7cb5-4ba2-98a8-1c00e52a92ac,505199c9-abaf-45c7-8241-36ea2b5bf551,supporter_agreement_copy,ssekatteronald45@gmail.com,dlq,Max retries (5) exceeded (attempted 5 times),,2026-04-13 16:17:55.133408+00
+c6a5be0b-5535-4803-8d8d-d8afbfa40a68,3e7613a7-31b2-40bb-8936-02c31c727298,supporter_agreement_copy,ssekatteronald45@gmail.com,dlq,Max retries (5) exceeded (attempted 5 times),,2026-04-13 16:17:55.203263+00
+7771fda8-cb98-443f-ba20-f0c90472a274,aa24eca0-dd97-4f6c-97e5-858bcf6ba17e,recovery,benjaminmuhanguzi29@gmail.com,pending,,,2026-04-13 16:23:21.733463+00
+f8145104-1209-4b77-8f28-c2ec8b663920,aa24eca0-dd97-4f6c-97e5-858bcf6ba17e,recovery,benjaminmuhanguzi29@gmail.com,sent,,,2026-04-13 16:23:26.401632+00
+6b0847d0-45c9-45d8-bbbf-da86ab68dfae,dc6f4008-8c21-4cf8-9e05-3ead2d4bf99a,supporter_agreement_copy,joshwanda17@gmail.com,pending,,,2026-04-13 17:58:12.64932+00
+88e5cd0a-2490-45a4-9908-6f454f7cdc1c,354c3c3d-0715-45df-814e-287473ecb87a,supporter_agreement_copy,joshwanda17@gmail.com,pending,,,2026-04-13 17:58:12.705897+00
+bcccd9b3-e273-4cd6-b098-07418b198c9a,dc6f4008-8c21-4cf8-9e05-3ead2d4bf99a,supporter_agreement_copy,joshwanda17@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 17:58:18.022511+00
+f53e7284-2945-44b7-adac-eb6196481432,354c3c3d-0715-45df-814e-287473ecb87a,supporter_agreement_copy,joshwanda17@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 17:58:18.398757+00
+7cda6e70-3655-4321-a484-b823ee9c36a5,dc6f4008-8c21-4cf8-9e05-3ead2d4bf99a,supporter_agreement_copy,joshwanda17@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 17:58:52.939491+00
+22c0cbdb-9d9c-4ef2-94a3-bba48f4e7bcd,354c3c3d-0715-45df-814e-287473ecb87a,supporter_agreement_copy,joshwanda17@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 17:58:53.327154+00
+b11cc935-2a4b-43a0-b55b-f96870e6a2c2,dc6f4008-8c21-4cf8-9e05-3ead2d4bf99a,supporter_agreement_copy,joshwanda17@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 17:59:23.087517+00
+563206e1-dffe-4382-a927-74eb4ce82c78,354c3c3d-0715-45df-814e-287473ecb87a,supporter_agreement_copy,joshwanda17@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 17:59:23.473094+00
+fa1be780-fb7b-4754-9cb5-891d9de217c7,dc6f4008-8c21-4cf8-9e05-3ead2d4bf99a,supporter_agreement_copy,joshwanda17@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 17:59:53.175815+00
+d5a6fdba-4406-46ec-9dfd-3499d2f0fa96,354c3c3d-0715-45df-814e-287473ecb87a,supporter_agreement_copy,joshwanda17@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 17:59:53.599807+00
+98856ebb-e674-43f7-9035-341e40a7c63f,dc6f4008-8c21-4cf8-9e05-3ead2d4bf99a,supporter_agreement_copy,joshwanda17@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 18:00:23.193955+00
+66469bd0-c705-4139-82c3-d24694fd01cf,354c3c3d-0715-45df-814e-287473ecb87a,supporter_agreement_copy,joshwanda17@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-13 18:00:23.567132+00
+0b4baf8d-ab70-451c-a6eb-d83fefafe433,dc6f4008-8c21-4cf8-9e05-3ead2d4bf99a,supporter_agreement_copy,joshwanda17@gmail.com,dlq,Max retries (5) exceeded (attempted 5 times),,2026-04-13 18:00:53.248349+00
+a4baeff6-b86b-4a99-8b46-7db242756f84,354c3c3d-0715-45df-814e-287473ecb87a,supporter_agreement_copy,joshwanda17@gmail.com,dlq,Max retries (5) exceeded (attempted 5 times),,2026-04-13 18:00:53.393794+00
+ae5c72f9-837a-4c64-8dae-a33188b96a40,0041f8c4-bfd9-4648-b567-a9a23ad7ab09,supporter_agreement_copy,muhindobrians29@gmail.com,pending,,,2026-04-14 06:04:21.334443+00
+29aa15fb-455e-4398-822d-946c258b9ad1,91bca07b-af40-4227-b607-3b6a79eeb472,supporter_agreement_copy,muhindobrians29@gmail.com,pending,,,2026-04-14 06:04:21.395887+00
+dfcb6453-be40-47d7-8f8c-99f2b1a32158,0041f8c4-bfd9-4648-b567-a9a23ad7ab09,supporter_agreement_copy,muhindobrians29@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 06:04:23.773968+00
+10839c8d-ada8-4549-aa61-4eb9ddabb704,91bca07b-af40-4227-b607-3b6a79eeb472,supporter_agreement_copy,muhindobrians29@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 06:04:24.099408+00
+f6c68419-f02d-400f-9e58-fcd4a557bfc4,0041f8c4-bfd9-4648-b567-a9a23ad7ab09,supporter_agreement_copy,muhindobrians29@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 06:04:58.70179+00
+c56e553f-dd88-4c04-90ca-fcd684fdf52a,91bca07b-af40-4227-b607-3b6a79eeb472,supporter_agreement_copy,muhindobrians29@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 06:04:59.057405+00
+98421776-50b6-4fbb-a728-e320425c0729,0041f8c4-bfd9-4648-b567-a9a23ad7ab09,supporter_agreement_copy,muhindobrians29@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 06:05:28.747775+00
+65865092-17f6-460c-8825-f08b73d7ce34,91bca07b-af40-4227-b607-3b6a79eeb472,supporter_agreement_copy,muhindobrians29@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 06:05:29.09069+00
+51f5f175-9f3e-4a0d-9399-e0117bef11f9,0041f8c4-bfd9-4648-b567-a9a23ad7ab09,supporter_agreement_copy,muhindobrians29@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 06:05:58.800225+00
+b539cb14-bcc4-453d-b2aa-3f360e512570,91bca07b-af40-4227-b607-3b6a79eeb472,supporter_agreement_copy,muhindobrians29@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 06:05:59.137165+00
+1694f002-5555-4f01-9781-857eb5908bec,0041f8c4-bfd9-4648-b567-a9a23ad7ab09,supporter_agreement_copy,muhindobrians29@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 06:06:28.910557+00
+4260a0f1-1a74-434d-9ba5-20771e4d1539,91bca07b-af40-4227-b607-3b6a79eeb472,supporter_agreement_copy,muhindobrians29@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 06:06:29.268654+00
+a20de8e1-8e42-49a4-b21b-75971d833025,0041f8c4-bfd9-4648-b567-a9a23ad7ab09,supporter_agreement_copy,muhindobrians29@gmail.com,dlq,Max retries (5) exceeded (attempted 5 times),,2026-04-14 06:06:58.854676+00
+726e9252-c837-40ce-82c2-3ff235ce38c6,91bca07b-af40-4227-b607-3b6a79eeb472,supporter_agreement_copy,muhindobrians29@gmail.com,dlq,Max retries (5) exceeded (attempted 5 times),,2026-04-14 06:06:58.940812+00
+4c3a6da1-fd1b-4250-a845-76b639e3cdc7,684ab995-014f-4a45-95ed-0638cd084744,supporter_agreement_copy,lystrajosy@gmail.com,pending,,,2026-04-14 06:54:56.024998+00
+654d8e5f-b6f0-4141-9bf8-752f18e6e29a,684ab995-014f-4a45-95ed-0638cd084744,supporter_agreement_copy,lystrajosy@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 06:54:57.499869+00
+2abf45e0-0ceb-4345-9db6-cdfed8ed95a0,684ab995-014f-4a45-95ed-0638cd084744,supporter_agreement_copy,lystrajosy@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 06:55:28.051836+00
+115ffcf4-1444-4daf-a932-50846ae04aba,684ab995-014f-4a45-95ed-0638cd084744,supporter_agreement_copy,lystrajosy@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 06:56:02.505281+00
+4f9bf988-c2a8-4bc9-8fcc-db96fcf4f8f2,684ab995-014f-4a45-95ed-0638cd084744,supporter_agreement_copy,lystrajosy@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 06:56:32.658349+00
+29fd9984-0c4f-49fe-ab7e-3d93006fc6d2,684ab995-014f-4a45-95ed-0638cd084744,supporter_agreement_copy,lystrajosy@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 06:57:02.675124+00
+a2789342-9d28-4b14-afb9-e625a45d376f,684ab995-014f-4a45-95ed-0638cd084744,supporter_agreement_copy,lystrajosy@gmail.com,dlq,Max retries (5) exceeded (attempted 5 times),,2026-04-14 06:57:32.634552+00
+6054406d-518b-4dd7-9086-4d087365f965,6c8624a9-4cc3-46d2-be72-83b04461c25c,supporter_agreement_copy,kibetdan89@gmail.com,pending,,,2026-04-14 08:25:29.447852+00
+099870db-32a1-4ce0-b2f5-351ad3c53f04,14ad776e-110e-4df4-a82a-b642dd8945d5,supporter_agreement_copy,kibetdan89@gmail.com,pending,,,2026-04-14 08:25:29.455906+00
+d77ea86c-607e-4419-afda-c784641a75d2,6c8624a9-4cc3-46d2-be72-83b04461c25c,supporter_agreement_copy,kibetdan89@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 08:25:34.495805+00
+19cb7b23-c85f-4bcf-8f03-7c7f5b08b201,14ad776e-110e-4df4-a82a-b642dd8945d5,supporter_agreement_copy,kibetdan89@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 08:25:34.8621+00
+fdf42039-04ad-4118-b8f8-878eabc7e25f,6c8624a9-4cc3-46d2-be72-83b04461c25c,supporter_agreement_copy,kibetdan89@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 08:26:08.533547+00
+d3ea8bef-134b-435e-bb72-4e4f1bbed63f,14ad776e-110e-4df4-a82a-b642dd8945d5,supporter_agreement_copy,kibetdan89@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 08:26:08.882705+00
+91f0f30c-e0cc-4661-899f-1e53dab6b483,6c8624a9-4cc3-46d2-be72-83b04461c25c,supporter_agreement_copy,kibetdan89@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 08:26:39.574312+00
+d7ea5235-9aaa-4223-9bf1-ca39e70a7431,14ad776e-110e-4df4-a82a-b642dd8945d5,supporter_agreement_copy,kibetdan89@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 08:26:39.925156+00
+8f6cead9-7ebd-4760-a2c4-efd3f44ab5b1,6c8624a9-4cc3-46d2-be72-83b04461c25c,supporter_agreement_copy,kibetdan89@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 08:27:13.725292+00
+72b5a9e1-4d5a-422c-8e05-0180e08acf57,14ad776e-110e-4df4-a82a-b642dd8945d5,supporter_agreement_copy,kibetdan89@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 08:27:14.100396+00
+d8c4ae53-49b4-4612-a46f-db3d24fb1581,6c8624a9-4cc3-46d2-be72-83b04461c25c,supporter_agreement_copy,kibetdan89@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 08:27:43.799548+00
+5d8a990e-6fda-4f5d-a895-9e68e2a8cb67,14ad776e-110e-4df4-a82a-b642dd8945d5,supporter_agreement_copy,kibetdan89@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 08:27:44.164451+00
+855626ff-1f03-4ece-9850-271e5cb727cb,6c8624a9-4cc3-46d2-be72-83b04461c25c,supporter_agreement_copy,kibetdan89@gmail.com,dlq,Max retries (5) exceeded (attempted 5 times),,2026-04-14 08:28:13.795981+00
+0addf72f-f576-4624-b20c-bec01ece2db6,14ad776e-110e-4df4-a82a-b642dd8945d5,supporter_agreement_copy,kibetdan89@gmail.com,dlq,Max retries (5) exceeded (attempted 5 times),,2026-04-14 08:28:13.896165+00
+6def79a8-d392-4855-9b6e-a4810dea9a90,1b253174-df8a-4771-9f5f-80543b7a8887,supporter_agreement_copy,rubzdaniel5@gmail.com,pending,,,2026-04-14 08:38:06.095419+00
+c73a4947-069e-4dbf-975d-1d19bad5491a,9e77735d-678f-4f09-ac10-b8922006584a,supporter_agreement_copy,rubzdaniel5@gmail.com,pending,,,2026-04-14 08:38:06.123731+00
+0e49bd80-b9dd-493c-9ecf-ff05aff693eb,1b253174-df8a-4771-9f5f-80543b7a8887,supporter_agreement_copy,rubzdaniel5@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 08:38:11.116368+00
+0f214298-b058-4b34-8b81-072972cab8c2,9e77735d-678f-4f09-ac10-b8922006584a,supporter_agreement_copy,rubzdaniel5@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 08:38:11.577179+00
+262f11da-749b-4a53-9f2f-44f846d37c36,1b253174-df8a-4771-9f5f-80543b7a8887,supporter_agreement_copy,rubzdaniel5@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 08:38:45.814195+00
+68ac312a-f424-4fea-b5cc-7979da7b65c6,9e77735d-678f-4f09-ac10-b8922006584a,supporter_agreement_copy,rubzdaniel5@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 08:38:46.165916+00
+e52a48c5-93cb-4143-b07b-52b9611facca,1b253174-df8a-4771-9f5f-80543b7a8887,supporter_agreement_copy,rubzdaniel5@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 08:39:15.881591+00
+03a35967-0750-4c7d-a27f-522ef5a6fae7,9e77735d-678f-4f09-ac10-b8922006584a,supporter_agreement_copy,rubzdaniel5@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 08:39:16.281225+00
+1ddb808b-e1b8-4214-9d3d-5a02cf2ea577,1b253174-df8a-4771-9f5f-80543b7a8887,supporter_agreement_copy,rubzdaniel5@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 08:39:45.981415+00
+f243dfc8-4eff-4a03-b680-e0714f68530d,9e77735d-678f-4f09-ac10-b8922006584a,supporter_agreement_copy,rubzdaniel5@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 08:39:46.334304+00
+f84781c0-54ad-45f2-a935-88da80047d65,1b253174-df8a-4771-9f5f-80543b7a8887,supporter_agreement_copy,rubzdaniel5@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 08:40:16.102506+00
+02ad49c4-5533-4516-a7da-c73205b67ed0,9e77735d-678f-4f09-ac10-b8922006584a,supporter_agreement_copy,rubzdaniel5@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 08:40:16.500034+00
+f56fe16d-bd02-4ffb-bec9-5e77d2366019,1b253174-df8a-4771-9f5f-80543b7a8887,supporter_agreement_copy,rubzdaniel5@gmail.com,dlq,Max retries (5) exceeded (attempted 5 times),,2026-04-14 08:40:46.10151+00
+24bded64-71c5-4434-b84b-c33398cf40cc,9e77735d-678f-4f09-ac10-b8922006584a,supporter_agreement_copy,rubzdaniel5@gmail.com,dlq,Max retries (5) exceeded (attempted 5 times),,2026-04-14 08:40:46.20587+00
+6053acea-8914-4bf6-9632-9018f86a4bed,c5946c5a-99e0-42b9-90ce-b681f4a33ada,recovery,wamutiedrine@gmail.com,pending,,,2026-04-14 11:27:56.525701+00
+af1c5450-47a9-49a9-8c58-717b7c935ecb,c5946c5a-99e0-42b9-90ce-b681f4a33ada,recovery,wamutiedrine@gmail.com,sent,,,2026-04-14 11:28:01.602492+00
+b3b37065-6f62-404c-8431-d3d79ba40883,9e98ca40-cee7-403b-9e12-c4f846996a7a,supporter_agreement_copy,256700715677@welile.user,pending,,,2026-04-14 11:30:50.605597+00
+d573eb38-c86f-46f5-a0df-b6e4a55d6356,cf4a9169-b428-42d9-bd0f-2dae9e7142db,supporter_agreement_copy,256700715677@welile.user,pending,,,2026-04-14 11:30:50.618742+00
+104080c4-9236-4180-8dee-ac1a76bc4d89,9e98ca40-cee7-403b-9e12-c4f846996a7a,supporter_agreement_copy,256700715677@welile.user,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 11:30:57.017912+00
+373ff1ee-4ef8-491c-b8f0-02e9c141afed,cf4a9169-b428-42d9-bd0f-2dae9e7142db,supporter_agreement_copy,256700715677@welile.user,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 11:30:57.347969+00
+6e6c6333-380c-45d7-8954-16ca7891c092,9e98ca40-cee7-403b-9e12-c4f846996a7a,supporter_agreement_copy,256700715677@welile.user,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 11:31:31.011044+00
+1ca77e98-5e5b-48c7-8666-6f9dce22d19f,cf4a9169-b428-42d9-bd0f-2dae9e7142db,supporter_agreement_copy,256700715677@welile.user,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 11:31:31.3783+00
+b9cf61ad-c7e2-4f63-8840-ab063f0e117b,9e98ca40-cee7-403b-9e12-c4f846996a7a,supporter_agreement_copy,256700715677@welile.user,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 11:32:01.755814+00
+37ccc366-4d89-4d35-ab85-b340d810deff,cf4a9169-b428-42d9-bd0f-2dae9e7142db,supporter_agreement_copy,256700715677@welile.user,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 11:32:02.118733+00
+99b5b5bb-0852-4f7c-9b33-34a86c56328d,9e98ca40-cee7-403b-9e12-c4f846996a7a,supporter_agreement_copy,256700715677@welile.user,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 11:32:36.14779+00
+0b0c5c59-4498-4ff0-8a33-df8c732d33e8,cf4a9169-b428-42d9-bd0f-2dae9e7142db,supporter_agreement_copy,256700715677@welile.user,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 11:32:36.501834+00
+fe61bcf2-71ce-4e0c-9b9f-34cecae84b8d,9e98ca40-cee7-403b-9e12-c4f846996a7a,supporter_agreement_copy,256700715677@welile.user,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 11:33:06.304703+00
+1585b27a-85e2-427a-8c8d-3a93f6348102,cf4a9169-b428-42d9-bd0f-2dae9e7142db,supporter_agreement_copy,256700715677@welile.user,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 11:33:06.694831+00
+2f3474ea-4df7-41bd-936c-117c1cc78c57,9e98ca40-cee7-403b-9e12-c4f846996a7a,supporter_agreement_copy,256700715677@welile.user,dlq,Max retries (5) exceeded (attempted 5 times),,2026-04-14 11:33:36.148523+00
+bbcd9e10-191c-467b-8e21-9ecf48bc7901,cf4a9169-b428-42d9-bd0f-2dae9e7142db,supporter_agreement_copy,256700715677@welile.user,dlq,Max retries (5) exceeded (attempted 5 times),,2026-04-14 11:33:36.222669+00
+f91a84f3-4a8e-49df-a82d-f424d8b0d9d5,36257c56-0441-4259-8ccf-b932cb2b40f4,supporter_agreement_copy,iakakiinsimira@gmail.com,pending,,,2026-04-14 16:24:50.447242+00
+aed20f4e-ad90-426f-ba5d-9786b45bb05a,c429dd76-b70a-45ac-af8a-cb6a2281944c,supporter_agreement_copy,iakakiinsimira@gmail.com,pending,,,2026-04-14 16:24:50.45759+00
+6e374c65-193b-4042-99bf-5c3f37a22ead,36257c56-0441-4259-8ccf-b932cb2b40f4,supporter_agreement_copy,iakakiinsimira@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 16:24:53.345623+00
+7f2fbadc-78d3-4383-8656-2fa483e8c037,c429dd76-b70a-45ac-af8a-cb6a2281944c,supporter_agreement_copy,iakakiinsimira@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 16:24:53.686586+00
+7927dcbf-7e8d-430c-b5fd-4c8dfa04d9e8,36257c56-0441-4259-8ccf-b932cb2b40f4,supporter_agreement_copy,iakakiinsimira@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 16:25:27.160418+00
+f56e86db-c466-48da-b9a3-d667fe6b0ac0,c429dd76-b70a-45ac-af8a-cb6a2281944c,supporter_agreement_copy,iakakiinsimira@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 16:25:27.50665+00
+e3acbeb8-178f-42b4-9acc-477cf7d60a52,36257c56-0441-4259-8ccf-b932cb2b40f4,supporter_agreement_copy,iakakiinsimira@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 16:25:57.309283+00
+3014f554-ec3b-4c6b-964b-965438fd6dcd,c429dd76-b70a-45ac-af8a-cb6a2281944c,supporter_agreement_copy,iakakiinsimira@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 16:25:57.692743+00
+7a3c73c1-a670-465e-8535-1973c6c44b2b,36257c56-0441-4259-8ccf-b932cb2b40f4,supporter_agreement_copy,iakakiinsimira@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 16:26:32.309561+00
+3431a6d3-c889-4b45-abfa-71805917a315,c429dd76-b70a-45ac-af8a-cb6a2281944c,supporter_agreement_copy,iakakiinsimira@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 16:26:32.7058+00
+535671dc-2317-4386-a619-1ef187d37683,36257c56-0441-4259-8ccf-b932cb2b40f4,supporter_agreement_copy,iakakiinsimira@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 16:27:02.499702+00
+bc66db54-f757-4392-8fb6-a1234158089e,c429dd76-b70a-45ac-af8a-cb6a2281944c,supporter_agreement_copy,iakakiinsimira@gmail.com,failed,"Email API error: 400 {""type"":""missing_unsubscribe"",""message"":""Transactional emails must include an unsubscribe_token"",""details"":""""}
+",,2026-04-14 16:27:02.876887+00
+fdc0f5a3-0022-493c-a1c6-136380771395,36257c56-0441-4259-8ccf-b932cb2b40f4,supporter_agreement_copy,iakakiinsimira@gmail.com,dlq,Max retries (5) exceeded (attempted 5 times),,2026-04-14 16:27:32.361738+00
+05c64719-acd3-4ca4-879d-cfcdd0bfc378,c429dd76-b70a-45ac-af8a-cb6a2281944c,supporter_agreement_copy,iakakiinsimira@gmail.com,dlq,Max retries (5) exceeded (attempted 5 times),,2026-04-14 16:27:32.44204+00
