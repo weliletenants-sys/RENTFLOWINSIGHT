@@ -1608,6 +1608,7 @@ model Profiles {
   seller_application_status String?
   must_change_password      Boolean?  @default(false)
   role                      String?   @default("TENANT")
+  last_synced_at            DateTime?
 
   @@map("profiles")
 }
@@ -3041,6 +3042,44 @@ model ProcessedEvents {
 
   @@map("processed_events")
 }
+
+model RiskLog {
+  id              String   @id @default(uuid())
+  event_id        String   @unique
+  idempotency_key String?  @unique
+  user_id         String
+  action          String
+  amount          Float?
+  score           Int
+  decision        String
+  rule_version    String   @default("1.0")
+  reasons         String[]
+  metadata        Json?
+  createdAt       DateTime @default(now())
+
+  @@index([user_id, createdAt])
+  @@map("risk_logs")
+}
+
+model RiskReview {
+  id                 String    @id @default(uuid())
+  event_id           String    @unique
+  idempotency_key    String?   @unique
+  user_id            String
+  action             String
+  amount             Float?
+  status             String    // PENDING | APPROVED_PENDING_EXECUTION | APPROVED | COMPLETED | REJECTED | FAILED_PERMANENTLY
+  reasons            String[]
+  execution_attempts Int       @default(0)
+  last_execution_at  DateTime?
+  locked_at          DateTime?
+  createdAt          DateTime  @default(now())
+  decidedAt          DateTime?
+  decidedBy          String?
+
+  @@map("risk_reviews")
+}
+
 
 
 

@@ -3,6 +3,7 @@ import tenantOpsRoutes from './tenantops.routes';
 import agentOpsRoutes from './agentops.routes';
 import landlordOpsRoutes from './landlordops.routes';
 import partnerOpsRoutes from './partnerops.routes';
+import riskOpsRoutes from '../modules/risk/risk.routes';
 import prisma from '../../prisma/prisma.client';
 import { authenticate } from '../../middlewares/auth.middleware';
 import { authorize } from '../../middlewares/rbac.middleware';
@@ -15,6 +16,7 @@ router.use('/tenant', tenantOpsRoutes);
 router.use('/agent', agentOpsRoutes);
 router.use('/landlord', landlordOpsRoutes);
 router.use('/partner', partnerOpsRoutes);
+router.use('/risk', riskOpsRoutes);
 
 // ==========================================
 // SYSTEM DLQ (Dead Letter Queue) OPS

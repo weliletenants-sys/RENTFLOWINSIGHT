@@ -33,9 +33,60 @@ export const rentWorker = new Worker('rent-queue', async (job: Job) => {
     try {
         if (eventType === 'rent.requested') {
             const { tenantId, amount, landlordId } = payload;
-            logger.info(`[RENT-WORKER] Processing rent transfer for Tenant: ${tenantId}`);
+            logger.info(`[RENT-WORKER] Evaluating physical risk boundary for Tenant: ${tenantId}`);
             
-            // Replay-safe ledger action, strictly passing the actor
+            // 2. Gatekeeper Layer (Fail closed)
+            const riskService = require('../modules/risk/risk.service').RiskService;
+            const risk = new riskService();
+            
+            let evaluatedContext;
+            try {
+               evaluatedContext = await risk.evaluate({
+                   eventId: eventId as string,
+                   userId: tenantId, 
+                   action: 'rent.request',
+                   amount: amount
+               });
+            } catch (err: any) {
+               logger.error(`[RISK FAILURE] Engine malfunction on ${eventId}`, err);
+               throw new Error('Risk engine failure'); // RETRY LOOP
+            }
+
+            // Route execution cleanly handling Block/Review business states safely.
+            if (evaluatedContext.decision === 'BLOCK') {
+                logger.warn(`[RISK BLOCKED] Rent pipeline forcibly dropped for EVENT [${eventId}] Reasons: ${evaluatedContext.reasons.join(', ')}`);
+                await prisma.processedEvents.create({ data: { event_id: eventId as string } });
+                return { status: 'blocked', reasons: evaluatedContext.reasons }; 
+            }
+
+            if (evaluatedContext.decision === 'REVIEW') {
+                logger.warn(`[RISK REVIEW] Sidelining ${eventId} structurally for C-Suite inspection natively.`);
+                
+                // Deterministic Review Hub
+                const existingReview = await prisma.riskReview.findUnique({ where: { event_id: eventId as string }});
+                if (!existingReview) {
+                    await prisma.riskReview.create({
+                        data: {
+                            event_id: eventId as string,
+                            user_id: tenantId,
+                            action: 'rent.request',
+                            amount: amount,
+                            status: 'PENDING',
+                            reasons: evaluatedContext.reasons
+                        }
+                    });
+                    
+                    const { Queue } = require('bullmq');
+                    // Side-step connection instantiation via global mapped queues
+                    const reviewQueue = new Queue('review-queue', { connection });
+                    await reviewQueue.add('risk-review', payload, { jobId: eventId as string }); // Idempotent pushing
+                }
+
+                await prisma.processedEvents.create({ data: { event_id: eventId as string } });
+                return { status: 'review_required' };
+            }
+
+            // 3. Replay-safe ledger action (ALLOW status mapped logically)
             const ledger = new LedgerService();
             await ledger.transferWithIdempotency(
                 {
@@ -51,7 +102,7 @@ export const rentWorker = new Worker('rent-queue', async (job: Job) => {
             );
         }
 
-        // 2. Mark processed natively
+        // 4. Mark processed natively isolating duplications natively
         await prisma.processedEvents.create({
             data: { event_id: eventId as string }
         });

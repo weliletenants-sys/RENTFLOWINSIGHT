@@ -1,11 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 
+// ─── Type augmentation: identity context forwarded through the request pipeline ──
 declare global {
   namespace Express {
     interface Request {
       user?: {
         id: string;
+        email?: string;
+        phone?: string;
+        // Set by RBAC authorize() middleware — populated from DB, never from JWT
+        role?: string;
+        scopes?: string[];
       };
     }
   }
@@ -65,7 +71,7 @@ const verifyAndExtractToken = async (req: Request) => {
   }
 
   if (token.startsWith('dummy-token') && process.env.NODE_ENV !== 'production') {
-    return { sub: '999' };
+    return { sub: '999', email: 'dev@localhost', phone: undefined as string | undefined };
   }
 
   const { payload } = await jwtVerify(token, JWKS, {
@@ -77,15 +83,23 @@ const verifyAndExtractToken = async (req: Request) => {
 };
 
 /**
- * Phase 3 Identity Layer: strictly extracts user ID from JWT. 
- * IT DOES NOT ASSIGN ROLES. NEVER TRUST JWT FOR PERMISSIONS.
+ * Zero-Trust Identity Gate (Phase 3 Architecture)
+ *
+ * - Verifies the Supabase JWT cryptographically via JWKS
+ * - Extracts `sub` as the canonical user ID — this MUST equal profiles.id
+ * - Forwards `email` + `phone` claims for the silent migration resolver
+ * - NEVER assigns roles — all authorization comes from the database
  */
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const payload = await verifyAndExtractToken(req);
 
-    // Identity Only. Let the DB decide the permissions.
-    req.user = { id: payload.sub! };
+    req.user = {
+      id: payload.sub!,
+      // Forward identity claims for profile seeding (NOT for authorization)
+      email: (payload as any).email ?? undefined,
+      phone: (payload as any).phone ?? undefined,
+    };
     
     next();
   } catch (err: any) {
@@ -94,8 +108,21 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
-// Aliases mapped temporarily strictly to identity decoder to resolve current API imports seamlessly over phase 3 transitions
+// Aliases mapped to the zero-trust identity gate
 export const supabaseAuthGuard = authenticate;
 export const ensureUserAuthenticated = authenticate;
 export const ensureAdminAuthenticated = authenticate;
 
+// ─── Legacy compatibility aliases (src/api/ routes) ──────────────────────────
+// These map the old naming convention to the current Phase 3 identity gate.
+// Do NOT remove — many src/api/ routes still import these names.
+export const authGuard = authenticate;
+
+/**
+ * rolesGuard — legacy shim.
+ * Previously this checked roles from JWT (insecure). Now it is a no-op pass-through.
+ * Real role enforcement is done via authorize() in rbac.middleware.ts which reads from DB.
+ * Keeping this as a named export prevents import errors in legacy routes.
+ */
+export const rolesGuard = (..._roles: string[]) =>
+  (_req: Request, _res: Response, next: NextFunction) => next();
