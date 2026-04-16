@@ -49,7 +49,7 @@ export const getCtoMetrics = async (req: Request, res: Response) => {
       }),
       prisma.landlords.count(),
       prisma.referrals.count(),
-      prisma.generalLedger.count(),
+      prisma.financialTransactions.count(),
       prisma.notifications.count(),
       prisma.depositRequests.count(),
       prisma.investorPortfolios.count()
@@ -75,7 +75,7 @@ export const getCtoMetrics = async (req: Request, res: Response) => {
       { name: 'rent_requests', count: rentRequestsTotal },
       { name: 'landlords', count: totalLandlords },
       { name: 'referrals', count: totalReferrals },
-      { name: 'general_ledger', count: totalLedgerEntries },
+      { name: 'financial_transactions', count: totalLedgerEntries },
       { name: 'notifications', count: totalNotifications },
       { name: 'deposit_requests', count: totalDepositRequests },
       { name: 'investor_portfolios', count: totalPortfolios },

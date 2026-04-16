@@ -3,60 +3,65 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export const CfoService = {
+
+  // Helper: Balances derived exactly from V2 Financial Accounts
+  async getCategoryNetBalance(accountIds: string[], balanceType: 'ASSET' | 'LIABILITY' | 'REVENUE' | 'EXPENSE') {
+    // In V2, we calculate real-time net balances from the immutable entries rather than trusting a cached cell blindly
+    const credits = await prisma.financialEntries.aggregate({
+        where: { account_id: { in: accountIds }, type: 'CREDIT' },
+        _sum: { amount: true }
+    });
+    const debits = await prisma.financialEntries.aggregate({
+        where: { account_id: { in: accountIds }, type: 'DEBIT' },
+        _sum: { amount: true }
+    });
+
+    const c = credits._sum.amount || 0;
+    const d = debits._sum.amount || 0;
+
+    // Normal balance alignments for standard accounting:
+    // ASSET/EXPENSE: Debit increases, Credit decreases (Net = D - C)
+    // LIABILITY/REVENUE: Credit increases, Debit decreases (Net = C - D)
+    if (balanceType === 'ASSET' || balanceType === 'EXPENSE') {
+        return d - c;
+    }
+    return c - d;
+  },
+
   /**
-   * Retrieves the absolute global overview using the strict GeneralLedger account mappings.
+   * Retrieves the absolute global overview using the strict V2 FinancialAccounts Layer
    */
   async getLedgerOverview() {
-    // 1. Cash (Cash = SUM account_type: 'cash')
-    const cashAgg = await prisma.generalLedger.aggregate({
-      where: { account_type: 'cash' },
-      _sum: { amount: true }
+    // 1. Cash (Cash = Wallets + Escrow active holdings, etc.)
+    const cashAgg = await prisma.financialAccounts.aggregate({
+      where: { type: 'WALLET' },
+      _sum: { balance: true }
     });
-    const totalCash = cashAgg._sum?.amount || 0;
+    // Systemic holding accounts
+    const sysCash = await this.getCategoryNetBalance(['ASSET_CASH_HOLDINGS'], 'ASSET');
+    const totalCash = (cashAgg._sum?.balance || 0) + sysCash;
 
     // 2. Receivables (Assets)
-    const receivablesAgg = await prisma.generalLedger.aggregate({
-      where: {
-        category: {
-          in: ['rent_principal_outstanding', 'rent_fee_outstanding', 'agent_advance_outstanding']
-        }
-      },
-      _sum: { amount: true }
-    });
-    const totalReceivables = receivablesAgg._sum?.amount || 0;
+    const totalReceivables = await this.getCategoryNetBalance(['ASSET_RENT_RECEIVABLE'], 'ASSET');
 
     // 3. Liabilities (Payables & Wallets)
-    const liabilitiesAgg = await prisma.generalLedger.aggregate({
-      where: {
-        category: {
-          in: ['wallet_balance', 'roi_payable', 'agent_payable', 'withdrawal_payable']
-        }
-      },
-      _sum: { amount: true }
-    });
-    const totalLiabilities = liabilitiesAgg._sum?.amount || 0;
+    const liabilitiesCategories = await this.getCategoryNetBalance(
+      ['LIAB_ROI_PAYABLE', 'LIAB_AGENT_PAYABLE', 'LIAB_WALLET_WITHDRAWALS'],
+       'LIABILITY'
+    );
+    const totalLiabilities = (cashAgg._sum?.balance || 0) + liabilitiesCategories;
 
     // 4. Platform Revenue
-    const revenueAgg = await prisma.generalLedger.aggregate({
-      where: {
-        category: {
-          in: ['access_fee_collected', 'registration_fee_collected', 'service_fee', 'penalty_fee']
-        }
-      },
-      _sum: { amount: true }
-    });
-    const totalRevenue = revenueAgg._sum?.amount || 0;
+    const totalRevenue = await this.getCategoryNetBalance(
+      ['REV_ACCESS_FEES', 'REV_REGISTRATION_FEES', 'REV_MARKETPLACE', 'REV_PENALTIES'], 
+      'REVENUE'
+    );
 
     // 5. Expenses
-    const expensesAgg = await prisma.generalLedger.aggregate({
-      where: {
-        category: {
-          in: ['roi_expense', 'agent_commission_expense', 'operational_expense']
-        }
-      },
-      _sum: { amount: true }
-    });
-    const totalExpenses = expensesAgg._sum?.amount || 0;
+    const totalExpenses = await this.getCategoryNetBalance(
+      ['EXP_COMMISSIONS', 'EXP_OPERATIONAL', 'EXP_ROI_PAYOUTS'], 
+      'EXPENSE'
+    );
 
     // 6. Profit
     const profit = totalRevenue - totalExpenses;
@@ -64,19 +69,24 @@ export const CfoService = {
     // 7. Money Flow Trend Indicators (Inflows vs Outflows past 30 days)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const dateStr = thirtyDaysAgo.toISOString();
 
-    const inflowsAgg = await prisma.generalLedger.aggregate({
+    // Inflows -> Total credits into standard asset holding accounts in 30d
+    const inflowsIds = ['partner_funding', 'tenant_repayment', 'wallet_deposit', 'external_funding'].map(c => `SYS_PLATFORM_${c}`.toUpperCase());
+    const inflowsAgg = await prisma.financialEntries.aggregate({
       where: {
-        created_at: { gte: dateStr },
-        category: { in: ['partner_funding', 'tenant_repayment', 'wallet_deposit', 'external_funding'] }
+        created_at: { gte: thirtyDaysAgo },
+        account_id: { in: inflowsIds },
+        type: 'CREDIT'
       },
       _sum: { amount: true }
     });
-    const outflowsAgg = await prisma.generalLedger.aggregate({
+    
+    const outflowsIds = ['rent_payment', 'withdrawal', 'roi_payout', 'agent_commission_payout', 'advance_disbursement', 'platform_expense'].map(c => `SYS_PLATFORM_${c}`.toUpperCase());
+    const outflowsAgg = await prisma.financialEntries.aggregate({
       where: {
-        created_at: { gte: dateStr },
-        category: { in: ['rent_payment', 'withdrawal', 'roi_payout', 'agent_commission_payout', 'advance_disbursement', 'platform_expense'] }
+        created_at: { gte: thirtyDaysAgo },
+        account_id: { in: outflowsIds },
+        type: 'DEBIT'
       },
       _sum: { amount: true }
     });
@@ -103,44 +113,29 @@ export const CfoService = {
    */
   async getRoiDashboard() {
     // 1. ROI Accrued
-    const accruedAgg = await prisma.generalLedger.aggregate({
-      where: { category: 'roi_accrued' },
-      _sum: { amount: true }
-    });
-    const roiAccrued = accruedAgg._sum?.amount || 0;
+    const roiAccrued = await this.getCategoryNetBalance(['LIAB_ROI_PAYABLE'], 'LIABILITY'); // Using liability for accruals
 
     // 2. ROI Paid
-    const paidAgg = await prisma.generalLedger.aggregate({
-      where: { category: 'roi_payout' },
-      _sum: { amount: true }
-    });
-    const roiPaid = paidAgg._sum?.amount || 0;
+    const roiPaid = await this.getCategoryNetBalance(['EXP_ROI_PAYOUTS'], 'EXPENSE'); 
 
     // 3. ROI Pending
-    const pendingAgg = await prisma.generalLedger.aggregate({
-      where: { category: 'roi_payable' },
-      _sum: { amount: true }
-    });
-    const roiPending = pendingAgg._sum?.amount || 0;
+    const roiPending = await this.getCategoryNetBalance(['LIAB_ROI_PAYABLE'], 'LIABILITY');
 
     // 4. Platform Revenue (needed for Coverage limit)
-    const revenueAgg = await prisma.generalLedger.aggregate({
-      where: {
-        category: {
-          in: ['access_fee_collected', 'registration_fee_collected', 'service_fee', 'penalty_fee']
-        }
-      },
-      _sum: { amount: true }
-    });
-    const totalRevenue = revenueAgg._sum?.amount || 0;
+    const totalRevenue = await this.getCategoryNetBalance(
+      ['REV_ACCESS_FEES', 'REV_REGISTRATION_FEES', 'REV_MARKETPLACE', 'REV_PENALTIES'], 
+      'REVENUE'
+    );
 
     // 5. ROI Coverage % = Platform Revenue / ROI Paid
     // Fallback to avoid division by zero
     const roiCoveragePercentage = roiPaid > 0 ? (totalRevenue / roiPaid) * 100 : 100;
 
     // 6. ROI History Table latest 50
-    const history = await prisma.generalLedger.findMany({
-      where: { category: { in: ['roi_accrued', 'roi_payout', 'investment_reinvestment'] } },
+    const historyAccounts = ['roi_accrued', 'roi_payout', 'investment_reinvestment'].map(c => `SYS_PLATFORM_${c}`.toUpperCase());
+    const history = await prisma.financialEntries.findMany({
+      where: { account_id: { in: historyAccounts } },
+      include: { transaction: true },
       orderBy: { created_at: 'desc' },
       take: 50
     });
@@ -152,7 +147,14 @@ export const CfoService = {
         roiPending,
         roiCoveragePercentage
       },
-      history
+      history: history.map(h => ({
+         id: h.id,
+         amount: h.amount,
+         type: h.type,
+         date: h.created_at,
+         category: (h.transaction.metadata as any)?.category,
+         reference: h.transaction.reference
+      }))
     };
   },
 

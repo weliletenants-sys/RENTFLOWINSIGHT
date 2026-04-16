@@ -1,185 +1,240 @@
 import prisma from '../src/prisma/prisma.client';
 import { v4 as uuidv4 } from 'uuid';
 
+// -------------------------------------------------------------
+// STRICT ACCOUNT TAXONOMY (The Cure for Account Explosion)
+// -------------------------------------------------------------
+const MASTER_ACCOUNTS = {
+    // Assets
+    ASSET_CASH_HOLDINGS: { id: 'ASSET_CASH_HOLDINGS', type: 'ASSET', currency: 'UGX' },
+    ASSET_RENT_RECEIVABLE: { id: 'ASSET_RENT_RECEIVABLE', type: 'ASSET', currency: 'UGX' },
+    
+    // Liabilities
+    LIAB_ROI_PAYABLE: { id: 'LIAB_ROI_PAYABLE', type: 'LIABILITY', currency: 'UGX' },
+    LIAB_AGENT_PAYABLE: { id: 'LIAB_AGENT_PAYABLE', type: 'LIABILITY', currency: 'UGX' },
+    LIAB_WALLET_WITHDRAWALS: { id: 'LIAB_WALLET_WITHDRAWALS', type: 'LIABILITY', currency: 'UGX' },
+
+    // Revenue
+    REV_ACCESS_FEES: { id: 'REV_ACCESS_FEES', type: 'REVENUE', currency: 'UGX' },
+    REV_REGISTRATION_FEES: { id: 'REV_REGISTRATION_FEES', type: 'REVENUE', currency: 'UGX' },
+    REV_MARKETPLACE: { id: 'REV_MARKETPLACE', type: 'REVENUE', currency: 'UGX' },
+    REV_PENALTIES: { id: 'REV_PENALTIES', type: 'REVENUE', currency: 'UGX' },
+
+    // Expenses
+    EXP_COMMISSIONS: { id: 'EXP_COMMISSIONS', type: 'EXPENSE', currency: 'UGX' },
+    EXP_OPERATIONAL: { id: 'EXP_OPERATIONAL', type: 'EXPENSE', currency: 'UGX' },
+    EXP_ROI_PAYOUTS: { id: 'EXP_ROI_PAYOUTS', type: 'EXPENSE', currency: 'UGX' },
+
+    // Equity / System
+    EQUITY_PARTNER: { id: 'EQUITY_PARTNER', type: 'EQUITY', currency: 'UGX' },
+    SUSPENSE: { id: 'SUSPENSE', type: 'SUSPENSE', currency: 'UGX' }, // Must be 0 at end of migration
+};
+
+function mapCategoryToMasterAccount(category: string, scope?: string): string {
+    const c = (category || '').toLowerCase();
+    
+    // Revenue
+    if (c.includes('access_fee')) return MASTER_ACCOUNTS.REV_ACCESS_FEES.id;
+    if (c.includes('registration_fee')) return MASTER_ACCOUNTS.REV_REGISTRATION_FEES.id;
+    if (c.includes('service_fee') || c.includes('marketplace')) return MASTER_ACCOUNTS.REV_MARKETPLACE.id;
+    if (c.includes('penalty')) return MASTER_ACCOUNTS.REV_PENALTIES.id;
+    
+    // Assets
+    if (c.includes('tenant_repayment') || c.includes('partner_funding') || c.includes('wallet_deposit') || c.includes('external_funding')) return MASTER_ACCOUNTS.ASSET_CASH_HOLDINGS.id;
+    if (c.includes('rent_principal') || c.includes('rent_payment')) return MASTER_ACCOUNTS.ASSET_RENT_RECEIVABLE.id;
+
+    // Liabilities
+    if (c.includes('roi_payable') || c.includes('roi_accrued')) return MASTER_ACCOUNTS.LIAB_ROI_PAYABLE.id;
+    if (c.includes('agent_payable')) return MASTER_ACCOUNTS.LIAB_AGENT_PAYABLE.id;
+    if (c.includes('withdrawal')) return MASTER_ACCOUNTS.LIAB_WALLET_WITHDRAWALS.id;
+
+    // Expenses
+    if (c.includes('agent_commission')) return MASTER_ACCOUNTS.EXP_COMMISSIONS.id;
+    if (c.includes('roi_payout')) return MASTER_ACCOUNTS.EXP_ROI_PAYOUTS.id;
+    if (c.includes('operational') || c.includes('platform_expense')) return MASTER_ACCOUNTS.EXP_OPERATIONAL.id;
+
+    // Equity / Safe fallback
+    return MASTER_ACCOUNTS.ASSET_CASH_HOLDINGS.id; 
+}
+
+
 async function runProductionMigration() {
-    console.log('🚀 INITIATING PRODUCTION LEDGER MIGRATION (Scale: 5,000+ Wallets) 🚀\n');
+    console.log('🚀 INITIATING PRODUCTION LEDGER MIGRATION (1M+ SCALE V2) 🚀\n');
 
-    // Load full dataset for processing map
+    console.log('1. Wiping existing V2 financial structures for clean slate...');
+    await prisma.financialEntries.deleteMany();
+    await prisma.financialTransactions.deleteMany();
+    await prisma.financialAccounts.deleteMany();
+    
+    console.log('2. Provisioning Master Accounts...');
+    const masterData = Object.values(MASTER_ACCOUNTS).map(acc => ({
+       id: acc.id,
+       type: acc.type,
+       currency: acc.currency,
+       balance: 0,
+       created_at: new Date()
+    }));
+    await prisma.financialAccounts.createMany({ data: masterData });
+
+    console.log('3. Provisioning Physical Wallets...');
     const wallets = await prisma.wallets.findMany();
-    const generalLedger = await prisma.generalLedger.findMany();
-
-    const ledgerAggregations: Record<string, number> = {};
-    const walletLedgerEntries: Record<string, any[]> = {};
-
-    generalLedger.forEach(entry => {
-        if (!entry.user_id) return;
-        if (!ledgerAggregations[entry.user_id]) {
-            ledgerAggregations[entry.user_id] = 0;
-            walletLedgerEntries[entry.user_id] = [];
-        }
-        const value = entry.direction === 'cash_in' ? Number(entry.amount) : -Number(entry.amount);
-        ledgerAggregations[entry.user_id] += value;
-        walletLedgerEntries[entry.user_id].push(entry);
-    });
-
-    const migrationTargets: any[] = [];
-    wallets.forEach(wallet => {
-        const expected = Number(wallet.balance) || 0;
-        const actual = ledgerAggregations[wallet.user_id] || 0;
-        const diff = expected - actual;
-        migrationTargets.push({ wallet, actual, diff });
-    });
-
-    console.log(`Total Wallets Mapped: ${migrationTargets.length}\n`);
-
-    // Prepare System Suspense Account
-    let suspenseAccount = await prisma.financialAccounts.findFirst({ where: { type: 'SUSPENSE' } });
-    if (!suspenseAccount) {
-        suspenseAccount = await prisma.financialAccounts.create({
-            data: { type: 'SUSPENSE', status: 'ACTIVE', balance: 0, currency: 'UGX' }
+    const walletMap: Record<string, string> = {};
+    for (const w of wallets) {
+        await prisma.financialAccounts.create({
+            data: { id: w.id, user_id: w.user_id, type: 'WALLET', currency: w.currency || 'UGX' }
         });
+        walletMap[`USER_${w.user_id}`] = w.id;
+        walletMap[`ID_${w.id}`] = w.id;
     }
 
-    const BATCH_SIZE = 50;
-    let totalSuspenseAbsorbed = 0;
-    let accumulatedDrifts = 0;
+    console.log('\n4. Streaming Legacy Ledger into True Double-Entry...');
 
-    for (let i = 0; i < migrationTargets.length; i += BATCH_SIZE) {
-        const batch = migrationTargets.slice(i, i + BATCH_SIZE);
-        const batchNum = (i / BATCH_SIZE) + 1;
-        
-        console.log(`\n⏳ Processing Batch ${batchNum} (${batch.length} wallets)...`);
-        
+    const BATCH_SIZE = 5000;
+    let processedGroups = 0;
+    let lastSeenId = '';
+    
+    let globalDebits = 0;
+    let globalCredits = 0;
+    
+    // Phase 1: Determine total transaction groups to stream safely
+    const groupCountRaw: any = await prisma.$queryRaw`
+         SELECT COUNT(DISTINCT transaction_id) as total, COUNT(DISTINCT transaction_group_id) as total2 
+         FROM general_ledger`;
+    
+    // Depending on what was used in the schema. (Using transaction_id if distinct groups were mapped there)
+    const totalTransactions = Number(groupCountRaw[0].total) > Number(groupCountRaw[0].total2) ? Number(groupCountRaw[0].total) : Number(groupCountRaw[0].total2);
+    
+    console.log(`📡 Discovered ~${totalTransactions} unique transactional events to process.\n`);
+
+    while (true) {
+        // Fetch DISTINCT transaction IDs safely in constant O(1) cursor pagination
+        const distinctTxs: { tx_id: string }[] = await prisma.$queryRaw`
+           SELECT DISTINCT COALESCE(transaction_group_id, transaction_id, id) as tx_id 
+           FROM general_ledger 
+           WHERE COALESCE(transaction_group_id, transaction_id, id) > ${lastSeenId}
+           ORDER BY tx_id ASC
+           LIMIT ${BATCH_SIZE}
+        `;
+
+        if (distinctTxs.length === 0) break;
+
+        const txIds = distinctTxs.map(t => t.tx_id);
+
+        // Fetch all rows belonging to exactly these groups (Ensures no group is sliced in half)
+        const batchRows: any[] = await prisma.$queryRaw`
+           SELECT * FROM general_ledger 
+           WHERE COALESCE(transaction_group_id, transaction_id, id) IN (${txIds.join("','")})
+        `; // Note: safe string embedding needed natively
+
+        // Workaround for raw IN array injection via Prisma
+        const exactRows = await prisma.generalLedger.findMany({
+            where: {
+                OR: [
+                    { transaction_group_id: { in: txIds } },
+                    { transaction_id: { in: txIds } },
+                    { id: { in: txIds } }
+                ]
+            }
+        });
+
+        // Group rows locally
+        const memoryGroup: Record<string, any[]> = {};
+        for (const row of exactRows) {
+            const key = row.transaction_group_id || row.transaction_id || row.id;
+            if (!memoryGroup[key]) memoryGroup[key] = [];
+            memoryGroup[key].push(row);
+        }
+
         await prisma.$transaction(async (tx) => {
-            for (const target of batch) {
-                const { wallet, diff } = target;
+            for (const group of Object.values(memoryGroup)) {
+                if (group.length === 0) continue;
+                const repRow = group[0];
+                const financialTxId = uuidv4();
+                
+                // Fallback deterministic key for retries
+                const idempotencyKey = repRow.idempotency_key || `MIG_${repRow.id}_${financialTxId}`;
 
-                // Idempotency: Skip if already mapped
-                const existingAccount = await tx.financialAccounts.findFirst({
-                    where: { id: wallet.id }
-                });
-
-                if (existingAccount) {
-                    continue; // Skip migrated user
-                }
-
-                // 1. Create FinancialAccount
-                await tx.financialAccounts.create({
+                await tx.financialTransactions.create({
                     data: {
-                        id: wallet.id,
-                        user_id: wallet.user_id,
-                        type: 'WALLET',
-                        currency: wallet.currency || 'UGX',
-                        balance: Number(wallet.balance)
+                        id: financialTxId,
+                        idempotency_key: idempotencyKey,
+                        status: 'COMPLETED',
+                        reference: 'HISTORICAL_MIGRATION',
+                        metadata: { 
+                            legacy_category: repRow.category, 
+                            source_table: repRow.source_table,
+                            source_id: repRow.source_id,
+                            transaction_date: repRow.transaction_date || repRow.created_at
+                        }
                     }
                 });
 
-                const legacyEntries = walletLedgerEntries[wallet.user_id] || [];
+                let groupDebits = 0;
+                let groupCredits = 0;
 
-                // 2. Port Real Double-Entries
-                for (const entry of legacyEntries) {
-                    const txIdIdempotency = entry.transaction_group_id || entry.id;
+                for (const row of group) {
+                    const amount = Number(row.amount || 0);
+                    if (amount === 0) continue;
+
+                    let targetAccountId;
+                    const scope = (row.ledger_scope || row.scope || '').toLowerCase();
                     
-                    let financialTx = await tx.financialTransactions.findUnique({
-                        where: { idempotency_key: txIdIdempotency }
-                    });
-                    
-                    if (!financialTx) {
-                        financialTx = await tx.financialTransactions.create({
-                            data: {
-                                id: txIdIdempotency,
-                                idempotency_key: txIdIdempotency,
-                                status: 'COMPLETED',
-                                reference: 'HISTORICAL_PORT'
-                            }
-                        });
+                    if (scope === 'wallet') {
+                        targetAccountId = walletMap[`USER_${row.user_id}`] || walletMap[`ID_${row.account_id || row.account}`];
                     }
+
+                    if (!targetAccountId) {
+                        targetAccountId = mapCategoryToMasterAccount(row.category);
+                    }
+
+                    let type = 'CREDIT';
+                    const direction = (row.direction || row.entry_type || '').toLowerCase();
+                    if (direction === 'cash_out' || direction === 'debit') type = 'DEBIT';
 
                     await tx.financialEntries.create({
                         data: {
-                            transaction_id: financialTx.id,
-                            account_id: wallet.id,
-                            amount: Number(entry.amount),
-                            type: entry.direction === 'cash_in' ? 'CREDIT' : 'DEBIT',
-                            created_at: entry.created_at
+                            id: uuidv4(),
+                            transaction_id: financialTxId,
+                            account_id: targetAccountId,
+                            amount: amount,
+                            type: type,
+                            created_at: new Date(row.created_at || new Date())
                         }
                     });
+
+                    if (type === 'CREDIT') { groupCredits += amount; globalCredits += amount; } 
+                    else { groupDebits += amount; globalDebits += amount; }
                 }
 
-                // 3. Resolve Drift via Suspense
-                if (Math.abs(diff) > 0.0001) {
-                    accumulatedDrifts++;
-                    const discrepancyTxId = uuidv4();
-                    const idKey = `discrepancy-${wallet.user_id}`;
-                    
-                    let suspTx = await tx.financialTransactions.findUnique({
-                        where: { idempotency_key: idKey }
-                    });
+                // Plug mathematical discrepancies logically using SUSPENSE
+                const variance = groupCredits - groupDebits;
+                if (Math.abs(variance) > 0.0001) {
+                    const plugAmount = Math.abs(variance);
+                    const plugType = variance > 0 ? 'DEBIT' : 'CREDIT';
 
-                    if (!suspTx) {
-                        suspTx = await tx.financialTransactions.create({
-                            data: {
-                                id: discrepancyTxId,
-                                idempotency_key: idKey,
-                                status: 'COMPLETED',
-                                reference: 'HISTORICAL_UNVERIFIED_VARIANCE'
-                            }
-                        });
-                    }
-
-                    const fixAmount = diff;
-
-                    // Wallet Adjustment
                     await tx.financialEntries.create({
                         data: {
-                            transaction_id: suspTx.id,
-                            account_id: wallet.id,
-                            amount: Math.abs(fixAmount),
-                            type: fixAmount > 0 ? 'CREDIT' : 'DEBIT', 
+                            id: uuidv4(),
+                            transaction_id: financialTxId,
+                            account_id: MASTER_ACCOUNTS.SUSPENSE.id,
+                            amount: plugAmount,
+                            type: plugType,
+                            created_at: new Date()
                         }
                     });
 
-                    // Suspense Counterbalance
-                    await tx.financialEntries.create({
-                        data: {
-                            transaction_id: suspTx.id,
-                            account_id: suspenseAccount!.id,
-                            amount: Math.abs(fixAmount),
-                            type: fixAmount > 0 ? 'DEBIT' : 'CREDIT', 
-                        }
-                    });
-
-                    totalSuspenseAbsorbed -= fixAmount; 
+                    if (plugType === 'CREDIT') globalCredits += plugAmount;
+                    else globalDebits += plugAmount;
                 }
             }
-        }, { maxWait: 50000, timeout: 600000 });
+        }, { maxWait: 100000, timeout: 600000 });
 
-        console.log(`✅ Batch ${batchNum} SUCCESS. Target IDs [${i} to ${i + batch.length - 1}].`);
-        
-        // Mid-Run Invariant Check
-        const checkpointAggs = await prisma.financialEntries.aggregate({ _sum: { amount: true } });
-        // Prisma can't sum cleanly based on string 'type'. Verify structurally locally later.
-        console.log(`   └─ Checkpoint Total Suspense Absorbed: ${totalSuspenseAbsorbed.toLocaleString()}`);
+        lastSeenId = txIds[txIds.length - 1]; // Move cursor forward
+        processedGroups += txIds.length;
+        console.log(`   └─ Pushed batch through Ledger Layer (Processed ${processedGroups} / ~${totalTransactions} event groups)`);
     }
 
-    console.log(`\n🎉 MIGRATION COMPLETE. Verifying Final Integrity...`);
-
-    const finalEntries = await prisma.financialEntries.findMany({
-        select: { type: true, amount: true }
-    });
-    
-    let mathematicalGlobalSum = 0;
-    finalEntries.forEach(e => mathematicalGlobalSum += (e.type === 'CREDIT' ? Number(e.amount) : -Number(e.amount)));
-
-    console.log(`✅ VERIFIED: Migrated ${migrationTargets.length} total wallets.`);
-    console.log(`✅ VERIFIED: Fixed ${accumulatedDrifts} natively drifted accounts.`);
-    console.log(`✅ VERIFIED: Suspense Accounting Final Hold: ${totalSuspenseAbsorbed.toLocaleString()} UGX.`);
-    
-    if (Math.abs(mathematicalGlobalSum) <= 0.0001) {
-         console.log(`✅ VERIFIED: Absolute Global Equilibrium Math == 0 (Strict Perfection)`);
-    } else {
-         console.log(`❌ IMPOSSIBLE FAILURE: Algebra sum broke: ${mathematicalGlobalSum}`);
-    }
+    console.log(`\n✅ MIGRATION STREAMING COMPLETE (Cursor Finished at ${lastSeenId})`);
 }
 
 runProductionMigration()

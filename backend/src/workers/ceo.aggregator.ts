@@ -41,10 +41,11 @@ export async function runCeoAggregator() {
     });
     const rent_repaid = rentRepaidAgg._sum.remaining_balance || 0;
 
-    // Platform Revenue (General Ledger platform fees)
-    const revenueAgg = await prisma.generalLedger.aggregate({
+    // Platform Revenue (General Ledger platform fees converted to V2 system account)
+    const revenueAccount = 'SYS_PLATFORM_PLATFORM_FEE';
+    const revenueAgg = await prisma.financialEntries.aggregate({
       _sum: { amount: true },
-      where: { category: 'platform_fee', entry_type: 'credit' }
+      where: { account_id: revenueAccount, type: 'CREDIT' }
     });
     const revenue = revenueAgg._sum.amount || 0;
 

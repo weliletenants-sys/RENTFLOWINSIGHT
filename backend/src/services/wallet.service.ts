@@ -1,137 +1,127 @@
 import prisma from '../prisma/prisma.client';
-import { TransactionService } from './transaction.service';
+import { LedgerService } from '../modules/ledger/ledger.service';
 import { v4 as uuidv4 } from 'uuid';
+
+const ledgerService = new LedgerService();
 
 export class WalletService {
   /**
-   * Fetch wallet and ledger transactions
+   * Fetch wallet and ledger transactions exclusively from V2 Accounts/Entries
    */
   static async getWalletDetails(userId: string) {
-    let wallet = await prisma.wallets.findFirst({
-      where: { account_id: userId },
+    let wallet = await prisma.financialAccounts.findFirst({
+      where: { user_id: userId, type: 'WALLET' },
     });
 
     if (!wallet) {
-      wallet = await prisma.wallets.create({
+      wallet = await prisma.financialAccounts.create({
         data: {
-          account_id: userId,
+          id: userId,
+          user_id: userId,
+          type: 'WALLET',
           balance: 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          currency: 'UGX',
+          created_at: new Date()
         }
       });
     }
 
-    // Retrieve ledger entries from general_ledger instead of walletTransactions
-    const transactions = await prisma.generalLedger.findMany({
-      where: { account_id: userId },
+    // Retrieve ledger entries from the strictly true financial entries
+    const entries = await prisma.financialEntries.findMany({
+      where: { account_id: wallet.id },
+      include: { transaction: true },
       orderBy: { created_at: 'desc' },
       take: 50,
     });
 
+    // Remap to match legacy frontend expectations seamlessly while leveraging V2 backend truth
+    const formattedLedger = entries.map(e => ({
+       id: e.id,
+       amount: e.type === 'CREDIT' ? e.amount : -e.amount,
+       direction: e.type === 'CREDIT' ? 'cash_in' : 'cash_out',
+       category: (e.transaction.metadata as any)?.category,
+       description: e.transaction.reference,
+       created_at: e.created_at
+    }));
+
     return {
-      ...wallet,
-      ledger: transactions
+      id: wallet.id,
+      account_id: wallet.user_id,
+      balance: wallet.balance,
+      currency: wallet.currency,
+      ledger: formattedLedger
     };
   }
 
   /**
-   * Core deposit logic (Appends to double-entry ledger only)
+   * Core deposit logic (Atomic V2 Idempotent Ledger Pipeline)
    */
   static async deposit(userId: string, amount: number) {
-    const wallet = await prisma.wallets.findFirst({ where: { account_id: userId } });
+    const wallet = await prisma.financialAccounts.findFirst({ where: { user_id: userId, type: 'WALLET' } });
     if (!wallet) throw new Error('Wallet not found');
 
-    const ledgerEntry = await TransactionService.createLedgerTransaction({
-      amount,
-      category: 'wallet_deposit',
-      description: 'Wallet Deposit',
-      entry_type: 'credit',
-      sourceTable: 'deposit_requests',
-      userId: userId,
-      scope: 'wallet'
-    });
+    const result = await ledgerService.transferWithIdempotency({
+       idempotencyKey: `DEP_${uuidv4()}`,
+       fromAccountId: 'SYS_PLATFORM_WALLET_DEPOSIT', // Auto-provisions internal account
+       toAccountId: wallet.id,
+       amount: amount,
+       category: 'wallet_deposit',
+       description: 'Mobile Money / Direct Deposit into Physical Wallet',
+       sourceTable: 'deposit_requests'
+    }, { id: 'SYSTEM', role: 'SUPER_ADMIN', scopes: ['ledger.transfer.execute'] });
 
-    // We do NOT return the updated wallet because the trigger handles it lazily,
-    // so we return the transaction reference which is safely verified.
-    return { status: 'success', transaction: ledgerEntry };
+    return { status: 'success', transaction: result };
   }
 
   /**
    * Core withdrawal logic
    */
   static async withdraw(userId: string, amount: number) {
-    const wallet = await prisma.wallets.findFirst({ where: { account_id: userId } });
+    const wallet = await prisma.financialAccounts.findFirst({ where: { user_id: userId, type: 'WALLET' } });
     if (!wallet) throw new Error('Wallet not found');
 
     if (wallet.balance < amount) {
-      throw new Error('Insufficient funds');
+      throw new Error('Insufficient funds. Withdrawal violates minimum ledger balance laws.');
     }
 
-    const ledgerEntry = await TransactionService.createLedgerTransaction({
-      amount,
-      category: 'wallet_withdrawal',
-      description: 'Wallet Withdrawal',
-      entry_type: 'debit',
-      sourceTable: 'investment_withdrawal_requests', // Example source
-      userId: userId,
-      scope: 'wallet'
-    });
+    const result = await ledgerService.transferWithIdempotency({
+       idempotencyKey: `WTH_${uuidv4()}`,
+       fromAccountId: wallet.id,
+       toAccountId: 'SYS_PLATFORM_WALLET_WITHDRAWAL', // Internal accounting sink
+       amount: amount,
+       category: 'wallet_withdrawal',
+       description: 'Approved Wallet Cash Out Request',
+       sourceTable: 'investment_withdrawal_requests'
+    }, { id: 'SYSTEM', role: 'SUPER_ADMIN', scopes: ['ledger.transfer.execute'] });
 
-    return { status: 'success', transaction: ledgerEntry };
+    return { status: 'success', transaction: result };
   }
 
   /**
-   * Core transfer logic (Internal Wallet-to-Wallet)
+   * Core transfer logic (Internal Wallet-to-Wallet via Idempotent Pipeline)
    */
   static async transfer(senderId: string, recipientId: string, amount: number) {
-    const senderWallet = await prisma.wallets.findFirst({ where: { account_id: senderId } });
-    const recipientWallet = await prisma.wallets.findFirst({ where: { account_id: recipientId } });
+    const senderWallet = await prisma.financialAccounts.findFirst({ where: { user_id: senderId, type: 'WALLET' } });
+    const recipientWallet = await prisma.financialAccounts.findFirst({ where: { user_id: recipientId, type: 'WALLET' } });
 
     if (!senderWallet) throw new Error('Sender wallet not found');
     if (!recipientWallet) throw new Error('Recipient wallet not found');
 
     if (senderWallet.balance < amount) {
-      throw new Error('Insufficient funds for transfer');
+      throw new Error('Insufficient funds for internal ledger transfer');
     }
 
-    const groupedTxId = uuidv4();
+    const result = await ledgerService.transferWithIdempotency({
+       idempotencyKey: `TRX_${uuidv4()}`,
+       fromAccountId: senderWallet.id,
+       toAccountId: recipientWallet.id,
+       amount: amount,
+       category: 'wallet_transfer',
+       description: 'Internal Peer-to-Peer Transfer',
+       sourceTable: 'financial_accounts'
+    }, { id: 'SYSTEM', role: 'SUPER_ADMIN', scopes: ['ledger.transfer.execute'] });
 
-    // The transfer creates two atomic entries in the general ledger
-    const [senderEntry, recipientEntry] = await prisma.$transaction([
-      prisma.generalLedger.create({
-        data: {
-          amount,
-          category: 'wallet_transfer',
-          description: 'Transfer Sent',
-          entry_type: 'debit',
-          linked_party: recipientId,
-          source_table: 'wallets', // Internal transfer
-          transaction_date: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-          transaction_id: groupedTxId,
-          account_id: senderId,
-          scope: 'wallet'
-        }
-      }),
-      prisma.generalLedger.create({
-        data: {
-          amount,
-          category: 'wallet_transfer',
-          description: 'Transfer Received',
-          entry_type: 'credit',
-          linked_party: senderId,
-          source_table: 'wallets',
-          transaction_date: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-          transaction_id: groupedTxId,
-          account_id: recipientId,
-          scope: 'wallet'
-        }
-      })
-    ]);
-
-    return { status: 'success', transactionId: groupedTxId };
+    return { status: 'success', transactionId: result.transaction_id };
   }
 
   /**
@@ -140,7 +130,7 @@ export class WalletService {
   static async requestDeposit(userId: string, amount: number, provider: string, transactionId: string, notes?: string) {
     const depositRequest = await prisma.depositRequests.create({
       data: {
-        account_id: userId,
+        account_id: userId, // Legacy reference preservation, no ledger binding needed here
         amount,
         provider: provider || 'MOBILE_MONEY',
         transaction_id: transactionId,
