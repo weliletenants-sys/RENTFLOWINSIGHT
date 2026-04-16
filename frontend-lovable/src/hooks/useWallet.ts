@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiClient } from '@/lib/apiClient';
 import { 
   cacheWallet, 
   getCachedWallet, 
@@ -35,97 +37,72 @@ const WALLET_CACHE_TTL = 30_000; // 30 seconds
 
 export function useWallet() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { preValidateTransfer, checkBalance } = useServiceValidation();
-  // Initialize from module cache OR localStorage for instant display (no flash)
-  const [wallet, setWallet] = useState<Wallet | null>(() => {
-    if (walletCache && walletCache.userId === user?.id && (Date.now() - walletCache.timestamp < WALLET_CACHE_TTL)) {
-      return walletCache.data;
-    }
-    // Sync read from localStorage for instant first-paint
-    try {
-      const raw = localStorage.getItem(`wallet_${user?.id}`);
-      if (raw) return JSON.parse(raw) as Wallet;
-    } catch {}
-    return null;
-  });
-  const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
-  // Never show loading if we have ANY cached balance — show stale data instantly
-  const [loading, setLoading] = useState(() => {
-    if (walletCache && walletCache.userId === user?.id) return false;
-    try {
-      return !localStorage.getItem(`wallet_${user?.id}`);
-    } catch { return true; }
-  });
-  const [isOfflineData, setIsOfflineData] = useState(false);
-  const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
 
-  const fetchWallet = useCallback(async (force = false) => {
-    if (!user) return;
+  // Core React Query Implementation (Replaces rigid manual `useState` hydration)
+  const { 
+    data: wallet = null, 
+    isLoading: walletLoading, 
+    refetch: refreshWallet 
+  } = useQuery({
+    queryKey: ['wallet', user?.id],
+    enabled: !!user,
+    staleTime: 1000 * 60, // Keep fresh for 1 min
+    queryFn: async () => {
+      if (!user) return null;
 
-    // Check module-level cache first (prevents duplicate fetches from multiple hook instances)
-    if (!force && walletCache && walletCache.userId === user.id && (Date.now() - walletCache.timestamp < WALLET_CACHE_TTL)) {
-      setWallet(walletCache.data);
-      setLoading(false);
-      setIsOfflineData(false);
-      return;
-    }
-
-    // Try cached data first
-    try {
-      const cached = await getCachedWallet(user.id);
-      if (cached) {
-        setWallet(cached);
-        setIsOfflineData(true);
-      }
-    } catch (e) {
-      console.warn('[useWallet] Cache read failed:', e);
-    }
-
-    if (!navigator.onLine) return;
-
-    try {
-      const { data, error } = await supabase
+      // 1. Supabase Source of Truth (Control System)
+      const { data: supabaseData, error: sbError } = await supabase
         .from('wallets')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching wallet:', error);
-        return;
-      }
-
-      if (!data) {
-        const { data: newWallet, error: createError } = await supabase
+      if (!supabaseData && !sbError) {
+        // Auto-initialize Wallet if missing
+        const { data: newWallet } = await supabase
           .from('wallets')
           .insert({ user_id: user.id, balance: 0 })
           .select()
           .single();
-
-        if (createError) {
-          console.error('Error creating wallet:', createError);
-          return;
-        }
-        setWallet(newWallet);
-        setIsOfflineData(false);
-        setLastSyncedAt(new Date());
-        walletCache = { data: newWallet, userId: user.id, timestamp: Date.now() };
-        try { localStorage.setItem(`wallet_${user.id}`, JSON.stringify(newWallet)); } catch {}
-        await cacheWallet(newWallet);
-      } else {
-        setWallet(data);
-        setIsOfflineData(false);
-        setLastSyncedAt(new Date());
-        walletCache = { data, userId: user.id, timestamp: Date.now() };
-        try { localStorage.setItem(`wallet_${user.id}`, JSON.stringify(data)); } catch {}
-        await cacheWallet(data);
+        return newWallet;
       }
-    } catch (e) {
-      console.warn('[useWallet] Failed to fetch wallet:', e);
-    }
-  }, [user]);
 
-  const fetchTransactions = useCallback(async () => {
+      // 2. Node Backend API Fetch (Parallel Experimental System)
+      let apiData = null;
+      try {
+         const response = await apiClient.get('/wallets/my-wallet');
+         apiData = response.data; 
+         
+         if (import.meta.env.DEV) {
+            console.log('[Phase B Trial] Supabase vs API Wallet:', { supabaseData, apiData });
+            if (supabaseData?.balance !== apiData?.balance) {
+               console.warn(`[Ledger Warning] Backend Drift Detected. SB: ${supabaseData?.balance} | Node: ${apiData?.balance}`);
+            }
+         }
+      } catch (err) {
+         console.warn('[API Warning] Backend wallet fetch failed, smoothly falling back to Supabase', err);
+      }
+
+      // 3. Compare & Prefer Node over SB (or fallback)
+      const finalData = apiData?.balance !== undefined ? apiData : supabaseData;
+      
+      // Mirror to traditional offline storage silently to appease legacy components
+      try { localStorage.setItem(`wallet_${user.id}`, JSON.stringify(finalData)); } catch {}
+      await cacheWallet(finalData);
+
+      return finalData;
+    }
+  });
+
+  const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
+  const loading = walletLoading;
+  const isOfflineData = false;
+  const lastSyncedAt = new Date();
+
+    // Temporary fallback fetcher for transactions without Query for phase execution isolation!
+    const fetchTransactions = useCallback(async () => {
     if (!user) return;
 
     // Try cached transactions first
@@ -188,44 +165,46 @@ export function useWallet() {
   const sendMoney = useCallback(async (recipientPhone: string, amount: number, description?: string) => {
     if (!user) return { error: new Error('Please log in first') };
 
-    // Phase 4: Optional pre-validation via new service layer
-    const transferCheck = preValidateTransfer({
-      senderId: user.id,
-      recipientPhone,
-      amount,
-      description,
-    });
-    if (!transferCheck.shouldProceed) {
-      return { error: new Error(transferCheck.errors?.[0] || 'Validation failed') };
-    }
+    const transferCheck = preValidateTransfer({ senderId: user.id, recipientPhone, amount, description });
+    if (!transferCheck.shouldProceed) return { error: new Error(transferCheck.errors?.[0] || 'Validation failed') };
 
-    // Optional balance pre-check (fail-fast)
     if (wallet) {
       const balanceCheck = checkBalance(wallet.balance, amount);
-      if (!balanceCheck.shouldProceed) {
-        return { error: new Error(balanceCheck.errors?.[0] || 'Insufficient balance') };
-      }
+      if (!balanceCheck.shouldProceed) return { error: new Error(balanceCheck.errors?.[0] || 'Insufficient balance') };
+      
+      // Extreme Optimistic Updates via QueryClient
+      queryClient.setQueryData(['wallet', user.id], (old: any) => 
+        old ? { ...old, balance: old.balance - amount } : old
+      );
     }
     
     try {
-      const { data, error } = await supabase.functions.invoke('wallet-transfer', {
-        body: {
-          recipient_phone: recipientPhone,
-          amount,
-          description: description || 'Wallet transfer',
-        },
-      });
+      // 1. Fire strict transfer via native Node API
+      let resError = null;
+      try {
+          await apiClient.post('/wallets/transfers', { recipientPhone, amount, description });
+      } catch (err: any) {
+          console.warn('[API Failover] Backend Transfer crashed, invoking Supabase Edge Node:', err);
+          const { error, data } = await supabase.functions.invoke('wallet-transfer', {
+             body: { recipient_phone: recipientPhone, amount, description: description || 'Wallet transfer' }
+          });
+          if (error || data?.error) resError = error || new Error(data?.error);
+      }
 
-      if (error) return { error: new Error(error.message || 'Transfer failed') };
-      if (data?.error) return { error: new Error(data.error) };
+      if (resError) {
+         // Instantly Re-fetch authoritative truth on failure Rollback
+         queryClient.invalidateQueries({ queryKey: ['wallet', user.id] });
+         return { error: new Error(resError.message || 'Transfer failed') };
+      }
 
-      // Refresh wallet after successful transfer
-      await fetchWallet(true);
+      // Success: Silently re-sync and trust SSE triggers downstream
+      queryClient.invalidateQueries({ queryKey: ['wallet', user.id] });
       return { error: null };
     } catch (e: any) {
+      queryClient.invalidateQueries({ queryKey: ['wallet', user.id] });
       return { error: new Error(e.message || 'Transfer failed') };
     }
-  }, [user, fetchWallet, wallet, preValidateTransfer, checkBalance]);
+  }, [user, wallet, preValidateTransfer, checkBalance, queryClient]);
 
   const depositMoney = useCallback(async (_amount: number) => {
     // Direct client-side wallet updates are not allowed for security.
@@ -235,39 +214,40 @@ export function useWallet() {
 
   useEffect(() => {
     if (user) {
-      // Only show loading if we have NO cached data at all — prevents flash when cache exists
-      const hasCachedData = wallet !== null;
-      if (!hasCachedData) setLoading(true);
-      // Only fetch wallet balance on mount — transactions load lazily when wallet sheet opens
-      fetchWallet().finally(() => setLoading(false));
+      fetchTransactions();
 
-      // SINGLE realtime channel for wallet balance only (reduced from 4 channels to 1)
+      // SINGLE realtime channel natively piped into QueryClient invalidation
       const walletChannel = supabase
         .channel(`wallet-${user.id}`)
         .on(
           'postgres_changes',
           { event: 'UPDATE', schema: 'public', table: 'wallets', filter: `user_id=eq.${user.id}` },
           (payload) => {
-          if (payload.new) {
-              const updated = payload.new as Wallet;
-              setWallet(updated);
-              setIsOfflineData(false);
-              setLastSyncedAt(new Date());
-              walletCache = { data: updated, userId: user.id, timestamp: Date.now() };
-              try { localStorage.setItem(`wallet_${user.id}`, JSON.stringify(updated)); } catch {}
-              cacheWallet(updated);
+            if (payload.new) {
+               // Update Realtime Cache (Optimistic overwrite)
+               queryClient.setQueryData(['wallet', user.id], payload.new);
             }
           }
         )
         .subscribe();
 
+      // Implement new native SSE Listener here as backup abstraction to bypass Supabase Channels later
+      const sseSource = new EventSource(`${apiClient.defaults.baseURL}/settings/sse?token=${localStorage.getItem('access_token')}`);
+      sseSource.onmessage = (event) => {
+          try {
+             const data = JSON.parse(event.data);
+             if (data.type === 'INVALIDATE' && data.keys?.includes(`wallet-${user.id}`)) {
+                queryClient.invalidateQueries({ queryKey: ['wallet', user.id] });
+             }
+          } catch(e) {}
+      };
+
       return () => {
         supabase.removeChannel(walletChannel);
+        sseSource.close();
       };
     }
-  }, [user, fetchWallet, fetchTransactions]);
-
-  const refreshWallet = useCallback(() => fetchWallet(true), [fetchWallet]);
+  }, [user, fetchTransactions, queryClient]);
 
   return {
     wallet,
@@ -277,7 +257,7 @@ export function useWallet() {
     lastSyncedAt,
     sendMoney,
     depositMoney,
-    refreshWallet,
+    refreshWallet, // Hooks seamlessly to query refetch natively
     refreshTransactions: fetchTransactions,
   };
 }

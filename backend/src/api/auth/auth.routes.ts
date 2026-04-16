@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
-import { register, userLogin, ssoLogin, sendOTP, verifyOTP, logout, forgotPassword, verifyResetCode, resetPassword } from '../../controllers/auth.controller';
+import { register, userLogin, ssoLogin, sendOTP, verifyOTP, logout, forgotPassword, verifyResetCode, resetPassword, refreshToken } from '../../controllers/auth.controller';
 import { changePassword, enable2FA, verify2FA, disable2FA, getSessions, revokeSession, revokeAllOtherSessions } from '../../controllers/auth.security.controller';
 import { ensureUserAuthenticated } from '../../middlewares/auth.middleware';
 
@@ -39,8 +39,9 @@ const authLimiter = rateLimit({
 
 router.post('/registrations', authLimiter, register);
 router.post('/login', loginLimiter, userLogin);
+router.post('/refresh', refreshToken);
 router.post('/sessions/sso', loginLimiter, ssoLogin);
-router.post('/logout', ensureUserAuthenticated, logout);
+router.post('/logout', logout); // Do not strictly require auth middleware here if token might be expired, just clear cookie
 router.post('/otp', authLimiter, sendOTP);
 router.post('/otp/verifications', authLimiter, verifyOTP);
 

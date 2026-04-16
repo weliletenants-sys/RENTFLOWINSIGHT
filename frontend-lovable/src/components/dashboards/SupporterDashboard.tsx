@@ -60,6 +60,7 @@ import { NotificationBell } from '@/components/supporter/NotificationBell';
 import { InviteAndEarnCard } from '@/components/shared/InviteAndEarnCard';
 import { useInactivityLock } from '@/hooks/useInactivityLock';
 import { SupporterInactivityLock } from '@/components/supporter/SupporterInactivityLock';
+import { useFunderDashboardOverview } from '@/hooks/useFunderDashboardOverview';
 
 
 interface SupporterDashboardProps {
@@ -122,6 +123,9 @@ export default function SupporterDashboard({
   // Agreement
   const { hasAccepted, acceptance, loading: agreementLoading, acceptAgreement } = useSupporterAgreement();
   const effectiveHasAccepted = localHasAccepted === true || hasAccepted === true;
+
+  // SOAK TEST: Silent execution of Funder Overview logic 
+  const { overview: _funderOverview, refreshData: _refreshFunderOverview } = useFunderDashboardOverview();
 
   // Inactivity lock — only for users with active portfolios
   const hasActivePortfolios = totalRentContributed > 0;
@@ -343,7 +347,8 @@ export default function SupporterDashboard({
 
   const handleRefresh = async () => {
     await Promise.all([
-      fetchMyHouses(),
+      fetchMyHouses(), _refreshFunderOverview(),
+      
       opportunitiesRefreshRef.current?.()
     ]);
   };

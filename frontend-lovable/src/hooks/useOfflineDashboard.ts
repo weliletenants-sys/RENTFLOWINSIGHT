@@ -2,6 +2,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { apiClient } from '@/lib/apiClient';
 import { 
   cacheDashboardData, 
   getCachedDashboardData,
@@ -39,157 +41,115 @@ const defaultStats: DashboardStats = {
 
 export function useOfflineDashboard(): UseOfflineDashboardReturn {
   const { user, role } = useAuth();
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [rentRequests, setRentRequests] = useState<any[]>([]);
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isOfflineData, setIsOfflineData] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const fetchInProgress = useRef(false);
+  const queryClient = useQueryClient();
 
-  // Load cached data immediately for instant display
-  const loadCachedData = useCallback(async () => {
-    if (!user || !role) return false;
-
+  const loadCachedData = async () => {
+    if (!user || !role) return null;
     try {
-      const [cachedStats, cachedRentRequests, cachedNotifications] = await Promise.all([
+      const [stats, reqs, notifs] = await Promise.all([
         getCachedDashboardData(user.id, role),
         getCachedRentRequests(),
         getCachedNotifications(),
       ]);
+      return (stats || reqs.length > 0) ? { stats, rentRequests: reqs, notifications: notifs } : null;
+    } catch { return null; }
+  };
 
-      let hasData = false;
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['dashboard_overview', user?.id],
+    enabled: !!user && !!role,
+    staleTime: 5000, 
+    refetchInterval: 30000, // Background background refresh explicitly for dashboards
+    initialData: () => {
+       try {
+           const raw = localStorage.getItem(`dash_${user?.id}`);
+           return raw ? JSON.parse(raw) : undefined;
+       } catch (e) {
+           return undefined;
+       }
+    },
+    queryFn: async () => {
+      // 1. Control Group (Supabase Native)
+      let supabaseStats: DashboardStats = { ...defaultStats };
+      let supabaseRentRequests: any[] = [];
+      try {
+          const [rentData, walletData] = await Promise.all([
+            supabase.from('rent_requests').select('*').eq('tenant_id', user!.id).order('created_at', { ascending: false }).limit(20),
+            supabase.from('wallets').select('balance').eq('user_id', user!.id).maybeSingle(),
+          ]);
+          supabaseRentRequests = rentData.data || [];
+          supabaseStats = {
+            pendingRentRequests: supabaseRentRequests.filter((r: any) => r.status === 'pending').length,
+            activeRentRequests: supabaseRentRequests.filter((r: any) => r.status === 'active' || r.status === 'approved').length,
+            totalRepayments: supabaseRentRequests.reduce((sum: number, r: any) => sum + (r.total_repayment || 0), 0),
+            walletBalance: walletData.data?.balance || 0,
+            unreadNotifications: 0,
+          };
+      } catch (e) {}
 
-      if (cachedStats) {
-        setStats(cachedStats);
-        hasData = true;
+      // 2. Experimental Group (Node API)
+      let apiData = null;
+      try {
+          const res = await apiClient.get('/dashboard/overview');
+          apiData = res.data;
+          
+          if (import.meta.env.DEV) {
+             console.log('[Phase B Trial] Supabase vs API Dashboard:', { supabaseStats, apiStats: apiData.stats });
+             if (supabaseStats.walletBalance !== apiData.stats.walletBalance) {
+                console.warn(`[Ledger Warning] Backend Drift Detected. SB: ${supabaseStats.walletBalance} | Node: ${apiData.stats.walletBalance}`);
+             }
+          }
+      } catch (err) {
+          console.warn('[API Warning] Backend dashboard fetch failed, safely defaulting to Supabase legacy tree', err);
       }
 
-      if (cachedRentRequests.length > 0) {
-        setRentRequests(cachedRentRequests);
-        hasData = true;
-      }
-
-      if (cachedNotifications.length > 0) {
-        setNotifications(cachedNotifications);
-        hasData = true;
-      }
-
-      if (hasData) {
-        setIsOfflineData(true);
-      }
-
-      return hasData;
-    } catch (error) {
-      console.warn('[useOfflineDashboard] Failed to load cached data:', error);
-      return false;
-    }
-  }, [user, role]);
-
-  // Fetch fresh data from server
-  const fetchFreshData = useCallback(async () => {
-    if (!user || !role || fetchInProgress.current) return;
-
-    fetchInProgress.current = true;
-
-    try {
-      // Parallel fetch for speed
-      const [rentData, walletData] = await Promise.all([
-        supabase
-          .from('rent_requests')
-          .select('*')
-          .eq('tenant_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(20),
-        supabase
-          .from('wallets')
-          .select('balance')
-          .eq('user_id', user.id)
-          .maybeSingle(),
-      ]);
-
-      const requests = rentData.data || [];
-      const notifs: any[] = [];
-      const walletBalance = walletData.data?.balance || 0;
-
-      // Calculate stats
-      const newStats: DashboardStats = {
-        pendingRentRequests: requests.filter(r => r.status === 'pending').length,
-        activeRentRequests: requests.filter(r => r.status === 'active' || r.status === 'approved').length,
-        totalRepayments: requests.reduce((sum, r) => sum + (r.total_repayment || 0), 0),
-        walletBalance,
-        unreadNotifications: 0,
+      // Prioritize Node API cleanly
+      const payload = apiData || {
+          stats: supabaseStats,
+          rentRequests: supabaseRentRequests,
+          notifications: [],
+          data_as_of: new Date().toISOString()
       };
 
-      // Update state
-      setStats(newStats);
-      setRentRequests(requests);
-      setNotifications(notifs);
-      setIsOfflineData(false);
-      setLastUpdated(new Date());
+      try {
+        localStorage.setItem(`dash_${user?.id}`, JSON.stringify(payload));
+        await Promise.all([
+          cacheDashboardData(user!.id, role!, payload.stats),
+          cacheRentRequests(payload.rentRequests),
+        ]);
+      } catch {}
 
-      // Cache for offline use
-      await Promise.all([
-        cacheDashboardData(user.id, role, newStats),
-        cacheRentRequests(requests),
-        cacheNotifications(notifs),
-      ]);
-    } catch (error) {
-      console.error('[useOfflineDashboard] Failed to fetch data:', error);
-    } finally {
-      fetchInProgress.current = false;
+      return payload;
     }
-  }, [user, role]);
+  });
 
-  // Main data loading function
-  const refreshData = useCallback(async () => {
-    if (!user || !role) {
-      setStats(null);
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-
-    // Load cached data first for instant display
-    const hasCachedData = await loadCachedData();
+  useEffect(() => {
+    if (!user) return;
     
-    if (hasCachedData) {
-      // Show cached data immediately, loading state off
-      setIsLoading(false);
-    }
-
-    // Fetch fresh data in background if online
-    if (navigator.onLine) {
-      await fetchFreshData();
-    }
-
-    setIsLoading(false);
-  }, [user, role, loadCachedData, fetchFreshData]);
-
-  // Initial load
-  useEffect(() => {
-    refreshData();
-  }, [refreshData]);
-
-  // Listen for online/offline changes
-  useEffect(() => {
-    const handleOnline = () => {
-      // Refresh when coming back online
-      fetchFreshData();
+    // Explicit EventSource wiring for non-optimistic cache invalidation (correctness > latency)
+    const sseSource = new EventSource(`${apiClient.defaults.baseURL}/settings/sse?token=${localStorage.getItem('access_token')}`);
+    sseSource.onmessage = (event) => {
+        try {
+           const evData = JSON.parse(event.data);
+           if (evData.type === 'INVALIDATE' && evData.keys?.includes(`dashboard-${user.id}`)) {
+              queryClient.invalidateQueries({ queryKey: ['dashboard_overview', user.id] });
+           }
+        } catch(e) {}
     };
 
-    window.addEventListener('online', handleOnline);
-    return () => window.removeEventListener('online', handleOnline);
-  }, [fetchFreshData]);
+    return () => sseSource.close();
+  }, [user, queryClient]);
+
+  // Handle manual pulls instantly to ensure compatibility
+  const refreshData = async () => { await refetch(); };
 
   return {
-    stats: stats || defaultStats,
-    rentRequests,
-    notifications,
-    isLoading,
-    isOfflineData,
+    stats: data?.stats || defaultStats,
+    rentRequests: data?.rentRequests || [],
+    notifications: data?.notifications || [],
+    isLoading, // Handled automatically by skeleton loaders seamlessly upstream
+    isOfflineData: false, 
+    lastUpdated: data?.data_as_of ? new Date(data.data_as_of) : new Date(),
     refreshData,
-    lastUpdated,
   };
 }

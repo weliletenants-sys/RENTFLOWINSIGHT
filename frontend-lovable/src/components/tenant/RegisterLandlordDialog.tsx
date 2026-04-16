@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useGeoLocation } from '@/hooks/useGeoLocation';
+import { useGeoCapture } from '@/hooks/useGeoCapture';
 import {
   Dialog,
   DialogContent,

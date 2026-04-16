@@ -3142,3 +3142,19 @@ model PaymentIntents {
 
   @@map("payment_intents")
 }
+
+model AuthSessions {
+  id            String   @id @default(uuid())
+  user_id       String
+  session_token String   @unique // The refresh token or a linked identifier
+  user_agent    String?
+  ip_address    String?
+  expires_at    DateTime
+  revoked       Boolean  @default(false)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  @@index([user_id])
+  @@index([session_token])
+  @@map("auth_sessions")
+}

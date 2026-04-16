@@ -4,6 +4,7 @@ import { enforceAdminDomain, enforceUserDomain } from '../middlewares/domain.mid
 import { ensureAdminAuthenticated, ensureUserAuthenticated } from '../middlewares/auth.middleware';
 
 // ─── USER ROUTES (Standard Domain) ───
+import authRoutes from './auth/auth.routes';
 import walletsRoutes from './wallets/wallets.routes';
 import rentRequestsRoutes from './rent-requests/rent-requests.routes';
 import applicationsRoutes from './applications/applications.routes';
@@ -17,6 +18,7 @@ import notificationsRoutes from './notifications/notifications.routes';
 import propertiesRoutes from './properties/properties.routes';
 import marketplaceRoutes from './marketplace/marketplace.routes';
 import ownerRoutes from './owner/owner.routes';
+import dashboardRoutes from './dashboard/dashboard.routes';
 
 // ─── ADMIN ROUTES (Admin Domain) ───
 import adminAuthRoutes from './auth/adminAuth.routes';
@@ -175,6 +177,7 @@ userRouter.use('/notifications', notificationsRoutes);
 userRouter.use('/properties', propertiesRoutes);
 userRouter.use('/marketplace', marketplaceRoutes);
 userRouter.use('/owner', ownerRoutes);
+userRouter.use('/dashboard', dashboardRoutes);
 
 api.use('/', userRouter);
 
