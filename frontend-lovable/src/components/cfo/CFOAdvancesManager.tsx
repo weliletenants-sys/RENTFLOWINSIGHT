@@ -2,7 +2,8 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, TrendingUp, AlertTriangle, DollarSign, Shield, Percent, Calculator, Receipt, Trash2 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { Plus, TrendingUp, AlertTriangle, DollarSign, Shield, Percent, Calculator, Receipt, Trash2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -31,9 +32,12 @@ function calculateAccessFee(amount: number, monthlyRate: number, durationDays: n
 }
 
 export function CFOAdvancesManager() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'overdue'>('all');
   const [issueOpen, setIssueOpen] = useState(false);
+  const [renewOpen, setRenewOpen] = useState(false);
+  const [renewAgentId, setRenewAgentId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -95,6 +99,18 @@ export function CFOAdvancesManager() {
       const ids = Array.from(selectedIds);
       const { error } = await supabase.from('agent_advances').delete().in('id', ids);
       if (error) throw error;
+
+      await supabase.from('audit_logs').insert({
+        user_id: user?.id,
+        action_type: 'cfo_advance_deleted',
+        table_name: 'agent_advances',
+        record_id: ids[0],
+        metadata: {
+          count: ids.length,
+          advance_ids: ids,
+        },
+      });
+
       toast.success(`${ids.length} advance(s) deleted`);
       setSelectedIds(new Set());
       setDeleteDialogOpen(false);
@@ -124,11 +140,6 @@ export function CFOAdvancesManager() {
         <Button onClick={() => setIssueOpen(true)} size="sm" className="gap-1">
           <Plus className="h-4 w-4" /> Issue Advance
         </Button>
-        {selectedIds.size > 0 && (
-          <Button variant="destructive" size="sm" className="gap-1" onClick={() => setDeleteDialogOpen(true)}>
-            <Trash2 className="h-4 w-4" /> Delete ({selectedIds.size})
-          </Button>
-        )}
       </div>
 
       {/* Summary Cards */}
@@ -190,7 +201,7 @@ export function CFOAdvancesManager() {
       </Card>
 
       {/* Filters */}
-      <Tabs value={filter} onValueChange={(v) => setFilter(v as any)}>
+      <Tabs value={filter} onValueChange={(v) => { setFilter(v as any); setSelectedIds(new Set()); }}>
         <TabsList>
           <TabsTrigger value="all">All ({advances.length})</TabsTrigger>
           <TabsTrigger value="active">Active ({advances.filter((a: any) => a.status === 'active').length})</TabsTrigger>
@@ -198,6 +209,35 @@ export function CFOAdvancesManager() {
           <TabsTrigger value="overdue">Overdue ({advances.filter((a: any) => a.status === 'overdue').length})</TabsTrigger>
         </TabsList>
       </Tabs>
+
+      {/* Sticky Selection Action Bar */}
+      {selectedIds.size > 0 && (
+        <div className="sticky top-0 z-10 flex items-center gap-2 rounded-lg border bg-card p-3 shadow-sm">
+          <span className="text-sm font-medium text-muted-foreground">{selectedIds.size} selected</span>
+          <div className="ml-auto flex gap-2">
+            {filter === 'completed' && (
+              <Button
+                size="sm"
+                variant="soft"
+                className="gap-1"
+                onClick={() => {
+                  const firstId = Array.from(selectedIds)[0];
+                  const adv = advances.find((a: any) => a.id === firstId);
+                  if (adv) {
+                    setRenewAgentId(adv.agent_id);
+                    setRenewOpen(true);
+                  }
+                }}
+              >
+                <RefreshCw className="h-4 w-4" /> Renew ({selectedIds.size})
+              </Button>
+            )}
+            <Button variant="destructive" size="sm" className="gap-1" onClick={() => setDeleteDialogOpen(true)}>
+              <Trash2 className="h-4 w-4" /> Delete ({selectedIds.size})
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Table */}
       {isLoading ? (
@@ -301,6 +341,12 @@ export function CFOAdvancesManager() {
       </AlertDialog>
 
       <IssueAdvanceSheet open={issueOpen} onOpenChange={setIssueOpen} onSuccess={refetch} />
+      <IssueAdvanceSheet
+        open={renewOpen}
+        onOpenChange={(open) => { setRenewOpen(open); if (!open) setRenewAgentId(null); }}
+        onSuccess={() => { refetch(); setSelectedIds(new Set()); }}
+        preselectedAgentId={renewAgentId || undefined}
+      />
     </div>
   );
 }

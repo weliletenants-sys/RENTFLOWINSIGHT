@@ -2,8 +2,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/lib/apiClient';
 import { 
   cacheDashboardData, 
   getCachedDashboardData,
@@ -42,105 +40,141 @@ const defaultStats: AgentDashboardStats = {
 export function useOfflineAgentDashboard(): UseOfflineAgentDashboardReturn {
   const { user } = useAuth();
   const { snapshot } = useUserSnapshot(user?.id);
-  const queryClient = useQueryClient();
+  const [stats, setStats] = useState<AgentDashboardStats>(defaultStats);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isOfflineData, setIsOfflineData] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  const fetchInProgress = useRef(false);
 
-  const loadCachedData = async () => {
-    if (!user) return null;
+  // Load cached data immediately for instant display
+  const loadCachedData = useCallback(async () => {
+    if (!user) return false;
+
     try {
+      // Try IndexedDB first
       const cachedStats = await getCachedDashboardData(user.id, 'agent');
-      return cachedStats || null;
-    } catch { return null; }
-  };
+      
+      if (cachedStats) {
+        setStats(prev => ({ ...prev, ...cachedStats }));
+        setIsOfflineData(true);
+        setHasLoadedOnce(true);
+        return true;
+      }
+      
+      // Fallback to localStorage
+      const cached = localStorage.getItem(`agent_dashboard_${user.id}`);
+      if (cached) {
+        const data = JSON.parse(cached);
+        setStats(prev => ({ ...prev, ...data }));
+        setIsOfflineData(true);
+        setHasLoadedOnce(true);
+        return true;
+      }
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['agent_dashboard_overview', user?.id],
-    enabled: !!user,
-    staleTime: 5000,
-    refetchInterval: 30000, 
-    initialData: () => {
-       try {
-           const raw = localStorage.getItem(`agent_dashboard_${user?.id}`);
-           return raw ? { stats: JSON.parse(raw) } : undefined;
-       } catch (e) {
-           return undefined;
-       }
-    },
-    queryFn: async () => {
-       // 1. Control Source (Supabase Native)
-       let supabaseStats: AgentDashboardStats = { ...defaultStats };
-       try {
-          const requestsRes = await supabase.from('rent_requests').select('id', { count: 'exact', head: true }).eq('agent_id', user!.id);
-          const cachedWalletBalance = await (async () => {
-             try {
-                const { getCachedWallet } = await import('@/lib/offlineDataStorage');
-                const cached = await getCachedWallet(user!.id);
-                return cached?.balance || 0;
-             } catch { return 0; }
-          })();
-
-          supabaseStats = {
-             tenantsCount: requestsRes.count || 0,
-             referralCount: snapshot.referralCount || 0,
-             subAgentCount: snapshot.subAgents?.length || 0,
-             subAgentEarnings: 0, 
-             walletBalance: cachedWalletBalance,
-             totalEarnings: 0,
-          };
-       } catch (e) {}
-
-       // 2. Experimental Verification Source (Node.js API)
-       let apiData = null;
-       try {
-           const res = await apiClient.get('/dashboard/agent-overview');
-           apiData = res.data;
-           
-           if (import.meta.env.DEV) {
-              console.log('[Phase B Trial] Supabase vs API Agent Dashboard:', { supabaseStats, apiStats: apiData.stats });
-              if (supabaseStats.tenantsCount !== apiData.stats.tenantsCount) {
-                 console.warn(`[Ledger Warning] Backend Drift Detected. SB Tenants: ${supabaseStats.tenantsCount} | Node: ${apiData.stats.tenantsCount}`);
-              }
-           }
-       } catch (err) {
-           console.warn('[API Warning] Backend agent dashboard fetch failed, safely holding Supabase legacy output', err);
-       }
-
-       // 3. Fallback gracefully
-       const payload = apiData || { stats: supabaseStats, data_as_of: new Date().toISOString() };
-
-       try {
-           localStorage.setItem(`agent_dashboard_${user!.id}`, JSON.stringify(payload.stats));
-           await cacheDashboardData(user!.id, 'agent', payload.stats);
-       } catch {}
-
-       return payload;
+      return false;
+    } catch (error) {
+      console.warn('[useOfflineAgentDashboard] Failed to load cached data:', error);
+      return false;
     }
-  });
+  }, [user]);
 
-  useEffect(() => {
-    if (!user) return;
-    
-    // Explicit SSE Registration natively validating cache structure instantly asynchronously
-    const sseSource = new EventSource(`${apiClient.defaults.baseURL}/settings/sse?token=${localStorage.getItem('access_token')}`);
-    sseSource.onmessage = (event) => {
+  // Fetch fresh data from server
+  const fetchFreshData = useCallback(async () => {
+    if (!user || fetchInProgress.current) return;
+
+    fetchInProgress.current = true;
+
+    try {
+      // Only fetch rent request count (core). Wallet balance comes from useWallet to avoid duplicate DB calls.
+      const requestsRes = await supabase
+        .from('rent_requests')
+        .select('id', { count: 'exact', head: true })
+        .eq('agent_id', user.id);
+
+      // Wallet balance is read from cache or useWallet — no duplicate query
+      const cachedWalletBalance = await (async () => {
         try {
-           const evData = JSON.parse(event.data);
-           if (evData.type === 'INVALIDATE' && evData.keys?.includes(`agent_dashboard-${user.id}`)) {
-              queryClient.invalidateQueries({ queryKey: ['agent_dashboard_overview', user.id] });
-           }
-        } catch(e) {}
+          const { getCachedWallet } = await import('@/lib/offlineDataStorage');
+          const cached = await getCachedWallet(user.id);
+          return cached?.balance || 0;
+        } catch { return 0; }
+      })();
+
+      const newStats: AgentDashboardStats = {
+        tenantsCount: requestsRes.count || 0,
+        referralCount: snapshot.referralCount || 0,
+        subAgentCount: snapshot.subAgents?.length || 0,
+        subAgentEarnings: 0, // Derived from snapshot if needed
+        walletBalance: cachedWalletBalance,
+        totalEarnings: 0,
+      };
+
+      // Update state
+      setStats(newStats);
+      setIsOfflineData(false);
+      setLastUpdated(new Date());
+      setHasLoadedOnce(true);
+
+      // Cache for offline use - both IndexedDB and localStorage as fallback
+      await cacheDashboardData(user.id, 'agent', newStats);
+      localStorage.setItem(`agent_dashboard_${user.id}`, JSON.stringify(newStats));
+      
+    } catch (error) {
+      console.error('[useOfflineAgentDashboard] Failed to fetch data:', error);
+    } finally {
+      fetchInProgress.current = false;
+    }
+  }, [user, snapshot]);
+
+  // Main data loading function
+  const refreshData = useCallback(async () => {
+    if (!user) {
+      setStats(defaultStats);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+
+    // Load cached data first for instant display
+    const hasCachedData = await loadCachedData();
+    
+    if (hasCachedData) {
+      // Show cached data immediately, loading state off
+      setIsLoading(false);
+    }
+
+    // Fetch fresh data in background if online
+    if (navigator.onLine) {
+      await fetchFreshData();
+    }
+
+    setIsLoading(false);
+  }, [user, loadCachedData, fetchFreshData]);
+
+  // Initial load
+  useEffect(() => {
+    refreshData();
+  }, [refreshData]);
+
+  // Listen for online/offline changes
+  useEffect(() => {
+    const handleOnline = () => {
+      // Refresh when coming back online
+      fetchFreshData();
     };
 
-    return () => sseSource.close();
-  }, [user, queryClient]);
-
-  const refreshData = async () => { await refetch(); };
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  }, [fetchFreshData]);
 
   return {
-    stats: data?.stats || defaultStats,
+    stats,
     isLoading,
-    isOfflineData: false,
+    isOfflineData,
     refreshData,
-    lastUpdated: data?.data_as_of ? new Date(data.data_as_of) : new Date(),
-    hasLoadedOnce: !!data,
+    lastUpdated,
+    hasLoadedOnce,
   };
 }

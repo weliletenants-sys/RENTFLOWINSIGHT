@@ -89,8 +89,10 @@ function DashboardContent() {
         setPendingRole(null);
         return;
       }
+      setPendingRole(null);
     } else {
       switchRole(newRole);
+      setPendingRole(null);
     }
   }, [role, roles, pendingRole, switchRole, grantAndSwitchRole]);
 

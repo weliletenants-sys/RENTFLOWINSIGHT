@@ -1,7 +1,7 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatUGX } from '@/lib/rentCalculations';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/sonner';
 import { cn } from '@/lib/utils';
 import {
   dateOnlyToLocalDate,
@@ -15,13 +15,14 @@ import {
   ChevronsUpDown, MoreHorizontal, TrendingUp, Pencil, Wallet, Ban, PlayCircle,
   Users, Banknote, PiggyBank, ArrowUpRight, Filter, RefreshCw, Phone, Calendar as CalendarIcon,
   CalendarDays, Shield, CheckCircle2, Clock, Briefcase, Save, Upload, Trash2,
-  Plus, FileText, Share2, ArrowRightLeft, ShieldCheck, Handshake, Scissors
+  Plus, FileText, Share2, ArrowRightLeft, ShieldCheck, Handshake, Scissors, Info
 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { downloadPortfolioPdf, sharePortfolioViaWhatsApp, type PortfolioPdfData } from '@/lib/portfolioPdf';
-import { fetchAllUserIdsByRole, batchedQuery } from '@/lib/supabaseBatchUtils';
+import { fetchAllUserIdsByRole, batchedQuery, fetchPaginatedSupporterIds, fetchSupporterSummary, fetchAllNearingPayoutPortfolios } from '@/lib/supabaseBatchUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -45,6 +46,7 @@ import { Separator } from '@/components/ui/separator';
 import { Slider } from '@/components/ui/slider';
 import PartnerImportDialog from './PartnerImportDialog';
 import UpdateContributionDatesDialog from './UpdateContributionDatesDialog';
+
 
 /** Roll a stale next_roi_date forward month-by-month until it's >= today */
 function getNextPayoutDate(nextRoiDate: string | null, createdAt: string, payoutDay: number): string {
@@ -92,6 +94,7 @@ interface NearingPayoutPortfolio {
   portfolioId: string;
   investorId: string;
   name: string;
+  portfolioName: string;
   phone: string;
   email: string;
   investmentAmount: number;
@@ -196,6 +199,9 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
   const [rows, setRows] = useState<PartnerRow[]>([]);
   const [summary, setSummary] = useState<SummaryData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   // Table state
   const [search, setSearch] = useState('');
@@ -281,10 +287,21 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
   const [walletToPortfolioAmount, setWalletToPortfolioAmount] = useState('');
   const [walletToPortfolioReason, setWalletToPortfolioReason] = useState('');
   const [walletToPortfolioSaving, setWalletToPortfolioSaving] = useState(false);
+  const [walletTransferMethod, setWalletTransferMethod] = useState<'wallet' | 'proxy_agent'>('wallet');
+  const [proxyAgentInfo, setProxyAgentInfo] = useState<{ agentId: string; agentName: string; walletBalance: number } | null>(null);
+  const [loadingProxyAgent, setLoadingProxyAgent] = useState(false);
 
-  // Pending top-ups per portfolio
+  // Pending top-ups per portfolio (status: pending)
   const [pendingTopUps, setPendingTopUps] = useState<Record<string, { count: number; total: number }>>({});
+  // Top-ups awaiting Financial Ops verification (status: awaiting_verification)
+  const [awaitingVerification, setAwaitingVerification] = useState<Record<string, { count: number; total: number }>>({});
+  // Top-ups approved and parked until next ROI cycle (status: approved)
+  const [approvedTopUps, setApprovedTopUps] = useState<Record<string, { count: number; total: number }>>({});
   const [applyingTopUps, setApplyingTopUps] = useState<string | null>(null);
+  // Merge dialog state
+  const [mergeDialogPortfolioId, setMergeDialogPortfolioId] = useState<string | null>(null);
+  const [mergeReason, setMergeReason] = useState('');
+  const [mergingTopUp, setMergingTopUp] = useState(false);
 
   // Portfolio name editing
   const [editingNameId, setEditingNameId] = useState<string | null>(null);
@@ -295,6 +312,7 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
   const [addPortfolioOpen, setAddPortfolioOpen] = useState(false);
   // Top-level create portfolio dialog
   const [createPortfolioOpen, setCreatePortfolioOpen] = useState(false);
+  
   const [addPortfolioAmount, setAddPortfolioAmount] = useState('');
   const [addPortfolioRoi, setAddPortfolioRoi] = useState('20');
   const [addPortfolioRoiMode, setAddPortfolioRoiMode] = useState('monthly_payout');
@@ -405,7 +423,7 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
       toast.success(`Compounded ${formatUGX(roiAmount)}`, { description: `New principal: ${formatUGX(newAmount)}. Ref: ${refId}` });
       // Refresh detail view
       if (detailPartner?.profile?.id) openPartnerDetail(detailPartner.profile.id);
-      fetchData();
+      refreshInBackground();
     } catch (err: any) {
       toast.error('Compound failed', { description: err.message });
     } finally {
@@ -413,141 +431,124 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
     }
   };
 
-  /* ─── Fetch ─── */
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const supporterIds = await fetchAllUserIdsByRole('supporter');
-      if (supporterIds.length === 0) {
-        setRows([]);
+  /* ─── Core fetch logic: server-side paginated ─── */
+  const fetchDataCore = useCallback(async (fetchPage: number, searchTerm: string) => {
+    const { ids: supporterIds, totalCount: count } = await fetchPaginatedSupporterIds(fetchPage, PAGE_SIZE, searchTerm);
+    setTotalCount(count);
+
+    if (supporterIds.length === 0) {
+      setRows([]);
+      if (count === 0) {
         setSummary({ totalPartners: 0, activePartners: 0, suspendedPartners: 0, totalFunded: 0, totalWalletBalance: 0, avgROI: 0, totalDeals: 0, topPartnerName: '—' });
-        return;
       }
+      return;
+    }
 
-      const ids = supporterIds;
-      const [profiles, wallets, portfolios] = await Promise.all([
-        batchedQuery<any>(ids, (batch) => supabase.from('profiles').select('id, full_name, phone, email, created_at, frozen_at').in('id', batch)),
-        batchedQuery<any>(ids, (batch) => supabase.from('wallets').select('user_id, balance').in('user_id', batch)),
-        batchedQuery<any>(ids, (batch) =>
-          supabase.from('investor_portfolios')
-            .select('id, investor_id, agent_id, investment_amount, roi_percentage, payout_day, roi_mode, status, created_at, next_roi_date')
-            .or(`investor_id.in.(${batch.join(',')}),agent_id.in.(${batch.join(',')})`)
-            .in('status', ['active', 'pending_approval', 'pending'])
-            .order('created_at', { ascending: false })
-        ),
-      ]);
+    const ids = supporterIds;
+    const [profiles, wallets, portfolios] = await Promise.all([
+      batchedQuery<any>(ids, (batch) => supabase.from('profiles').select('id, full_name, phone, email, created_at, frozen_at').in('id', batch)),
+      batchedQuery<any>(ids, (batch) => supabase.from('wallets').select('user_id, balance').in('user_id', batch)),
+      batchedQuery<any>(ids, (batch) =>
+        supabase.from('investor_portfolios')
+          .select('id, investor_id, agent_id, investment_amount, roi_percentage, payout_day, roi_mode, status, created_at, next_roi_date')
+          .or(`investor_id.in.(${batch.join(',')}),agent_id.in.(${batch.join(',')})`)
+          .in('status', ['active', 'pending_approval', 'pending'])
+          .order('created_at', { ascending: false })
+      ),
+    ]);
 
-      // Deduplicate portfolios that may appear in multiple batches
-      const seenPortfolioIds = new Set<string>();
-      const dedupedPortfolios = (portfolios as any[]).filter(p => {
-        if (seenPortfolioIds.has(p.id)) return false;
-        seenPortfolioIds.add(p.id);
-        return true;
-      });
+    const seenPortfolioIds = new Set<string>();
+    const dedupedPortfolios = (portfolios as any[]).filter(p => {
+      if (seenPortfolioIds.has(p.id)) return false;
+      seenPortfolioIds.add(p.id);
+      return true;
+    });
 
-      const profileMap = new Map((profiles as any[]).map(p => [p.id, p]));
-      const walletMap = new Map((wallets as any[]).map(w => [w.user_id, w.balance || 0]));
+    const profileMap = new Map((profiles as any[]).map(p => [p.id, p]));
+    const walletMap = new Map((wallets as any[]).map(w => [w.user_id, w.balance || 0]));
 
-      // Aggregate portfolios per supporter
-      const supporterIdSet = new Set(ids);
-      const partnerAgg = new Map<string, { funded: number; deals: number; roiPercentage: number; payoutDay: number; roiMode: string; lastActivity: string; nextRoiDate: string | null }>();
+    const supporterIdSet = new Set(ids);
+    const partnerAgg = new Map<string, { funded: number; deals: number; roiPercentage: number; payoutDay: number; roiMode: string; lastActivity: string; nextRoiDate: string | null }>();
 
-      dedupedPortfolios.forEach(p => {
-        // Determine which supporter this portfolio belongs to
-        const ownerId = p.investor_id && supporterIdSet.has(p.investor_id)
-          ? p.investor_id
-          : p.agent_id && supporterIdSet.has(p.agent_id)
-            ? p.agent_id
-            : null;
-        if (!ownerId) return;
+    dedupedPortfolios.forEach(p => {
+      const ownerId = p.investor_id && supporterIdSet.has(p.investor_id)
+        ? p.investor_id
+        : p.agent_id && supporterIdSet.has(p.agent_id)
+          ? p.agent_id
+          : null;
+      if (!ownerId) return;
 
-        const existing = partnerAgg.get(ownerId) || { funded: 0, deals: 0, roiPercentage: 0, payoutDay: 0, roiMode: 'monthly_payout', lastActivity: '', nextRoiDate: null as string | null };
-        existing.funded += (p.investment_amount || 0);
-        existing.deals += 1;
-        if (existing.deals === 1 || !existing.roiPercentage) {
-          existing.roiPercentage = p.roi_percentage ?? 15;
-          existing.payoutDay = p.payout_day ?? 15;
-          existing.roiMode = p.roi_mode ?? 'monthly_payout';
-        }
-        // Track earliest next_roi_date — roll forward stale dates
-        const effectiveDate = getNextPayoutDate(p.next_roi_date, p.created_at, p.payout_day ?? 15);
-        if (!existing.nextRoiDate || effectiveDate < existing.nextRoiDate) {
-          existing.nextRoiDate = effectiveDate;
-        }
-        if (!existing.lastActivity || p.created_at > existing.lastActivity) {
-          existing.lastActivity = p.created_at;
-        }
-        partnerAgg.set(ownerId, existing);
-      });
+      const existing = partnerAgg.get(ownerId) || { funded: 0, deals: 0, roiPercentage: 0, payoutDay: 0, roiMode: 'monthly_payout', lastActivity: '', nextRoiDate: null as string | null };
+      existing.funded += (p.investment_amount || 0);
+      existing.deals += 1;
+      if (existing.deals === 1 || !existing.roiPercentage) {
+        existing.roiPercentage = p.roi_percentage ?? 15;
+        existing.payoutDay = p.payout_day ?? 15;
+        existing.roiMode = p.roi_mode ?? 'monthly_payout';
+      }
+      const effectiveDate = getNextPayoutDate(p.next_roi_date, p.created_at, p.payout_day ?? 15);
+      if (!existing.nextRoiDate || effectiveDate < existing.nextRoiDate) {
+        existing.nextRoiDate = effectiveDate;
+      }
+      if (!existing.lastActivity || p.created_at > existing.lastActivity) {
+        existing.lastActivity = p.created_at;
+      }
+      partnerAgg.set(ownerId, existing);
+    });
 
-      const tableRows: PartnerRow[] = ids.map(id => {
-        const agg = partnerAgg.get(id) || { funded: 0, deals: 0, roiPercentage: 15, payoutDay: 15, roiMode: 'monthly_payout', lastActivity: '', nextRoiDate: null };
-        const profile = profileMap.get(id);
-        const isSuspended = !!profile?.frozen_at;
-        return {
-          id,
-          name: profile?.full_name || id.slice(0, 8),
-          phone: profile?.phone || '',
-          email: profile?.email || '',
-          funded: agg.funded,
-          activeDeals: agg.deals,
-          avgDeal: agg.deals > 0 ? Math.round(agg.funded / agg.deals) : 0,
-          walletBalance: walletMap.get(id) || 0,
-          roiPercentage: agg.roiPercentage,
-          payoutDay: agg.payoutDay,
-          roiMode: agg.roiMode,
-          status: (isSuspended ? 'suspended' : 'active') as 'active' | 'suspended',
-          joinedAt: profile?.created_at || '',
-          lastActivity: agg.lastActivity || '',
-          nextRoiDate: agg.nextRoiDate,
-        };
-      })
-        .sort((a, b) => b.funded - a.funded);
+    const tableRows: PartnerRow[] = ids.map(id => {
+      const agg = partnerAgg.get(id) || { funded: 0, deals: 0, roiPercentage: 15, payoutDay: 15, roiMode: 'monthly_payout', lastActivity: '', nextRoiDate: null };
+      const profile = profileMap.get(id);
+      const isSuspended = !!profile?.frozen_at;
+      return {
+        id,
+        name: profile?.full_name || id.slice(0, 8),
+        phone: profile?.phone || '',
+        email: profile?.email || '',
+        funded: agg.funded,
+        activeDeals: agg.deals,
+        avgDeal: agg.deals > 0 ? Math.round(agg.funded / agg.deals) : 0,
+        walletBalance: walletMap.get(id) || 0,
+        roiPercentage: agg.roiPercentage,
+        payoutDay: agg.payoutDay,
+        roiMode: agg.roiMode,
+        status: (isSuspended ? 'suspended' : 'active') as 'active' | 'suspended',
+        joinedAt: profile?.created_at || '',
+        lastActivity: agg.lastActivity || '',
+        nextRoiDate: agg.nextRoiDate,
+      };
+    });
 
-      const totalFunded = tableRows.reduce((s, r) => s + r.funded, 0);
-      const totalWalletBalance = tableRows.reduce((s, r) => s + r.walletBalance, 0);
-      const activeCount = tableRows.filter(r => r.status === 'active').length;
-      const suspendedCount = tableRows.filter(r => r.status === 'suspended').length;
-      const totalDeals = tableRows.reduce((s, r) => s + r.activeDeals, 0);
-      const roiValues = tableRows.filter(r => r.roiPercentage > 0);
-      const avgROI = roiValues.length > 0 ? Math.round(roiValues.reduce((s, r) => s + r.roiPercentage, 0) / roiValues.length) : 0;
-      const topPartner = tableRows[0];
+    setRows(tableRows);
+  }, []);
 
-      setSummary({
-        totalPartners: tableRows.length,
-        activePartners: activeCount,
-        suspendedPartners: suspendedCount,
-        totalFunded,
-        totalWalletBalance,
-        avgROI,
-        totalDeals,
-        topPartnerName: topPartner?.name || '—',
-      });
-      setRows(tableRows);
-
-      // Build portfolio-level nearing payouts — only portfolios with an actual next_roi_date set
+  /* ─── Nearing payouts: loaded independently from ALL supporters ─── */
+  const [nearingPayoutsLoading, setNearingPayoutsLoading] = useState(false); // eslint-disable-line -- top-level hook, after all other useState
+  const fetchNearingPayoutsAsync = useCallback(async () => {
+    setNearingPayoutsLoading(true);
+    try {
+      const { portfolios, profileMap, supporterIds } = await fetchAllNearingPayoutPortfolios();
       const now = new Date();
       now.setHours(0, 0, 0, 0);
       const nearingList: NearingPayoutPortfolio[] = [];
-      dedupedPortfolios.forEach(p => {
+      portfolios.forEach(p => {
         if (p.status !== 'active') return;
-        // Only include portfolios that have a real next_roi_date stored in the DB
         if (!p.next_roi_date) return;
-        const ownerId = p.investor_id && supporterIdSet.has(p.investor_id) ? p.investor_id
-          : p.agent_id && supporterIdSet.has(p.agent_id) ? p.agent_id : null;
+        const ownerId = p.investor_id && supporterIds.has(p.investor_id) ? p.investor_id
+          : p.agent_id && supporterIds.has(p.agent_id) ? p.agent_id : null;
         if (!ownerId) return;
 
         const effectiveNextDate = getNextPayoutDate(p.next_roi_date, p.created_at, p.payout_day ?? 15);
         const roiDate = dateOnlyToLocalDate(effectiveNextDate);
         const diffMs = roiDate.getTime() - now.getTime();
         const du = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-        // Include all active portfolios with a next_roi_date (past-due + upcoming)
         const prof = profileMap.get(ownerId);
         const effectivePayoutDay = p.payout_day || roiDate.getDate();
         nearingList.push({
           portfolioId: p.id,
           investorId: ownerId,
           name: prof?.full_name || ownerId.slice(0, 8),
+          portfolioName: p.account_name || p.portfolio_code || p.id.slice(0, 8),
           phone: prof?.phone || '',
           email: prof?.email || '',
           investmentAmount: p.investment_amount || 0,
@@ -561,9 +562,55 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
       });
       nearingList.sort((a, b) => a.daysUntil - b.daysUntil);
       setAllPortfoliosForPayout(nearingList);
-    } catch (e) { console.error(e); }
-    finally { setIsLoading(false); }
+    } catch (e) {
+      console.error('Nearing payouts fetch error:', e);
+    } finally {
+      setNearingPayoutsLoading(false);
+    }
   }, []);
+
+  /* ─── Summary stats (fetched once, cached) ─── */
+  const fetchSummaryStats = useCallback(async () => {
+    try {
+      const stats = await fetchSupporterSummary();
+      setSummary({
+        ...stats,
+        avgROI: 0,
+        topPartnerName: '—',
+      });
+    } catch (e) {
+      console.error('Summary stats error:', e);
+    }
+  }, []);
+
+  /* ─── Initial fetch (with loading spinner) ─── */
+  const isInitialLoad = useRef(true);
+  const fetchData = useCallback(async () => {
+    // Only show full spinner on first load, not on search/page changes
+    if (isInitialLoad.current) {
+      setIsLoading(true);
+    } else {
+      setIsSearching(true);
+    }
+    try { await fetchDataCore(page, debouncedSearch); }
+    catch (e) { console.error(e); }
+    finally {
+      setIsLoading(false);
+      setIsSearching(false);
+      isInitialLoad.current = false;
+    }
+  }, [fetchDataCore, page, debouncedSearch]);
+
+  /* ─── Background refresh (no spinner, no page flash) ─── */
+  const refreshInBackground = useCallback(async () => {
+    try {
+      await Promise.all([
+        fetchDataCore(page, debouncedSearch),
+        fetchNearingPayoutsAsync(),
+      ]);
+    }
+    catch (e) { console.error('Background refresh error:', e); }
+  }, [fetchDataCore, page, debouncedSearch, fetchNearingPayoutsAsync]);
 
   // Fetch pending_approval count
   const fetchPendingCount = useCallback(async () => {
@@ -574,7 +621,20 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
     setPendingApprovalCount(count || 0);
   }, []);
 
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(0);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [search]);
+
   useEffect(() => { fetchData(); fetchPendingCount(); }, [fetchData, fetchPendingCount]);
+
+  // Fetch summary stats + nearing payouts once on mount (independent)
+  useEffect(() => { fetchSummaryStats(); }, [fetchSummaryStats]);
+  useEffect(() => { fetchNearingPayoutsAsync(); }, [fetchNearingPayoutsAsync]);
 
   // Single portfolio approve
   const [approvingId, setApprovingId] = useState<string | null>(null);
@@ -631,7 +691,7 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
       toast.success(`${pendingApprovalCount} portfolios activated successfully`);
       setShowActivateConfirm(false);
       setPendingApprovalCount(0);
-      fetchData();
+      refreshInBackground();
     } catch (e: any) {
       console.error('Bulk activate error:', e);
       toast.error(e.message || 'Failed to activate portfolios');
@@ -674,24 +734,38 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
             .in('portfolio_id', portfolioIds),
           supabase
             .from('pending_wallet_operations')
-            .select('source_id, amount')
+            .select('source_id, amount, status')
             .in('source_id', portfolioIds)
             .eq('source_table', 'investor_portfolios')
             .eq('operation_type', 'portfolio_topup')
-            .eq('status', 'pending'),
+            .in('status', ['pending', 'awaiting_verification', 'approved']),
         ]);
         const counts: Record<string, number> = {};
         (renewalsRes.data || []).forEach(r => { counts[r.portfolio_id] = (counts[r.portfolio_id] || 0) + 1; });
         setRenewalCounts(counts);
 
         const pending: Record<string, { count: number; total: number }> = {};
+        const awaiting: Record<string, { count: number; total: number }> = {};
+        const approved: Record<string, { count: number; total: number }> = {};
         (pendingRes.data || []).forEach((op: any) => {
           const key = op.source_id;
-          if (!pending[key]) pending[key] = { count: 0, total: 0 };
-          pending[key].count += 1;
-          pending[key].total += Number(op.amount);
+          if (op.status === 'approved') {
+            if (!approved[key]) approved[key] = { count: 0, total: 0 };
+            approved[key].count += 1;
+            approved[key].total += Number(op.amount);
+          } else if (op.status === 'awaiting_verification') {
+            if (!awaiting[key]) awaiting[key] = { count: 0, total: 0 };
+            awaiting[key].count += 1;
+            awaiting[key].total += Number(op.amount);
+          } else {
+            if (!pending[key]) pending[key] = { count: 0, total: 0 };
+            pending[key].count += 1;
+            pending[key].total += Number(op.amount);
+          }
         });
         setPendingTopUps(pending);
+        setAwaitingVerification(awaiting);
+        setApprovedTopUps(approved);
       }
 
       // For imported partners with no ledger entries, derive totals from portfolio records
@@ -711,7 +785,7 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
     finally { setDetailLoading(false); }
   }
 
-  /* ─── Apply Pending Top-Ups ─── */
+  /* ─── Submit Pending Top-Ups for Financial Ops Verification ─── */
   async function handleApplyPendingTopUps(portfolioId: string) {
     setApplyingTopUps(portfolioId);
     try {
@@ -720,14 +794,38 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
       });
       if (error) throw new Error(error.message);
       if (data?.error) throw new Error(data.error);
-      toast.success(`${data.count} pending deposit(s) applied`, {
-        description: `${formatUGX(data.total_applied)} added to portfolio. New capital: ${formatUGX(data.new_investment_total)}`,
+      toast.success(`${data.count} deposit(s) submitted for verification`, {
+        description: `UGX ${Number(data.total_amount).toLocaleString()} sent to Financial Operations for approval.`,
       });
       if (detailPartner?.profile?.id) openPartnerDetail(detailPartner.profile.id);
     } catch (e: any) {
-      toast.error('Failed to apply pending top-ups', { description: e.message });
+      toast.error('Failed to submit for verification', { description: e.message });
     } finally {
       setApplyingTopUps(null);
+    }
+  }
+
+  /* ─── Merge Approved Top-Ups Into Portfolio Principal ─── */
+  async function handleMergePendingTopUps() {
+    if (!mergeDialogPortfolioId || mergeReason.trim().length < 10) return;
+    setMergingTopUp(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('merge-pending-topups', {
+        body: { portfolio_id: mergeDialogPortfolioId, reason: mergeReason.trim() },
+      });
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
+      toast.success(`Merged ${formatUGX(data.merged_amount)} into principal`, {
+        description: `New capital: ${formatUGX(data.new_capital)}. ${data.ops_count} top-up(s) applied.`,
+      });
+      setMergeDialogPortfolioId(null);
+      setMergeReason('');
+      if (detailPartner?.profile?.id) openPartnerDetail(detailPartner.profile.id);
+      refreshInBackground();
+    } catch (e: any) {
+      toast.error('Failed to merge top-ups', { description: e.message });
+    } finally {
+      setMergingTopUp(false);
     }
   }
 
@@ -860,7 +958,7 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
       }
       setDeletePortfolio(null);
       setDeleteReason('');
-      fetchData();
+      refreshInBackground();
     } catch (e: any) {
       toast.error(e.message || 'Failed to delete portfolio');
     } finally {
@@ -961,7 +1059,7 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
       setAddPortfolioPayoutDay('15');
       setAddPortfolioDate('');
       await openPartnerDetail(partnerId);
-      fetchData();
+      refreshInBackground();
     } catch (e: any) {
       console.error('Add portfolio error:', e);
       toast.error(e.message || 'Failed to create portfolio');
@@ -1044,12 +1142,12 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
       );
       setDetailPartner({ ...detailPartner, portfolios: updated });
       setEditPortfolio(null);
-      fetchData();
+      refreshInBackground();
     } catch (e: any) { toast.error(e.message || 'Failed to update portfolio'); }
     finally { setSavingEditPortfolio(false); }
   }
 
-  /* ─── Filtered / Sorted ─── */
+  /* ─── Filtered / Sorted (local filters on current page, search is server-side) ─── */
   const processed = useMemo(() => {
     let result = [...rows];
     if (filterStatus !== 'all') result = result.filter(r => r.status === filterStatus);
@@ -1058,10 +1156,8 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
     else if (filterContact === 'no_phone') result = result.filter(r => !r.phone || r.phone.includes('@'));
     else if (filterContact === 'has_email') result = result.filter(r => r.email && !r.email.includes('placeholder'));
     else if (filterContact === 'no_email') result = result.filter(r => !r.email || r.email.includes('placeholder'));
-    // Payment date range filter
     if (payoutDateFrom || payoutDateTo) {
       result = result.filter(r => {
-        // Use the first portfolio's next_roi_date if available
         const portfolioData = (r as any).nextRoiDate;
         if (!portfolioData) return false;
         const nextPayout = new Date(portfolioData + 'T00:00:00');
@@ -1070,10 +1166,6 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
         if (payoutDateTo && nextPayout > payoutDateTo) return false;
         return true;
       });
-    }
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      result = result.filter(r => r.name.toLowerCase().includes(q) || r.phone.includes(q) || r.email.toLowerCase().includes(q));
     }
     if (sortKey && sortDir) {
       result.sort((a, b) => {
@@ -1087,11 +1179,12 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
       });
     }
     return result;
-  }, [rows, search, sortKey, sortDir, filterStatus, filterRoiMode, filterContact, payoutDateFrom, payoutDateTo]);
+  }, [rows, sortKey, sortDir, filterStatus, filterRoiMode, filterContact, payoutDateFrom, payoutDateTo]);
 
-  const totalPages = Math.max(1, Math.ceil(processed.length / PAGE_SIZE));
+  // Server-side pagination: use totalCount for page count, display all rows from current page
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const safePage = Math.min(page, totalPages - 1);
-  const paged = processed.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
+  const paged = processed;
 
   function handleSort(key: string) {
     if (sortKey === key) {
@@ -1120,35 +1213,78 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
       toast.success(`Invested ${formatUGX(amt)} for ${investPartner.name}`, { description: `Ref: ${result.reference_id}` });
       setInvestPartner(null);
       setInvestAmount('');
-      fetchData();
+      refreshInBackground();
     } catch (e: any) { toast.error(e.message || 'Investment failed'); }
     finally { setInvesting(false); }
+  }
+
+  /* ─── Fetch proxy agent for wallet transfer dialog ─── */
+  async function fetchProxyAgentForPartner(partnerId: string) {
+    setLoadingProxyAgent(true);
+    setProxyAgentInfo(null);
+    try {
+      const { data: proxyAssignment } = await supabase
+        .from('proxy_agent_assignments')
+        .select('agent_id')
+        .eq('beneficiary_id', partnerId)
+        .eq('is_active', true)
+        .eq('approval_status', 'approved')
+        .limit(1)
+        .maybeSingle();
+
+      if (proxyAssignment?.agent_id) {
+        const [profileRes, walletRes] = await Promise.all([
+          supabase.from('profiles').select('full_name').eq('id', proxyAssignment.agent_id).single(),
+          supabase.from('wallets').select('balance').eq('user_id', proxyAssignment.agent_id).maybeSingle(),
+        ]);
+        setProxyAgentInfo({
+          agentId: proxyAssignment.agent_id,
+          agentName: profileRes.data?.full_name || 'Agent',
+          walletBalance: walletRes.data ? Number(walletRes.data.balance) : 0,
+        });
+      }
+    } catch { /* ignore */ }
+    finally { setLoadingProxyAgent(false); }
   }
 
   /* ─── Wallet → Portfolio Transfer ─── */
   async function handleWalletToPortfolio() {
     if (!walletToPortfolio || !detailPartner) return;
     const amt = Number(walletToPortfolioAmount);
+
+    const sourceBalance = walletTransferMethod === 'wallet'
+      ? detailPartner.walletBalance
+      : proxyAgentInfo?.walletBalance ?? 0;
+
     if (isNaN(amt) || amt < 1000) { toast.error('Minimum: UGX 1,000'); return; }
-    if (amt > detailPartner.walletBalance) { toast.error(`Only ${formatUGX(detailPartner.walletBalance)} available in wallet`); return; }
+    if (amt > sourceBalance) { toast.error(`Only ${formatUGX(sourceBalance)} available in ${walletTransferMethod === 'wallet' ? 'partner wallet' : 'proxy agent wallet'}`); return; }
     if (walletToPortfolioReason.trim().length < 10) { toast.error('Reason must be at least 10 characters'); return; }
+    if (walletTransferMethod === 'proxy_agent' && !proxyAgentInfo) { toast.error('No proxy agent assigned'); return; }
 
     setWalletToPortfolioSaving(true);
     try {
       const { data: result, error } = await supabase.functions.invoke('coo-wallet-to-portfolio', {
-        body: { portfolio_id: walletToPortfolio.id, amount: amt, reason: walletToPortfolioReason.trim() },
+        body: {
+          portfolio_id: walletToPortfolio.id,
+          amount: amt,
+          reason: walletToPortfolioReason.trim(),
+          payment_method: walletTransferMethod,
+          source_wallet_user_id: walletTransferMethod === 'proxy_agent' ? proxyAgentInfo?.agentId : detailPartner?.profile?.id,
+        },
       });
       if (error) throw new Error(typeof result === 'object' && result?.error ? result.error : error.message);
       if (result?.error) throw new Error(result.error);
 
-      toast.success(`${formatUGX(amt)} moved from wallet → ${walletToPortfolio.account_name || walletToPortfolio.portfolio_code}`, {
-        description: `New wallet balance: ${formatUGX(result.wallet_balance_after)}`,
+      const sourceLabel = walletTransferMethod === 'wallet' ? 'partner wallet' : `${proxyAgentInfo?.agentName}'s wallet`;
+      toast.success(`${formatUGX(amt)} top-up processed for ${walletToPortfolio.account_name || walletToPortfolio.portfolio_code}`, {
+        description: `Deducted from ${sourceLabel}. Applied at maturity.`,
       });
       setWalletToPortfolio(null);
       setWalletToPortfolioAmount('');
       setWalletToPortfolioReason('');
+      setProxyAgentInfo(null);
       if (detailPartner?.profile?.id) openPartnerDetail(detailPartner.profile.id);
-      fetchData();
+      refreshInBackground();
     } catch (e: any) { toast.error(e.message || 'Transfer failed'); }
     finally { setWalletToPortfolioSaving(false); }
   }
@@ -1182,7 +1318,7 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
       }
       toast.success(`Updated ${editName.trim()}`);
       setEditPartner(null);
-      fetchData();
+      refreshInBackground();
     } catch (e: any) { toast.error(e.message || 'Update failed'); }
     finally { setSaving(false); }
   }
@@ -1203,7 +1339,7 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
       if (error) throw error;
       toast.success(`${suspendPartner.name} is now ${shouldFreeze ? 'suspended' : 'active'}`);
       setSuspendPartner(null);
-      fetchData();
+      refreshInBackground();
     } catch (e: any) { toast.error(e.message || 'Failed'); }
     finally { setSuspending(false); }
   }
@@ -1247,7 +1383,7 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
       toast.success(`${deletePartnerTarget.name} has been permanently deleted as a partner`);
       setDeletePartnerTarget(null);
       setDeletePartnerReason('');
-      fetchData();
+      refreshInBackground();
     } catch (e: any) {
       toast.error(e.message || 'Failed to delete partner');
     } finally {
@@ -1366,6 +1502,7 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
     );
   }
 
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -1397,7 +1534,7 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
           <a href="/reinvestment-history" className="block">
             <SummaryCard icon={<RefreshCw className="h-4 w-4" />} label="Reinvestment History" value="View"
               sub="Compounding growth timeline" accent="primary" />
-          </a>
+           </a>
         </div>
       )}
 
@@ -1497,7 +1634,12 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+      <div className={cn("rounded-xl border border-border bg-card shadow-sm overflow-hidden relative", isSearching && "opacity-60 pointer-events-none")}>
+        {isSearching && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/30">
+            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          </div>
+        )}
         <div className="overflow-x-auto">
           <table className="w-full text-xs sm:text-sm min-w-[640px]">
             <thead>
@@ -1649,11 +1791,23 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
                                   {p.account_name && editingNameId !== p.id && (
                                     <p className="text-xs font-semibold text-foreground leading-tight truncate">{p.account_name}</p>
                                   )}
-                                  <div className="flex items-center gap-1.5 flex-wrap">
-                                    <p className={cn('text-sm font-bold truncate', p.account_name ? 'text-muted-foreground text-xs' : '')}>{p.portfolio_code}</p>
-                                    <span className={cn('px-1.5 py-0.5 rounded text-[9px] font-bold uppercase whitespace-nowrap shrink-0', statusColor)}>
-                                      {p.status}
-                                    </span>
+                                  <div className="flex items-center justify-between gap-1.5 flex-wrap">
+                                    <div className="flex items-center gap-1.5">
+                                      <p className={cn('text-sm font-bold truncate', p.account_name ? 'text-muted-foreground text-xs' : '')}>{p.portfolio_code}</p>
+                                      <span className={cn('px-1.5 py-0.5 rounded text-[9px] font-bold uppercase whitespace-nowrap shrink-0', statusColor)}>
+                                        {p.status}
+                                      </span>
+                                    </div>
+                                    {approvedTopUps[p.id]?.total > 0 && (
+                                       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20 whitespace-nowrap shrink-0">
+                                         ⏳ Pending Principal +{formatUGX(approvedTopUps[p.id].total)}
+                                       </span>
+                                    )}
+                                    {(pendingTopUps[p.id]?.total > 0 || awaitingVerification[p.id]?.total > 0) && (
+                                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20 whitespace-nowrap shrink-0">
+                                        ⏳ Awaiting Top-up {formatUGX((pendingTopUps[p.id]?.total || 0) + (awaitingVerification[p.id]?.total || 0))}
+                                      </span>
+                                    )}
                                   </div>
                                   {/* Inline name edit */}
                                   {editingNameId === p.id ? (
@@ -1691,10 +1845,24 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
                               {/* Investment amount - full width on mobile */}
                               <p className="text-lg font-black tabular-nums mb-1">{formatUGX(p.investment_amount)}</p>
                               {pendingTopUps[p.id] && (
-                                <div className="flex items-center gap-1.5 mb-2.5">
+                                <div className="flex items-center gap-1.5 mb-1">
                                   <Badge variant="outline" className="text-[10px] px-2 py-0.5 border-amber-500/40 text-amber-600 bg-amber-500/5">
                                     ⏳ {pendingTopUps[p.id].count} pending top-up{pendingTopUps[p.id].count > 1 ? 's' : ''}: {formatUGX(pendingTopUps[p.id].total)}
                                   </Badge>
+                                </div>
+                              )}
+                              {awaitingVerification[p.id] && (
+                                <div className="flex items-center gap-1.5 mb-2.5">
+                                  <Badge variant="outline" className="text-[10px] px-2 py-0.5 border-blue-500/40 text-blue-600 bg-blue-500/5">
+                                    🔍 {awaitingVerification[p.id].count} awaiting verification: {formatUGX(awaitingVerification[p.id].total)}
+                                  </Badge>
+                                </div>
+                              )}
+                              {approvedTopUps[p.id] && (
+                                <div className="flex items-center gap-1.5 mb-2.5">
+                                   <Badge variant="outline" className="text-[10px] px-2 py-0.5 border-amber-500/40 text-amber-600 bg-amber-500/5">
+                                     ⏳ {approvedTopUps[p.id].count} pending principal addition{approvedTopUps[p.id].count > 1 ? 's' : ''}: {formatUGX(approvedTopUps[p.id].total)} — merges at next ROI cycle
+                                   </Badge>
                                 </div>
                               )}
 
@@ -1872,6 +2040,8 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
                                       setWalletToPortfolio(p);
                                       setWalletToPortfolioAmount('');
                                       setWalletToPortfolioReason('');
+                                      setWalletTransferMethod('wallet');
+                                      if (detailPartner?.profile?.id) fetchProxyAgentForPartner(detailPartner.profile.id);
                                     }}
                                   >
                                     <ArrowRightLeft className="h-3.5 w-3.5" /> Wallet → Portfolio
@@ -1885,9 +2055,15 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
                                     onClick={() => handleApplyPendingTopUps(p.id)}
                                     disabled={applyingTopUps === p.id}
                                   >
-                                    {applyingTopUps === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
-                                    Apply {pendingTopUps[p.id].count} Pending
+                                    {applyingTopUps === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />}
+                                    Submit {pendingTopUps[p.id].count} for Verification
                                   </Button>
+                                )}
+                                {awaitingVerification[p.id] && (
+                                  <Badge variant="outline" className="text-[10px] px-2 py-1 border-blue-500/40 text-blue-600 bg-blue-500/5 gap-1">
+                                    <Clock className="h-3 w-3" />
+                                    Awaiting Financial Ops
+                                  </Badge>
                                 )}
                                 {!readOnly && (
                                   <Button
@@ -1914,22 +2090,16 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
                                     <Trash2 className="h-3.5 w-3.5" /> Delete
                                   </Button>
                                 )}
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-9 px-3 text-xs gap-1.5 min-h-[44px]"
-                                  onClick={() => downloadPortfolioPdf({
-                                    portfolioCode: p.portfolio_code, accountName: p.account_name,
-                                    investmentAmount: p.investment_amount, roiPercentage: p.roi_percentage,
-                                    roiMode: p.roi_mode, totalRoiEarned: p.total_roi_earned,
-                                    status: p.status, createdAt: p.created_at,
-                                    durationMonths: p.duration_months, payoutDay: p.payout_day,
-                                    nextRoiDate: p.next_roi_date, maturityDate: p.maturity_date,
-                                    ownerName: detailPartner?.profile.full_name,
-                                  })}
-                                >
-                                  <FileText className="h-3.5 w-3.5" /> PDF
-                                </Button>
+                                {!readOnly && approvedTopUps[p.id]?.total > 0 && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-9 px-3 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-500/10 gap-1.5 font-semibold min-h-[44px]"
+                                    onClick={() => { setMergeDialogPortfolioId(p.id); setMergeReason(''); }}
+                                  >
+                                    <ArrowRightLeft className="h-3.5 w-3.5" /> Apply Top-up
+                                  </Button>
+                                )}
                                 {!readOnly && p.status === 'active' && (
                                   <Button
                                     variant="ghost"
@@ -2217,7 +2387,7 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
       </Dialog>
 
       {/* Import Dialog */}
-      <PartnerImportDialog open={importOpen} onOpenChange={setImportOpen} onSuccess={() => { fetchData(); fetchPendingCount(); }} />
+      <PartnerImportDialog open={importOpen} onOpenChange={setImportOpen} onSuccess={() => { refreshInBackground(); fetchPendingCount(); }} />
 
       {/* Compound Preview Dialog */}
       <AlertDialog open={!!compoundPreview} onOpenChange={(open) => { if (!open) setCompoundPreview(null); }}>
@@ -2277,12 +2447,12 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
       </AlertDialog>
 
       <UpdateContributionDatesDialog open={updateDatesOpen} onOpenChange={setUpdateDatesOpen} onSuccess={() => {
-        fetchData();
+        refreshInBackground();
         if (detailPartner?.profile?.id) openPartnerDetail(detailPartner.profile.id);
       }} />
 
       {/* Top-level Create Portfolio Dialog */}
-      <CreateInvestmentAccountDialog open={createPortfolioOpen} onOpenChange={setCreatePortfolioOpen} onSuccess={() => { fetchData(); fetchPendingCount(); }} />
+      <CreateInvestmentAccountDialog open={createPortfolioOpen} onOpenChange={setCreatePortfolioOpen} onSuccess={() => { refreshInBackground(); fetchPendingCount(); }} />
 
       {/* ─── Bulk Activate Confirmation ─── */}
       <AlertDialog open={showActivateConfirm} onOpenChange={setShowActivateConfirm}>
@@ -2476,7 +2646,7 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
       />
 
       {/* Wallet → Portfolio Transfer Dialog */}
-      <Dialog open={!!walletToPortfolio} onOpenChange={(open) => { if (!open) { setWalletToPortfolio(null); setWalletToPortfolioAmount(''); setWalletToPortfolioReason(''); } }}>
+      <Dialog open={!!walletToPortfolio} onOpenChange={(open) => { if (!open) { setWalletToPortfolio(null); setWalletToPortfolioAmount(''); setWalletToPortfolioReason(''); setProxyAgentInfo(null); } }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -2484,7 +2654,7 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
               Wallet → Portfolio Transfer
             </DialogTitle>
             <DialogDescription>
-              Move funds from {detailPartner?.profile?.full_name}'s wallet directly into this portfolio.
+              Move funds into this portfolio from partner wallet or proxy agent wallet.
             </DialogDescription>
           </DialogHeader>
 
@@ -2498,11 +2668,57 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
                 </p>
               </div>
 
-              {/* Wallet balance */}
+              {/* Funding source selector */}
+              <div className="space-y-1.5">
+                <Label className="text-xs">Funding Source</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setWalletTransferMethod('wallet')}
+                    className={cn(
+                      "flex flex-col items-center gap-1 rounded-lg border-2 p-3 transition-all text-center",
+                      walletTransferMethod === 'wallet'
+                        ? "border-primary bg-primary/10 shadow-sm"
+                        : "border-border bg-background hover:border-muted-foreground/30 cursor-pointer"
+                    )}
+                  >
+                    <Wallet className={cn("h-4 w-4", walletTransferMethod === 'wallet' ? "text-primary" : "text-muted-foreground")} />
+                    <span className={cn("text-xs font-medium", walletTransferMethod === 'wallet' ? "text-primary" : "text-muted-foreground")}>Wallet</span>
+                    <span className="text-[10px] text-muted-foreground">Partner wallet</span>
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!proxyAgentInfo && !loadingProxyAgent}
+                    onClick={() => proxyAgentInfo && setWalletTransferMethod('proxy_agent')}
+                    className={cn(
+                      "flex flex-col items-center gap-1 rounded-lg border-2 p-3 transition-all text-center",
+                      !proxyAgentInfo && !loadingProxyAgent
+                        ? "border-border bg-muted/30 opacity-50 cursor-not-allowed"
+                        : walletTransferMethod === 'proxy_agent'
+                          ? "border-primary bg-primary/10 shadow-sm"
+                          : "border-border bg-background hover:border-muted-foreground/30 cursor-pointer"
+                    )}
+                  >
+                    <Users className={cn("h-4 w-4", walletTransferMethod === 'proxy_agent' ? "text-primary" : "text-muted-foreground")} />
+                    <span className={cn("text-xs font-medium", walletTransferMethod === 'proxy_agent' ? "text-primary" : "text-muted-foreground")}>Proxy Agent</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {loadingProxyAgent ? '...' : proxyAgentInfo ? proxyAgentInfo.agentName : 'No agent assigned'}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Balance display */}
               <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 border border-border/60">
                 <Wallet className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Wallet Balance:</span>
-                <span className="text-sm font-bold">{formatUGX(detailPartner.walletBalance)}</span>
+                <span className="text-sm text-muted-foreground">
+                  {walletTransferMethod === 'wallet' ? 'Partner Wallet:' : `${proxyAgentInfo?.agentName || 'Agent'} Wallet:`}
+                </span>
+                <span className="text-sm font-bold">
+                  {walletTransferMethod === 'wallet'
+                    ? formatUGX(detailPartner.walletBalance)
+                    : proxyAgentInfo ? formatUGX(proxyAgentInfo.walletBalance) : '—'}
+                </span>
               </div>
 
               {/* Amount */}
@@ -2511,25 +2727,39 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
                 <Input
                   type="number"
                   min={1000}
-                  max={detailPartner.walletBalance}
                   value={walletToPortfolioAmount}
                   onChange={e => setWalletToPortfolioAmount(e.target.value)}
                   placeholder="e.g. 5,000,000"
                   className="h-9"
                   autoFocus
                 />
-                <div className="flex gap-2 flex-wrap">
-                  {[50000, 100000, 500000, 1000000].filter(a => a <= detailPartner.walletBalance).map(a => (
-                    <Button key={a} variant="outline" size="sm" className="text-xs h-7"
-                      onClick={() => setWalletToPortfolioAmount(String(a))}>
-                      {formatUGX(a)}
-                    </Button>
-                  ))}
-                  <Button variant="outline" size="sm" className="text-xs h-7"
-                    onClick={() => setWalletToPortfolioAmount(String(detailPartner.walletBalance))}>
-                    Max
-                  </Button>
-                </div>
+                {(() => {
+                  const maxBal = walletTransferMethod === 'wallet' ? detailPartner.walletBalance : (proxyAgentInfo?.walletBalance ?? 0);
+                  return (
+                    <div className="flex gap-2 flex-wrap">
+                      {[50000, 100000, 500000, 1000000].filter(a => a <= maxBal).map(a => (
+                        <Button key={a} variant="outline" size="sm" className="text-xs h-7"
+                          onClick={() => setWalletToPortfolioAmount(String(a))}>
+                          {formatUGX(a)}
+                        </Button>
+                      ))}
+                      {maxBal >= 1000 && (
+                        <Button variant="outline" size="sm" className="text-xs h-7"
+                          onClick={() => setWalletToPortfolioAmount(String(maxBal))}>
+                          Max
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })()}
+                {(() => {
+                  const maxBal = walletTransferMethod === 'wallet' ? detailPartner.walletBalance : (proxyAgentInfo?.walletBalance ?? 0);
+                  const amt = Number(walletToPortfolioAmount) || 0;
+                  if (amt > maxBal && maxBal >= 0) {
+                    return <p className="text-[10px] text-destructive font-medium">Insufficient balance ({formatUGX(maxBal)} available)</p>;
+                  }
+                  return null;
+                })()}
               </div>
 
               {/* Reason */}
@@ -2551,13 +2781,15 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
                     <span className="font-bold text-foreground">{formatUGX(Number(walletToPortfolioAmount))}</span>
                   </div>
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Remaining wallet</span>
-                    <span className="font-medium text-foreground">{formatUGX(detailPartner.walletBalance - Number(walletToPortfolioAmount))}</span>
+                    <span>Source</span>
+                    <span className="font-medium text-foreground">
+                      {walletTransferMethod === 'wallet' ? 'Partner Wallet' : `${proxyAgentInfo?.agentName} (Proxy Agent)`}
+                    </span>
                   </div>
                   <div className="flex items-start gap-1.5 pt-1 border-t border-border/50">
-                    <Clock className="h-3 w-3 text-amber-500 mt-0.5 shrink-0" />
+                    <CheckCircle2 className="h-3 w-3 text-primary mt-0.5 shrink-0" />
                     <p className="text-[10px] text-muted-foreground">
-                      Funds will be deducted from wallet and added to portfolio capital at maturity.
+                      Instant deduction — funds will be applied to portfolio capital at maturity.
                     </p>
                   </div>
                 </div>
@@ -2569,16 +2801,58 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
             <Button variant="outline" onClick={() => setWalletToPortfolio(null)}>Cancel</Button>
             <Button
               onClick={handleWalletToPortfolio}
-              disabled={walletToPortfolioSaving || Number(walletToPortfolioAmount) < 1000 || walletToPortfolioReason.trim().length < 10}
+              disabled={walletToPortfolioSaving || Number(walletToPortfolioAmount) < 1000 || walletToPortfolioReason.trim().length < 10 || (walletTransferMethod === 'proxy_agent' && !proxyAgentInfo)}
             >
               {walletToPortfolioSaving && <Loader2 className="h-4 w-4 animate-spin mr-1.5" />}
-              Transfer from Wallet
+              Submit Top-Up
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
       {/* Nearing Payouts Dialog */}
-      <NearingPayoutsDialog open={nearingPayoutsOpen} onOpenChange={setNearingPayoutsOpen} portfolios={allPortfoliosForPayout} onActionComplete={fetchData} />
+      <NearingPayoutsDialog open={nearingPayoutsOpen} onOpenChange={setNearingPayoutsOpen} portfolios={allPortfoliosForPayout} onActionComplete={refreshInBackground} />
+
+      {/* Merge Pending Top-Ups Dialog */}
+      <Dialog open={!!mergeDialogPortfolioId} onOpenChange={(open) => { if (!open) { setMergeDialogPortfolioId(null); setMergeReason(''); } }}>
+        <DialogContent stable className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-sm">Apply Pending Principal</DialogTitle>
+            <DialogDescription className="text-xs">
+              Merge approved top-ups into the portfolio's active principal immediately instead of waiting for the next ROI cycle.
+            </DialogDescription>
+          </DialogHeader>
+          {mergeDialogPortfolioId && approvedTopUps[mergeDialogPortfolioId] && (
+            <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-xs">
+              <p className="font-semibold text-amber-700 dark:text-amber-400">
+                {approvedTopUps[mergeDialogPortfolioId].count} pending top-up{approvedTopUps[mergeDialogPortfolioId].count > 1 ? 's' : ''} totaling {formatUGX(approvedTopUps[mergeDialogPortfolioId].total)}
+              </p>
+            </div>
+          )}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">Reason for manual merge (min 10 chars)</Label>
+            <Textarea
+              value={mergeReason}
+              onChange={e => setMergeReason(e.target.value)}
+              placeholder="e.g. Partner requested early activation of top-up funds..."
+              className="text-xs min-h-[70px]"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => { setMergeDialogPortfolioId(null); setMergeReason(''); }}>
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              className="gap-1.5"
+              disabled={mergingTopUp || mergeReason.trim().length < 10}
+              onClick={handleMergePendingTopUps}
+            >
+              {mergingTopUp ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ArrowRightLeft className="h-3.5 w-3.5" />}
+              Apply Now
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -2706,6 +2980,7 @@ function NearingPayoutsDialog({ open, onOpenChange, portfolios, onActionComplete
   // Split payout state
   const [splitCashAmount, setSplitCashAmount] = useState(0);
   const [splitPayMode, setSplitPayMode] = useState<'wallet' | 'agent_wallet' | 'already_paid'>('wallet');
+  const [splitReinvestMode, setSplitReinvestMode] = useState<'reinvest' | 'keep_returns'>('reinvest');
 
   // Keep a local snapshot so items don't vanish when parent refetches
   const [localPortfolios, setLocalPortfolios] = useState<NearingPayoutPortfolio[]>(portfolios);
@@ -2743,6 +3018,7 @@ function NearingPayoutsDialog({ open, onOpenChange, portfolios, onActionComplete
     if (q) {
       list = list.filter(p =>
         p.name.toLowerCase().includes(q) ||
+        p.portfolioName.toLowerCase().includes(q) ||
         p.phone.toLowerCase().includes(q) ||
         p.email.toLowerCase().includes(q)
       );
@@ -2864,7 +3140,7 @@ function NearingPayoutsDialog({ open, onOpenChange, portfolios, onActionComplete
           ? `[Agent Wallet] ROI payout of ${formatUGX(roiAmount)} to ${managed.agentName}'s agent wallet on behalf of ${p.name}. Portfolio: ${p.portfolioId.slice(0, 8)}. Reason: ${reason}`
           : `[${modeLabel}] ROI payout of ${formatUGX(roiAmount)} to ${p.name}'s wallet. Portfolio: ${p.portfolioId.slice(0, 8)}. Reason: ${reason}`,
         linked_party: user.id,
-        status: 'pending',
+        status: 'pending_coo_approval',
         metadata: {
           partner_name: p.name,
           roi_percentage: p.roiPercentage,
@@ -2893,28 +3169,29 @@ function NearingPayoutsDialog({ open, onOpenChange, portfolios, onActionComplete
         user_id: p.investorId,
         title: isProxyAgent ? 'ROI Payout Initiated (Agent Wallet)' : mode === 'wallet' ? 'ROI Payout Initiated' : 'ROI Payment Recorded',
         message: isProxyAgent
-          ? `An ROI payout of ${formatUGX(roiAmount)} has been initiated for ${managed.agentName}'s agent wallet. Pending CFO approval. Ref: ${refId}`
+          ? `An ROI payout of ${formatUGX(roiAmount)} has been initiated for ${managed.agentName}'s agent wallet. Pending COO approval. Ref: ${refId}`
           : `An ROI payout of ${formatUGX(roiAmount)} has been ${mode === 'wallet' ? 'initiated for your wallet' : 'recorded as already paid'}. Pending approval. Ref: ${refId}`,
         type: 'payout_initiated',
         metadata: { portfolio_id: p.portfolioId, roi_amount: roiAmount, reference: refId, pay_mode: mode },
       });
 
-      const { data: cfoUsers } = await supabase.from('user_roles').select('user_id').eq('role', 'cfo');
-      if (cfoUsers && cfoUsers.length > 0) {
+      // Notify COO users (not CFO — COO must approve first)
+      const { data: cooUsers } = await supabase.from('user_roles').select('user_id').eq('role', 'manager');
+      if (cooUsers && cooUsers.length > 0) {
         await supabase.from('notifications').insert(
-          cfoUsers.map(c => ({
+          cooUsers.map(c => ({
             user_id: c.user_id,
-            title: 'ROI Payout Awaiting Approval',
+            title: 'ROI Payout Awaiting COO Approval',
             message: isProxyAgent
-              ? `[Agent Wallet] ${p.name} → ${managed.agentName}: ${formatUGX(roiAmount)} pending CFO approval. Ref: ${refId}`
-              : `[${modeLabel}] ${p.name} has an ROI payout of ${formatUGX(roiAmount)} pending approval. Ref: ${refId}`,
+              ? `[Agent Wallet] ${p.name} → ${managed.agentName}: ${formatUGX(roiAmount)} pending COO approval. Ref: ${refId}`
+              : `[${modeLabel}] ${p.name} has an ROI payout of ${formatUGX(roiAmount)} pending COO approval. Ref: ${refId}`,
             type: 'approval_required',
             metadata: { portfolio_id: p.portfolioId, partner_id: p.investorId, roi_amount: roiAmount, reference: refId, pay_mode: mode },
           }))
         );
       }
 
-      toast.success(`${modeLabel}: ${formatUGX(roiAmount)} submitted for CFO approval`, { description: `Ref: ${refId}` });
+      toast.success(`${modeLabel}: ${formatUGX(roiAmount)} submitted for COO approval`, { description: `Ref: ${refId}` });
       setCompleted(prev => ({ ...prev, [p.portfolioId]: 'pending' }));
       setPaymentStep('list');
       setSelectedPayout(null);
@@ -2962,6 +3239,7 @@ function NearingPayoutsDialog({ open, onOpenChange, portfolios, onActionComplete
     setSelectedPayout(p);
     setSplitCashAmount(Math.round(roiAmount / 2)); // Default 50/50
     setSplitPayMode('wallet');
+    setSplitReinvestMode('reinvest');
     setPaymentStep('split-config');
 
     // Check managed status
@@ -2993,7 +3271,7 @@ function NearingPayoutsDialog({ open, onOpenChange, portfolios, onActionComplete
   };
 
   // Handle Split Payout — cash portion to pending_wallet_operations, reinvest portion to portfolio
-  const handleSplitPayout = async (p: NearingPayoutPortfolio, cashAmount: number, reason: string, payMode: 'wallet' | 'agent_wallet' | 'already_paid') => {
+  const handleSplitPayout = async (p: NearingPayoutPortfolio, cashAmount: number, reason: string, payMode: 'wallet' | 'agent_wallet' | 'already_paid', reinvestMode: 'reinvest' | 'keep_returns' = 'reinvest') => {
     setProcessing(prev => ({ ...prev, [p.portfolioId]: 'split' }));
     try {
       const roiAmount = Math.round(p.investmentAmount * p.roiPercentage / 100);
@@ -3011,13 +3289,30 @@ function NearingPayoutsDialog({ open, onOpenChange, portfolios, onActionComplete
 
       // Date stays unchanged — only advances when CFO approves the payout
 
-      // ── Reinvest portion: add to principal ──
-      const newPrincipal = p.investmentAmount + reinvestAmount;
-      const { error: upErr } = await supabase
-        .from('investor_portfolios')
-        .update({ investment_amount: newPrincipal })
-        .eq('id', p.portfolioId);
-      if (upErr) throw upErr;
+      const isKeepReturns = reinvestMode === 'keep_returns';
+      const reinvestLabel = isKeepReturns ? 'kept as returns' : 'reinvested into principal';
+
+      // ── Reinvest portion: add to principal OR keep as earned returns ──
+      let newPrincipal = p.investmentAmount;
+      if (isKeepReturns) {
+        // Keep as returns — increment total_roi_earned, principal stays flat
+        const { data: currentP } = await supabase.from('investor_portfolios').select('total_roi_earned').eq('id', p.portfolioId).single();
+        const currentRoiEarned = Number(currentP?.total_roi_earned || 0);
+        const { error: upErr } = await supabase
+          .from('investor_portfolios')
+          .update({ total_roi_earned: currentRoiEarned + reinvestAmount })
+          .eq('id', p.portfolioId);
+        if (upErr) throw upErr;
+        newPrincipal = p.investmentAmount; // stays the same
+      } else {
+        // Reinvest — add to principal (current behavior)
+        newPrincipal = p.investmentAmount + reinvestAmount;
+        const { error: upErr } = await supabase
+          .from('investor_portfolios')
+          .update({ investment_amount: newPrincipal })
+          .eq('id', p.portfolioId);
+        if (upErr) throw upErr;
+      }
 
       // Reinvest ledger via RPC (double-entry: roi_expense + roi_reinvestment)
       const { error: ledgerErr } = await supabase.rpc('create_ledger_transaction', {
@@ -3028,7 +3323,7 @@ function NearingPayoutsDialog({ open, onOpenChange, portfolios, onActionComplete
             direction: 'cash_out',
             amount: reinvestAmount,
             category: 'roi_expense',
-            description: `[Split ROI] ${formatUGX(reinvestAmount)} reinvested into principal. New principal: ${formatUGX(newPrincipal)}. Cash portion: ${formatUGX(cashAmount)} via ${modeLabel}. Reason: ${reason}`,
+            description: `[Split ROI] ${formatUGX(reinvestAmount)} ${reinvestLabel}. ${isKeepReturns ? `Principal unchanged: ${formatUGX(p.investmentAmount)}` : `New principal: ${formatUGX(newPrincipal)}`}. Cash portion: ${formatUGX(cashAmount)} via ${modeLabel}. Reason: ${reason}`,
             reference_id: refId,
             source_table: 'investor_portfolios',
             source_id: p.portfolioId,
@@ -3040,8 +3335,8 @@ function NearingPayoutsDialog({ open, onOpenChange, portfolios, onActionComplete
             ledger_scope: 'platform',
             direction: 'cash_in',
             amount: reinvestAmount,
-            category: 'roi_reinvestment',
-            description: `[Split ROI] ${formatUGX(reinvestAmount)} reinvestment into portfolio principal. Ref: ${refId}`,
+            category: isKeepReturns ? 'roi_wallet_credit' : 'roi_reinvestment',
+            description: `[Split ROI] ${formatUGX(reinvestAmount)} ${reinvestLabel}. Ref: ${refId}`,
             reference_id: refId,
             source_table: 'investor_portfolios',
             source_id: p.portfolioId,
@@ -3096,18 +3391,21 @@ function NearingPayoutsDialog({ open, onOpenChange, portfolios, onActionComplete
         metadata: {
           roi_amount: roiAmount, cash_amount: cashAmount, reinvest_amount: reinvestAmount,
           new_principal: newPrincipal, reference: refId, partner_id: p.investorId, partner_name: p.name,
-          reason, pay_mode: payMode,
+          reason, pay_mode: payMode, reinvest_mode: reinvestMode,
           ...(isProxyAgent ? { target_agent_id: managed.agentId, target_agent_name: managed.agentName } : {}),
         },
       });
 
       // ── Notifications ──
+      const reinvestMsg = isKeepReturns
+        ? `${formatUGX(reinvestAmount)} kept as earned returns (principal unchanged: ${formatUGX(p.investmentAmount)})`
+        : `${formatUGX(reinvestAmount)} reinvested into your portfolio. New principal: ${formatUGX(newPrincipal)}`;
       await supabase.from('notifications').insert({
         user_id: p.investorId,
         title: '✂️ Split ROI Processed',
-        message: `Your ROI of ${formatUGX(roiAmount)} has been split: ${formatUGX(cashAmount)} ${payMode === 'already_paid' ? 'paid via cash' : 'sent to your wallet (pending approval)'}, and ${formatUGX(reinvestAmount)} reinvested into your portfolio. New principal: ${formatUGX(newPrincipal)}. Ref: ${refId}`,
+        message: `Your ROI of ${formatUGX(roiAmount)} has been split: ${formatUGX(cashAmount)} ${payMode === 'already_paid' ? 'paid via cash' : 'sent to your wallet (pending approval)'}, and ${reinvestMsg}. Ref: ${refId}`,
         type: 'payout_initiated',
-        metadata: { portfolio_id: p.portfolioId, roi_amount: roiAmount, cash_amount: cashAmount, reinvest_amount: reinvestAmount, reference: refId },
+        metadata: { portfolio_id: p.portfolioId, roi_amount: roiAmount, cash_amount: cashAmount, reinvest_amount: reinvestAmount, reinvest_mode: reinvestMode, reference: refId },
       });
 
       // Notify CFO
@@ -3117,15 +3415,15 @@ function NearingPayoutsDialog({ open, onOpenChange, portfolios, onActionComplete
           cfoUsers.map((c: any) => ({
             user_id: c.user_id,
             title: '✂️ Split ROI Payout Pending',
-            message: `${p.name}: ${formatUGX(cashAmount)} cash (${modeLabel}) + ${formatUGX(reinvestAmount)} reinvested. Awaiting approval. Ref: ${refId}`,
+            message: `${p.name}: ${formatUGX(cashAmount)} cash (${modeLabel}) + ${formatUGX(reinvestAmount)} ${isKeepReturns ? 'kept as returns' : 'reinvested'}. Awaiting approval. Ref: ${refId}`,
             type: 'approval_needed',
-            metadata: { portfolio_id: p.portfolioId, reference: refId, cash_amount: cashAmount, reinvest_amount: reinvestAmount },
+            metadata: { portfolio_id: p.portfolioId, reference: refId, cash_amount: cashAmount, reinvest_amount: reinvestAmount, reinvest_mode: reinvestMode },
           }))
         );
       }
 
       toast.success(`Split payout for ${p.name}`, {
-        description: `${formatUGX(cashAmount)} to ${modeLabel} · ${formatUGX(reinvestAmount)} reinvested · Ref: ${refId}`,
+        description: `${formatUGX(cashAmount)} to ${modeLabel} · ${formatUGX(reinvestAmount)} ${isKeepReturns ? 'kept as returns' : 'reinvested'} · Ref: ${refId}`,
       });
       setCompleted(prev => ({ ...prev, [p.portfolioId]: 'split' }));
       setPaymentStep('list');
@@ -3165,7 +3463,7 @@ function NearingPayoutsDialog({ open, onOpenChange, portfolios, onActionComplete
                     type="text"
                     value={search}
                     onChange={e => setSearch(e.target.value)}
-                    placeholder="Search by name, phone, or email…"
+                    placeholder="Search by name, portfolio, phone…"
                     className="h-9 w-full rounded-lg border border-border bg-background pl-8 pr-8 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors"
                   />
                   {search && (
@@ -3206,6 +3504,7 @@ function NearingPayoutsDialog({ open, onOpenChange, portfolios, onActionComplete
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <p className="font-semibold text-sm truncate">{p.name}</p>
+                          <p className="text-xs text-primary/80 font-medium truncate">{p.portfolioName}</p>
                           <p className="text-xs text-muted-foreground">{p.phone || p.email || 'No contact'}</p>
                         </div>
                         {isDone === 'pending' ? (
@@ -3478,8 +3777,12 @@ function NearingPayoutsDialog({ open, onOpenChange, portfolios, onActionComplete
                     <p className="text-xs font-bold tabular-nums text-primary">{formatUGX(selectedRoiAmount)}</p>
                   </div>
                   <div className="rounded-lg bg-background p-2">
-                    <p className="text-[10px] text-muted-foreground">New Principal</p>
-                    <p className="text-xs font-bold tabular-nums">{formatUGX(selectedPayout.investmentAmount + (selectedRoiAmount - splitCashAmount))}</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {splitReinvestMode === 'keep_returns' ? 'Principal (unchanged)' : 'New Principal'}
+                    </p>
+                    <p className="text-xs font-bold tabular-nums">
+                      {formatUGX(splitReinvestMode === 'keep_returns' ? selectedPayout.investmentAmount : selectedPayout.investmentAmount + (selectedRoiAmount - splitCashAmount))}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -3516,10 +3819,17 @@ function NearingPayoutsDialog({ open, onOpenChange, portfolios, onActionComplete
                     <p className="text-[10px] text-muted-foreground">Cash Payout</p>
                     <p className="text-sm font-bold tabular-nums text-primary">{formatUGX(splitCashAmount)}</p>
                   </div>
-                  <div className="rounded-xl border-2 border-green-500/30 bg-green-500/5 p-3 text-center">
+                  <div className={cn("rounded-xl border-2 p-3 text-center cursor-pointer transition-all", splitReinvestMode === 'reinvest' ? "border-green-500/50 bg-green-500/10" : "border-border/40 bg-muted/30 hover:border-green-500/30")} onClick={() => setSplitReinvestMode('reinvest')}>
                     <TrendingUp className="h-4 w-4 mx-auto mb-1 text-green-600" />
-                    <p className="text-[10px] text-muted-foreground">Reinvested</p>
+                    <p className="text-[10px] text-muted-foreground">Reinvest</p>
                     <p className="text-sm font-bold tabular-nums text-green-600">{formatUGX(selectedRoiAmount - splitCashAmount)}</p>
+                    <p className="text-[9px] text-muted-foreground mt-0.5">Adds to principal</p>
+                  </div>
+                  <div className={cn("rounded-xl border-2 p-3 text-center cursor-pointer transition-all", splitReinvestMode === 'keep_returns' ? "border-amber-500/50 bg-amber-500/10" : "border-border/40 bg-muted/30 hover:border-amber-500/30")} onClick={() => setSplitReinvestMode('keep_returns')}>
+                    <PiggyBank className="h-4 w-4 mx-auto mb-1 text-amber-600" />
+                    <p className="text-[10px] text-muted-foreground">Keep as Returns</p>
+                    <p className="text-sm font-bold tabular-nums text-amber-600">{formatUGX(selectedRoiAmount - splitCashAmount)}</p>
+                    <p className="text-[9px] text-muted-foreground mt-0.5">Principal stays flat</p>
                   </div>
                 </div>
               </div>
@@ -3559,7 +3869,7 @@ function NearingPayoutsDialog({ open, onOpenChange, portfolios, onActionComplete
               <Button
                 className="w-full gap-2"
                 disabled={!!selectedProcessing || splitCashAmount < 1 || splitCashAmount >= selectedRoiAmount}
-                onClick={() => handleSplitPayout(selectedPayout, splitCashAmount, selectedReason, splitPayMode)}
+                onClick={() => handleSplitPayout(selectedPayout, splitCashAmount, selectedReason, splitPayMode, splitReinvestMode)}
               >
                 {selectedProcessing === 'split' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Scissors className="h-4 w-4" />}
                 Confirm Split Payout

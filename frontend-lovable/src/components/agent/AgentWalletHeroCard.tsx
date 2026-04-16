@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Wallet, ChevronRight, Shield, Users, Banknote, CreditCard } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Wallet, ChevronRight, Shield, Users, Banknote, CreditCard, ArrowUpFromLine, Truck } from 'lucide-react';
 import { hapticTap } from '@/lib/haptics';
 import { useCurrency } from '@/hooks/useCurrency';
 import { FullScreenWalletSheet } from '@/components/wallet/FullScreenWalletSheet';
+import WithdrawFlow from '@/components/payments/WithdrawFlow';
 
 interface AgentWalletHeroCardProps {
   floatBalance: number;
@@ -19,7 +21,9 @@ export function AgentWalletHeroCard({
   totalEarnings,
   territory,
 }: AgentWalletHeroCardProps) {
+  const navigate = useNavigate();
   const [showWallet, setShowWallet] = useState(false);
+  const [showWithdraw, setShowWithdraw] = useState(false);
   const { formatAmount, formatAmountCompact } = useCurrency();
 
   return (
@@ -61,12 +65,33 @@ export function AgentWalletHeroCard({
                 {formatAmount(floatBalance + commissionBalance)}
               </p>
             </div>
-            <div className="flex items-center gap-2 mt-2">
-              <span className="font-bold text-primary-foreground text-3xl">
-                Withdrawable: {formatAmountCompact(commissionBalance)}
+            <div className="flex items-center gap-3 mt-2 text-xs">
+              <span className="text-emerald-300 font-semibold">
+                Commission: {formatAmountCompact(commissionBalance)}
+              </span>
+              <span className="text-blue-300 font-semibold">
+                Float: {formatAmountCompact(floatBalance)}
               </span>
             </div>
           </button>
+
+          {/* Quick Actions */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { hapticTap(); setShowWithdraw(true); }}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 active:scale-95 transition-all"
+            >
+              <ArrowUpFromLine className="h-3.5 w-3.5 text-emerald-400" />
+              <span className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider">Withdraw</span>
+            </button>
+            <button
+              onClick={() => { hapticTap(); navigate('/pay-landlord'); }}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 active:scale-95 transition-all"
+            >
+              <Truck className="h-3.5 w-3.5 text-blue-400" />
+              <span className="text-[10px] font-bold text-blue-300 uppercase tracking-wider">Pay Landlord</span>
+            </button>
+          </div>
 
           {/* Divider */}
           <div className="h-[1px] bg-white/10" />
@@ -125,6 +150,7 @@ export function AgentWalletHeroCard({
       </div>
 
       {showWallet && <FullScreenWalletSheet open={showWallet} onOpenChange={setShowWallet} />}
+      <WithdrawFlow open={showWithdraw} onOpenChange={setShowWithdraw} availableBalance={commissionBalance} />
     </>
   );
 }

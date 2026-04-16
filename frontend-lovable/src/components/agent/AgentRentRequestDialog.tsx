@@ -98,6 +98,7 @@ export default function AgentRentRequestDialog({ open, onOpenChange, onSuccess, 
   // Tenant info (for non-account holders)
   const [tenantName, setTenantName] = useState('');
   const [tenantPhone, setTenantPhone] = useState('');
+  const [tenantNationalId, setTenantNationalId] = useState('');
   
   // Rent details
   const [rentAmount, setRentAmount] = useState('');
@@ -120,6 +121,7 @@ export default function AgentRentRequestDialog({ open, onOpenChange, onSuccess, 
   const [gpsLoading, setGpsLoading] = useState(false);
   const [housePhotos, setHousePhotos] = useState<{ file: File; preview: string }[]>([]);
   const [guarantorConsent, setGuarantorConsent] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   // FIX #9: house category for outstanding flow
   const [outstandingHouseCategory, setOutstandingHouseCategory] = useState('');
@@ -199,6 +201,7 @@ export default function AgentRentRequestDialog({ open, onOpenChange, onSuccess, 
     setIncomeType(null);
     setTenantName('');
     setTenantPhone('');
+    setTenantNationalId('');
     setRentAmount('');
     setOutstandingBalance('');
     setDuration('30');
@@ -217,6 +220,7 @@ export default function AgentRentRequestDialog({ open, onOpenChange, onSuccess, 
     housePhotos.forEach(p => URL.revokeObjectURL(p.preview));
     setHousePhotos([]);
     setGuarantorConsent(false);
+    setValidationErrors([]);
     setSuccess(false);
     setActivationLink(null);
     setStep('type');
@@ -273,75 +277,81 @@ export default function AgentRentRequestDialog({ open, onOpenChange, onSuccess, 
   const fees = calculateFees();
 
   // ===== FIX #1: Phone validation helper =====
-  const validatePhones = (isOutstanding: boolean): boolean => {
+  const collectValidationErrors = (isOutstanding: boolean): string[] => {
+    const errors: string[] = [];
     const cleanTenantPhone = tenantPhone.replace(/\s/g, '');
     const cleanLandlordPhone = landlordPhone.replace(/\s/g, '');
 
-    if (!isValidUgPhone(cleanTenantPhone)) {
-      toast.error('Tenant phone must be a valid Ugandan number (e.g. 0783 123 456)');
-      return false;
+    if (!guarantorConsent) errors.push('Please accept guarantor responsibility');
+    if (!tenantName.trim()) errors.push('Tenant name is required');
+    if (!tenantPhone.trim()) errors.push('Tenant phone is required');
+    else if (!isValidUgPhone(cleanTenantPhone)) errors.push('Tenant phone must be a valid Ugandan number (e.g. 0783 123 456)');
+
+    const cleanNationalId = tenantNationalId.trim().toUpperCase();
+    if (!cleanNationalId || cleanNationalId.length < 10 || cleanNationalId.length > 14 || !/^[A-Z0-9]+$/.test(cleanNationalId)) {
+      errors.push('National ID is required (10-14 alphanumeric characters)');
     }
-    if (!isValidUgPhone(cleanLandlordPhone)) {
-      toast.error('Landlord phone must be a valid Ugandan number (e.g. 0700 123 456)');
-      return false;
-    }
-    if (!isOutstanding && lc1Phone.trim()) {
-      const cleanLc1 = lc1Phone.replace(/\s/g, '');
-      if (!isValidUgPhone(cleanLc1)) {
-        toast.error('LC1 phone must be a valid Ugandan number');
-        return false;
+
+    if (!landlordName.trim()) errors.push('Landlord name is required');
+    if (!landlordPhone.trim()) errors.push('Landlord phone is required');
+    else if (!isValidUgPhone(cleanLandlordPhone)) errors.push('Landlord phone must be a valid Ugandan number (e.g. 0700 123 456)');
+
+    if (isOutstanding && !lc1Village.trim()) errors.push('Village/Cell location is required');
+
+    if (!isOutstanding) {
+      if (!propertyAddress.trim()) errors.push('Property address is required');
+      if (!lc1Name.trim()) errors.push('LC1 name is required');
+      if (!lc1Phone.trim()) errors.push('LC1 phone is required');
+      else {
+        const cleanLc1 = lc1Phone.replace(/\s/g, '');
+        if (!isValidUgPhone(cleanLc1)) errors.push('LC1 phone must be a valid Ugandan number');
+      }
+      if (!lc1Village.trim()) errors.push('LC1 village is required');
+      if (!houseCategory) errors.push('House category is required');
+    } else {
+      // LC1 phone is optional for outstanding — warn but don't block
+      if (lc1Phone.trim()) {
+        const cleanLc1 = lc1Phone.replace(/\s/g, '');
+        if (!isValidUgPhone(cleanLc1)) {
+          // Don't block, just silently ignore partial LC1 phone for outstanding
+        }
       }
     }
-    return true;
+
+    return errors;
+  };
+
+  // Helper to check if a specific field has an error
+  const hasFieldError = (fieldName: string): boolean => {
+    return validationErrors.some(e => e.toLowerCase().includes(fieldName.toLowerCase()));
   };
 
   const handleSubmit = async () => {
     if (!user || !fees) return;
 
-    if (!guarantorConsent) {
-      toast.error('Please accept guarantor responsibility before submitting');
-      return;
-    }
-
-    if (!tenantName.trim() || !tenantPhone.trim()) {
-      toast.error('Please provide tenant name and phone');
-      return;
-    }
-
     const isOutstanding = incomeType === 'outstanding';
+    const errors = collectValidationErrors(isOutstanding);
 
-    if (!landlordName.trim() || !landlordPhone.trim()) {
-      toast.error('Please provide landlord name and phone');
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      toast.error(errors[0]);
       return;
     }
 
-    // FIX #1: Validate phone formats
-    if (!validatePhones(isOutstanding)) return;
-
-    // FIX #8: Village required for outstanding flow
-    if (isOutstanding && !lc1Village.trim()) {
-      toast.error('Please provide the Village/Cell location');
-      return;
-    }
-
-    if (!isOutstanding && !propertyAddress.trim()) {
-      toast.error('Please fill in property address');
-      return;
-    }
-
-    if (!isOutstanding && (!lc1Name.trim() || !lc1Phone.trim() || !lc1Village.trim())) {
-      toast.error('Please fill in all LC1 details');
-      return;
-    }
-
-    if (!isOutstanding && !houseCategory) {
-      toast.error('Please select a house category');
-      return;
-    }
-
+    setValidationErrors([]);
     setLoading(true);
 
     try {
+      // Verify session is still valid before submitting
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        const { error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError) {
+          toast.error('Session expired. Please log in again to submit.');
+          setLoading(false);
+          return;
+        }
+      }
       // ===== FIX #3: Upsert landlord — check existing by phone first =====
       const cleanLandlordPhone = landlordPhone.replace(/\s/g, '');
       let landlordId: string;
@@ -406,6 +416,7 @@ export default function AgentRentRequestDialog({ open, onOpenChange, onSuccess, 
         body: {
           full_name: tenantName.trim(),
           phone: cleanTenantPhone,
+          national_id: tenantNationalId.trim().toUpperCase(),
         },
       });
 
@@ -485,11 +496,16 @@ export default function AgentRentRequestDialog({ open, onOpenChange, onSuccess, 
 
       hapticSuccess();
       setSuccess(true);
-      toast.success('Rent request posted successfully!');
+      toast.success(incomeType === 'outstanding' ? 'Tenant registered with outstanding balance!' : 'Rent request posted successfully!');
       onSuccess?.();
     } catch (error: any) {
       console.error('Submission error:', error);
-      toast.error(error.message || 'Failed to submit request');
+      const msg = error.message || 'Failed to submit request';
+      if (msg.includes('row-level security') || msg.includes('RLS')) {
+        toast.error('Permission denied — your session may have expired. Please log out and log in again.');
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -537,10 +553,30 @@ export default function AgentRentRequestDialog({ open, onOpenChange, onSuccess, 
               >
                 <CheckCircle2 className="h-8 w-8 text-success" />
               </motion.div>
-              <h3 className="text-lg font-semibold">Request Posted!</h3>
+              <h3 className="text-lg font-semibold">
+                {incomeType === 'outstanding' ? 'Tenant Registered!' : 'Request Posted!'}
+              </h3>
               <p className="text-muted-foreground text-sm">
-                The rent request is now visible to supporters
+                {incomeType === 'outstanding'
+                  ? `Outstanding balance of ${formatUGX(amount)} has been recorded for ${tenantName}`
+                  : 'The rent request is now visible to supporters'}
               </p>
+              {incomeType === 'outstanding' && (
+                <div className="mx-auto mt-2 p-3 rounded-xl bg-warning/10 border border-warning/20 text-left space-y-1 max-w-xs">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Tenant</span>
+                    <span className="font-semibold">{tenantName}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Balance</span>
+                    <span className="font-bold text-warning">{formatUGX(amount)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Duration</span>
+                    <span className="font-semibold">{duration} days</span>
+                  </div>
+                </div>
+              )}
 
               {/* Activation Link Section */}
               {activationLink && (
@@ -779,6 +815,21 @@ export default function AgentRentRequestDialog({ open, onOpenChange, onSuccess, 
                       </div>
                     </div>
 
+                    <div className="space-y-1">
+                      <Label className="text-xs">National ID *</Label>
+                      <Input
+                        value={tenantNationalId}
+                        onChange={(e) => setTenantNationalId(e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase())}
+                        placeholder="e.g. CM12345678901"
+                        className="h-10 font-mono uppercase"
+                        maxLength={14}
+                        required
+                      />
+                      {tenantNationalId.length > 0 && (tenantNationalId.length < 10 || tenantNationalId.length > 14) && (
+                        <p className="text-[10px] text-destructive">Must be 10-14 characters</p>
+                      )}
+                    </div>
+
                     {/* FIX #7: Currency formatting on outstanding balance input */}
                     <div className="space-y-1">
                       <Label className="text-xs font-semibold">Outstanding Balance (UGX) *</Label>
@@ -837,12 +888,27 @@ export default function AgentRentRequestDialog({ open, onOpenChange, onSuccess, 
                   {/* FIX #2: Add GuarantorConsentCheckbox to outstanding flow */}
                   <GuarantorConsentCheckbox checked={guarantorConsent} onCheckedChange={setGuarantorConsent} />
 
+                  {/* Validation Error Summary */}
+                  {validationErrors.length > 0 && (
+                    <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/30 space-y-1">
+                      <p className="text-xs font-semibold text-destructive flex items-center gap-1.5">
+                        <AlertTriangle className="h-3.5 w-3.5" />
+                        Please fix the following:
+                      </p>
+                      <ul className="list-disc list-inside space-y-0.5">
+                        {validationErrors.map((err, i) => (
+                          <li key={i} className="text-[11px] text-destructive">{err}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
                   {/* Submit button for outstanding mode */}
                   <div className="flex gap-3 pt-2">
                     <Button 
                       type="button" 
                       variant="outline" 
-                      onClick={() => setStep('type')}
+                      onClick={() => { setStep('type'); setValidationErrors([]); }}
                       className="flex-1"
                     >
                       Back
@@ -850,7 +916,7 @@ export default function AgentRentRequestDialog({ open, onOpenChange, onSuccess, 
                     <Button 
                       onClick={handleSubmit} 
                       className="flex-1 text-white hover:opacity-90" style={{ backgroundColor: '#7C3BED' }}
-                      disabled={loading || amount < outstandingMinAmount || !guarantorConsent}
+                      disabled={loading || amount < outstandingMinAmount}
                     >
                       {loading ? (
                         <>
@@ -996,7 +1062,7 @@ export default function AgentRentRequestDialog({ open, onOpenChange, onSuccess, 
                       value={tenantPhone}
                       onChange={(e) => setTenantPhone(formatPhoneInput(e.target.value))}
                       placeholder="0783 123 456"
-                      className="h-10"
+                      className={`h-10 ${hasFieldError('tenant phone') ? 'border-destructive border-2' : ''}`}
                       maxLength={12}
                       required
                     />
@@ -1004,6 +1070,22 @@ export default function AgentRentRequestDialog({ open, onOpenChange, onSuccess, 
                       <p className="text-[10px] text-destructive">Invalid Ugandan phone number</p>
                     )}
                   </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="tenantNationalId" className="text-xs">National ID *</Label>
+                  <Input
+                    id="tenantNationalId"
+                    value={tenantNationalId}
+                    onChange={(e) => setTenantNationalId(e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase())}
+                    placeholder="e.g. CM12345678901"
+                    className="h-10 font-mono uppercase"
+                    maxLength={14}
+                    required
+                  />
+                  {tenantNationalId.length > 0 && (tenantNationalId.length < 10 || tenantNationalId.length > 14) && (
+                    <p className="text-[10px] text-destructive">Must be 10-14 characters</p>
+                  )}
                 </div>
               </div>
 
@@ -1054,7 +1136,7 @@ export default function AgentRentRequestDialog({ open, onOpenChange, onSuccess, 
                       value={landlordPhone}
                       onChange={(e) => setLandlordPhone(formatPhoneInput(e.target.value))}
                       placeholder="0700 123 456"
-                      className="h-10"
+                      className={`h-10 ${hasFieldError('landlord phone') ? 'border-destructive border-2' : ''}`}
                       maxLength={12}
                       required
                     />
@@ -1183,7 +1265,7 @@ export default function AgentRentRequestDialog({ open, onOpenChange, onSuccess, 
                       value={lc1Phone}
                       onChange={(e) => setLc1Phone(formatPhoneInput(e.target.value))}
                       placeholder="0700 123 456"
-                      className="h-10"
+                      className={`h-10 ${hasFieldError('lc1 phone') ? 'border-destructive border-2' : ''}`}
                       maxLength={12}
                       required
                     />
@@ -1203,11 +1285,26 @@ export default function AgentRentRequestDialog({ open, onOpenChange, onSuccess, 
 
               <GuarantorConsentCheckbox checked={guarantorConsent} onCheckedChange={setGuarantorConsent} />
 
+              {/* Validation Error Summary */}
+              {validationErrors.length > 0 && (
+                <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/30 space-y-1">
+                  <p className="text-xs font-semibold text-destructive flex items-center gap-1.5">
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                    Please fix the following:
+                  </p>
+                  <ul className="list-disc list-inside space-y-0.5">
+                    {validationErrors.map((err, i) => (
+                      <li key={i} className="text-[11px] text-destructive">{err}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               <div className="flex gap-3 pt-2">
                 <Button 
                   type="button" 
                   variant="outline" 
-                  onClick={() => setStep('type')}
+                  onClick={() => { setStep('type'); setValidationErrors([]); }}
                   className="flex-1"
                 >
                   Back
@@ -1215,7 +1312,7 @@ export default function AgentRentRequestDialog({ open, onOpenChange, onSuccess, 
                 <Button 
                   onClick={handleSubmit} 
                   className="flex-1"
-                  disabled={loading || !amount || amount < 50000 || !guarantorConsent}
+                  disabled={loading || !amount || amount < 50000}
                 >
                   {loading ? (
                     <>

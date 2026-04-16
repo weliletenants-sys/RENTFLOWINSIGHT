@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,9 +33,10 @@ interface PendingOp {
 const formatUGX = (n: number) => `UGX ${n.toLocaleString()}`;
 
 export function CFOROIRequests() {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [rejectionReasons, setRejectionReasons] = useState<Record<string, string>>({});
-  const [filter, setFilter] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
+  const [filter, setFilter] = useState<'coo_approved' | 'approved' | 'rejected' | 'all'>('coo_approved');
   const [search, setSearch] = useState('');
 
   const { data: operations = [], isLoading } = useQuery({
@@ -77,30 +79,60 @@ export function CFOROIRequests() {
 
   const approveMutation = useMutation({
     mutationFn: async (opId: string) => {
+      const op = operations.find(o => o.id === opId);
       const { data, error } = await supabase.functions.invoke('approve-wallet-operation', {
         body: { operation_id: opId, action: 'approve' },
       });
       if (error) throw error;
+
+      await supabase.from('audit_logs').insert({
+        user_id: user?.id,
+        action_type: 'cfo_roi_payout_approved',
+        table_name: 'pending_wallet_operations',
+        record_id: opId,
+        metadata: {
+          amount: op?.amount,
+          target_user_id: op?.target_wallet_user_id || op?.user_id,
+          description: op?.description,
+        },
+      });
+
       return data;
     },
     onSuccess: () => {
       toast.success('ROI payout approved — wallet credited');
       queryClient.invalidateQueries({ queryKey: ['cfo-roi-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['cfo-actions-log'] });
     },
     onError: (err: any) => toast.error('Approval failed', { description: err.message }),
   });
 
   const rejectMutation = useMutation({
     mutationFn: async ({ opId, reason }: { opId: string; reason: string }) => {
+      const op = operations.find(o => o.id === opId);
       const { data, error } = await supabase.functions.invoke('approve-wallet-operation', {
         body: { operation_id: opId, action: 'reject', rejection_reason: reason },
       });
       if (error) throw error;
+
+      await supabase.from('audit_logs').insert({
+        user_id: user?.id,
+        action_type: 'cfo_roi_payout_rejected',
+        table_name: 'pending_wallet_operations',
+        record_id: opId,
+        metadata: {
+          amount: op?.amount,
+          target_user_id: op?.target_wallet_user_id || op?.user_id,
+          reason,
+        },
+      });
+
       return data;
     },
     onSuccess: () => {
       toast.success('ROI payout rejected');
       queryClient.invalidateQueries({ queryKey: ['cfo-roi-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['cfo-actions-log'] });
     },
     onError: (err: any) => toast.error('Rejection failed', { description: err.message }),
   });
@@ -118,14 +150,14 @@ export function CFOROIRequests() {
     );
   });
 
-  const pendingCount = operations.filter(o => o.status === 'pending').length;
+  const pendingCount = operations.filter(o => o.status === 'coo_approved').length;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h1 className="text-xl font-bold flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-primary" />
-          ROI Payout Requests
+          ROI Payout — Expense
           {pendingCount > 0 && (
             <Badge variant="destructive" className="ml-2">{pendingCount} pending</Badge>
           )}
@@ -139,17 +171,17 @@ export function CFOROIRequests() {
       </div>
 
       <div className="flex gap-2 flex-wrap">
-        {(['pending', 'approved', 'rejected', 'all'] as const).map(f => (
+        {(['coo_approved', 'approved', 'rejected', 'all'] as const).map(f => (
           <Button
             key={f}
             variant={filter === f ? 'default' : 'outline'}
             size="sm"
             onClick={() => setFilter(f)}
           >
-            {f === 'pending' && <Clock className="h-3.5 w-3.5 mr-1" />}
+            {f === 'coo_approved' && <Clock className="h-3.5 w-3.5 mr-1" />}
             {f === 'approved' && <CheckCircle className="h-3.5 w-3.5 mr-1" />}
             {f === 'rejected' && <XCircle className="h-3.5 w-3.5 mr-1" />}
-            {f.charAt(0).toUpperCase() + f.slice(1)}
+            {f === 'coo_approved' ? 'Pending' : f.charAt(0).toUpperCase() + f.slice(1)}
           </Button>
         ))}
       </div>
@@ -197,7 +229,7 @@ export function CFOROIRequests() {
                     </Badge>
                   </div>
 
-                  {op.status === 'pending' && (
+                  {op.status === 'coo_approved' && (
                     <div className="space-y-3 pt-2 border-t">
                       <TreasuryImpactBanner payoutAmount={op.amount} />
                       <div className="flex items-end gap-2 flex-wrap">

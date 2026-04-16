@@ -22,6 +22,10 @@ import {
   FileText,
   Users,
   Sparkles,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  ArrowLeftRight,
+  Building2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatUGX } from '@/lib/rentCalculations';
@@ -29,6 +33,9 @@ import { AppRole } from '@/hooks/useAuth';
 import { ReactNode } from 'react';
 import DashboardHeader from '@/components/DashboardHeader';
 import { FullScreenWalletSheet } from '@/components/wallet/FullScreenWalletSheet';
+import DepositFlow from '@/components/payments/DepositFlow';
+import WithdrawFlow from '@/components/payments/WithdrawFlow';
+import { SendMoneyDialog } from '@/components/wallet/SendMoneyDialog';
 import { WalletDisclaimer } from '@/components/wallet/WalletDisclaimer';
 
 import { useProfile } from '@/hooks/useProfile';
@@ -92,6 +99,7 @@ import { useIsFinancialAgent } from '@/hooks/useIsFinancialAgent';
 import { FinancialAgentSection } from '@/components/agent/FinancialAgentSection';
 import { PromissoryNoteDialog } from '@/components/agent/PromissoryNoteDialog';
 import { AgentPromissoryNotesList } from '@/components/agent/AgentPromissoryNotesList';
+import { AgentAdvanceRequestForm } from '@/components/agent/AgentAdvanceRequestForm';
 
 // New Phase 1 components
 import { AgentDailyOpsCard } from '@/components/agent/AgentDailyOpsCard';
@@ -173,8 +181,14 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
   const [angelPoolInvestOpen, setAngelPoolInvestOpen] = useState(false);
   const [promissoryNoteOpen, setPromissoryNoteOpen] = useState(false);
   const [promissoryListOpen, setPromissoryListOpen] = useState(false);
+  const [advanceRequestOpen, setAdvanceRequestOpen] = useState(false);
+
+  const [showQuickDeposit, setShowQuickDeposit] = useState(false);
+  const [showQuickWithdraw, setShowQuickWithdraw] = useState(false);
+  const [showQuickTransfer, setShowQuickTransfer] = useState(false);
 
   const { isFinancialAgent } = useIsFinancialAgent();
+  const realWithdrawableBalance = Math.max(0, Math.min(wallet?.balance ?? 0, commissionBalance));
   // Check if this agent is a CFO-assigned cashout agent
   const { data: isCashoutAgent } = useQuery({
     queryKey: ['is-cashout-agent', user.id],
@@ -189,6 +203,25 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
       return data;
     },
   });
+
+  const handleShareLandlordSignup = async () => {
+    try {
+      const { toast } = await import('sonner');
+      toast.info('Generating landlord signup link...');
+      const { createShortLink } = await import('@/lib/createShortLink');
+      const landlordLink = await createShortLink(user.id, '/landlord-signup', { ref: user.id });
+      const shareText = `🏠 Guarantee your rent for 12 months with Welile! No more chasing tenants. Sign up here: ${landlordLink}`;
+      if (navigator.share) {
+        navigator.share({ title: 'Welile Landlord Signup', text: shareText, url: landlordLink }).catch(() => {});
+      } else {
+        await navigator.clipboard.writeText(landlordLink);
+        toast.success('Landlord signup link copied!');
+      }
+    } catch (err: any) {
+      const { toast } = await import('sonner');
+      toast.error(err.message || 'Failed to generate link');
+    }
+  };
 
   const handleApplyToSell = async () => {
     setApplyingToSell(true);
@@ -277,9 +310,38 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
          <UnifiedWalletHeroCard
            balance={floatBalance + commissionBalance}
            role="agent"
-           secondaryLabel="Withdrawable"
-           secondaryValue={formatUGX(commissionBalance)}
+           floatBalance={floatBalance}
+           commissionBalance={commissionBalance}
+           withdrawableBalance={realWithdrawableBalance}
            onOpenWallet={() => setShowWallet(true)}
+           quickActions={
+              <div className="flex items-center gap-2.5">
+                <button
+                  onClick={() => { hapticTap(); setShowQuickDeposit(true); }}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-white/20 hover:bg-white/10 active:scale-95 transition-all min-h-[44px]"
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                >
+                  <ArrowDownToLine className="h-4 w-4 text-white/80" />
+                  <span className="text-[11px] font-bold text-white/80 uppercase tracking-wider">Deposit</span>
+                </button>
+                <button
+                  onClick={() => { hapticTap(); setShowQuickWithdraw(true); }}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-white/20 hover:bg-white/10 active:scale-95 transition-all min-h-[44px]"
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                >
+                  <ArrowUpFromLine className="h-4 w-4 text-white/80" />
+                  <span className="text-[11px] font-bold text-white/80 uppercase tracking-wider">Withdraw</span>
+                </button>
+                <button
+                  onClick={() => { hapticTap(); setShowQuickTransfer(true); }}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-white/20 hover:bg-white/10 active:scale-95 transition-all min-h-[44px]"
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                >
+                  <ArrowLeftRight className="h-4 w-4 text-white/80" />
+                  <span className="text-[11px] font-bold text-white/80 uppercase tracking-wider">Transfer</span>
+                </button>
+              </div>
+           }
          />
 
         {/* Verification Checklist */}
@@ -296,36 +358,70 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
         {/* Today's Collections — who owes, at a glance */}
         <TodayCollectionsCard agentId={user.id} onViewTenants={() => setTenantsSheetOpen(true)} />
 
-        {/* 5 Key Action Buttons + Hub — immediately accessible */}
-        <div className="grid grid-cols-3 gap-2">
-          {[
-            { icon: Banknote, label: 'Pay Rent', onClick: () => setTopUpTenantOpen(true), color: 'text-primary', bg: 'bg-primary/10 border-primary/30 hover:bg-primary/15' },
-            { icon: FileText, label: 'Add Tenant', onClick: () => setRentRequestOpen(true), color: 'text-[#7C3BED]', bg: 'bg-[#7C3BED]/10 border-[#7C3BED]/30 hover:bg-[#7C3BED]/15 ring-1 ring-[#7C3BED]/30' },
-            { icon: Users, label: 'Tenants', onClick: () => setTenantsSheetOpen(true), color: 'text-primary', bg: 'bg-primary/10 border-primary/30 hover:bg-primary/15' },
-            { icon: Home, label: 'List House', onClick: () => setListHouseOpen(true), color: 'text-[#7C3BED]', bg: 'bg-[#7C3BED]/10 border-[#7C3BED]/30 hover:bg-[#7C3BED]/15' },
-            { icon: TrendingUp, label: 'Credit', onClick: () => setCreditOpen(prev => !prev), color: 'text-[#7C3BED]', bg: 'bg-[#7C3BED]/10 border-[#7C3BED]/30 hover:bg-[#7C3BED]/15' },
-            { icon: Menu, label: 'Agent Hub', onClick: handleOpenMenu, color: 'text-foreground/70', bg: 'bg-card border-border/40 hover:bg-muted/40' },
-          ].map((action, i) => (
-            <button
-              key={action.label}
-              onClick={() => { hapticTap(); action.onClick(); }}
-              className={cn(
-                "flex flex-col items-center justify-center gap-1.5 py-4 rounded-xl border touch-manipulation active:opacity-80",
-                action.bg
-              )}
-            >
-              <action.icon className={cn("h-5 w-5", action.color)} />
-              <span className={cn("text-[11px] font-semibold", action.color)}>{action.label}</span>
-            </button>
-          ))}
+        {/* Quick Actions — large icons, big touch targets, icon-first for non-readers */}
+        <div className="space-y-3">
+          {/* Row 1: Core daily actions */}
+          <div>
+            <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-1 mb-2 flex items-center gap-1">
+              ⚡ Daily Actions
+            </p>
+            <div className="grid grid-cols-4 gap-2.5">
+              {[
+                { icon: Banknote, label: 'Pay Rent', emoji: '💰', onClick: () => setTopUpTenantOpen(true), bg: 'bg-primary/12', iconBg: 'bg-primary', ring: 'ring-primary/20' },
+                { icon: FileText, label: 'New Tenant', emoji: '📝', onClick: () => setRentRequestOpen(true), bg: 'bg-accent/60', iconBg: 'bg-[hsl(var(--chart-3))]', ring: 'ring-[hsl(var(--chart-3))]/20' },
+                { icon: Users, label: 'My Tenants', emoji: '👥', onClick: () => setTenantsSheetOpen(true), bg: 'bg-secondary/80', iconBg: 'bg-[hsl(var(--chart-1))]', ring: 'ring-[hsl(var(--chart-1))]/20' },
+                { icon: Home, label: 'List House', emoji: '🏠', onClick: () => setListHouseOpen(true), bg: 'bg-accent/60', iconBg: 'bg-[hsl(var(--chart-2))]', ring: 'ring-[hsl(var(--chart-2))]/20' },
+              ].map((action) => (
+                <button
+                  key={action.label}
+                  onClick={() => { hapticTap(); action.onClick(); }}
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl ring-1 touch-manipulation active:scale-[0.93] transition-all min-h-[80px]",
+                    action.bg, action.ring
+                  )}
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                >
+                  <div className={cn("p-2 rounded-xl text-white shadow-sm", action.iconBg)}>
+                    <action.icon className="h-5 w-5" strokeWidth={2.2} />
+                  </div>
+                  <span className="text-[11px] font-bold text-foreground leading-tight">{action.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Row 2: Share & grow */}
+          <div>
+            <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-1 mb-2 flex items-center gap-1">
+              📤 Share & Grow
+            </p>
+            <div className="grid grid-cols-4 gap-2.5">
+              {[
+                { icon: Building2, label: 'Landlord', emoji: '🏘', onClick: handleShareLandlordSignup, bg: 'bg-accent/60', iconBg: 'bg-[hsl(var(--chart-4))]', ring: 'ring-[hsl(var(--chart-4))]/20' },
+                { icon: Sparkles, label: 'Partners', emoji: '🤝', onClick: () => navigate('/agent/partners'), bg: 'bg-accent/60', iconBg: 'bg-[hsl(var(--chart-3))]', ring: 'ring-[hsl(var(--chart-3))]/20' },
+                { icon: UserPlus, label: 'Invite', emoji: '🎁', onClick: () => navigate('/referrals'), bg: 'bg-accent/60', iconBg: 'bg-[hsl(var(--chart-2))]', ring: 'ring-[hsl(var(--chart-2))]/20' },
+                { icon: Menu, label: 'All Menu', emoji: '☰', onClick: handleOpenMenu, bg: 'bg-card', iconBg: 'bg-muted-foreground/80', ring: 'ring-border/40' },
+              ].map((action) => (
+                <button
+                  key={action.label}
+                  onClick={() => { hapticTap(); action.onClick(); }}
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl ring-1 touch-manipulation active:scale-[0.93] transition-all min-h-[80px]",
+                    action.bg, action.ring
+                  )}
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                >
+                  <div className={cn("p-2 rounded-xl text-white shadow-sm", action.iconBg)}>
+                    <action.icon className="h-5 w-5" strokeWidth={2.2} />
+                  </div>
+                  <span className="text-[11px] font-bold text-foreground leading-tight">{action.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* Credit Access — toggles on Credit button */}
-        {creditOpen && (
-          <div className="overflow-hidden">
-            <CreditAccessCard userId={user.id} compact />
-          </div>
-        )}
+        {/* Credit Access moved to Agent Hub → Earnings tab */}
 
         {/* Action Insights: Forecast, Streak, Priority Queue (Daily Rent already shown above) */}
         <AgentActionInsights agentId={user.id} hideDailyRent />
@@ -334,18 +430,19 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
         {isCashoutAgent && (
           <button
             onClick={() => { hapticTap(); setCashPayoutsOpen(true); }}
-            className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-orange-500/40 bg-orange-500/10 touch-manipulation active:opacity-80"
+            className="w-full flex items-center gap-3 p-4 rounded-2xl border-2 border-warning/40 bg-warning/10 touch-manipulation active:scale-[0.97] transition-all min-h-[64px]"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
           >
-            <div className="p-2.5 rounded-lg bg-orange-500/20">
-              <Banknote className="h-5 w-5 text-orange-600" />
+            <div className="p-3 rounded-xl bg-warning/20">
+              <Banknote className="h-6 w-6 text-warning" />
             </div>
             <div className="flex-1 text-left">
-              <p className="font-bold text-sm text-orange-700 dark:text-orange-400">Cash Payouts</p>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="font-bold text-sm text-warning">Cash Payouts</p>
+              <p className="text-[11px] text-muted-foreground">
                 {isCashoutAgent.handles_cash && isCashoutAgent.handles_bank ? 'Cash & Bank' : isCashoutAgent.handles_cash ? 'Cash Only' : 'Bank Only'} · {isCashoutAgent.label || 'Cashout Agent'}
               </p>
             </div>
-            <span className="text-lg text-orange-500">›</span>
+            <span className="text-xl text-warning">›</span>
           </button>
         )}
 
@@ -363,6 +460,9 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
       </div>
 
       <FullScreenWalletSheet open={showWallet} onOpenChange={setShowWallet} />
+      <DepositFlow open={showQuickDeposit} onOpenChange={setShowQuickDeposit} />
+      <WithdrawFlow open={showQuickWithdraw} onOpenChange={setShowQuickWithdraw} availableBalance={realWithdrawableBalance} />
+      <SendMoneyDialog open={showQuickTransfer} onOpenChange={setShowQuickTransfer} />
       
       <AgentMenuDrawer
         open={menuOpen}
@@ -391,28 +491,42 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
         onOpenRequisition={() => { setMenuOpen(false); setRequisitionOpen(true); }}
         onAngelPoolInvest={() => { setMenuOpen(false); setAngelPoolInvestOpen(true); }}
         isFinancialAgent={isFinancialAgent}
-        onInviteFunder={() => {
+        onInviteFunder={async () => {
           setMenuOpen(false);
-          const funderLink = `${getPublicOrigin()}/auth?ref=${user.id}&role=funder`;
-          const shareText = `Join Welile as a funder and start earning! Sign up here: ${funderLink}`;
-          if (navigator.share) {
-            navigator.share({ title: 'Become a Welile Funder', text: shareText, url: funderLink }).catch(() => {});
-          } else {
-            navigator.clipboard.writeText(funderLink).then(() => {
-              import('sonner').then(({ toast }) => toast.success('Funder signup link copied!'));
-            });
+          try {
+            const { toast } = await import('sonner');
+            toast.info('Generating short link...');
+            const { createShortLink } = await import('@/lib/createShortLink');
+            const funderLink = await createShortLink(user.id, '/auth', { ref: user.id, role: 'funder' });
+            const shareText = `Join Welile as a funder and start earning! Sign up here: ${funderLink}`;
+            if (navigator.share) {
+              navigator.share({ title: 'Become a Welile Funder', text: shareText, url: funderLink }).catch(() => {});
+            } else {
+              await navigator.clipboard.writeText(funderLink);
+              toast.success('Funder signup link copied!');
+            }
+          } catch (err: any) {
+            const { toast } = await import('sonner');
+            toast.error(err.message || 'Failed to generate link');
           }
         }}
-        onInviteAngelInvestor={() => {
+        onInviteAngelInvestor={async () => {
           setMenuOpen(false);
-          const investorLink = `${getPublicOrigin()}/auth?ref=${user.id}&role=supporter`;
-          const shareText = `🦄 Join the Welile Angel Pool — invest in Africa's rent-tech revolution! Own equity in a high-growth platform. Sign up here: ${investorLink}`;
-          if (navigator.share) {
-            navigator.share({ title: 'Invest in Welile Angel Pool', text: shareText, url: investorLink }).catch(() => {});
-          } else {
-            navigator.clipboard.writeText(investorLink).then(() => {
-              import('sonner').then(({ toast }) => toast.success('Angel investor signup link copied!'));
-            });
+          try {
+            const { toast } = await import('sonner');
+            toast.info('Generating short link...');
+            const { createShortLink } = await import('@/lib/createShortLink');
+            const investorLink = await createShortLink(user.id, '/auth', { ref: user.id, role: 'supporter' });
+            const shareText = `🦄 Join the Welile Angel Pool — invest in Africa's rent-tech revolution! Own equity in a high-growth platform. Sign up here: ${investorLink}`;
+            if (navigator.share) {
+              navigator.share({ title: 'Invest in Welile Angel Pool', text: shareText, url: investorLink }).catch(() => {});
+            } else {
+              await navigator.clipboard.writeText(investorLink);
+              toast.success('Angel investor signup link copied!');
+            }
+          } catch (err: any) {
+            const { toast } = await import('sonner');
+            toast.error(err.message || 'Failed to generate link');
           }
         }}
         onShareTenantForm={async () => {
@@ -423,7 +537,8 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
             const { supabase } = await import('@/integrations/supabase/client');
             const { data, error } = await supabase.functions.invoke('generate-tenant-form-token', {});
             if (error || data?.error) throw new Error(data?.error || error?.message || 'Failed to generate link');
-            const tenantFormLink = `${getPublicOrigin()}/register-tenant?agent=${user.id}&token=${data.token}`;
+            const { createShortLink } = await import('@/lib/createShortLink');
+            const tenantFormLink = await createShortLink(user.id, '/register-tenant', { agent: user.id, token: data.token });
             const shareText = `Register as a Welile tenant using this form: ${tenantFormLink}`;
             if (navigator.share) {
               navigator.share({ title: 'Tenant Registration', text: shareText, url: tenantFormLink }).catch(() => {});
@@ -444,7 +559,8 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
             const { supabase } = await import('@/integrations/supabase/client');
             const { data, error } = await supabase.functions.invoke('generate-tenant-form-token', {});
             if (error || data?.error) throw new Error(data?.error || error?.message || 'Failed to generate link');
-            const partnerFormLink = `${getPublicOrigin()}/register-partner?agent=${user.id}&token=${data.token}`;
+            const { createShortLink } = await import('@/lib/createShortLink');
+            const partnerFormLink = await createShortLink(user.id, '/register-partner', { agent: user.id, token: data.token });
             const shareText = `🤝 Invest with Welile and earn 15% monthly ROI! Register here: ${partnerFormLink}`;
             if (navigator.share) {
               navigator.share({ title: 'Partner Registration', text: shareText, url: partnerFormLink }).catch(() => {});
@@ -457,6 +573,10 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
             toast.error(err.message || 'Failed to generate link');
           }
         }}
+        onShareLandlordSignup={() => {
+          setMenuOpen(false);
+          handleShareLandlordSignup();
+        }}
         onCreatePromissoryNote={() => {
           setMenuOpen(false);
           setPromissoryNoteOpen(true);
@@ -464,6 +584,10 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
         onViewPromissoryNotes={() => {
           setMenuOpen(false);
           setPromissoryListOpen(true);
+        }}
+        onRequestAdvance={() => {
+          setMenuOpen(false);
+          setAdvanceRequestOpen(true);
         }}
       />
 
@@ -534,6 +658,7 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
 
       <PromissoryNoteDialog open={promissoryNoteOpen} onOpenChange={setPromissoryNoteOpen} />
       <AgentPromissoryNotesList open={promissoryListOpen} onOpenChange={setPromissoryListOpen} />
+      <AgentAdvanceRequestForm open={advanceRequestOpen} onOpenChange={setAdvanceRequestOpen} />
 
     </div>
   );

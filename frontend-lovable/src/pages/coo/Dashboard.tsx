@@ -1,7 +1,10 @@
 import { useState } from 'react';
+import { AdvanceRequestsQueue } from '@/components/ops/AdvanceRequestsQueue';
 import ExecutiveDashboardLayout from '@/components/layout/ExecutiveDashboardLayout';
 import { COOWithdrawalApprovals } from '@/components/coo/COOWithdrawalApprovals';
 import { COOPartnerWithdrawalApprovals } from '@/components/coo/COOPartnerWithdrawalApprovals';
+import { COOROIApprovals } from '@/components/coo/COOROIApprovals';
+import { CancelledProxyWithdrawals } from '@/components/coo/CancelledProxyWithdrawals';
 import FinancialMetricsCards from '@/components/coo/FinancialMetricsCards';
 import FinancialTransactionsTable from '@/components/coo/FinancialTransactionsTable';
 import AgentCollectionsOverview from '@/components/coo/AgentCollectionsOverview';
@@ -10,6 +13,7 @@ import FinancialReportsPanel from '@/components/coo/FinancialReportsPanel';
 import FinancialAlertsPanel from '@/components/coo/FinancialAlertsPanel';
 import COOPartnersPage from '@/components/coo/COOPartnersPage';
 import { StaffPerformancePanel } from '@/components/executive/StaffPerformancePanel';
+import HRInternshipApplications from '@/components/hr/HRInternshipApplications';
 import { RentPipelineQueue } from '@/components/executive/RentPipelineQueue';
 import { FinancialOpsCommandCenter } from '@/components/financial-ops/FinancialOpsCommandCenter';
 import { ShareSupporterRecruit } from '@/components/shared/ShareSupporterRecruit';
@@ -48,6 +52,7 @@ const quickNavItems: QuickNavItem[] = [
   { id: 'partner-topups', label: 'Partner Top-ups', icon: TrendingUp, color: 'bg-green-500/10 text-green-600 border-green-500/20', description: 'Pending top-ups' },
   { id: 'partner-finance', label: 'Partner Finance', icon: Receipt, color: 'bg-violet-500/10 text-violet-600 border-violet-500/20', description: 'All activity' },
   { id: 'staff-performance', label: 'Staff', icon: UserCheck, color: 'bg-pink-500/10 text-pink-600 border-pink-500/20', description: 'Team metrics' },
+  { id: 'advance-requests', label: 'Agent Advances', icon: Banknote, color: 'bg-purple-500/10 text-purple-600 border-purple-500/20', description: 'Approve advances' },
 ];
 
 export default function COODashboardPage() {
@@ -165,6 +170,16 @@ export default function COODashboardPage() {
             <COOPartnerWithdrawalApprovals />
           </div>
         );
+      case 'roi-approvals':
+        return (
+          <div className="space-y-3">
+            {isMobile && renderBackButton('Overview')}
+            {renderSectionHeader('ROI Return Approvals', TrendingUp)}
+            <p className="text-sm text-muted-foreground -mt-2">Approve partner ROI payouts before they go to CFO for disbursement.</p>
+            <COOROIApprovals />
+            <CancelledProxyWithdrawals />
+          </div>
+        );
       case 'partners':
         return (
           <div className="space-y-3">
@@ -197,6 +212,22 @@ export default function COODashboardPage() {
             {isMobile && renderBackButton('Overview')}
             {renderSectionHeader('Staff Performance', UserCheck)}
             <StaffPerformancePanel />
+          </div>
+        );
+      case 'internships':
+        return (
+          <div className="space-y-3">
+            {isMobile && renderBackButton('Overview')}
+            <HRInternshipApplications />
+          </div>
+        );
+      case 'advance-requests':
+        return (
+          <div className="space-y-3">
+            {isMobile && renderBackButton('Overview')}
+            {renderSectionHeader('Agent Advance Approvals', Banknote)}
+            <p className="text-sm text-muted-foreground -mt-2">Final operational approval before CFO payment.</p>
+            <AdvanceRequestsQueue stage="coo" />
           </div>
         );
       default:

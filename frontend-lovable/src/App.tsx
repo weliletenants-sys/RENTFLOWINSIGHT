@@ -50,6 +50,7 @@ const UpdatePassword = lazy(() => import("./pages/UpdatePassword"));
 const OrderHistory = lazy(() => import("./pages/OrderHistory"));
 const Wishlist = lazy(() => import("./pages/Wishlist"));
 const AgentAnalytics = lazy(() => import("./pages/AgentAnalytics"));
+const AgentPartners = lazy(() => import("./pages/AgentPartners"));
 const FlashSales = lazy(() => import("./pages/FlashSales"));
 const Marketplace = lazy(() => import("./pages/Marketplace"));
 const Categories = lazy(() => import("./pages/Categories"));
@@ -85,6 +86,7 @@ const WelileHomesDashboard = lazy(() => import('./pages/WelileHomesDashboard'));
 const LandlordWelileHomesPage = lazy(() => import('./pages/LandlordWelileHomesPage'));
 const TryCalculator = lazy(() => import('./pages/TryCalculator'));
 const PublicRentCalculator = lazy(() => import('./pages/PublicRentCalculator'));
+const LandlordSignup = lazy(() => import('./pages/LandlordSignup'));
 
 const RegisterTenantPublic = lazy(() => import('./pages/RegisterTenantPublic'));
 const RegisterPartnerPublic = lazy(() => import('./pages/RegisterPartnerPublic'));
@@ -102,6 +104,7 @@ const CEODashboardPage = lazy(() => import('./pages/ceo/Dashboard'));
 const CMODashboardPage = lazy(() => import('./pages/cmo/Dashboard'));
 const CRMDashboardPage = lazy(() => import('./pages/crm/Dashboard'));
 const CFODashboardPage = lazy(() => import('./pages/cfo/Dashboard'));
+const InvestorReportPage = lazy(() => import('./pages/cfo/InvestorReportPage'));
 const COODashboardPage = lazy(() => import('./pages/coo/Dashboard'));
 const HRDashboardPage = lazy(() => import('./pages/hr/Dashboard'));
 const HREmployeeProfilePage = lazy(() => import('./pages/hr/EmployeeProfile'));
@@ -115,6 +118,7 @@ const OperationsDashboardPage = lazy(() => import('./pages/operations/Dashboard'
 const AgentAdvances = lazy(() => import('./pages/AgentAdvances'));
 const AgentAdvanceDetail = lazy(() => import('./pages/AgentAdvanceDetail'));
 const AgentCashPayoutsPage = lazy(() => import('./pages/agent/CashPayouts'));
+const RentDisbursementProcessPage = lazy(() => import('./pages/RentDisbursementProcess'));
 const ActiveUsersDetail = lazy(() => import('./pages/coo/ActiveUsersDetail'));
 const EarningAgentsDetail = lazy(() => import('./pages/coo/EarningAgentsDetail'));
 const TenantsBalancesDetail = lazy(() => import('./pages/coo/TenantsBalancesDetail'));
@@ -136,6 +140,7 @@ const AgentAgreement = lazy(() => import('./pages/AgentAgreement'));
 const AngelPool = lazy(() => import('./pages/AngelPool'));
 const AngelPoolAgreement = lazy(() => import('./pages/AngelPoolAgreement'));
 const AgentCommissionBenefits = lazy(() => import('./pages/AgentCommissionBenefits'));
+const Internship = lazy(() => import('./pages/Internship'));
 
 // Detect iOS standalone mode for cache settings
 const isIOSStandalone = (() => {
@@ -243,7 +248,8 @@ function AppRoutes() {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/welcome" element={<Landing />} />
-          <Route path="/auth" element={<Auth />} />
+           <Route path="/internship" element={<Internship />} />
+           <Route path="/auth" element={<Auth />} />
           <Route path="/r/:code" element={<ResolveShortLink />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/select-role" element={<SelectRole />} />
@@ -276,6 +282,7 @@ function AppRoutes() {
           {/* Chat feature removed */}
           <Route path="/agent-registrations" element={<AgentRegistrations />} />
           <Route path="/sub-agents" element={<SubAgentAnalytics />} />
+          <Route path="/agent/partners" element={<AgentPartners />} />
           <Route path="/join" element={<Join />} />
           <Route path="/calculator" element={<Calculator />} />
           <Route path="/users" element={<RoleGuard allowedRoles={['super_admin', 'manager', 'cto']}><AdminUsersPage /></RoleGuard>} />
@@ -296,6 +303,7 @@ function AppRoutes() {
           <Route path="/house/:id" element={<HouseDetail />} />
           
           <Route path="/shop" element={<ShopEntry />} />
+          <Route path="/landlord-signup" element={<LandlordSignup />} />
           <Route path="/landlord-agreement" element={<LandlordAgreement />} />
           <Route path="/agent-agreement" element={<AgentAgreement />} />
           <Route path="/angel-pool-agreement" element={<AngelPoolAgreement />} />
@@ -306,6 +314,7 @@ function AppRoutes() {
           <Route path="/cto/dashboard" element={<RoleGuard allowedRoles={['cto', 'super_admin']}><CTODashboardPage /></RoleGuard>} />
           <Route path="/ceo/dashboard" element={<RoleGuard allowedRoles={['ceo', 'super_admin', 'cto']}><CEODashboardPage /></RoleGuard>} />
           <Route path="/cfo/dashboard" element={<RoleGuard allowedRoles={['cfo', 'super_admin', 'cto']}><CFODashboardPage /></RoleGuard>} />
+          <Route path="/cfo/investor-report" element={<RoleGuard allowedRoles={['cfo', 'ceo', 'coo', 'super_admin', 'cto']}><InvestorReportPage /></RoleGuard>} />
           <Route path="/coo/dashboard" element={<RoleGuard allowedRoles={['coo', 'super_admin', 'cto']}><COODashboardPage /></RoleGuard>} />
           <Route path="/cmo/dashboard" element={<RoleGuard allowedRoles={['cmo', 'super_admin', 'cto']}><CMODashboardPage /></RoleGuard>} />
           <Route path="/crm/dashboard" element={<RoleGuard allowedRoles={['crm', 'super_admin', 'cto']}><CRMDashboardPage /></RoleGuard>} />
@@ -320,6 +329,7 @@ function AppRoutes() {
           <Route path="/cfo-dashboard" element={<RoleGuard allowedRoles={['cfo', 'super_admin', 'cto']}><CFODashboardPage /></RoleGuard>} />
           <Route path="/executive-hub" element={<RoleGuard allowedRoles={['ceo', 'cto', 'cmo', 'crm', 'coo', 'cfo', 'super_admin', 'manager', 'employee', 'operations']}><ExecutiveHubPage /></RoleGuard>} />
           <Route path="/roi-trends" element={<RoleGuard allowedRoles={['ceo', 'coo', 'cfo', 'super_admin', 'manager', 'operations']}><ROITrendsPage /></RoleGuard>} />
+           <Route path="/rent-disbursement-process" element={<RoleGuard allowedRoles={['agent', 'manager', 'operations', 'coo', 'cfo', 'ceo', 'super_admin', 'cto']}><RentDisbursementProcessPage /></RoleGuard>} />
            <Route path="/agent-advances" element={<AgentAdvances />} />
            <Route path="/agent-advances/:id" element={<AgentAdvanceDetail />} />
            <Route path="/agent/cash-payouts" element={<AgentCashPayoutsPage />} />

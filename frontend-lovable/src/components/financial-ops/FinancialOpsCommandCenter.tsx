@@ -13,6 +13,7 @@ import { LedgerHub } from '@/components/ledgers/LedgerHub';
 import { PendingWalletOperationsWidget } from '@/components/manager/PendingWalletOperationsWidget';
 import { DepositStatsPanel } from './DepositStatsPanel';
 import { WalletOverviewCard } from './WalletOverviewCard';
+
 import { OpportunitySummaryForm } from '@/components/manager/OpportunitySummaryForm';
 import { AgentRequisitionForm } from './AgentRequisitionForm';
 import { 
@@ -64,6 +65,8 @@ export function FinancialOpsCommandCenter({ requirePaymentRef }: { requirePaymen
       </div>
     );
   }
+
+
 
   // Sub-view: Active tool
   if (activeTool) {
@@ -146,6 +149,7 @@ export function FinancialOpsCommandCenter({ requirePaymentRef }: { requirePaymen
               <DepositStatsPanel onOpenVerification={() => setView('deposits')} />
             )}
           </AnimatePresence>
+
 
           {/* Withdrawals & Payouts */}
           <button

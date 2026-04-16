@@ -2,7 +2,8 @@ import { useState, useCallback, useMemo } from 'react';
 import { useCFOOverviewData } from '@/hooks/useCFOOverviewData';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, ArrowDownRight, ArrowUpRight, Scale, Wallet, HandCoins, Users, TrendingUp, Banknote } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, ArrowDownRight, ArrowUpRight, Scale, Wallet, HandCoins, Users, TrendingUp, Banknote, FileSpreadsheet } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { KPIBreakdownSheet } from '@/components/cfo/KPIBreakdownSheet';
@@ -24,6 +25,7 @@ const fmtShort = (n: number) => {
 };
 
 export function CFOOverviewDashboard({ onTabChange }: CFOOverviewDashboardProps) {
+  const [exportingCommissions, setExportingCommissions] = useState(false);
   const [activeBreakdown, setActiveBreakdown] = useState<string | null>(null);
   const {
     platformCash, liabilities, revenue, receivables,
@@ -44,14 +46,76 @@ export function CFOOverviewDashboard({ onTabChange }: CFOOverviewDashboardProps)
     }
   }, [refetchControls]);
 
+  const handleExportCommissions = useCallback(async () => {
+    setExportingCommissions(true);
+    try {
+      // Fetch all commission records with agent names
+      const { data, error } = await supabase
+        .from('commission_accrual_ledger')
+        .select('id, agent_id, source_type, source_id, amount, status, earned_at, approved_at, paid_at, description, percentage, event_type, commission_role, repayment_amount, rent_request_id')
+        .order('earned_at', { ascending: false });
+
+      if (error) throw error;
+      if (!data || data.length === 0) {
+        toast.info('No commission records found');
+        setExportingCommissions(false);
+        return;
+      }
+
+      // Get unique agent IDs and fetch names
+      const agentIds = [...new Set(data.map(r => r.agent_id).filter(Boolean))] as string[];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name, phone')
+        .in('id', agentIds);
+
+      const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+
+      // Build CSV
+      const headers = ['Agent Name', 'Phone', 'Amount (UGX)', 'Status', 'Commission Role', 'Event Type', 'Source Type', 'Percentage (%)', 'Repayment Amount', 'Description', 'Earned At', 'Approved At', 'Paid At'];
+      const rows = data.map(r => {
+        const profile = profileMap.get(r.agent_id || '');
+        return [
+          profile?.full_name || 'Unknown',
+          profile?.phone || '',
+          r.amount,
+          r.status,
+          r.commission_role || '',
+          r.event_type || '',
+          r.source_type || '',
+          r.percentage || '',
+          r.repayment_amount || '',
+          (r.description || '').replace(/,/g, ';'),
+          r.earned_at ? new Date(r.earned_at).toLocaleDateString() : '',
+          r.approved_at ? new Date(r.approved_at).toLocaleDateString() : '',
+          r.paid_at ? new Date(r.paid_at).toLocaleDateString() : '',
+        ].join(',');
+      });
+
+      const csv = [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `agent_commission_report_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(`Exported ${data.length} commission records`);
+    } catch (e: any) {
+      toast.error(e.message || 'Export failed');
+    } finally {
+      setExportingCommissions(false);
+    }
+  }, []);
+
   // Build 7-tier priority groups for "Money We Have — Sources" (must be before early returns)
   const cashSourceGroups = useMemo(() => {
     const increases = platformCash?.increases ?? [];
     type Inc = typeof increases[number];
 
     const PRIORITY_MAP: Record<string, number> = {
-      partner_funding: 1,
-      share_capital: 2, angel_pool_investment: 2, angel_pool_commission: 2,
+      share_capital: 1, angel_pool_investment: 1, angel_pool_commission: 1,
+      partner_funding: 2,
       rent_principal_collected: 3, access_fee_collected: 3, registration_fee_collected: 3,
       salary_advance_repayment: 4,
       system_balance_correction: 6, orphan_reassignment: 6, orphan_reversal: 6,
@@ -59,8 +123,8 @@ export function CFOOverviewDashboard({ onTabChange }: CFOOverviewDashboardProps)
     };
 
     const GROUP_META: Record<number, { label: string; emoji: string }> = {
-      1: { label: 'Partner Funding', emoji: '🤝' },
-      2: { label: 'Shareholders Capital', emoji: '🏦' },
+      1: { label: 'Shareholders Capital (Angel Pool)', emoji: '🏦' },
+      2: { label: 'Supporter Partner Funding', emoji: '🤝' },
       3: { label: 'Rent Collections & Fees', emoji: '🏠' },
       4: { label: 'Salary Advance Repayments', emoji: '💼' },
       5: { label: 'Other Sources', emoji: '📦' },
@@ -257,6 +321,17 @@ export function CFOOverviewDashboard({ onTabChange }: CFOOverviewDashboardProps)
 
       {/* ── CFO ACTIONS LOG ── */}
       <CFOActionsLog />
+
+      {/* ── EXPORT COMMISSION REPORT ── */}
+      <Button
+        variant="outline"
+        className="w-full gap-2 rounded-2xl h-12"
+        onClick={handleExportCommissions}
+        disabled={exportingCommissions}
+      >
+        {exportingCommissions ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileSpreadsheet className="h-4 w-4" />}
+        {exportingCommissions ? 'Exporting...' : 'Download Agent Commission Report'}
+      </Button>
 
       {/* ── SOURCES OF CASH (replaces channel breakdown) ── */}
       <Card className="rounded-2xl">

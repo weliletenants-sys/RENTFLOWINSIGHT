@@ -30,9 +30,9 @@ export function AgentFloatBalanceCard() {
           {formatUGX(totalBalance)}
         </p>
         <p className="text-xs text-muted-foreground mt-1">
-          Withdrawable: <span className="font-medium text-emerald-600">{formatUGX(commissionBalance)}</span>
+          Withdrawable: <span className={`font-medium ${commissionBalance > 0 ? 'text-emerald-600' : 'text-muted-foreground'}`}>{formatUGX(commissionBalance)}</span>
           {' · '}
-          Locked: <span className="font-medium text-primary">{formatUGX(floatBalance)}</span>
+          Company Float: <span className="font-medium text-primary">{formatUGX(floatBalance)}</span>
         </p>
       </CardContent>
     </Card>

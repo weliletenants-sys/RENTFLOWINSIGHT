@@ -44,7 +44,9 @@ export function PromissoryNoteDialog({ open, onOpenChange }: PromissoryNoteDialo
     onOpenChange(v);
   };
 
-  const isValid = partnerName.trim().length >= 2 && whatsappNumber.trim().length >= 10 && Number(amount) > 0;
+  const phoneDigits = (v: string) => v.replace(/\D/g, '');
+  const isValidPhone = (v: string) => { const d = phoneDigits(v); return d.length === 10; };
+  const isValid = partnerName.trim().length >= 2 && isValidPhone(whatsappNumber) && Number(amount) > 0 && (!email.trim() || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) && (!phoneNumber.trim() || isValidPhone(phoneNumber));
 
   const handleSubmit = async () => {
     setSubmitting(true);
@@ -90,7 +92,15 @@ export function PromissoryNoteDialog({ open, onOpenChange }: PromissoryNoteDialo
     if (!createdNote) return;
     try {
       toast.info('Generating PDF...');
-      const activationLink = `${getPublicOrigin()}/activate?token=${createdNote.activation_token}`;
+      const { createShortLink } = await import('@/lib/createShortLink');
+      const userId = (await import('@/integrations/supabase/client')).supabase.auth.getUser().then(r => r.data.user?.id);
+      let activationLink = `${getPublicOrigin()}/activate?token=${createdNote.activation_token}`;
+      try {
+        const uid = await userId;
+        if (uid) {
+          activationLink = await createShortLink(uid, '/activate', { token: createdNote.activation_token });
+        }
+      } catch {}
       const pdfBlob = await generatePromissoryNotePDF({
         partnerName,
         amount: Number(amount),
@@ -98,6 +108,9 @@ export function PromissoryNoteDialog({ open, onOpenChange }: PromissoryNoteDialo
         deductionDay: contributionType === 'monthly' ? Number(deductionDay) : undefined,
         activationLink,
         createdAt: createdNote.created_at,
+        email: email.trim() || undefined,
+        whatsappNumber: whatsappNumber.trim() || undefined,
+        phoneNumber: phoneNumber.trim() || undefined,
       });
 
       const file = new File([pdfBlob], `Welile_Note_${partnerName.replace(/\s+/g, '_')}.pdf`, { type: 'application/pdf' });
@@ -124,7 +137,14 @@ export function PromissoryNoteDialog({ open, onOpenChange }: PromissoryNoteDialo
 
   const handleShareLink = async () => {
     if (!createdNote) return;
-    const activationLink = `${getPublicOrigin()}/activate?token=${createdNote.activation_token}`;
+    let activationLink = `${getPublicOrigin()}/activate?token=${createdNote.activation_token}`;
+    try {
+      const { createShortLink } = await import('@/lib/createShortLink');
+      const { data: { user: u } } = await (await import('@/integrations/supabase/client')).supabase.auth.getUser();
+      if (u) {
+        activationLink = await createShortLink(u.id, '/activate', { token: createdNote.activation_token });
+      }
+    } catch {}
     const shareText = `🤝 Hi ${partnerName}, activate your Welile investment account and start earning 15% ROI! ${activationLink}`;
     if (navigator.share) {
       navigator.share({ title: 'Welile Investment', text: shareText, url: activationLink }).catch(() => {});
@@ -170,23 +190,26 @@ export function PromissoryNoteDialog({ open, onOpenChange }: PromissoryNoteDialo
           <div className="space-y-3">
             <div>
               <Label className="text-xs">Partner Name *</Label>
-              <Input value={partnerName} onChange={e => setPartnerName(e.target.value)} placeholder="Full name" className="mt-0.5 h-9" />
+              <Input value={partnerName} onChange={e => setPartnerName(e.target.value.replace(/[^a-zA-Z\s'-]/g, ''))} placeholder="Full name" className="mt-0.5 h-9" maxLength={100} />
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label className="text-xs">WhatsApp *</Label>
-                <Input value={whatsappNumber} onChange={e => setWhatsappNumber(e.target.value)} placeholder="+256..." type="tel" className="mt-0.5 h-9" />
+                <Label className="text-xs">WhatsApp * <span className="text-muted-foreground">(10 digits)</span></Label>
+                <Input value={whatsappNumber} onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 10); setWhatsappNumber(v); }} placeholder="0780000000" type="tel" inputMode="numeric" className="mt-0.5 h-9" maxLength={10} minLength={10} />
+                {whatsappNumber && whatsappNumber.replace(/\D/g, '').length !== 10 && <p className="text-[10px] text-destructive mt-0.5">Must be exactly 10 digits</p>}
               </div>
               <div>
-                <Label className="text-xs">Phone</Label>
-                <Input value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} placeholder="+256..." type="tel" className="mt-0.5 h-9" />
+                <Label className="text-xs">Phone <span className="text-muted-foreground">(10 digits)</span></Label>
+                <Input value={phoneNumber} onChange={e => { const v = e.target.value.replace(/\D/g, '').slice(0, 10); setPhoneNumber(v); }} placeholder="0780000000" type="tel" inputMode="numeric" className="mt-0.5 h-9" maxLength={10} minLength={10} />
+                {phoneNumber && phoneNumber.replace(/\D/g, '').length !== 10 && <p className="text-[10px] text-destructive mt-0.5">Must be exactly 10 digits</p>}
               </div>
             </div>
 
             <div>
               <Label className="text-xs">Email</Label>
-              <Input value={email} onChange={e => setEmail(e.target.value)} placeholder="email@example.com" type="email" className="mt-0.5 h-9" />
+              <Input value={email} onChange={e => setEmail(e.target.value)} placeholder="email@example.com" type="email" className="mt-0.5 h-9" maxLength={255} />
+              {email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) && <p className="text-[10px] text-destructive mt-0.5">Enter a valid email</p>}
             </div>
 
             <div>

@@ -1,4 +1,5 @@
-import { Wallet, ChevronRight, Shield, Home, TrendingUp, Rocket } from 'lucide-react';
+import { ReactNode } from 'react';
+import { Wallet, ChevronRight, Shield, Home, TrendingUp, Rocket, Lock, Coins } from 'lucide-react';
 import { hapticTap } from '@/lib/haptics';
 import { useCurrency } from '@/hooks/useCurrency';
 
@@ -12,12 +13,18 @@ interface UnifiedWalletHeroCardProps {
   houses?: number;
   returnPerMonth?: string;
   deployed?: string;
+  /** Agent-specific: float (locked) and commission (earned) */
+  floatBalance?: number;
+  commissionBalance?: number;
+  withdrawableBalance?: number;
   /** Callback when user taps balance area or "View Wallet" */
   onOpenWallet?: () => void;
   /** Supporter metric card taps */
   onHousesTap?: () => void;
   onReturnTap?: () => void;
   onDeployedTap?: () => void;
+  /** Optional quick action buttons rendered below the balance */
+  quickActions?: ReactNode;
 }
 
 const ROLE_LABELS: Record<WalletRole, string> = {
@@ -42,10 +49,14 @@ export function UnifiedWalletHeroCard({
   houses,
   returnPerMonth,
   deployed,
+  floatBalance,
+  commissionBalance,
+  withdrawableBalance,
   onOpenWallet,
   onHousesTap,
   onReturnTap,
   onDeployedTap,
+  quickActions,
 }: UnifiedWalletHeroCardProps) {
   const { formatAmount } = useCurrency();
 
@@ -53,6 +64,8 @@ export function UnifiedWalletHeroCard({
     hapticTap();
     onOpenWallet?.();
   };
+
+  const showAgentSplit = role === 'agent' && (floatBalance !== undefined || commissionBalance !== undefined);
 
   return (
     <div className="w-full text-left portfolio-hero-card rounded-3xl p-6 relative overflow-hidden">
@@ -76,18 +89,60 @@ export function UnifiedWalletHeroCard({
           </div>
         </div>
 
-        {/* Available Balance — tappable to open wallet */}
-        <button
-          onClick={handleOpenWallet}
-          className="w-full text-left active:scale-[0.98] transition-transform"
-        >
-          <p className="text-[10px] uppercase tracking-[0.15em] font-semibold text-white/50 mb-2">
-            Available Balance
-          </p>
-          <p className="text-[clamp(1.6rem,6vw,2.5rem)] font-black tracking-tight leading-none text-white">
-            {formatAmount(balance)}
-          </p>
-        </button>
+        {/* Agent Float & Commission split */}
+        {showAgentSplit ? (
+          <button
+            onClick={handleOpenWallet}
+            className="w-full text-left active:scale-[0.98] transition-transform"
+          >
+            <div className="grid grid-cols-2 gap-3">
+              {/* Float section */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <Lock className="h-3 w-3 text-white/50" />
+                  <p className="text-[9px] uppercase tracking-[0.15em] font-semibold text-white/50">Float</p>
+                </div>
+                <p className="text-lg font-black tracking-tight leading-none text-white">
+                  {formatAmount(floatBalance ?? 0)}
+                </p>
+                <p className="text-[9px] text-white/40 mt-1 font-medium">Locked · Operations</p>
+              </div>
+
+              {/* Commission section */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <Coins className="h-3 w-3 text-emerald-400/70" />
+                  <p className="text-[9px] uppercase tracking-[0.15em] font-semibold text-emerald-300/70">Commission</p>
+                </div>
+                <p className="text-lg font-black tracking-tight leading-none text-white">
+                  {formatAmount(commissionBalance ?? 0)}
+                </p>
+                <p className="text-[9px] text-emerald-300/50 mt-1 font-medium">
+                  Withdrawable: {formatAmount(withdrawableBalance ?? 0)}
+                </p>
+              </div>
+            </div>
+
+            {/* Total balance row */}
+            <div className="flex items-center justify-between mt-3 px-1">
+              <span className="text-[10px] uppercase tracking-[0.12em] font-semibold text-white/40">Total Balance</span>
+              <span className="text-sm font-black text-white">{formatAmount(balance)}</span>
+            </div>
+          </button>
+        ) : (
+          /* Default: single Available Balance */
+          <button
+            onClick={handleOpenWallet}
+            className="w-full text-left active:scale-[0.98] transition-transform"
+          >
+            <p className="text-[10px] uppercase tracking-[0.15em] font-semibold text-white/50 mb-2">
+              Available Balance
+            </p>
+            <p className="text-[clamp(1.6rem,6vw,2.5rem)] font-black tracking-tight leading-none text-white">
+              {formatAmount(balance)}
+            </p>
+          </button>
+        )}
 
         {/* Supporter metric cards — individually tappable */}
         {role === 'supporter' && (
@@ -119,12 +174,15 @@ export function UnifiedWalletHeroCard({
           </div>
         )}
 
-        {secondaryLabel && secondaryValue && (
+        {secondaryLabel && secondaryValue && !showAgentSplit && (
           <div className="flex items-center justify-between pt-1 border-t border-white/[0.08]">
             <span className="text-[11px] text-white/50 font-medium">{secondaryLabel}</span>
             <span className="text-[11px] text-white/70 font-bold">{secondaryValue}</span>
           </div>
         )}
+
+        {/* Quick Actions slot */}
+        {quickActions}
 
         {/* Footer — View Wallet link */}
         <div className="flex items-center justify-between pt-1">

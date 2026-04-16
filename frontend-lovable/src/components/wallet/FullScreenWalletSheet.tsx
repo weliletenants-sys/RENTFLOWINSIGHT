@@ -55,6 +55,7 @@ export function FullScreenWalletSheet({ open, onOpenChange }: FullScreenWalletSh
   const isAgent = role === 'agent';
   const { commissionBalance, floatBalance } = useAgentBalances();
   const displayBalance = wallet?.balance || 0;
+  const realWithdrawableBalance = Math.max(0, Math.min(displayBalance, commissionBalance));
   const balanceLabel = 'Total Balance';
   const [sendOpen, setSendOpen] = useState(false);
   const [depositOpen, setDepositOpen] = useState(false);
@@ -78,16 +79,22 @@ export function FullScreenWalletSheet({ open, onOpenChange }: FullScreenWalletSh
     setPendingWithdrawals(counts.withdrawals);
   }, [user]);
 
-  // Check if user has proxy partner entries
+  // Check if user has proxy partner entries explicitly approved by a CFO
   useEffect(() => {
     const checkProxy = async () => {
       if (!user?.id) return;
+      const { getCfoUserIds } = await import('@/lib/cfoUserIds');
+      const cfoIds = await getCfoUserIds();
+      if (cfoIds.length === 0) { setHasProxyPartners(false); return; }
       const { count } = await supabase
-        .from('general_ledger')
+        .from('pending_wallet_operations')
         .select('id', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('category', 'roi_payout')
-        .not('linked_party', 'is', null);
+        .eq('target_wallet_user_id', user.id)
+        .in('category', ['roi_payout', 'supporter_platform_rewards'])
+        .eq('status', 'approved')
+        .in('reviewed_by', cfoIds)
+        .not('metadata->coo_approved_by', 'is', null)
+        .not('transaction_group_id', 'is', null);
       setHasProxyPartners((count || 0) > 0);
     };
     if (open) checkProxy();
@@ -190,7 +197,7 @@ export function FullScreenWalletSheet({ open, onOpenChange }: FullScreenWalletSh
                   <WalletDisclaimer variant="dark" />
                   {isAgent && (
                     <p className="text-[11px] text-white/60 mt-2">
-                      Withdrawable: <CompactAmount value={commissionBalance} className="text-white/80 border-0" /> · Locked: <CompactAmount value={floatBalance} className="text-white/80 border-0" />
+                      Withdrawable: <CompactAmount value={realWithdrawableBalance} className="text-white/80 border-0" /> · Locked: <CompactAmount value={floatBalance} className="text-white/80 border-0" />
                     </p>
                   )}
                 </div>
@@ -444,7 +451,7 @@ export function FullScreenWalletSheet({ open, onOpenChange }: FullScreenWalletSh
       <WithdrawRequestDialog 
         open={withdrawOpen} 
         onOpenChange={setWithdrawOpen} 
-        walletBalance={isAgent ? commissionBalance : (wallet?.balance || 0)}
+        walletBalance={isAgent ? realWithdrawableBalance : (wallet?.balance || 0)}
         onSuccess={refreshWallet}
       />
       <TransactionReceipt 

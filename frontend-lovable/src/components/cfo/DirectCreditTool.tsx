@@ -8,9 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Send, ArrowUpRight, ArrowDownLeft, TrendingUp, TrendingDown, Minus, Info } from 'lucide-react';
+import { Loader2, Send, ArrowUpRight, ArrowDownLeft, TrendingUp, TrendingDown, Minus, Info, ChevronDown } from 'lucide-react';
 import { UserSearchPicker } from './UserSearchPicker';
 import { TreasuryImpactBanner } from './TreasuryImpactBanner';
 import { RentDisbursementQueue } from './RentDisbursementQueue';
@@ -60,8 +59,8 @@ const PAYOUT_CATEGORIES: PayoutCategory[] = [
     label: '📢 Marketing Expenses',
     description: 'Payments for marketing, advertising, and promotional activities',
     impact: 'expense',
-    walletCategory: 'system_balance_correction',
-    platformCategory: 'system_balance_correction',
+    walletCategory: 'marketing_expense',
+    platformCategory: 'marketing_expense',
     allowedOps: ['credit'],
     subCategories: [
       { id: 'marketing_materials', label: 'Marketing Materials' },
@@ -81,8 +80,8 @@ const PAYOUT_CATEGORIES: PayoutCategory[] = [
     label: '🔬 Research & Development',
     description: 'R&D expenditures, innovation costs, and technology investments',
     impact: 'expense',
-    walletCategory: 'system_balance_correction',
-    platformCategory: 'system_balance_correction',
+    walletCategory: 'research_development_expense',
+    platformCategory: 'research_development_expense',
     allowedOps: ['credit'],
   },
   {
@@ -90,8 +89,8 @@ const PAYOUT_CATEGORIES: PayoutCategory[] = [
     label: '🏢 Operational Expenses',
     description: 'Day-to-day operational costs including staff, office, and utilities',
     impact: 'expense',
-    walletCategory: 'system_balance_correction',
-    platformCategory: 'system_balance_correction',
+    walletCategory: 'general_admin_expense',
+    platformCategory: 'general_admin_expense',
     allowedOps: ['credit'],
     subCategories: [
       { id: 'salaries', label: 'Salaries' },
@@ -102,9 +101,43 @@ const PAYOUT_CATEGORIES: PayoutCategory[] = [
       { id: 'airtime', label: 'Airtime' },
       { id: 'stationery', label: 'Stationery' },
       { id: 'property_equipment', label: 'Property & Equipment' },
-      { id: 'taxes', label: 'Taxes' },
-      { id: 'interests', label: 'Interests' },
     ],
+  },
+  {
+    id: 'payroll',
+    label: '💰 Payroll',
+    description: 'Staff salaries, wages, and payroll-related expenses',
+    impact: 'expense',
+    walletCategory: 'payroll_expense',
+    platformCategory: 'payroll_expense',
+    allowedOps: ['credit'],
+  },
+  {
+    id: 'tax_payment',
+    label: '🏛️ Tax Payment',
+    description: 'Income tax, VAT, withholding tax, and other government levies',
+    impact: 'expense',
+    walletCategory: 'tax_expense',
+    platformCategory: 'tax_expense',
+    allowedOps: ['credit'],
+  },
+  {
+    id: 'interest_payment',
+    label: '🏦 Interest Payment',
+    description: 'Interest on loans, advances, or credit facilities',
+    impact: 'expense',
+    walletCategory: 'interest_expense',
+    platformCategory: 'interest_expense',
+    allowedOps: ['credit'],
+  },
+  {
+    id: 'equipment_purchase',
+    label: '🖥️ Equipment & Assets',
+    description: 'Capital expenditure on property, equipment, and fixed assets',
+    impact: 'expense',
+    walletCategory: 'equipment_expense',
+    platformCategory: 'equipment_expense',
+    allowedOps: ['credit'],
   },
   {
     id: 'correction_credit',
@@ -275,7 +308,6 @@ export function DirectCreditTool() {
       }
       if (data?.error) throw new Error(data.error);
 
-      // Save scheduled payout if automation is enabled
       if (automateEnabled && selectedUser) {
         const { error: schedErr } = await supabase.from('scheduled_payouts').insert({
           created_by: (await supabase.auth.getUser()).data.user?.id,
@@ -329,7 +361,6 @@ export function DirectCreditTool() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {/* Operation Toggle */}
         <div className="grid grid-cols-2 gap-2">
           <Button
             type="button"
@@ -353,63 +384,60 @@ export function DirectCreditTool() {
           </Button>
         </div>
 
-        {/* Category Dropdown */}
         <div>
-          <Label className="flex items-center gap-1.5 mb-1.5">
+          <Label htmlFor="payout-category" className="flex items-center gap-1.5 mb-1.5">
             Payout Category
             <span className="text-destructive">*</span>
           </Label>
-          <Select value={selectedCategoryId} onValueChange={handleCategoryChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a category..." />
-            </SelectTrigger>
-            <SelectContent>
-              {availableCategories.map(cat => {
-                const cfg = IMPACT_CONFIG[cat.impact];
-                const isRent = cat.id === 'rent_disbursement';
+          <div className="relative">
+            <select
+              id="payout-category"
+              value={selectedCategoryId}
+              onChange={(e) => handleCategoryChange(e.target.value)}
+              className="flex h-10 w-full appearance-none rounded-lg border border-border bg-background px-3 py-2 pr-10 text-sm text-foreground transition-colors ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-primary/50"
+            >
+              <option value="">Select a category...</option>
+              {availableCategories.map((cat) => {
+                const impactLabel = IMPACT_CONFIG[cat.impact].label;
+                const readySuffix = cat.id === 'rent_disbursement' && rentQueueCount > 0 ? ` • ${rentQueueCount} ready` : '';
                 return (
-                  <SelectItem key={cat.id} value={cat.id}>
-                    <span className="flex items-center gap-2">
-                      {cat.label}
-                      {isRent && rentQueueCount > 0 && (
-                        <Badge className="text-[9px] px-1.5 py-0 bg-primary/10 text-primary border-primary/30">
-                          {rentQueueCount} ready
-                        </Badge>
-                      )}
-                      <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${cfg.color}`}>
-                        {cfg.label}
-                      </Badge>
-                    </span>
-                  </SelectItem>
+                  <option key={cat.id} value={cat.id}>
+                    {`${cat.label} — ${impactLabel}${readySuffix}`}
+                  </option>
                 );
               })}
-            </SelectContent>
-          </Select>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          </div>
         </div>
 
-        {/* Subcategory Dropdown */}
         {hasSubCategories && (
           <div>
-            <Label className="flex items-center gap-1.5 mb-1.5">
+            <Label htmlFor="payout-subcategory" className="flex items-center gap-1.5 mb-1.5">
               Subcategory
               <span className="text-destructive">*</span>
             </Label>
-            <Select value={selectedSubCategoryId} onValueChange={setSelectedSubCategoryId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a subcategory..." />
-              </SelectTrigger>
-              <SelectContent>
-                {selectedCategory!.subCategories!.map(sub => (
-                  <SelectItem key={sub.id} value={sub.id}>
+            <div className="relative">
+              <select
+                id="payout-subcategory"
+                value={selectedSubCategoryId}
+                onChange={(e) => setSelectedSubCategoryId(e.target.value)}
+                className="flex h-10 w-full appearance-none rounded-lg border border-border bg-background px-3 py-2 pr-10 text-sm text-foreground transition-colors ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-primary/50"
+              >
+                <option value="">Select a subcategory...</option>
+                {selectedCategory?.subCategories?.map((sub) => (
+                  <option key={sub.id} value={sub.id}>
                     {sub.label}
-                  </SelectItem>
+                  </option>
                 ))}
-              </SelectContent>
-            </Select>
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            </div>
           </div>
         )}
 
         {/* Category Impact Explanation */}
+
         {selectedCategory && impactInfo && ImpactIcon && !isRentDisbursement && !needsSubCategory && (
           <div className={`rounded-lg border p-3 text-xs space-y-1.5 ${impactInfo.color}`}>
             <div className="flex items-center gap-2 font-semibold">

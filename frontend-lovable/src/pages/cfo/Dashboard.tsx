@@ -34,12 +34,15 @@ import { PendingPortfolioTopUps } from '@/components/cfo/PendingPortfolioTopUps'
 import { AngelPoolManagementPanel } from '@/components/executive/AngelPoolManagementPanel';
 import { WalletRetractionsFeed } from '@/components/cfo/WalletRetractionsFeed';
 import { CFOAdvancesManager } from '@/components/cfo/CFOAdvancesManager';
+import { CFOAdvanceRequestPayments } from '@/components/cfo/CFOAdvanceRequestPayments';
 import { ManagerApprovalAudit } from '@/components/cfo/ManagerApprovalAudit';
 import { CFOAgentRequisitions } from '@/components/cfo/CFOAgentRequisitions';
 import { RentCollectionsFeed } from '@/components/cfo/RentCollectionsFeed';
 import { AgentPerformanceRankings } from '@/components/cfo/AgentPerformanceRankings';
 import { AgentFloatManagement } from '@/components/cfo/AgentFloatManagement';
 import { LedgerHealthPanel } from '@/components/cfo/LedgerHealthPanel';
+import { FieldCashExposureCard } from '@/components/cfo/FieldCashExposureCard';
+import { CFOAgentOpsFloatSender } from '@/components/cfo/CFOAgentOpsFloatSender';
 
 export default function CFODashboardPage() {
   const { currency, setCurrency, getCurrencyByCode } = useCurrency();
@@ -143,7 +146,12 @@ export default function CFODashboardPage() {
       case 'retractions':
         return <WalletRetractionsFeed />;
       case 'advances':
-        return <CFOAdvancesManager />;
+        return (
+          <div className="space-y-6">
+            <CFOAdvanceRequestPayments />
+            <CFOAdvancesManager />
+          </div>
+        );
       case 'approval-audit':
         return <ManagerApprovalAudit />;
       case 'agent-requisitions':
@@ -153,7 +161,13 @@ export default function CFODashboardPage() {
       case 'agent-rankings':
         return <AgentPerformanceRankings />;
       case 'float-management':
-        return <AgentFloatManagement />;
+        return (
+          <div className="space-y-6">
+            <CFOAgentOpsFloatSender />
+            <AgentFloatManagement />
+            <FieldCashExposureCard />
+          </div>
+        );
       case 'ledger-health':
         return <LedgerHealthPanel />;
       default:
