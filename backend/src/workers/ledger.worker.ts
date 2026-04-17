@@ -48,8 +48,6 @@ export const ledgerWorker = new Worker('LedgerTransactionsQueue', async (job: Jo
               });
           }
 
-          }
-
           // 2. Load Sender Source Account Native Balance (DB ROW-LEVEL LOCK FOR UPDATE to block concurrency mathematically)
           const sourceAccountRaw: any[] = await tx.$queryRaw`SELECT * FROM financial_accounts WHERE id = ${fromAccountId} LIMIT 1 FOR UPDATE`;
           const sourceAccount = sourceAccountRaw[0];

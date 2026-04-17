@@ -8,6 +8,7 @@ import paymentsRoutes from './payments/payments.routes';
 import repaymentsRoutes from './repayments/repayments.routes';
 import roiRoutes from './roi/roi.routes';
 import ledgerRoutes from './ledger/ledger.routes';
+import cfoRoutes from './cfo/cfo.routes';
 
 const modulesRouter = Router();
 
@@ -21,6 +22,7 @@ modulesRouter.use('/payments', paymentsRoutes);
 modulesRouter.use('/repayments', repaymentsRoutes);
 modulesRouter.use('/roi', roiRoutes);
 modulesRouter.use('/admin/system', ledgerRoutes);
+modulesRouter.use('/cfo', cfoRoutes);
 
 // Export to be mounted inside App.js or server
 export default modulesRouter;

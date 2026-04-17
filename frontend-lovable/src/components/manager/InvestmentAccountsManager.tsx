@@ -126,12 +126,24 @@ export function InvestmentAccountsManager() {
     if (!mergeDialogPortfolioId || mergeReason.trim().length < 10) return;
     setMergingTopUp(true);
     try {
-      const { data, error } = await supabase.functions.invoke('merge-pending-topups', {
-        body: { portfolio_id: mergeDialogPortfolioId, reason: mergeReason.trim() },
+      const session = await supabase.auth.getSession();
+      const token = session.data.session?.access_token;
+      const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+      const reqRes = await fetch(`${backendUrl}/api/v2/cfo/portfolios/${mergeDialogPortfolioId}/merge-pending`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'Idempotency-Key': crypto.randomUUID()
+        },
+        body: JSON.stringify({ reason: mergeReason.trim() })
       });
-      if (error) throw new Error(error.message);
-      if (data?.error) throw new Error(data.error);
-      toast({ title: `Merged ${formatUGX(data.merged_amount)} into principal`, description: `New capital: ${formatUGX(data.new_capital)}` });
+
+      const data = await reqRes.json();
+      if (!reqRes.ok) throw new Error(data.error || 'Failed to merge top-ups');
+      
+      toast({ title: `Merged pending top-ups into principal`, description: `Successfully applied.` });
       setMergeDialogPortfolioId(null);
       setMergeReason('');
       fetchPortfolios();

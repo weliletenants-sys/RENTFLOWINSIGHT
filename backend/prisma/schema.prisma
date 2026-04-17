@@ -40,6 +40,10 @@ model LedgerTransactions {
   source_table         String?
   transaction_group_id String?
 
+  status               String? @default("POSTED") // INITIATED, PENDING_APPROVAL, APPROVED, POSTED, REVERSED
+  is_proxy_funding     Boolean? @default(false)
+  approval_timestamp   DateTime?
+
   @@map("ledger_transactions")
 }
 
