@@ -1,4 +1,4 @@
-import prisma from '../prisma/prisma.client';
+import prisma from '../../prisma/prisma.client';
 import { v4 as uuidv4 } from 'uuid';
 
 interface TopUpParams {
