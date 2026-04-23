@@ -5,6 +5,7 @@ import { useUserSnapshot } from '@/hooks/useUserSnapshot';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { 
   ArrowLeft, 
   Users, 
@@ -14,7 +15,8 @@ import {
   Copy, 
   CheckCircle2,
   Gift,
-  TrendingUp
+  TrendingUp,
+  AlertCircle
 } from 'lucide-react';
 import { formatUGX } from '@/lib/rentCalculations';
 import { format } from 'date-fns';
@@ -31,8 +33,17 @@ export default function Referrals() {
   const { toast } = useToast();
   const { snapshot, loading, refresh } = useUserSnapshot(user?.id);
   const [copied, setCopied] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'incomplete'>('all');
 
   const referrals = snapshot.referrals || [];
+  const isReferralIncomplete = (r: any) => r.referral_status === 'incomplete';
+  const completedCount = referrals.filter((r: any) => r.referral_status === 'completed').length;
+  const incompleteCount = referrals.filter((r: any) => r.referral_status === 'incomplete').length;
+  const filteredReferrals = referrals.filter((r: any) => {
+    if (statusFilter === 'completed') return !isReferralIncomplete(r);
+    if (statusFilter === 'incomplete') return isReferralIncomplete(r);
+    return true;
+  });
   const referralLink = user ? `${getPublicOrigin()}/join?r=${user.id}` : '';
 
   const copyReferralLink = async () => {
@@ -210,6 +221,24 @@ export default function Referrals() {
               </CardTitle>
             </CardHeader>
             <CardContent>
+              <div className="mb-4 flex items-center justify-between gap-2 flex-wrap">
+                <ToggleGroup
+                  type="single"
+                  value={statusFilter}
+                  onValueChange={(v) => v && setStatusFilter(v as any)}
+                  className="bg-muted/30 rounded-lg p-1"
+                >
+                  <ToggleGroupItem value="all" className="text-xs h-8 px-3 data-[state=on]:bg-background">
+                    All ({referrals.length})
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="completed" className="text-xs h-8 px-3 data-[state=on]:bg-background">
+                    Completed ({completedCount})
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="incomplete" className="text-xs h-8 px-3 data-[state=on]:bg-background">
+                    Incomplete ({incompleteCount})
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </div>
               {referrals.length === 0 ? (
                 <div className="text-center py-8">
                   <Users className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
@@ -218,27 +247,58 @@ export default function Referrals() {
                     Share your link to start earning!
                   </p>
                 </div>
+              ) : filteredReferrals.length === 0 ? (
+                <div className="text-center py-8">
+                  <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
+                  <p className="text-muted-foreground">
+                    No {statusFilter === 'completed' ? 'completed' : 'incomplete'} referrals
+                  </p>
+                </div>
               ) : (
                 <div className="space-y-3">
-                  {referrals.map((referral: any, index: number) => (
+                  {filteredReferrals.map((referral: any, index: number) => {
+                    const isIncomplete = referral.referral_status === 'incomplete';
+                    const displayName =
+                      referral.referred_name ||
+                      (referral.referred_id
+                        ? `Onboarding incomplete · …${String(referral.referred_id).slice(-6)}`
+                        : 'Onboarding incomplete');
+                    return (
                     <motion.div
                       key={referral.id}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                      className={`flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors ${
+                        isIncomplete ? 'opacity-60' : ''
+                      }`}
+                      title={
+                        isIncomplete
+                          ? "This invitee never finished sign-up. Bonus stays pending."
+                          : undefined
+                      }
                     >
                       <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                        <Users className="h-5 w-5 text-primary" />
+                        {isIncomplete ? (
+                          <AlertCircle className="h-5 w-5 text-muted-foreground" />
+                        ) : (
+                          <Users className="h-5 w-5 text-primary" />
+                        )}
                       </div>
-                      
+
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">
-                          {referral.referred_name || 'Unknown'}
+                        <p className={`font-medium truncate ${isIncomplete ? 'text-muted-foreground italic' : ''}`}>
+                          {displayName}
                         </p>
                         <p className="text-xs text-muted-foreground truncate">
-                          {referral.referred_phone || '—'}
-                          {referral.referred_city ? ` • ${referral.referred_city}` : ''}
+                          {isIncomplete
+                            ? "Invitee never finished sign-up — bonus pending"
+                            : (
+                              <>
+                                {referral.referred_phone || '—'}
+                                {referral.referred_city ? ` • ${referral.referred_city}` : ''}
+                              </>
+                            )}
                         </p>
                         <p className="text-[10px] text-muted-foreground">
                           {format(new Date(referral.created_at), 'MMM d, yyyy')}
@@ -262,7 +322,7 @@ export default function Referrals() {
                         </Badge>
                       </div>
                     </motion.div>
-                  ))}
+                  );})}
                 </div>
               )}
             </CardContent>

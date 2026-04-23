@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { validateFullName, FULL_NAME_ERROR } from "../_shared/validateFullName.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,14 +11,6 @@ function ok(data: unknown) {
 }
 function err(msg: string, status = 400) {
   return new Response(JSON.stringify({ error: msg }), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-}
-
-function validateFullName(v: unknown): string | null {
-  if (typeof v !== 'string') return null;
-  const c = v.trim();
-  if (c.length < 2 || c.length > 100) return null;
-  if (!/^[\p{L}\p{M}\s'.-]+$/u.test(c)) return null;
-  return c;
 }
 
 function validatePhone(v: unknown): string | null {
@@ -66,9 +59,10 @@ Deno.serve(async (req) => {
     if (new Date(tokenData.expires_at) < new Date()) return err("This link has expired");
     if (tokenData.uses_count >= tokenData.max_uses) return err("This link has reached its usage limit");
 
-    // Validate fields
-    const fullName = validateFullName(body.full_name);
-    if (!fullName) return err("Full name is required (2–100 characters)");
+    // Validate fields (shared rules — same message client + DB trigger use)
+    const partnerNameCheck = validateFullName(body.full_name);
+    if (!partnerNameCheck.valid) return err(partnerNameCheck.error || FULL_NAME_ERROR);
+    const fullName = partnerNameCheck.trimmed;
 
     const phone = validatePhone(body.phone);
     if (!phone) return err("Valid phone number is required");
@@ -106,23 +100,80 @@ Deno.serve(async (req) => {
     // Server-side ROI calculation (never trust frontend)
     const monthlyRoi = Math.round(investmentAmount * ROI_RATE);
 
-    // Generate activation token and temp password
-    const activationToken = crypto.randomUUID();
-    const tempPassword = `W${Math.random().toString(36).slice(2, 10)}!`;
-
     // Increment token usage
     await supabaseAdmin
       .from("agent_form_tokens")
       .update({ uses_count: tokenData.uses_count + 1 })
       .eq("id", tokenData.id);
 
-    // Insert into supporter_invites
+    // ── Provision auth user immediately (auto-sign-up) ─────────────────────
+    // Match tenant flow: phone-based virtual email when phone is provided,
+    // else use the supplied email. Look up existing accounts by phone-last-9
+    // and by email so we don't double-create.
+    const cleanPhone = phone.trim();
+    const phoneDigits = cleanPhone.replace(/[^0-9]/g, '');
+    const last9 = phoneDigits.slice(-9);
+
+    // Prefer the real email the partner submitted; fall back to virtual if missing
+    const loginEmail = email;
+
+    let userId: string | null = null;
+    let isExisting = false;
+    let createdPassword: string | null = null;
+
+    // Check for existing profile by phone or email
+    const { data: existingByPhone } = await supabaseAdmin
+      .from("profiles").select("id").ilike("phone", `%${last9}`).limit(1);
+    if (existingByPhone && existingByPhone.length > 0) {
+      userId = existingByPhone[0].id;
+      isExisting = true;
+    } else {
+      const { data: existingAuthUsers } = await supabaseAdmin.auth.admin.listUsers();
+      const existingAuth = existingAuthUsers?.users?.find((u: any) => u.email === loginEmail);
+      if (existingAuth) {
+        userId = existingAuth.id;
+        isExisting = true;
+      }
+    }
+
+    if (!userId) {
+      const tempPassword = crypto.randomUUID().slice(0, 12) + "Aa1!";
+      const { data: authData, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+        email: loginEmail,
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: { full_name: fullName, phone: cleanPhone },
+      });
+      if (createErr || !authData?.user) {
+        console.error("[submit-partner-form] Auth create error:", createErr?.message);
+        return err("Failed to create your account. Please try again.", 500);
+      }
+      userId = authData.user.id;
+      createdPassword = tempPassword;
+
+      await supabaseAdmin.from("profiles").update({ full_name: fullName, phone: cleanPhone }).eq("id", userId);
+      const PUBLIC_ROLES = ["tenant", "agent", "landlord", "supporter"] as const;
+      await supabaseAdmin.from("user_roles").upsert(
+        PUBLIC_ROLES.map(role => ({ user_id: userId, role, enabled: true })),
+        { onConflict: "user_id,role" }
+      );
+      await supabaseAdmin.from("referrals").upsert(
+        { referrer_id: agent_id, referred_id: userId },
+        { onConflict: "referrer_id,referred_id" }
+      );
+    }
+
+    const activationToken = crypto.randomUUID();
+
+    // Insert into supporter_invites — already activated
     const { error: insertErr } = await supabaseAdmin
       .from("supporter_invites")
       .insert({
         created_by: agent_id,
         role: 'supporter',
-        status: 'pending',
+        status: 'activated',
+        activated_at: new Date().toISOString(),
+        activated_user_id: userId,
         full_name: fullName,
         phone,
         email,
@@ -134,7 +185,7 @@ Deno.serve(async (req) => {
         account_name: accountName,
         account_number: accountNumber,
         activation_token: activationToken,
-        temp_password: tempPassword,
+        temp_password: createdPassword ?? '',
       });
 
     if (insertErr) {
@@ -148,6 +199,11 @@ Deno.serve(async (req) => {
       success: true,
       monthly_roi: monthlyRoi,
       investment_amount: investmentAmount,
+      partner_id: userId,
+      existing: isExisting,
+      // Auto-sign-in credentials (only present for newly-created partners).
+      auth_email: createdPassword ? loginEmail : null,
+      auth_password: createdPassword,
     });
 
   } catch (error) {

@@ -44,6 +44,7 @@ import {
 import { useTenantAgreement } from '@/hooks/useTenantAgreement';
 import RepaymentSection from '@/components/tenant/RepaymentSection';
 import RentProcessTracker from '@/components/rent/RentProcessTracker';
+import { TenantBusinessAdvancesPanel } from '@/components/tenant/TenantBusinessAdvancesPanel';
 import PaymentPartnersDialog from '@/components/payments/PaymentPartnersDialog';
 import { TenantMenuDrawer } from '@/components/tenant/TenantMenuDrawer';
 import { MerchantCodePills } from '@/components/supporter/MerchantCodePills';
@@ -51,6 +52,8 @@ import { AgentDepositDialog } from '@/components/agent/AgentDepositDialog';
 import { AvailableHousesSheet } from '@/components/tenant/AvailableHousesSheet';
 import { NearbyHousesPreview } from '@/components/tenant/NearbyHousesPreview';
 import { SuggestedHousesCard } from '@/components/tenant/SuggestedHousesCard';
+import RentHistoryRecordCTA from '@/components/tenant/RentHistoryRecordCTA';
+import { TrustBoostBanner } from '@/components/ai-id/TrustBoostBanner';
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
@@ -234,6 +237,9 @@ export default function TenantDashboard({ user, signOut, currentRole, availableR
           {/* Terms Acceptance Notice */}
           <TenantAgreementNotice onAcceptClick={() => setShowAgreementModal(true)} />
 
+          {/* Welile Trust Score nudge */}
+          <TrustBoostBanner />
+
           {/* Profile Row */}
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -274,6 +280,9 @@ export default function TenantDashboard({ user, signOut, currentRole, availableR
 
           {/* Credit Access Limit */}
           <CreditAccessCard userId={user.id} compact />
+
+          {/* Record Rent History — prominent attention-grabbing CTA */}
+          <RentHistoryRecordCTA />
 
           {/* Action Buttons — Clean & Minimal */}
           <div className="space-y-2">
@@ -371,6 +380,9 @@ export default function TenantDashboard({ user, signOut, currentRole, availableR
               />
             </div>
           )}
+
+          {/* Business Advances (1% daily compounding) */}
+          <TenantBusinessAdvancesPanel />
 
           {/* Invite & Earn */}
           <InviteAndEarnCard variant="tenant" />

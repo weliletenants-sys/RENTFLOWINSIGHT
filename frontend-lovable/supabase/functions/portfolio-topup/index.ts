@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { logSystemEvent } from "../_shared/eventLogger.ts";
+import { checkTreasuryGuard } from "../_shared/treasuryGuard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,6 +16,10 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
+
+    // Treasury guard: portfolio top-ups move money — block when paused
+    const guardBlock = await checkTreasuryGuard(supabase, "any");
+    if (guardBlock) return guardBlock;
 
     // Authenticate caller
     const authHeader = req.headers.get("Authorization");
@@ -269,6 +274,51 @@ Deno.serve(async (req) => {
       }),
     }).catch(() => {});
 
+
+    // Partnership Top-Up Confirmation email (fire-and-forget)
+    // Sent on every successful self-service top-up: existing partner adding funds
+    // to an existing portfolio. Distinct from the partnership-agreement email,
+    // which fires only on brand-new portfolio creation in fund-rent-pool.
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("email, full_name")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profile?.email) {
+        const previousPortfolioValue = Number(portfolio.investment_amount) || 0;
+        const newTotalPartnershipValue = previousPortfolioValue + topupAmount;
+
+        const emailRequest = {
+          templateName: "partnership-topup",
+          recipientEmail: profile.email,
+          idempotencyKey: `partnership-topup-${user.id}-${txGroupId}`,
+          templateData: {
+            partner_name: profile.full_name || "Partner",
+            topup_amount: topupAmount,
+            previous_portfolio_value: previousPortfolioValue,
+            new_total_partnership_value: newTotalPartnershipValue,
+            currency: "UGX",
+            company_name: "Welile",
+            logo_url: "https://welilereceipts.com/welile-logo.png",
+            unsubscribe_url: "https://welile.com/unsubscribe",
+            dashboard_url: "https://welilereceipts.com/auth",
+          },
+        };
+
+        fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${serviceKey}`,
+          },
+          body: JSON.stringify(emailRequest),
+        }).catch((err) => console.warn("[portfolio-topup] Top-up email enqueue failed:", err));
+      }
+    } catch (emailErr) {
+      console.warn("[portfolio-topup] Top-up email lookup failed (non-blocking):", emailErr);
+    }
 
     return new Response(JSON.stringify({
       success: true,

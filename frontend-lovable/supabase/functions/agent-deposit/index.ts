@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { logSystemEvent } from "../_shared/eventLogger.ts";
+import { checkTreasuryGuard } from "../_shared/treasuryGuard.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -222,6 +223,10 @@ Deno.serve(async (req) => {
 
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Treasury guard: agent deposits credit user wallets — block when paused
+    const guardBlock = await checkTreasuryGuard(adminClient, "credit");
+    if (guardBlock) return guardBlock;
+
     // Verify agent role
     const { data: agentRole } = await adminClient
       .from('user_roles')
@@ -261,6 +266,7 @@ Deno.serve(async (req) => {
 
     // Find user by phone if not provided user_id
     let targetUserId = userId;
+    let tenantFullName = '';
     if (!targetUserId && userPhone) {
       // Try multiple phone formats to find the profile
       const phoneVariants = normalizePhone(userPhone);
@@ -268,7 +274,7 @@ Deno.serve(async (req) => {
       for (const variant of phoneVariants) {
         const { data } = await adminClient
           .from('profiles')
-          .select('id')
+          .select('id, full_name')
           .eq('phone', variant)
           .maybeSingle();
         if (data) { profile = data; break; }
@@ -281,6 +287,17 @@ Deno.serve(async (req) => {
         );
       }
       targetUserId = profile.id;
+      tenantFullName = profile.full_name || '';
+    }
+
+    // If we have targetUserId but no name yet, fetch it
+    if (targetUserId && !tenantFullName) {
+      const { data: tProfile } = await adminClient
+        .from('profiles')
+        .select('full_name')
+        .eq('id', targetUserId)
+        .maybeSingle();
+      tenantFullName = tProfile?.full_name || '';
     }
 
     // Get user's wallet
@@ -399,7 +416,7 @@ Deno.serve(async (req) => {
               direction: 'cash_out',
               category: 'agent_float_used_for_rent',
               ledger_scope: 'wallet',
-              description: `Agent paid UGX ${amount.toLocaleString()} for tenant`,
+              description: `Agent paid UGX ${amount.toLocaleString()} for tenant: ${tenantFullName || 'Unknown'}`,
               currency: 'UGX',
               source_table: 'wallet_deposits',
               linked_party: targetUserId,
@@ -513,7 +530,7 @@ Deno.serve(async (req) => {
             direction: 'cash_out',
             category: 'agent_float_used_for_rent',
             ledger_scope: 'wallet',
-            description: `Agent paid UGX ${amount.toLocaleString()} for tenant`,
+            description: `Agent paid UGX ${amount.toLocaleString()} for tenant: ${tenantFullName || 'Unknown'}`,
             currency: 'UGX',
             source_table: 'wallet_deposits',
             linked_party: targetUserId,

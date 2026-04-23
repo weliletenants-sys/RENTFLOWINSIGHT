@@ -82,14 +82,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 .update({ last_active_at: new Date().toISOString() })
                 .eq('id', session.user.id)
                 .then(() => {});
-
-              // Trigger AWS Profile Mapping (Silent Migration)
-              const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-              fetch(`${backendUrl}/api/v2/users/me`, {
-                headers: {
-                  'Authorization': `Bearer ${session.access_token}`
-                }
-              }).catch(err => console.warn('[Auth] AWS sync ping failed:', err));
             }, 5000);
           }
         } else if (event === 'SIGNED_OUT') {
@@ -142,13 +134,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(session.user);
 
             setCachedSession(session.user.id, session.user.email || '', session.expires_at || 0);
-
-            // Ping AWS backend for silent migration
-            const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-            fetch(`${backendUrl}/api/v2/users/me`, {
-              headers: { 'Authorization': `Bearer ${session.access_token}` }
-            }).catch(e => console.warn('[Auth] Init AWS sync failed:', e));
-
             // If early fetch was for the same user, just await it; otherwise fetch fresh
             if (earlyRoleFetch && cachedSession?.userId === session.user.id) {
               const timeoutPromise = new Promise<void>((resolve) => setTimeout(resolve, 5000));
@@ -184,7 +169,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const switchRole = (newRole: AppRole) => {
-    if (rolesRef.current.includes(newRole)) setRole(newRole);
+    if (rolesRef.current.includes(newRole)) {
+      setRole(newRole);
+      try { localStorage.setItem('welile_last_role', newRole); } catch {}
+    }
   };
 
   const addRole = async (newRole: AppRole) => {

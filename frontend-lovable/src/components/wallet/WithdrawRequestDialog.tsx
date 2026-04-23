@@ -29,24 +29,7 @@ type PayoutMode = 'mtn' | 'airtel' | 'bank' | 'cash';
 const WORKING_HOURS = { start: 8, end: 17, saturdayEnd: 13 };
 
 const checkWorkingHours = (): { isOpen: boolean; message: string; nextOpen: string } => {
-  const now = new Date();
-  const utcOffset = now.getTimezoneOffset() * 60000;
-  const eatOffset = 3 * 60 * 60000;
-  const eatTime = new Date(now.getTime() + utcOffset + eatOffset);
-  const day = eatTime.getDay();
-  const hour = eatTime.getHours();
-
-  if (day === 0) return { isOpen: false, message: 'Withdrawals are not available on Sundays', nextOpen: 'Monday at 8:00 AM' };
-  if (day === 6) {
-    if (hour < WORKING_HOURS.start) return { isOpen: false, message: 'Withdrawals open at 8:00 AM on Saturdays', nextOpen: 'Today at 8:00 AM' };
-    if (hour >= WORKING_HOURS.saturdayEnd) return { isOpen: false, message: 'Saturday withdrawals close at 1:00 PM', nextOpen: 'Monday at 8:00 AM' };
-    return { isOpen: true, message: '', nextOpen: '' };
-  }
-  if (hour < WORKING_HOURS.start) return { isOpen: false, message: 'Withdrawals open at 8:00 AM', nextOpen: 'Today at 8:00 AM' };
-  if (hour >= WORKING_HOURS.end) {
-    const nextDay = day === 5 ? 'Monday' : 'Tomorrow';
-    return { isOpen: false, message: 'Withdrawals close at 5:00 PM', nextOpen: `${nextDay} at 8:00 AM` };
-  }
+  // Withdrawals are now available 24/7
   return { isOpen: true, message: '', nextOpen: '' };
 };
 
@@ -144,9 +127,10 @@ export function WithdrawRequestDialog({ open, onOpenChange, walletBalance = 0, o
     return true;
   };
 
-  const MIN_BALANCE = 5000;
+  // 100% of available wallet balance (incl. all commission earnings) is withdrawable.
+  // Only constraint: telco-imposed UGX 500 minimum per transaction.
   const availableBalance = Math.max(0, walletBalance - pendingAmount);
-  const meetsMinBalance = walletBalance >= MIN_BALANCE;
+  const meetsMinBalance = availableBalance >= 500;
   const isFormValid = meetsMinBalance && amount >= 500 && amount <= availableBalance && isPayoutValid() && reason.trim().length >= 10 && workingHoursStatus.isOpen;
 
   const handleSubmit = async () => {
@@ -154,7 +138,7 @@ export function WithdrawRequestDialog({ open, onOpenChange, walletBalance = 0, o
     const currentStatus = checkWorkingHours();
     if (!currentStatus.isOpen) { toast.error(currentStatus.message); setWorkingHoursStatus(currentStatus); return; }
     
-    if (!meetsMinBalance) { toast.error('Wallet balance must be at least UGX 5,000'); return; }
+    if (availableBalance < 500) { toast.error('Available balance must be at least UGX 500'); return; }
     if (amount < 500) { toast.error('Minimum withdrawal is UGX 500'); return; }
     if (amount > availableBalance) { toast.error(`Insufficient available balance. You have UGX ${pendingAmount.toLocaleString()} in pending withdrawals.`); return; }
     if (!isPayoutValid()) { toast.error('Please complete payout details'); return; }
@@ -188,6 +172,111 @@ export function WithdrawRequestDialog({ open, onOpenChange, walletBalance = 0, o
 
         if (payoutMode === 'mtn' || payoutMode === 'airtel') {
           await supabase.from('profiles').update({ mobile_money_number: momoNumber.trim(), mobile_money_provider: payoutMode }).eq('id', user.id);
+        }
+
+        // ── Proxy-agent withdrawal: notify the partner that returns disbursement is initiated ──
+        if (linkedParty && linkedParty !== user.id) {
+          try {
+            const [{ data: partnerProfile }, { data: agentProfile }, { data: partnerPortfolio }] = await Promise.all([
+              supabase.from('profiles').select('email, full_name').eq('id', linkedParty).maybeSingle(),
+              supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle(),
+              supabase
+                .from('investor_portfolios')
+                .select('portfolio_code')
+                .eq('investor_id', linkedParty)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle(),
+            ]);
+
+            if (partnerProfile?.email) {
+              const payoutMethodLabel = payoutMode === 'mtn'
+                ? 'Mobile Money (MTN) — via Proxy Agent'
+                : payoutMode === 'airtel'
+                ? 'Mobile Money (Airtel) — via Proxy Agent'
+                : payoutMode === 'bank'
+                ? `Bank Transfer (${bankName || 'Bank'}) — via Proxy Agent`
+                : 'Cash Pickup — via Proxy Agent';
+              const refId = `TXN-${Date.now().toString(36).toUpperCase()}`;
+              const todayLabel = new Date().toLocaleDateString('en-GB', {
+                day: '2-digit', month: 'long', year: 'numeric',
+              });
+
+              await supabase.functions.invoke('send-transactional-email', {
+                body: {
+                  templateName: 'returns-disbursement-confirmation',
+                  recipientEmail: partnerProfile.email,
+                  idempotencyKey: `proxy-roi-request-${linkedParty}-${user.id}-${Date.now()}`,
+                  templateData: {
+                    partner_name: partnerProfile.full_name || 'Partner',
+                    transaction_id: refId,
+                    portfolio_code: partnerPortfolio?.portfolio_code || '',
+                    amount,
+                    currency: 'UGX',
+                    date: todayLabel,
+                    payout_method: payoutMethodLabel,
+                    company_name: 'Welile',
+                    logo_url: 'https://welilereceipts.com/welile-logo.png',
+                    is_managed_by_agent: true,
+                    agent_name: agentProfile?.full_name || '',
+                  },
+                },
+              });
+            }
+          } catch (emailErr) {
+            console.warn('[WithdrawRequestDialog] proxy partner email enqueue failed:', emailErr);
+          }
+        } else {
+          // ── Direct funder self-withdrawal: send disbursement email to the partner themselves ──
+          try {
+            const [{ data: partnerProfile }, { data: partnerPortfolio }] = await Promise.all([
+              supabase.from('profiles').select('email, full_name').eq('id', user.id).maybeSingle(),
+              supabase
+                .from('investor_portfolios')
+                .select('portfolio_code')
+                .eq('investor_id', user.id)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle(),
+            ]);
+
+            if (partnerProfile?.email) {
+              const payoutMethodLabel = payoutMode === 'mtn'
+                ? 'Mobile Money (MTN)'
+                : payoutMode === 'airtel'
+                ? 'Mobile Money (Airtel)'
+                : payoutMode === 'bank'
+                ? `Bank Transfer (${bankName || 'Bank'})`
+                : 'Cash Pickup';
+              const refId = `TXN-${Date.now().toString(36).toUpperCase()}`;
+              const todayLabel = new Date().toLocaleDateString('en-GB', {
+                day: '2-digit', month: 'long', year: 'numeric',
+              });
+
+              await supabase.functions.invoke('send-transactional-email', {
+                body: {
+                  templateName: 'returns-disbursement-confirmation',
+                  recipientEmail: partnerProfile.email,
+                  idempotencyKey: `partner-self-withdraw-${user.id}-${Date.now()}`,
+                  templateData: {
+                    partner_name: partnerProfile.full_name || 'Partner',
+                    transaction_id: refId,
+                    portfolio_code: partnerPortfolio?.portfolio_code || '',
+                    amount,
+                    currency: 'UGX',
+                    date: todayLabel,
+                    payout_method: payoutMethodLabel,
+                    company_name: 'Welile',
+                    logo_url: 'https://welilereceipts.com/welile-logo.png',
+                    is_managed_by_agent: false,
+                    agent_name: '',
+                  },
+                },
+              });
+            }
+          } catch (emailErr) {
+            console.warn('[WithdrawRequestDialog] partner self-withdraw email enqueue failed:', emailErr);
+          }
         }
 
         setSuccess(true);
@@ -324,8 +413,8 @@ export function WithdrawRequestDialog({ open, onOpenChange, walletBalance = 0, o
                 <div className="flex items-start gap-3 p-4 rounded-2xl bg-destructive/10 border border-destructive/20">
                   <TrendingDown className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-bold text-foreground">Minimum balance required</p>
-                    <p className="text-xs text-muted-foreground">You need at least <strong>UGX 5,000</strong> to withdraw</p>
+                    <p className="text-sm font-bold text-foreground">Insufficient available balance</p>
+                    <p className="text-xs text-muted-foreground">You need at least <strong>UGX 500</strong> available to withdraw</p>
                   </div>
                 </div>
               )}

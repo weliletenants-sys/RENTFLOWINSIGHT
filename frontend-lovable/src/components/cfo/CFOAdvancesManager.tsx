@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Plus, TrendingUp, AlertTriangle, DollarSign, Shield, Percent, Calculator, Receipt, Trash2, RefreshCw } from 'lucide-react';
+import { Plus, TrendingUp, AlertTriangle, DollarSign, Shield, Percent, Calculator, Receipt, Trash2, RefreshCw, Download, FileText } from 'lucide-react';
+import { exportAdvanceStatements, exportConsolidatedPayments } from '@/lib/agentAdvancePdfExport';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +17,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { formatUGX, getRiskLevel } from '@/lib/agentAdvanceCalculations';
 import IssueAdvanceSheet from '@/components/manager/IssueAdvanceSheet';
+import { RecordAdvancePaymentDialog } from '@/components/cfo/RecordAdvancePaymentDialog';
 import { differenceInDays } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -41,6 +43,52 @@ export function CFOAdvancesManager() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [exportingPayments, setExportingPayments] = useState(false);
+  const [paymentAdvance, setPaymentAdvance] = useState<any | null>(null);
+
+  const handleExportPayments = async () => {
+    if (filtered.length === 0) return;
+    setExportingPayments(true);
+    const toastId = toast.loading('Generating consolidated payments report...');
+    try {
+      const { filename, rowCount } = await exportConsolidatedPayments(filtered, filter);
+      toast.success(`Downloaded ${filename} (${rowCount} payments)`, { id: toastId });
+      await supabase.from('audit_logs').insert({
+        user_id: user?.id,
+        action_type: 'cfo_advance_payments_export',
+        table_name: 'agent_advance_ledger',
+        metadata: { advance_count: filtered.length, payment_count: rowCount, filter, filename },
+      });
+    } catch (e: any) {
+      toast.error(e.message || 'Export failed', { id: toastId });
+    } finally {
+      setExportingPayments(false);
+    }
+  };
+
+  const handleExportPdfs = async () => {
+    if (filtered.length === 0) return;
+    setExporting(true);
+    const uniqueAgents = new Set(filtered.map((a: any) => a.agent_id)).size;
+    const toastId = toast.loading(`Generating ${uniqueAgents} agent statement(s)...`);
+    try {
+      const { filename, agentCount } = await exportAdvanceStatements(filtered, (current, total) => {
+        toast.loading(`Generating PDFs (${current}/${total})...`, { id: toastId });
+      });
+      toast.success(`Downloaded ${filename}`, { id: toastId });
+      await supabase.from('audit_logs').insert({
+        user_id: user?.id,
+        action_type: 'cfo_advance_export',
+        table_name: 'agent_advances',
+        metadata: { agent_count: agentCount, advance_count: filtered.length, filter, filename },
+      });
+    } catch (e: any) {
+      toast.error(e.message || 'Export failed', { id: toastId });
+    } finally {
+      setExporting(false);
+    }
+  };
 
   // Calculator state
   const [calcAmount, setCalcAmount] = useState('');
@@ -137,9 +185,29 @@ export function CFOAdvancesManager() {
           <h1 className="text-xl font-bold">💰 Advance Management</h1>
           <p className="text-sm text-muted-foreground">Manage advances for agents and staff with variable access fee rates.</p>
         </div>
-        <Button onClick={() => setIssueOpen(true)} size="sm" className="gap-1">
-          <Plus className="h-4 w-4" /> Issue Advance
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleExportPdfs}
+            size="sm"
+            variant="outline"
+            className="gap-1"
+            disabled={exporting || filtered.length === 0}
+          >
+            <Download className="h-4 w-4" /> {exporting ? 'Exporting...' : 'Export PDFs'}
+          </Button>
+          <Button
+            onClick={handleExportPayments}
+            size="sm"
+            variant="outline"
+            className="gap-1"
+            disabled={exportingPayments || filtered.length === 0}
+          >
+            <FileText className="h-4 w-4" /> {exportingPayments ? 'Exporting...' : 'Export All Payments'}
+          </Button>
+          <Button onClick={() => setIssueOpen(true)} size="sm" className="gap-1">
+            <Plus className="h-4 w-4" /> Issue Advance
+          </Button>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -266,6 +334,7 @@ export function CFOAdvancesManager() {
                 <TableHead>Days Left</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Risk</TableHead>
+                <TableHead className="text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -315,6 +384,18 @@ export function CFOAdvancesManager() {
                     <TableCell onClick={() => navigate(`/agent-advances/${adv.id}`)}>
                       <div className={`h-3 w-3 rounded-full ${risk === 'green' ? 'bg-green-500' : risk === 'yellow' ? 'bg-amber-500' : 'bg-red-500'}`} />
                     </TableCell>
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                      {(adv.status === 'active' || adv.status === 'overdue') && (
+                        <Button
+                          size="sm"
+                          variant="soft"
+                          className="gap-1"
+                          onClick={() => setPaymentAdvance(adv)}
+                        >
+                          <Receipt className="h-3.5 w-3.5" /> Record Payment
+                        </Button>
+                      )}
+                    </TableCell>
                   </TableRow>
                 );
               })}
@@ -346,6 +427,13 @@ export function CFOAdvancesManager() {
         onOpenChange={(open) => { setRenewOpen(open); if (!open) setRenewAgentId(null); }}
         onSuccess={() => { refetch(); setSelectedIds(new Set()); }}
         preselectedAgentId={renewAgentId || undefined}
+      />
+
+      <RecordAdvancePaymentDialog
+        advance={paymentAdvance}
+        open={!!paymentAdvance}
+        onOpenChange={(o) => { if (!o) setPaymentAdvance(null); }}
+        onSuccess={() => { refetch(); setPaymentAdvance(null); }}
       />
     </div>
   );

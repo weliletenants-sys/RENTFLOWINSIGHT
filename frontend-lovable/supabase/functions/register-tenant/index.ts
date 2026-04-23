@@ -1,17 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { validateFullName, FULL_NAME_ERROR } from "../_shared/validateFullName.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-function validateFullName(value: unknown): string | null {
-  if (typeof value !== 'string') return null;
-  const cleaned = value.trim();
-  if (cleaned.length < 2 || cleaned.length > 100) return null;
-  if (!/^[\p{L}\p{M}\s'.-]+$/u.test(cleaned)) return null;
-  return cleaned;
-}
 
 function validatePhone(value: unknown): string | null {
   if (typeof value !== 'string') return null;
@@ -20,6 +13,14 @@ function validatePhone(value: unknown): string | null {
   if (!/^[0-9+\-\s()]+$/.test(cleaned)) return null;
   const digits = cleaned.replace(/\D/g, '');
   if (digits.length < 9 || digits.length > 15) return null;
+  return cleaned;
+}
+
+function validateNationalId(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const cleaned = value.trim().toUpperCase();
+  if (cleaned.length < 10 || cleaned.length > 14) return null;
+  if (!/^[A-Z0-9]+$/.test(cleaned)) return null;
   return cleaned;
 }
 
@@ -70,14 +71,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { full_name: rawName, phone: rawPhone, email: rawEmail } = body as Record<string, unknown>;
-    console.log("[register-tenant] Input:", { rawName, rawPhone });
+    const { full_name: rawName, phone: rawPhone, email: rawEmail, national_id: rawNationalId } = body as Record<string, unknown>;
+    console.log("[register-tenant] Input:", { rawName, rawPhone, rawNationalId });
 
-    const full_name = validateFullName(rawName);
+    const nameCheck = validateFullName(rawName);
+    const full_name = nameCheck.valid ? nameCheck.trimmed : null;
     const phone = validatePhone(rawPhone);
+    const national_id = validateNationalId(rawNationalId);
 
     if (!full_name) {
-      return new Response(JSON.stringify({ error: "Invalid name. Must be 2-100 characters, letters only." }), {
+      return new Response(JSON.stringify({ error: nameCheck.error || FULL_NAME_ERROR }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -85,6 +88,26 @@ Deno.serve(async (req) => {
     if (!phone) {
       return new Response(JSON.stringify({ error: "Invalid phone number format." }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!national_id) {
+      return new Response(JSON.stringify({ error: "National ID is required. Must be 10-14 alphanumeric characters." }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Check for duplicate National ID
+    const { data: existingNationalId } = await supabaseAdmin
+      .from("profiles")
+      .select("id, full_name")
+      .eq("national_id", national_id)
+      .maybeSingle();
+
+    if (existingNationalId) {
+      console.log("[register-tenant] Duplicate national_id found:", existingNationalId.id);
+      return new Response(JSON.stringify({ error: `A tenant with this National ID already exists (${existingNationalId.full_name})` }), {
+        status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -158,10 +181,12 @@ Deno.serve(async (req) => {
     const userId = authData.user.id;
     console.log("[register-tenant] Created auth user:", userId);
 
-    // Update profile (trigger should have created it)
+    // Update profile (trigger should have created it).
+    // Also stamp referrer_id so the agent who registered this tenant can see them
+    // under "My Tenants" (which filters by profiles.referrer_id).
     const { error: profileErr } = await supabaseAdmin
       .from("profiles")
-      .update({ full_name, phone: cleanPhone })
+      .update({ full_name, phone: cleanPhone, national_id, referrer_id: callingUser.id })
       .eq("id", userId);
     
     if (profileErr) {
@@ -209,9 +234,11 @@ Deno.serve(async (req) => {
 
 
     // Notify managers (fire-and-forget)
-    fetch(`${supabaseUrl}/functions/v1/notify-managers`, {
+    const fnUrl = Deno.env.get("SUPABASE_URL");
+    const fnKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    fetch(`${fnUrl}/functions/v1/notify-managers`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${supabaseServiceKey}` },
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${fnKey}` },
       body: JSON.stringify({ title: "👤 Tenant Registered", body: "Activity: new tenant", url: "/manager" }),
     }).catch(() => {});
 

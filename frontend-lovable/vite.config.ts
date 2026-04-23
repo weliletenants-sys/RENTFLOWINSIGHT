@@ -2,7 +2,6 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
-import { VitePWA } from 'vite-plugin-pwa';
 
 
 // https://vitejs.dev/config/
@@ -18,30 +17,6 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === "development" && componentTagger(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['offline.html', 'favicon.ico', 'apple-touch-icon.png'],
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        runtimeCaching: [
-          {
-            urlPattern: ({ request }) => request.destination === 'document',
-            handler: 'NetworkFirst',
-            options: { cacheName: 'pages', expiration: { maxEntries: 50, maxAgeSeconds: 86400 } },
-          },
-          {
-            urlPattern: ({ request }) => request.destination === 'script' || request.destination === 'style',
-            handler: 'CacheFirst',
-            options: { cacheName: 'assets', expiration: { maxEntries: 200, maxAgeSeconds: 30 * 24 * 60 * 60 } },
-          },
-        ],
-      },
-      manifest: {
-        name: 'Welile.com',
-        short_name: 'Welile',
-        theme_color: '#7c3aed',
-      }
-    })
   ].filter(Boolean),
   resolve: {
     alias: {

@@ -44,7 +44,7 @@ import {
   ArrowUpRight, ArrowDownLeft, ShoppingCart, Home, CreditCard,
   Send, Download as DownloadIcon, MessageCircle, CalendarDays, X, Filter,
   Shield, Plus, Trash2, UserCog, Loader2, Pencil, AlertTriangle, ToggleLeft, ToggleRight, ChevronLeft,
-  FileText, UsersRound, UserPlus, Link2, ShieldAlert, ShieldOff, KeyRound, Eye, EyeOff, ShieldCheck
+  FileText, UsersRound, UserPlus, Link2, ShieldAlert, ShieldOff, KeyRound, Eye, EyeOff, ShieldCheck, Copy, RefreshCw
 } from 'lucide-react';
 import { formatUGX } from '@/lib/rentCalculations';
 import { format, formatDistanceToNow, startOfDay, endOfDay, subDays, subWeeks, subMonths, isWithinInterval } from 'date-fns';
@@ -260,7 +260,10 @@ export default function UserDetailsDialog({ open, onOpenChange, user, onRolesUpd
         .from('operations_departments')
         .select('department')
         .eq('user_id', user.id);
-      setOperationsDepartments((data || []).map(d => d.department));
+      // Normalize to lowercase to match the canonical keys used by the Operations Dashboard router.
+      setOperationsDepartments(
+        (data || []).map(d => String(d.department || '').trim().toLowerCase())
+      );
     } catch (e) {
       console.error('Error fetching ops departments:', e);
     }
@@ -269,20 +272,23 @@ export default function UserDetailsDialog({ open, onOpenChange, user, onRolesUpd
   const handleToggleOperationsDept = async (dept: string) => {
     if (!user) return;
     setTogglingDept(dept);
+    const key = dept.toLowerCase();
     try {
-      if (operationsDepartments.includes(dept)) {
-        await supabase
+      if (operationsDepartments.includes(key)) {
+        const { error } = await supabase
           .from('operations_departments')
           .delete()
           .eq('user_id', user.id)
-          .eq('department', dept);
-        setOperationsDepartments(prev => prev.filter(d => d !== dept));
+          .eq('department', key);
+        if (error) throw error;
+        setOperationsDepartments(prev => prev.filter(d => d !== key));
         toast.success(`Removed ${dept} department`);
       } else {
-        await supabase
+        const { error } = await supabase
           .from('operations_departments')
-          .insert({ user_id: user.id, department: dept });
-        setOperationsDepartments(prev => [...prev, dept]);
+          .insert({ user_id: user.id, department: key });
+        if (error) throw error;
+        setOperationsDepartments(prev => [...prev, key]);
         toast.success(`Added ${dept} department`);
       }
     } catch (e) {
@@ -1628,37 +1634,84 @@ export default function UserDetailsDialog({ open, onOpenChange, user, onRolesUpd
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0 space-y-3">
-                      <p className="text-xs text-muted-foreground">Set a new password for this user. They will use it on their next login.</p>
+                      <p className="text-xs text-muted-foreground">
+                        Set a new password for this user. Common or breached passwords (e.g. <code className="text-[10px] bg-muted px-1 rounded">Welile1234!</code>, <code className="text-[10px] bg-muted px-1 rounded">password123</code>) are blocked. Tap <strong>Generate</strong> for a guaranteed-safe one.
+                      </p>
                       <div className="relative">
                         <Input
                           type={showPassword ? 'text' : 'password'}
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
                           placeholder="Enter new password (min 6 chars)"
-                          className="h-12 text-base pr-10"
+                          className="h-12 text-base pr-20"
                         />
+                        <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+                          {newPassword && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              title="Copy password"
+                              onClick={async () => {
+                                try {
+                                  await navigator.clipboard.writeText(newPassword);
+                                  toast.success('Password copied');
+                                } catch {
+                                  toast.error('Could not copy');
+                                }
+                              }}
+                            >
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                          )}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            title={showPassword ? 'Hide' : 'Show'}
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
                         <Button
                           type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
-                          onClick={() => setShowPassword(!showPassword)}
+                          variant="secondary"
+                          className="h-11"
+                          onClick={() => {
+                            // Generate a strong, non-pwned password.
+                            // Format: Welile-XXXX-####  (random letters + digits, ~80 bits entropy)
+                            const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz';
+                            const digits = '23456789';
+                            let chunk = '';
+                            for (let i = 0; i < 4; i++) chunk += letters[Math.floor(Math.random() * letters.length)];
+                            let nums = '';
+                            for (let i = 0; i < 4; i++) nums += digits[Math.floor(Math.random() * digits.length)];
+                            const generated = `Welile-${chunk}-${nums}`;
+                            setNewPassword(generated);
+                            setShowPassword(true);
+                            toast.success('Strong password generated — tap copy then Reset');
+                          }}
                         >
-                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          <RefreshCw className="h-4 w-4 mr-2" /> Generate
+                        </Button>
+                        <Button
+                          onClick={handleResetPassword}
+                          disabled={resettingPassword || !newPassword || newPassword.length < 6}
+                          variant="outline"
+                          className="h-11 border-warning/40 text-warning hover:bg-warning/10"
+                        >
+                          {resettingPassword ? (
+                            <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Resetting...</>
+                          ) : (
+                            <><KeyRound className="h-4 w-4 mr-2" />Reset</>
+                          )}
                         </Button>
                       </div>
-                      <Button
-                        onClick={handleResetPassword}
-                        disabled={resettingPassword || !newPassword || newPassword.length < 6}
-                        variant="outline"
-                        className="w-full h-12 border-warning/40 text-warning hover:bg-warning/10"
-                      >
-                        {resettingPassword ? (
-                          <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Resetting...</>
-                        ) : (
-                          <><KeyRound className="h-4 w-4 mr-2" />Reset Password</>
-                        )}
-                      </Button>
                     </CardContent>
                   </Card>
 
@@ -1852,7 +1905,7 @@ export default function UserDetailsDialog({ open, onOpenChange, user, onRolesUpd
                                     <div className="ml-8 mt-2 p-3 rounded-xl bg-muted/30 border border-dashed space-y-2">
                                       <p className="text-xs font-semibold text-muted-foreground mb-2">Operations Departments</p>
                                       {OPERATIONS_DEPARTMENTS.map(dept => {
-                                        const isActive = operationsDepartments.includes(dept);
+                                        const isActive = operationsDepartments.includes(dept.toLowerCase());
                                         return (
                                           <div key={dept} className={`flex items-center justify-between p-2 rounded-lg border ${isActive ? 'bg-card border-primary/20' : 'bg-muted/20 border-transparent'}`}>
                                             <div className="flex items-center gap-2">
@@ -2356,7 +2409,7 @@ export default function UserDetailsDialog({ open, onOpenChange, user, onRolesUpd
                                     <p className="text-xs font-semibold text-muted-foreground mb-2">Operations Departments</p>
                                     <div className="grid grid-cols-2 gap-2">
                                       {OPERATIONS_DEPARTMENTS.map(dept => {
-                                        const isActive = operationsDepartments.includes(dept);
+                                        const isActive = operationsDepartments.includes(dept.toLowerCase());
                                         return (
                                           <div key={dept} className={`flex items-center justify-between p-2 rounded-lg border ${isActive ? 'bg-card border-primary/20' : 'bg-muted/20 border-transparent'}`}>
                                             <div className="flex items-center gap-2">

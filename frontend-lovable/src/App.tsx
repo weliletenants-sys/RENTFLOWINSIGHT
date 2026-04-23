@@ -9,31 +9,33 @@ import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ChunkErrorBoundary from "@/components/ChunkErrorBoundary";
 import { PullToRefresh } from "@/components/PullToRefresh";
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
 
 // Critical providers — loaded eagerly for instant auth/routing
 import { AuthProvider } from "@/hooks/useAuth";
 import { CombinedSettingsProvider } from "@/hooks/useCombinedSettings";
 
 // Deferred language/currency — not needed for first paint
-const LanguageProvider = lazy(() => import("@/hooks/useLanguage").then(m => ({ default: m.LanguageProvider })));
-const CurrencyProvider = lazy(() => import("@/hooks/useCurrency").then(m => ({ default: m.CurrencyProvider })));
+const LanguageProvider = lazyWithRetry(() => import("@/hooks/useLanguage").then(m => ({ default: m.LanguageProvider })));
+const CurrencyProvider = lazyWithRetry(() => import("@/hooks/useCurrency").then(m => ({ default: m.CurrencyProvider })));
 
 // Auth providers — deferred since they're not needed for first paint
-const PinAuthProvider = lazy(() => import("@/hooks/usePinAuth").then(m => ({ default: m.PinAuthProvider })));
-const BiometricAuthProvider = lazy(() => import("@/hooks/useBiometricAuth").then(m => ({ default: m.BiometricAuthProvider })));
+const PinAuthProvider = lazyWithRetry(() => import("@/hooks/usePinAuth").then(m => ({ default: m.PinAuthProvider })));
+const BiometricAuthProvider = lazyWithRetry(() => import("@/hooks/useBiometricAuth").then(m => ({ default: m.BiometricAuthProvider })));
 
 // Deferred providers - loaded after first paint
-const CartProvider = lazy(() => import("@/hooks/useCart").then(m => ({ default: m.CartProvider })));
-const ComparisonProvider = lazy(() => import("@/hooks/useProductComparison").then(m => ({ default: m.ComparisonProvider })));
-const OfflineProvider = lazy(() => import("@/contexts/OfflineContext").then(m => ({ default: m.OfflineProvider })));
-const FeatureFlagsProvider = lazy(() => import("@/contexts/FeatureFlagsContext").then(m => ({ default: m.FeatureFlagsProvider })));
+const CartProvider = lazyWithRetry(() => import("@/hooks/useCart").then(m => ({ default: m.CartProvider })));
+const ComparisonProvider = lazyWithRetry(() => import("@/hooks/useProductComparison").then(m => ({ default: m.ComparisonProvider })));
+const OfflineProvider = lazyWithRetry(() => import("@/contexts/OfflineContext").then(m => ({ default: m.OfflineProvider })));
+const FeatureFlagsProvider = lazyWithRetry(() => import("@/contexts/FeatureFlagsContext").then(m => ({ default: m.FeatureFlagsProvider })));
 
 // Lazy load optional UI components
-const Toaster = lazy(() => import("@/components/ui/toaster").then(m => ({ default: m.Toaster })));
+const Toaster = lazyWithRetry(() => import("@/components/ui/toaster").then(m => ({ default: m.Toaster })));
+import MaintenanceBanner from "@/components/MaintenanceBanner";
 
-const DeferredExtras = lazy(() => import("@/components/DeferredExtras"));
-const FloatingToolbar = lazy(() => import("@/components/FloatingToolbar"));
-const PWAInstallPrompt = lazy(() => import("@/components/PWAInstallPrompt"));
+const DeferredExtras = lazyWithRetry(() => import("@/components/DeferredExtras"));
+const FloatingToolbar = lazyWithRetry(() => import("@/components/FloatingToolbar"));
+const PWAInstallPrompt = lazyWithRetry(() => import("@/components/PWAInstallPrompt"));
 
 
 // Index is the entry router — must be eager for instant redirect
@@ -73,6 +75,7 @@ const ActivateSupporter = lazy(() => import('./pages/ActivateSupporter'));
 const AgentRegistrations = lazy(() => import('./pages/AgentRegistrations'));
 const SubAgentAnalytics = lazy(() => import('./pages/SubAgentAnalytics'));
 const Join = lazy(() => import('./pages/Join'));
+const RecordRent = lazy(() => import('./pages/RecordRent'));
 const Calculator = lazy(() => import('./pages/Calculator'));
 const UserManagement = lazy(() => import('./pages/UserManagement'));
 const SupporterEarnings = lazy(() => import('./pages/SupporterEarnings'));
@@ -92,6 +95,9 @@ const RegisterTenantPublic = lazy(() => import('./pages/RegisterTenantPublic'));
 const RegisterPartnerPublic = lazy(() => import('./pages/RegisterPartnerPublic'));
 const ActivatePartner = lazy(() => import('./pages/ActivatePartner'));
 const ResolveShortLink = lazy(() => import('./pages/ResolveShortLink'));
+const TrackedRedirect = lazy(() => import('./pages/TrackedRedirect'));
+const RentAccessLimitPublic = lazy(() => import('./pages/RentAccessLimitPublic'));
+const Unsubscribe = lazy(() => import('./pages/Unsubscribe'));
 const HouseDetail = lazy(() => import('./pages/HouseDetail'));
 const ShopEntry = lazy(() => import('./pages/ShopEntry'));
 const ManagerLogin = lazy(() => import('./pages/ManagerLogin'));
@@ -111,6 +117,7 @@ const HREmployeeProfilePage = lazy(() => import('./pages/hr/EmployeeProfile'));
 const AdminDashboardPage = lazy(() => import('./pages/admin/Dashboard'));
 const AdminUsersPage = lazy(() => import('./pages/admin/Users'));
 const AdminFinancialOpsPage = lazy(() => import('./pages/admin/FinancialOps'));
+const AdminReferralsPage = lazy(() => import('./pages/admin/Referrals'));
 const RoleGuard = lazy(() => import('./components/auth/RoleGuard'));
 const ExecutiveHubPage = lazy(() => import('./pages/ExecutiveHub'));
 const ROITrendsPage = lazy(() => import('./components/executive/ROITrendsPage'));
@@ -141,6 +148,7 @@ const AngelPool = lazy(() => import('./pages/AngelPool'));
 const AngelPoolAgreement = lazy(() => import('./pages/AngelPoolAgreement'));
 const AgentCommissionBenefits = lazy(() => import('./pages/AgentCommissionBenefits'));
 const Internship = lazy(() => import('./pages/Internship'));
+const HolisticProfile = lazy(() => import('./pages/HolisticProfile'));
 
 // Detect iOS standalone mode for cache settings
 const isIOSStandalone = (() => {
@@ -250,7 +258,10 @@ function AppRoutes() {
           <Route path="/welcome" element={<Landing />} />
            <Route path="/internship" element={<Internship />} />
            <Route path="/auth" element={<Auth />} />
+          <Route path="/unsubscribe" element={<Unsubscribe />} />
           <Route path="/r/:code" element={<ResolveShortLink />} />
+          <Route path="/profile/:aiId" element={<HolisticProfile />} />
+          <Route path="/id/:aiId" element={<HolisticProfile publicMode />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/select-role" element={<SelectRole />} />
           <Route path="/transactions" element={<TransactionHistory />} />
@@ -284,6 +295,7 @@ function AppRoutes() {
           <Route path="/sub-agents" element={<SubAgentAnalytics />} />
           <Route path="/agent/partners" element={<AgentPartners />} />
           <Route path="/join" element={<Join />} />
+          <Route path="/record-rent" element={<RecordRent />} />
           <Route path="/calculator" element={<Calculator />} />
           <Route path="/users" element={<RoleGuard allowedRoles={['super_admin', 'manager', 'cto']}><AdminUsersPage /></RoleGuard>} />
           <Route path="/platform-users" element={<RoleGuard allowedRoles={['manager', 'cto']}><UserManagement /></RoleGuard>} />
@@ -323,6 +335,7 @@ function AppRoutes() {
           <Route path="/admin/dashboard" element={<RoleGuard allowedRoles={['super_admin', 'manager', 'employee']}><AdminDashboardPage /></RoleGuard>} />
           <Route path="/admin/users" element={<RoleGuard allowedRoles={['super_admin', 'manager', 'cto']}><AdminUsersPage /></RoleGuard>} />
           <Route path="/admin/financial-ops" element={<RoleGuard allowedRoles={['super_admin', 'manager', 'coo', 'cfo']}><AdminFinancialOpsPage /></RoleGuard>} />
+          <Route path="/admin/referrals" element={<RoleGuard allowedRoles={['super_admin', 'manager', 'cfo', 'coo', 'cto']}><AdminReferralsPage /></RoleGuard>} />
           <Route path="/operations" element={<RoleGuard allowedRoles={['operations', 'super_admin', 'manager']}><OperationsDashboardPage /></RoleGuard>} />
           {/* Legacy redirects */}
           <Route path="/coo-dashboard" element={<RoleGuard allowedRoles={['coo', 'super_admin', 'cto']}><COODashboardPage /></RoleGuard>} />
@@ -346,12 +359,16 @@ function AppRoutes() {
           <Route path="/ai" element={<WelileAIPage />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
+          <Route path="/partners-terms" element={<Terms />} />
+          <Route path="/privacy-policy" element={<Privacy />} />
           <Route path="/share-location" element={<ShareLocation />} />
           <Route path="/investor/portfolio/:token" element={<InvestorPortfolioPublic />} />
           <Route path="/register-tenant" element={<RegisterTenantPublic />} />
           <Route path="/register-partner" element={<RegisterPartnerPublic />} />
           <Route path="/activate" element={<ActivatePartner />} />
           <Route path="/rent-money" element={<RentMoney />} />
+          {/* Bot referral short links: welilereceipts.com/{CODE} — must be last before catch-all */}
+          <Route path="/:code" element={<TrackedRedirect />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
@@ -405,7 +422,42 @@ function DeferredProviders({ children }: { children: ReactNode }) {
   );
 }
 
-const App = () => (
+// Lazy-load the public RecordRent shell (no auth, no settings, no realtime)
+const PublicRecordRent = lazy(() => import('./pages/RecordRent'));
+const RecordRentErrorBoundary = lazy(() => import('./components/public/RecordRentErrorBoundary'));
+
+/**
+ * Standalone shell for /record-rent — bypasses AuthProvider, CombinedSettingsProvider,
+ * realtime, theme chain, PWA prompt, etc. This is critical for in-app browsers
+ * (WhatsApp, Instagram, Facebook) where storage access can be restricted and
+ * cause the full app shell to crash.
+ */
+const PublicRecordRentApp = () => (
+  <HelmetProvider>
+    <QueryClientProvider client={queryClient}>
+      <Suspense fallback={<PageLoader />}>
+        <RecordRentErrorBoundary>
+          <BrowserRouter>
+            <PublicRecordRent />
+          </BrowserRouter>
+        </RecordRentErrorBoundary>
+      </Suspense>
+    </QueryClientProvider>
+  </HelmetProvider>
+);
+
+const isPublicRecordRentRoute = () => {
+  if (typeof window === 'undefined') return false;
+  return window.location.pathname === '/record-rent' || window.location.pathname.startsWith('/record-rent/');
+};
+
+const App = () => {
+  // Early exit for public rent recorder — must run before any provider initializes
+  if (isPublicRecordRentRoute()) {
+    return <PublicRecordRentApp />;
+  }
+
+  return (
   <HelmetProvider>
   <ChunkErrorBoundary>
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
@@ -418,6 +470,7 @@ const App = () => (
                   <LanguageProvider>
                     <CurrencyProvider>
                       <DeferredProviders>
+                        <MaintenanceBanner />
                         <AppRoutes />
                       </DeferredProviders>
                       <Suspense fallback={null}>
@@ -438,5 +491,6 @@ const App = () => (
     </ThemeProvider>
   </ChunkErrorBoundary>
   </HelmetProvider>
-);
+  );
+};
 export default App;

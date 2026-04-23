@@ -211,6 +211,7 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'suspended'>('all');
   const [filterRoiMode, setFilterRoiMode] = useState<'all' | 'monthly_payout' | 'monthly_compounding'>('all');
   const [filterContact, setFilterContact] = useState<'all' | 'has_phone' | 'no_phone' | 'has_email' | 'no_email'>('all');
+  const [filterWallet, setFilterWallet] = useState<'all' | 'has_balance' | 'empty'>('all');
   const [payoutDateFrom, setPayoutDateFrom] = useState<Date | undefined>(undefined);
   const [payoutDateTo, setPayoutDateTo] = useState<Date | undefined>(undefined);
 
@@ -319,6 +320,7 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
   const [addPortfolioDuration, setAddPortfolioDuration] = useState('12');
   const [addPortfolioPayoutDay, setAddPortfolioPayoutDay] = useState('15');
   const [addPortfolioDate, setAddPortfolioDate] = useState('');
+  const [addPortfolioFundingSource, setAddPortfolioFundingSource] = useState<'wallet' | 'proxy_agent'>('wallet');
   const [addingPortfolio, setAddingPortfolio] = useState(false);
 
   // Compound from portfolio view
@@ -966,10 +968,18 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
     }
   }
 
-  /* ─── Add New Portfolio ─── */
+  /* ─── Add New Portfolio (deducts from selected wallet) ─── */
   async function handleAddPortfolio() {
-    if (!detailPartner) return;
-    const amt = Number(addPortfolioAmount);
+    console.log('[handleAddPortfolio] click', {
+      hasDetailPartner: !!detailPartner,
+      addPortfolioAmount,
+      addPortfolioRoi,
+      addPortfolioDuration,
+      addPortfolioFundingSource,
+      proxyAgentInfo,
+    });
+    if (!detailPartner) { toast.error('No partner selected'); return; }
+    const amt = Number(String(addPortfolioAmount).replace(/[^\d.]/g, ''));
     const roi = Number(addPortfolioRoi);
     const duration = Number(addPortfolioDuration);
 
@@ -977,79 +987,49 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
     if (isNaN(roi) || roi <= 0 || roi > 100) { toast.error('ROI must be between 1 and 100'); return; }
     if (isNaN(duration) || duration < 1 || duration > 60) { toast.error('Duration must be 1-60 months'); return; }
 
+    // Funding-source validation
+    const partnerId = detailPartner.profile.id;
+    const sourceBalance = addPortfolioFundingSource === 'wallet'
+      ? detailPartner.walletBalance
+      : proxyAgentInfo?.walletBalance ?? 0;
+    const sourceUserId = addPortfolioFundingSource === 'wallet'
+      ? partnerId
+      : proxyAgentInfo?.agentId;
+
+    if (addPortfolioFundingSource === 'proxy_agent' && !proxyAgentInfo) {
+      toast.error('No proxy agent assigned to this partner');
+      return;
+    }
+    if (!sourceUserId) { toast.error('Funding source unavailable'); return; }
+    if (amt > sourceBalance) {
+      toast.error(`Insufficient funds. Available: ${formatUGX(sourceBalance)} in ${addPortfolioFundingSource === 'wallet' ? 'partner wallet' : `${proxyAgentInfo?.agentName}'s wallet`}`);
+      return;
+    }
+
+
     setAddingPortfolio(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      const partnerId = detailPartner.profile.id;
-      const portfolioCode = `WIP${new Date().toISOString().slice(2, 10).replace(/-/g, '')}${Math.floor(1000 + Math.random() * 9000)}`;
-      const createdAt = addPortfolioDate ? dateOnlyToUtcMiddayIso(addPortfolioDate) : new Date().toISOString();
-      const contributionDate = addPortfolioDate ? dateOnlyToLocalDate(addPortfolioDate) : new Date();
-      const payoutDay = Math.min(contributionDate.getDate(), 28);
-      const maturityDate = new Date(contributionDate);
-      maturityDate.setMonth(maturityDate.getMonth() + duration);
-
-      // next_roi_date = exactly one month from contribution date
-      const nextRoiDate = new Date(contributionDate);
-      nextRoiDate.setMonth(nextRoiDate.getMonth() + 1);
-
-      const { data: newPortfolio, error: insertErr } = await supabase
-        .from('investor_portfolios')
-        .insert({
-          investor_id: partnerId,
-          agent_id: partnerId,
-          investment_amount: amt,
-          roi_percentage: roi,
-          roi_mode: addPortfolioRoiMode,
-          duration_months: duration,
-          payout_day: payoutDay,
-          portfolio_code: portfolioCode,
-          portfolio_pin: String(Math.floor(1000 + Math.random() * 9000)),
-          activation_token: crypto.randomUUID(),
-          status: 'active',
-          created_at: createdAt,
-          maturity_date: formatLocalDateOnly(maturityDate),
-          next_roi_date: formatLocalDateOnly(nextRoiDate),
-        })
-        .select('id')
-        .single();
-
-      if (insertErr) throw insertErr;
-
-      const refId = Math.floor(1000000000000 + Math.random() * 9000000000000).toString();
-      await supabase.from('general_ledger').insert({
-        user_id: partnerId,
-        amount: amt,
-        direction: 'cash_out',
-        category: 'coo_manual_portfolio',
-        source_table: 'investor_portfolios',
-        source_id: newPortfolio.id,
-        reference_id: refId,
-        description: `Manual portfolio created by Welile Operations for ${detailPartner.profile.full_name}`,
-          currency: 'UGX',
-        linked_party: 'Rent Management Pool',
-        transaction_date: createdAt,
-      });
-
-      await supabase.from('audit_logs').insert({
-        user_id: user.id,
-        action_type: 'create_manual_portfolio',
-        table_name: 'investor_portfolios',
-        record_id: newPortfolio.id,
-        metadata: {
+      const { data: result, error } = await supabase.functions.invoke('coo-create-portfolio', {
+        body: {
           partner_id: partnerId,
-          partner_name: detailPartner.profile.full_name,
-          investment_amount: amt,
+          amount: amt,
           roi_percentage: roi,
           roi_mode: addPortfolioRoiMode,
           duration_months: duration,
-          portfolio_code: portfolioCode,
-          reference_id: refId,
+          contribution_date: addPortfolioDate || null,
+          payment_method: addPortfolioFundingSource,
+          source_wallet_user_id: sourceUserId,
         },
       });
+      if (error) throw new Error(typeof result === 'object' && result?.error ? result.error : error.message);
+      if (result?.error) throw new Error(result.error);
 
-      toast.success(`Portfolio ${portfolioCode} created`, { description: `${formatUGX(amt)} · ${roi}% ROI · ${duration}mo` });
+      const sourceLabel = addPortfolioFundingSource === 'wallet'
+        ? 'partner wallet'
+        : `${proxyAgentInfo?.agentName}'s proxy-agent wallet`;
+      toast.success(`Portfolio ${result.portfolio_code} created`, {
+        description: `${formatUGX(amt)} debited from ${sourceLabel} · ${roi}% ROI · ${duration}mo`,
+      });
 
       setAddPortfolioOpen(false);
       setAddPortfolioAmount('');
@@ -1058,6 +1038,8 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
       setAddPortfolioDuration('12');
       setAddPortfolioPayoutDay('15');
       setAddPortfolioDate('');
+      setAddPortfolioFundingSource('wallet');
+      setProxyAgentInfo(null);
       await openPartnerDetail(partnerId);
       refreshInBackground();
     } catch (e: any) {
@@ -1156,6 +1138,8 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
     else if (filterContact === 'no_phone') result = result.filter(r => !r.phone || r.phone.includes('@'));
     else if (filterContact === 'has_email') result = result.filter(r => r.email && !r.email.includes('placeholder'));
     else if (filterContact === 'no_email') result = result.filter(r => !r.email || r.email.includes('placeholder'));
+    if (filterWallet === 'has_balance') result = result.filter(r => (r.walletBalance || 0) > 0);
+    else if (filterWallet === 'empty') result = result.filter(r => (r.walletBalance || 0) <= 0);
     if (payoutDateFrom || payoutDateTo) {
       result = result.filter(r => {
         const portfolioData = (r as any).nextRoiDate;
@@ -1179,7 +1163,7 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
       });
     }
     return result;
-  }, [rows, sortKey, sortDir, filterStatus, filterRoiMode, filterContact, payoutDateFrom, payoutDateTo]);
+  }, [rows, sortKey, sortDir, filterStatus, filterRoiMode, filterContact, filterWallet, payoutDateFrom, payoutDateTo]);
 
   // Server-side pagination: use totalCount for page count, display all rows from current page
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
@@ -1545,11 +1529,13 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
           <input type="text" value={search} onChange={e => { setSearch(e.target.value); setPage(0); }}
             placeholder="Search by name or phone…"
             className="h-9 w-full rounded-lg border border-border bg-background pl-8 pr-8 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors" />
-          {search && (
+          {isSearching ? (
+            <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-primary animate-spin" />
+          ) : search ? (
             <button onClick={() => { setSearch(''); setPage(0); }} className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-muted">
               <X className="h-3 w-3 text-muted-foreground" />
             </button>
-          )}
+          ) : null}
         </div>
         <Select value={filterStatus} onValueChange={(v: any) => { setFilterStatus(v); setPage(0); }}>
           <SelectTrigger className="w-[120px] h-9 text-xs"><Filter className="h-3 w-3 mr-1 text-muted-foreground" /><SelectValue /></SelectTrigger>
@@ -1575,6 +1561,14 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
             <SelectItem value="no_phone">No Phone</SelectItem>
             <SelectItem value="has_email">Has Email</SelectItem>
             <SelectItem value="no_email">No Email</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={filterWallet} onValueChange={(v: any) => { setFilterWallet(v); setPage(0); }}>
+          <SelectTrigger className="w-[140px] h-9 text-xs"><Wallet className="h-3 w-3 mr-1 text-muted-foreground" /><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Wallets</SelectItem>
+            <SelectItem value="has_balance">Has Balance</SelectItem>
+            <SelectItem value="empty">Empty</SelectItem>
           </SelectContent>
         </Select>
         {/* Payment Date Range Filter */}
@@ -1634,12 +1628,7 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
       </div>
 
       {/* Table */}
-      <div className={cn("rounded-xl border border-border bg-card shadow-sm overflow-hidden relative", isSearching && "opacity-60 pointer-events-none")}>
-        {isSearching && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/30">
-            <Loader2 className="h-5 w-5 animate-spin text-primary" />
-          </div>
-        )}
+      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-xs sm:text-sm min-w-[640px]">
             <thead>
@@ -1759,7 +1748,12 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
                       <Button
                         size="sm"
                         className="h-7 px-3 text-[10px] gap-1"
-                        onClick={() => setAddPortfolioOpen(true)}
+                        onClick={() => {
+                          setAddPortfolioFundingSource('wallet');
+                          setProxyAgentInfo(null);
+                          if (detailPartner?.profile?.id) fetchProxyAgentForPartner(detailPartner.profile.id);
+                          setAddPortfolioOpen(true);
+                        }}
                       >
                         <Plus className="h-3 w-3" /> Add Portfolio
                       </Button>
@@ -2137,10 +2131,62 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
               <Plus className="h-5 w-5 text-primary" /> Add Investment Portfolio
             </DialogTitle>
             <DialogDescription>
-              Create a new portfolio for {detailPartner?.profile.full_name}. No wallet balance required.
+              Create a new portfolio for {detailPartner?.profile.full_name}. Funds are deducted from the selected wallet immediately.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Funding Source Selector */}
+            <div className="space-y-2">
+              <Label>Funding Source *</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAddPortfolioFundingSource('wallet')}
+                  className={`p-3 rounded-lg border text-left transition-colors ${
+                    addPortfolioFundingSource === 'wallet'
+                      ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                      : 'border-border hover:bg-muted/40'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 text-xs font-semibold">
+                    <Wallet className="h-3.5 w-3.5 text-primary" /> Partner Wallet
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-1 truncate">{detailPartner?.profile.full_name}</p>
+                  <p className="text-sm font-bold mt-1">{detailPartner ? formatUGX(detailPartner.walletBalance) : '—'}</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => proxyAgentInfo && setAddPortfolioFundingSource('proxy_agent')}
+                  disabled={!proxyAgentInfo && !loadingProxyAgent}
+                  className={`p-3 rounded-lg border text-left transition-colors ${
+                    addPortfolioFundingSource === 'proxy_agent'
+                      ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                      : 'border-border hover:bg-muted/40'
+                  } ${!proxyAgentInfo ? 'opacity-60 cursor-not-allowed' : ''}`}
+                >
+                  <div className="flex items-center gap-2 text-xs font-semibold">
+                    <Users className="h-3.5 w-3.5 text-primary" /> Proxy Agent Wallet
+                  </div>
+                  {loadingProxyAgent ? (
+                    <p className="text-[11px] text-muted-foreground mt-1">Checking...</p>
+                  ) : proxyAgentInfo ? (
+                    <>
+                      <p className="text-[11px] text-muted-foreground mt-1 truncate">{proxyAgentInfo.agentName}</p>
+                      <p className="text-sm font-bold mt-1">{formatUGX(proxyAgentInfo.walletBalance)}</p>
+                    </>
+                  ) : (
+                    <p className="text-[11px] text-muted-foreground mt-1">No proxy agent assigned</p>
+                  )}
+                </button>
+              </div>
+              {addPortfolioFundingSource === 'proxy_agent' && proxyAgentInfo && Number(addPortfolioAmount) > proxyAgentInfo.walletBalance && (
+                <p className="text-[11px] text-destructive">⚠ Amount exceeds proxy agent wallet balance</p>
+              )}
+              {addPortfolioFundingSource === 'wallet' && detailPartner && Number(addPortfolioAmount) > detailPartner.walletBalance && (
+                <p className="text-[11px] text-destructive">⚠ Amount exceeds partner wallet balance</p>
+              )}
+            </div>
+
             <div className="space-y-2">
               <Label>Investment Amount (UGX) *</Label>
               <Input
@@ -2216,7 +2262,11 @@ export default function COOPartnersPage({ readOnly = false }: { readOnly?: boole
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddPortfolioOpen(false)} disabled={addingPortfolio}>Cancel</Button>
-            <Button onClick={handleAddPortfolio} disabled={addingPortfolio}>
+            <Button
+              type="button"
+              onClick={handleAddPortfolio}
+              disabled={addingPortfolio}
+            >
               {addingPortfolio ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Creating...</> : <><Plus className="h-4 w-4 mr-2" /> Create Portfolio</>}
             </Button>
           </DialogFooter>

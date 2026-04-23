@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { validateFullName, mapProfileFullNameDbError, FULL_NAME_ERROR } from "../_shared/validateFullName.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,14 +11,6 @@ function ok(data: unknown) {
 }
 function err(msg: string, status = 400) {
   return new Response(JSON.stringify({ error: msg }), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-}
-
-function validateFullName(v: unknown): string | null {
-  if (typeof v !== 'string') return null;
-  const c = v.trim();
-  if (c.length < 2 || c.length > 100) return null;
-  if (!/^[\p{L}\p{M}\s'.-]+$/u.test(c)) return null;
-  return c;
 }
 
 function validatePhone(v: unknown): string | null {
@@ -57,10 +50,11 @@ Deno.serve(async (req) => {
     if (new Date(tokenData.expires_at) < new Date()) return err("This link has expired");
     if (tokenData.uses_count >= tokenData.max_uses) return err("This link has reached its usage limit");
 
-    // Validate required fields
-    const full_name = validateFullName(body.full_name);
+    // Validate required fields (shared rules — same message client + DB trigger use)
+    const tenantNameCheck = validateFullName(body.full_name);
+    if (!tenantNameCheck.valid) return err(tenantNameCheck.error || FULL_NAME_ERROR);
+    const full_name = tenantNameCheck.trimmed;
     const phone = validatePhone(body.phone);
-    if (!full_name) return err("Invalid name. Must be 2-100 characters, letters only.");
     if (!phone) return err("Invalid phone number format.");
 
     const income_type = body.income_type as string;
@@ -72,7 +66,8 @@ Deno.serve(async (req) => {
     const daily_repayment = Number(body.daily_repayment) || 0;
     const no_smartphone = body.no_smartphone === true;
     const house_category = (body.house_category as string) || 'single-room';
-    const landlord_name = validateFullName(body.landlord_name);
+    const landlordNameCheck = validateFullName(body.landlord_name);
+    const landlord_name = landlordNameCheck.valid ? landlordNameCheck.trimmed : null;
     const landlord_phone = validatePhone(body.landlord_phone);
     const property_address = typeof body.property_address === 'string' ? body.property_address.trim() : '';
     const gps_lat = typeof body.gps_lat === 'number' ? body.gps_lat : null;
@@ -83,7 +78,7 @@ Deno.serve(async (req) => {
     const house_photos = Array.isArray(body.house_photos) ? body.house_photos as string[] : [];
 
     if (!rent_amount || rent_amount <= 0) return err("Rent amount is required");
-    if (!landlord_name) return err("Invalid landlord name");
+    if (!landlord_name) return err(`Landlord name: ${landlordNameCheck.error || FULL_NAME_ERROR}`);
     if (!landlord_phone) return err("Invalid landlord phone");
     if (!property_address) return err("Property address is required");
     if (!lc1_name || !lc1_phone || !lc1_village) return err("LC1 Chairperson details are required");
@@ -100,6 +95,8 @@ Deno.serve(async (req) => {
     let userId: string;
     let isExisting = false;
     let activationToken: string | null = null;
+    let createdEmail: string | null = null;
+    let createdPassword: string | null = null;
 
     if (existingByPhone && existingByPhone.length > 0) {
       userId = existingByPhone[0].id;
@@ -118,15 +115,32 @@ Deno.serve(async (req) => {
         else return err(`Failed to create tenant: ${createErr.message}`, 500);
       } else {
         userId = authData.user.id;
-        await supabaseAdmin.from("profiles").update({ full_name, phone: cleanPhone }).eq("id", userId);
-        await supabaseAdmin.from("user_roles").upsert({ user_id: userId, role: "tenant", enabled: true }, { onConflict: "user_id,role" });
+        const { error: profileUpdateErr } = await supabaseAdmin
+          .from("profiles")
+          .update({ full_name, phone: cleanPhone })
+          .eq("id", userId);
+        if (profileUpdateErr) {
+          // If the DB trigger rejected the name, surface the friendly client-facing message
+          const friendly = mapProfileFullNameDbError(profileUpdateErr);
+          if (friendly) return err(friendly);
+        }
+        // Grant all 4 public roles so the tenant can access every public dashboard
+        // (tenant, agent, landlord, supporter) once they activate.
+        const PUBLIC_ROLES = ["tenant", "agent", "landlord", "supporter"] as const;
+        await supabaseAdmin.from("user_roles").upsert(
+          PUBLIC_ROLES.map(role => ({ user_id: userId, role, enabled: true })),
+          { onConflict: "user_id,role" }
+        );
         await supabaseAdmin.from("referrals").upsert({ referrer_id: agent_id, referred_id: userId }, { onConflict: "referrer_id,referred_id" });
 
         activationToken = crypto.randomUUID();
         await supabaseAdmin.from("supporter_invites").insert({
           full_name, phone: cleanPhone, email: virtualEmail, temp_password: tempPassword,
-          activation_token: activationToken, created_by: agent_id, role: "tenant", status: "pending",
+          activation_token: activationToken, created_by: agent_id, role: "tenant",
+          status: "activated", activated_at: new Date().toISOString(), activated_user_id: userId,
         });
+        createdEmail = virtualEmail;
+        createdPassword = tempPassword;
       }
     }
 
@@ -200,6 +214,11 @@ Deno.serve(async (req) => {
       tenant_id: userId!,
       rent_request_id: rentReq?.id,
       existing: isExisting,
+      // Auto-sign-in credentials (only present for newly-created tenants).
+      // For existing users we cannot return their password — the client will
+      // show a "you're already registered" message and route them to login.
+      auth_email: createdEmail,
+      auth_password: createdPassword,
     });
 
   } catch (error: any) {

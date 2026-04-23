@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { checkTreasuryGuard } from "../_shared/treasuryGuard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const REGISTRATION_BONUS = 5000;
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -39,6 +39,10 @@ serve(async (req) => {
     }
 
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Treasury guard: bonus credits agent wallet — block when paused
+    const guardBlock = await checkTreasuryGuard(adminClient, "credit");
+    if (guardBlock) return guardBlock;
 
     // Verify the landlord was registered by this user
     const { data: landlord, error: landlordErr } = await adminClient

@@ -7,6 +7,7 @@ import { PlatformVsWalletSummary } from '@/components/cfo/PlatformVsWalletSummar
 import { CFOROIRequests } from '@/components/cfo/CFOROIRequests';
 import { CFOOverviewDashboard } from '@/components/cfo/CFOOverviewDashboard';
 import { DirectCreditTool } from '@/components/cfo/DirectCreditTool';
+import { RevenueExpenseDashboard } from '@/components/cfo/RevenueExpenseDashboard';
 
 import { FinancialStatementsPanel } from '@/components/manager/FinancialStatementsPanel';
 import { BufferAccountPanel } from '@/components/manager/BufferAccountPanel';
@@ -35,6 +36,7 @@ import { AngelPoolManagementPanel } from '@/components/executive/AngelPoolManage
 import { WalletRetractionsFeed } from '@/components/cfo/WalletRetractionsFeed';
 import { CFOAdvancesManager } from '@/components/cfo/CFOAdvancesManager';
 import { CFOAdvanceRequestPayments } from '@/components/cfo/CFOAdvanceRequestPayments';
+import { BusinessAdvanceQueue } from '@/components/ops/BusinessAdvanceQueue';
 import { ManagerApprovalAudit } from '@/components/cfo/ManagerApprovalAudit';
 import { CFOAgentRequisitions } from '@/components/cfo/CFOAgentRequisitions';
 import { RentCollectionsFeed } from '@/components/cfo/RentCollectionsFeed';
@@ -149,6 +151,7 @@ export default function CFODashboardPage() {
         return (
           <div className="space-y-6">
             <CFOAdvanceRequestPayments />
+            <BusinessAdvanceQueue stage="cfo" />
             <CFOAdvancesManager />
           </div>
         );
@@ -170,6 +173,8 @@ export default function CFODashboardPage() {
         );
       case 'ledger-health':
         return <LedgerHealthPanel />;
+      case 'revenue-expenses':
+        return <RevenueExpenseDashboard />;
       default:
         return <CFOOverviewDashboard onTabChange={setActiveTab} />;
     }

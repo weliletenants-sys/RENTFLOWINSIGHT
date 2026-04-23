@@ -13,6 +13,8 @@ import { Loader2, Send, ArrowUpRight, ArrowDownLeft, TrendingUp, TrendingDown, M
 import { UserSearchPicker } from './UserSearchPicker';
 import { TreasuryImpactBanner } from './TreasuryImpactBanner';
 import { RentDisbursementQueue } from './RentDisbursementQueue';
+import { BusinessAdvanceDisbursementQueue } from './BusinessAdvanceDisbursementQueue';
+import { ROIPayoutQueue } from './ROIPayoutQueue';
 import { PayoutAutomationToggle } from './PayoutAutomationToggle';
 
 type Operation = 'credit' | 'debit';
@@ -55,6 +57,15 @@ const PAYOUT_CATEGORIES: PayoutCategory[] = [
     allowedOps: ['credit'],
   },
   {
+    id: 'business_advance',
+    label: '💼 Business Advance',
+    description: 'COO-approved business advances paid into tenant wallets — earns 1% daily compounding interest (4% commission to originating agent)',
+    impact: 'revenue',
+    walletCategory: 'rent_disbursement',
+    platformCategory: 'rent_disbursement',
+    allowedOps: ['credit'],
+  },
+  {
     id: 'marketing_expenses',
     label: '📢 Marketing Expenses',
     description: 'Payments for marketing, advertising, and promotional activities',
@@ -64,6 +75,7 @@ const PAYOUT_CATEGORIES: PayoutCategory[] = [
     allowedOps: ['credit'],
     subCategories: [
       { id: 'marketing_materials', label: 'Marketing Materials' },
+      { id: 'events_exhibition', label: 'Events & Exhibition' },
     ],
   },
   {
@@ -83,6 +95,10 @@ const PAYOUT_CATEGORIES: PayoutCategory[] = [
     walletCategory: 'research_development_expense',
     platformCategory: 'research_development_expense',
     allowedOps: ['credit'],
+    subCategories: [
+      { id: 'software', label: 'Software' },
+      { id: 'welile_dowry', label: 'Welile Dowry' },
+    ],
   },
   {
     id: 'operational_expense',
@@ -101,6 +117,7 @@ const PAYOUT_CATEGORIES: PayoutCategory[] = [
       { id: 'airtime', label: 'Airtime' },
       { id: 'stationery', label: 'Stationery' },
       { id: 'property_equipment', label: 'Property & Equipment' },
+      { id: 'eviction_enforcement', label: 'Eviction & Enforcement' },
     ],
   },
   {
@@ -212,6 +229,41 @@ const IMPACT_CONFIG: Record<FinancialImpact, { label: string; color: string; ico
   neutral: { label: 'Neutral', color: 'text-muted-foreground bg-muted/50 border-border', icon: Minus },
 };
 
+// Map a wallet category to the wallet bucket it lands in, so the CFO knows
+// whether the user can actually withdraw the credited amount.
+type WalletBucket = 'withdrawable' | 'float' | 'advance';
+const WALLET_BUCKET_MAP: Record<string, WalletBucket> = {
+  roi_wallet_credit: 'withdrawable',
+  agent_commission_earned: 'withdrawable',
+  system_balance_correction: 'withdrawable',
+  wallet_transfer: 'withdrawable',
+  rent_disbursement: 'float',
+  marketing_expense: 'withdrawable',
+  research_development_expense: 'withdrawable',
+  general_admin_expense: 'withdrawable',
+  payroll_expense: 'withdrawable',
+  tax_expense: 'withdrawable',
+  interest_expense: 'withdrawable',
+  equipment_expense: 'withdrawable',
+};
+const BUCKET_LABEL: Record<WalletBucket, { name: string; note: string; tone: string }> = {
+  withdrawable: {
+    name: 'Withdrawable by user',
+    note: 'Lands directly in the user\u2019s withdrawable bucket — they can cash out immediately.',
+    tone: 'text-emerald-700 bg-emerald-50 border-emerald-200',
+  },
+  advance: {
+    name: 'Withdrawable by user (after advance recovery)',
+    note: 'Sweeps any outstanding advance debt first, then the remainder lands in withdrawable. Advance balance also counts as withdrawable.',
+    tone: 'text-emerald-700 bg-emerald-50 border-emerald-200',
+  },
+  float: {
+    name: 'Operational Float — not withdrawable',
+    note: 'Company/operational money reserved for agent/partner operations. The user CANNOT withdraw this.',
+    tone: 'text-amber-700 bg-amber-50 border-amber-200',
+  },
+};
+
 export function DirectCreditTool() {
   const { toast } = useToast();
   const qc = useQueryClient();
@@ -230,6 +282,33 @@ export function DirectCreditTool() {
       const { count, error } = await supabase
         .from('rent_requests')
         .select('id', { count: 'exact', head: true })
+        .eq('status', 'coo_approved');
+      if (error) return 0;
+      return count ?? 0;
+    },
+    staleTime: 20_000,
+  });
+
+  const { data: businessAdvanceQueueCount = 0 } = useQuery({
+    queryKey: ['business-advance-disbursement-queue-count'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('business_advances')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'coo_approved');
+      if (error) return 0;
+      return count ?? 0;
+    },
+    staleTime: 20_000,
+  });
+
+  const { data: roiPayoutQueueCount = 0 } = useQuery({
+    queryKey: ['roi-payout-queue-count'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('pending_wallet_operations')
+        .select('id', { count: 'exact', head: true })
+        .eq('category', 'roi_payout')
         .eq('status', 'coo_approved');
       if (error) return 0;
       return count ?? 0;
@@ -256,6 +335,9 @@ export function DirectCreditTool() {
   );
 
   const isRentDisbursement = selectedCategoryId === 'rent_disbursement';
+  const isBusinessAdvance = selectedCategoryId === 'business_advance';
+  const isROIPayout = selectedCategoryId === 'roi_payout';
+  const isQueueCategory = isRentDisbursement || isBusinessAdvance || isROIPayout;
 
   const handleOperationChange = (op: Operation) => {
     setOperation(op);
@@ -399,7 +481,14 @@ export function DirectCreditTool() {
               <option value="">Select a category...</option>
               {availableCategories.map((cat) => {
                 const impactLabel = IMPACT_CONFIG[cat.impact].label;
-                const readySuffix = cat.id === 'rent_disbursement' && rentQueueCount > 0 ? ` • ${rentQueueCount} ready` : '';
+                let readySuffix = '';
+                if (cat.id === 'rent_disbursement' && rentQueueCount > 0) {
+                  readySuffix = ` • ${rentQueueCount} ready`;
+                } else if (cat.id === 'business_advance' && businessAdvanceQueueCount > 0) {
+                  readySuffix = ` • ${businessAdvanceQueueCount} ready`;
+                } else if (cat.id === 'roi_payout' && roiPayoutQueueCount > 0) {
+                  readySuffix = ` • ${roiPayoutQueueCount} ready`;
+                }
                 return (
                   <option key={cat.id} value={cat.id}>
                     {`${cat.label} — ${impactLabel}${readySuffix}`}
@@ -438,7 +527,7 @@ export function DirectCreditTool() {
 
         {/* Category Impact Explanation */}
 
-        {selectedCategory && impactInfo && ImpactIcon && !isRentDisbursement && !needsSubCategory && (
+        {selectedCategory && impactInfo && ImpactIcon && !isQueueCategory && !needsSubCategory && (
           <div className={`rounded-lg border p-3 text-xs space-y-1.5 ${impactInfo.color}`}>
             <div className="flex items-center gap-2 font-semibold">
               <ImpactIcon className="h-4 w-4" />
@@ -475,8 +564,18 @@ export function DirectCreditTool() {
           <RentDisbursementQueue />
         )}
 
-        {/* ── MANUAL PAYOUT FORM (non-rent categories) ── */}
-        {!isRentDisbursement && selectedCategoryId && !needsSubCategory && (
+        {/* ── BUSINESS ADVANCE DISBURSEMENT QUEUE ── */}
+        {isBusinessAdvance && (
+          <BusinessAdvanceDisbursementQueue />
+        )}
+
+        {/* ── ROI PAYOUT QUEUE ── */}
+        {isROIPayout && (
+          <ROIPayoutQueue />
+        )}
+
+        {/* ── MANUAL PAYOUT FORM (non-queue categories) ── */}
+        {!isQueueCategory && selectedCategoryId && !needsSubCategory && (
           <>
             <UserSearchPicker
               label="Search User"
@@ -557,6 +656,18 @@ export function DirectCreditTool() {
                     </>
                   )}
                 </div>
+                {isCredit && (() => {
+                  const bucket = WALLET_BUCKET_MAP[selectedCategory.walletCategory] ?? 'withdrawable';
+                  const meta = BUCKET_LABEL[bucket];
+                  return (
+                    <div className={`mt-2 rounded-md border p-2 text-[11px] ${meta.tone}`}>
+                      <div className="font-semibold">
+                        💼 Lands in: {meta.name} bucket
+                      </div>
+                      <div className="opacity-80 mt-0.5">{meta.note}</div>
+                    </div>
+                  );
+                })()}
               </div>
             )}
 

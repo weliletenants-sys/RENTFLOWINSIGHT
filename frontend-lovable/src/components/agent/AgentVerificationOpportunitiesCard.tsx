@@ -26,7 +26,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { useGeoCapture } from '@/hooks/useGeoCapture';
+import { useGeoLocation } from '@/hooks/useGeoLocation';
 
 interface UnverifiedRequest {
   id: string;
@@ -56,7 +56,7 @@ interface UnverifiedHouse {
 
 export function AgentVerificationOpportunitiesCard() {
   const { user } = useAuth();
-  const { captureLocation, loading: gpsLoading } = useGeoCapture();
+  const { captureLocation, loading: gpsLoading } = useGeoLocation();
   const [tenantCount, setTenantCount] = useState(0);
   const [houseCount, setHouseCount] = useState(0);
   const [open, setOpen] = useState(false);

@@ -25,10 +25,14 @@ const WalletCard = lazy(() => import('@/components/wallet/WalletCard').then(m =>
 const DiagnosticsSection = lazy(() => import('@/components/settings/DiagnosticsSection'));
 const PinSecuritySection = lazy(() => import('@/components/settings/PinSecuritySection'));
 const BiometricSecuritySection = lazy(() => import('@/components/settings/BiometricSecuritySection'));
+const TrustPrivacySection = lazy(() => import('@/components/settings/TrustPrivacySection'));
 const MyLandlordsSection = lazy(() => import('@/components/tenant/MyLandlordsSection'));
 const MyTenantsSection = lazy(() => import('@/components/landlord/MyTenantsSection'));
 const RentDiscountToggle = lazy(() => import('@/components/tenant/RentDiscountToggle'));
 const StaffAccessCard = lazy(() => import('@/components/settings/StaffAccessCard'));
+const ResidenceAddressForm = lazy(() => import('@/components/profile/ResidenceAddressForm'));
+const EmailEditor = lazy(() => import('@/components/profile/EmailEditor'));
+const ShareCardThemeSettings = lazy(() => import('@/components/agent/ShareCardThemeSettings'));
 
 class SectionBoundary extends Component<{ children: ReactNode; name: string }, { hasError: boolean }> {
   state = { hasError: false };
@@ -258,10 +262,7 @@ export default function Settings() {
                       <Label htmlFor="fullName" className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Your Name</Label>
                       <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full name" className="pl-10 h-12 rounded-xl" /></div>
                     </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="email" className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Email</Label>
-                      <div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input id="email" value={profile?.email || ''} disabled className="pl-10 h-12 rounded-xl bg-muted/50" /></div>
-                    </div>
+                    {/* Email is now editable via dedicated EmailEditor below */}
                     <div className="space-y-1.5">
                       <Label htmlFor="phone" className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Phone</Label>
                       <div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g. 0783673998" className="pl-10 h-12 rounded-xl" /></div>
@@ -297,6 +298,14 @@ export default function Settings() {
                     <Button onClick={handleSave} disabled={saving} className="w-full gap-2 h-12 rounded-xl text-sm font-bold">{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Changes</Button>
                   </CardContent>
                 </Card>
+                {user && profile && (
+                  <LazySection name="EmailEditor">
+                    <EmailEditor mode="self" userId={user.id} currentEmail={profile.email} onSaved={(e) => setProfile({ ...profile, email: e })} />
+                  </LazySection>
+                )}
+                {user && (
+                  <LazySection name="ResidenceAddress"><ResidenceAddressForm userId={user.id} /></LazySection>
+                )}
                 <LazySection name="Wallet"><WalletCard /></LazySection>
               </div>
             )}
@@ -340,8 +349,9 @@ export default function Settings() {
             )}
 
             {activeSection === 'appearance' && (
-              <Card className="border-border/40 rounded-2xl">
-                <CardContent className="pt-5 space-y-5">
+              <div className="space-y-4">
+                <Card className="border-border/40 rounded-2xl">
+                  <CardContent className="pt-5 space-y-5">
                   <SettingsRow label="Dark / Light" description="Change the look"><ThemeToggle /></SettingsRow>
                   <div className="space-y-3">
                     <div className="flex items-center gap-2"><Type className="h-4 w-4 text-primary" /><p className="font-medium text-sm">Text Size</p></div>
@@ -366,14 +376,21 @@ export default function Settings() {
                   </div>
                   <SettingsRow label="Stay Logged In" description="Don't ask to sign in every time" icon={LogIn}><Switch checked={preferences.rememberLogin} onCheckedChange={(c) => { updatePreference('rememberLogin', c); toast.success(c ? 'Login remembered' : 'Login not remembered'); }} /></SettingsRow>
                   <SettingsRow label="Skip Welcome Screen" description={preferences.skipSplash ? 'Goes straight to dashboard' : 'Shows welcome first'} icon={RotateCcw}><Switch checked={preferences.skipSplash} onCheckedChange={(c) => { updatePreference('skipSplash', c); toast.success(c ? 'Splash skipped' : 'Splash enabled'); }} /></SettingsRow>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+                {roles.includes('agent') && (
+                  <LazySection name="ShareCardTheme">
+                    <ShareCardThemeSettings />
+                  </LazySection>
+                )}
+              </div>
             )}
 
             {activeSection === 'security' && (
               <div className="space-y-4">
                 <LazySection name="PinSecurity"><PinSecuritySection /></LazySection>
                 <LazySection name="BiometricSecurity"><BiometricSecuritySection /></LazySection>
+                <LazySection name="TrustPrivacy"><TrustPrivacySection /></LazySection>
               </div>
             )}
 

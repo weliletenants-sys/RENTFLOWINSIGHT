@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { getLocationData } from '@/hooks/useGeolocation';
 import { generatePhoneEmailVariants, cleanPhoneNumber, isValidPhoneNumber, getTriedPhoneFormats } from '@/lib/phoneUtils';
-import { validateSignUp } from '@/lib/authValidation';
+import { validateSignUp, validateFullName } from '@/lib/authValidation';
 
 const VALID_SIGNUP_ROLES = ['tenant', 'agent', 'landlord', 'supporter'] as const;
 
@@ -244,7 +244,9 @@ export function useAuthForm() {
       toast({ title: 'Phone Already Registered', description: duplicateMessage || 'This phone number is already in use.', variant: 'destructive' });
       return;
     }
-    const validationError = validateSignUp({ password, confirmPassword, fullName, phone });
+    const nameCheck = validateFullName(fullName);
+    const trimmedFullName = nameCheck.trimmed;
+    const validationError = validateSignUp({ password, confirmPassword, fullName: trimmedFullName, phone });
     if (validationError) {
       toast({ title: 'Error', description: validationError, variant: 'destructive' });
       return;
@@ -261,7 +263,7 @@ export function useAuthForm() {
     const storedReferrerId = referrerIdState || localStorage.getItem('referral_agent_id');
     console.log('[Auth] Signup with referrer:', storedReferrerId, '(state:', referrerIdState, ', localStorage:', localStorage.getItem('referral_agent_id'), ')');
 
-    const { error } = await signUpWithoutRole(generatedEmail, password, fullName, fullPhone, storedReferrerId || undefined, preSelectedRole || undefined);
+    const { error } = await signUpWithoutRole(generatedEmail, password, trimmedFullName, fullPhone, storedReferrerId || undefined, preSelectedRole || undefined);
     if (error) {
       let errorMessage = error.message;
       if (error.message.includes('already registered')) {
@@ -285,25 +287,126 @@ export function useAuthForm() {
       return;
     }
 
+    // Normalize phone to last 9 digits (strips country code / leading zeros)
+    const digits = phone.replace(/\D/g, '');
+    const last9 = digits.slice(-9);
+
+    // Build email candidates — real emails first, then placeholders as fallback
+    const emailCandidates: string[] = [];
+
+    // RPC lookup first: find real email linked to this phone (Gmail, Outlook, etc.)
+    let rpcEmails: string[] = [];
+    try {
+      const { data } = await Promise.race([
+        supabase.rpc('get_email_by_phone', { phone_variants: [`0${last9}`, `256${last9}`, last9] }),
+        new Promise<{ data: null }>((resolve) => setTimeout(() => resolve({ data: null }), 5000)),
+      ]);
+      if (data?.length) {
+        rpcEmails = (data as { email: string }[]).map(r => r.email).filter(Boolean);
+      }
+    } catch {
+      // RPC lookup failed — continue to direct profile lookup fallback
+    }
+
+    // Fallback: direct profile lookup by phone so phone->email login still works if RPC is slow/unavailable
+    if (!rpcEmails.length) {
+      try {
+        const { data: profileMatches } = await supabase
+          .from('profiles')
+          .select('email')
+          .in('phone', [`0${last9}`, `256${last9}`, last9])
+          .not('email', 'is', null)
+          .limit(10);
+
+        if (profileMatches?.length) {
+          rpcEmails = profileMatches
+            .map((row) => row.email)
+            .filter((value): value is string => Boolean(value));
+        }
+      } catch {
+        // Ignore and continue with generated placeholder candidates
+      }
+    }
+
+    if (rpcEmails.length) {
+      // PRIORITY: Real emails first (Gmail, Outlook, etc.) — these are verified accounts
+      const realEmails = rpcEmails.filter(e => !e.includes('@welile.'));
+      const placeholderEmails = rpcEmails.filter(e => e.includes('@welile.'));
+      emailCandidates.push(...realEmails, ...placeholderEmails);
+    }
+
+    // Fallback: generated placeholder emails (tried only if RPC found nothing)
+    emailCandidates.push(
+      `0${last9}@welile.user`,
+      `256${last9}@welile.user`,
+      `${last9}@welile.user`,
+      `0${last9}@welile.agent`,
+      `256${last9}@welile.agent`,
+      `${last9}@welile.agent`,
+    );
+
+    // Deduplicate while preserving order
+    const uniqueCandidates = [...new Set(emailCandidates)];
+
+    // Try each email candidate with the provided password
     let loginSuccess = false;
     let lastError: Error | null = null;
-    let accountExists = false;
+    let accountExists = rpcEmails.length > 0;
 
-    try {
-      // By posting the raw phone variable, our global Proxy Interceptor
-      // properly maps it natively to /api/auth/login, skipping flawed Lovable email resolution
-      const { error } = await signIn(phone, password);
-      
-      if (!error) {
-        loginSuccess = true;
-      } else {
+    // Split candidates: RPC-matched emails first, generated placeholders only as fallback
+    const rpcMatchedEmails = uniqueCandidates.slice(0, rpcEmails.length);
+    const generatedPlaceholders = uniqueCandidates.slice(rpcEmails.length);
+
+    // Phase 1: Try RPC-matched emails (max 2-3 attempts)
+    for (const emailToTry of rpcMatchedEmails) {
+      try {
+        const { error } = await signIn(emailToTry, password);
+        if (!error) {
+          loginSuccess = true;
+          lastError = null;
+          break;
+        }
         lastError = error;
-        if (error.message && (error.message.includes('Invalid') || error.message.includes('Incorrect'))) {
+        if (error.message.includes('Invalid login credentials')) {
           accountExists = true;
+          // Continue to next RPC email — might be a different account format
+        } else {
+          // Fatal error (rate limit, network, etc.) — stop entirely
+          break;
+        }
+      } catch (e: any) {
+        lastError = e;
+        break;
+      }
+    }
+
+    // Phase 2: Try generated placeholders.
+    // We attempt these even if Phase 1 found a profile email, because the auth
+    // account may be keyed off the synthetic `@welile.user` / `@welile.agent`
+    // placeholder while `profiles.email` stores a contact address (e.g. Gmail).
+    // Without this fallback, users whose contact email differs from their auth
+    // identifier can never sign in by phone.
+    if (!loginSuccess) {
+      // Limit to 3 placeholder attempts max to avoid rate limiting
+      for (const emailToTry of generatedPlaceholders.slice(0, 3)) {
+        try {
+          const { error } = await signIn(emailToTry, password);
+          if (!error) {
+            loginSuccess = true;
+            lastError = null;
+            break;
+          }
+          lastError = error;
+          if (error.message.includes('Invalid login credentials')) {
+            accountExists = true;
+          } else {
+            break;
+          }
+        } catch (e: any) {
+          lastError = e;
+          break;
         }
       }
-    } catch (e: any) {
-      lastError = e;
     }
 
     if (loginSuccess) {

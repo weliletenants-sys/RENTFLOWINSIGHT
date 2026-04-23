@@ -3,6 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { RentPipelineQueue } from './RentPipelineQueue';
 import { AdvanceRequestsQueue } from '@/components/ops/AdvanceRequestsQueue';
+import { BusinessAdvanceQueue } from '@/components/ops/BusinessAdvanceQueue';
+import { RentHistoryVerificationQueue } from '@/components/ops/RentHistoryVerificationQueue';
 import { LandlordOpsPayoutReview } from '@/components/cfo/LandlordOpsPayoutReview';
 import { KPICard } from './KPICard';
 import {
@@ -30,6 +32,8 @@ import { Trash2, XCircle, Pencil } from 'lucide-react';
 import { EditLandlordDialog } from './landlord-ops/EditLandlordDialog';
 import { EditLC1Dialog } from './landlord-ops/EditLC1Dialog';
 import { AssignPersonDialog } from './landlord-ops/AssignPersonDialog';
+import { LandlordsPaidView } from './landlord-ops/LandlordsPaidView';
+import { LandlordsWithTenantsView } from './landlord-ops/LandlordsWithTenantsView';
 
 
 interface ListingWithLandlord {
@@ -171,11 +175,13 @@ function ImagePreviewDialog({ images, open, onClose, title }: { images: string[]
   );
 }
 
-type View = 'home' | 'landlords' | 'locations' | 'lc1' | 'empty' | 'occupied' | 'verify' | 'pipeline' | 'chain' | 'matching' | 'agents' | 'analytics' | 'cities' | 'no-landlord' | 'advance-requests';
+type View = 'home' | 'landlords' | 'locations' | 'lc1' | 'empty' | 'occupied' | 'verify' | 'pipeline' | 'chain' | 'matching' | 'agents' | 'analytics' | 'cities' | 'no-landlord' | 'advance-requests' | 'landlords-paid' | 'landlords-tenants';
 
 // ─── Navigation Items ───
 const navItems: { id: View; label: string; icon: typeof Building2; color: string; description: string; priority?: boolean }[] = [
   { id: 'landlords', label: 'All Landlords', icon: Building2, color: 'bg-sky-500/10 text-sky-600 border-sky-500/30', description: 'Directory with contacts & properties', priority: true },
+  { id: 'landlords-tenants', label: 'Landlords & Tenants', icon: Users, color: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/30', description: 'All landlords with their tenants & paid/pending status', priority: true },
+  { id: 'landlords-paid', label: 'Landlords Paid', icon: Banknote, color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30', description: 'Disbursements from tenant rent', priority: true },
   { id: 'locations', label: 'Locations', icon: MapPin, color: 'bg-purple-500/10 text-purple-600 border-purple-500/30', description: 'Regions, districts & house counts', priority: true },
   { id: 'lc1', label: 'LC1 Chairpersons', icon: ShieldCheck, color: 'bg-amber-500/10 text-amber-600 border-amber-500/30', description: 'LC1 contacts per village', priority: true },
   { id: 'cities', label: 'Cities We Operate In', icon: Globe, color: 'bg-teal-500/10 text-teal-600 border-teal-500/30', description: 'All cities with tenants & properties', priority: true },
@@ -573,6 +579,21 @@ export function LandlordOpsDashboard() {
     },
     staleTime: 60000,
     enabled: view === 'lc1' || view === 'home',
+  });
+
+  // ─── Paid Landlords Count (for nav badge) ───
+  const { data: paidLandlordsCount } = useQuery({
+    queryKey: ['landlord-ops-paid-landlords-count'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('disbursement_records')
+        .select('landlord_id')
+        .not('landlord_id', 'is', null);
+      const set = new Set<string>();
+      (data || []).forEach((r: any) => { if (r.landlord_id) set.add(r.landlord_id); });
+      return set.size;
+    },
+    staleTime: 60_000,
   });
 
   const lc1Groups = fullLC1Data || [];
@@ -1301,10 +1322,32 @@ export function LandlordOpsDashboard() {
   // ─── ADVANCE REQUESTS VIEW ───
   if (view === 'advance-requests') {
     return (
-      <div className="space-y-3">
+      <div className="space-y-6">
         <BackButton />
         <h2 className="text-lg font-bold">Agent Advance Requests</h2>
         <AdvanceRequestsQueue stage="landlord_ops" />
+        <BusinessAdvanceQueue stage="landlord_ops" />
+        <RentHistoryVerificationQueue dept="landlord_ops" />
+      </div>
+    );
+  }
+
+  // ─── LANDLORDS PAID VIEW ───
+  if (view === 'landlords-paid') {
+    return (
+      <div className="space-y-4">
+        <BackButton />
+        <LandlordsPaidView />
+      </div>
+    );
+  }
+
+  // ─── LANDLORDS & TENANTS VIEW ───
+  if (view === 'landlords-tenants') {
+    return (
+      <div className="space-y-4">
+        <BackButton />
+        <LandlordsWithTenantsView />
       </div>
     );
   }
@@ -1362,6 +1405,7 @@ export function LandlordOpsDashboard() {
         {navItems.filter(n => n.priority).map(item => (
           <NavCard key={item.id} item={item} onClick={() => setView(item.id)} badge={
             item.id === 'landlords' ? `${landlordsList.length}` :
+            item.id === 'landlords-paid' ? (paidLandlordsCount !== undefined ? `${paidLandlordsCount}` : undefined) :
             item.id === 'locations' ? `${locationGroups.length}` :
             item.id === 'lc1' ? `${lc1Groups.length}` :
             item.id === 'cities' ? `${cityGroups.length}` :

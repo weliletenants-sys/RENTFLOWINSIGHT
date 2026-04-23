@@ -316,10 +316,13 @@ Deno.serve(async (req) => {
 
     console.log(`Created ${role} invite for ${email} by ${creatorRole} ${user.id}${parentAgentId ? ' (sub-agent)' : ''}`);
 
-    // AUTO-ACTIVATE: When a manager creates an invite, immediately create the auth user
-    // so they appear in the system right away (no activation link needed)
+    // AUTO-ACTIVATE:
+    // 1. When a manager creates an invite (any role) — full fast-track.
+    // 2. When an agent registers a sub-agent (creatorRole === 'agent' && role === 'agent')
+    //    — sub-agents under an existing agent are auto-approved (no manager review needed).
     let autoActivated = false;
-    if (creatorRole === 'manager') {
+    const isSubAgentAutoActivate = creatorRole === 'agent' && role === 'agent';
+    if (creatorRole === 'manager' || isSubAgentAutoActivate) {
       try {
         const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
           email,
@@ -345,12 +348,43 @@ Deno.serve(async (req) => {
               email,
               phone,
               verified: true,
+              // Stamp parent agent as referrer for sub-agent fast-track so the
+              // sub-agent appears under the parent agent's roster.
+              ...(isSubAgentAutoActivate ? { referrer_id: user.id } : {}),
             }, { onConflict: 'id' });
 
-          // Add user role
+          // Add user role (auto-approved for sub-agent fast-track)
           await adminClient
             .from("user_roles")
-            .upsert({ user_id: authData.user.id, role }, { onConflict: 'user_id,role' });
+            .upsert(
+              { user_id: authData.user.id, role, enabled: true },
+              { onConflict: 'user_id,role' }
+            );
+
+          // Record parent-agent relationship in the referrals table and create
+          // the agent_subagents record (auto-verified — no approval needed).
+          if (isSubAgentAutoActivate) {
+            await adminClient
+              .from("referrals")
+              .upsert(
+                { referrer_id: user.id, referred_id: authData.user.id },
+                { onConflict: 'referrer_id,referred_id' }
+              );
+
+            await adminClient
+              .from("agent_subagents")
+              .upsert(
+                {
+                  parent_agent_id: user.id,
+                  sub_agent_id: authData.user.id,
+                  source: 'agent_invite',
+                  status: 'verified',
+                  verified_by: user.id,
+                  verified_at: new Date().toISOString(),
+                },
+                { onConflict: 'sub_agent_id' }
+              );
+          }
 
           // If landlord, create landlord record
           if (role === 'landlord') {

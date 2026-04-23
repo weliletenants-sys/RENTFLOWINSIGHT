@@ -1,4 +1,5 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { checkTreasuryGuard } from "../_shared/treasuryGuard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,18 +28,21 @@ Deno.serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    const { data: claimsData, error: claimsError } = await userClient.auth.getUser();
+    if (claimsError || !claimsData?.user) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const userId = claimsData.claims.sub as string;
+    const userId = claimsData.user.id as string;
 
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Treasury guard: wallet operations move money — block when paused
+    const guardBlock = await checkTreasuryGuard(adminClient, "any");
+    if (guardBlock) return guardBlock;
 
     // Verify authorized role
     const allowedRoles = ['manager', 'coo', 'cfo', 'cto', 'super_admin'];
@@ -106,12 +110,12 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fetch pending operations
+    // Fetch pending operations (accept both 'pending' and 'coo_approved' statuses)
     const { data: operations, error: fetchErr } = await adminClient
       .from("pending_wallet_operations")
       .select("*")
       .in("id", idsToProcess)
-      .eq("status", "pending");
+      .in("status", ["pending", "coo_approved"]);
 
     if (fetchErr || !operations || operations.length === 0) {
       return new Response(
@@ -133,21 +137,27 @@ Deno.serve(async (req) => {
         const isManaged = !!op.target_wallet_user_id && op.target_wallet_user_id !== op.user_id;
 
         // Insert into general_ledger (this triggers wallet balance update via existing trigger)
-        // Determine ledger_scope based on category
-        const PLATFORM_CATEGORIES = [
-          'tenant_access_fee', 'tenant_request_fee', 'platform_service_income',
-          'landlord_platform_fee', 'management_fee', 'roi_payout',
-          'supporter_platform_rewards', 'agent_commission_payout',
-          'transaction_platform_expenses', 'operational_expenses',
+        // Determine ledger_scope for the USER-FACING entry (entry[0])
+        // Categories that credit/debit a user's wallet MUST use 'wallet' scope
+        // so the sync_wallet_from_ledger trigger fires and updates wallet balance.
+        const WALLET_CREDIT_CATEGORIES = [
+          'roi_payout', 'supporter_platform_rewards', 'agent_commission_payout',
           'agent_requisition', 'salary_payment', 'employee_advance',
           'platform_expense_disbursement',
         ];
+        const PLATFORM_ONLY_CATEGORIES = [
+          'tenant_access_fee', 'tenant_request_fee', 'platform_service_income',
+          'landlord_platform_fee', 'management_fee',
+          'transaction_platform_expenses', 'operational_expenses',
+        ];
         const BRIDGE_CATEGORIES = ['supporter_facilitation_capital', 'wallet_to_investment'];
-        const scopeForCategory = PLATFORM_CATEGORIES.includes(op.category)
-          ? 'platform'
+        const scopeForCategory = WALLET_CREDIT_CATEGORIES.includes(op.category)
+          ? 'wallet'
           : BRIDGE_CATEGORIES.includes(op.category)
             ? 'bridge'
-            : 'wallet';
+            : PLATFORM_ONLY_CATEGORIES.includes(op.category)
+              ? 'platform'
+              : 'wallet';
 
         // Insert into general_ledger via RPC
         const { data: rpcTxGroupId, error: ledgerErr } = await adminClient.rpc('create_ledger_transaction', {
@@ -564,6 +574,109 @@ Deno.serve(async (req) => {
           }
         }
 
+        // ── Portfolio Top-Up Approval: deduct wallet + increase principal ──
+        if (op.operation_type === 'portfolio_topup' && op.source_table === 'investor_portfolios' && op.source_id) {
+          try {
+            const partnerId = op.user_id;
+
+            // Re-verify wallet balance (fresh check to prevent race conditions)
+            const { data: freshWallet } = await adminClient
+              .from("wallets")
+              .select("balance")
+              .eq("user_id", partnerId)
+              .single();
+
+            const walletBalance = Number(freshWallet?.balance || 0);
+            if (walletBalance < op.amount) {
+              failedResults.push({ id: op.id, error: `Insufficient wallet balance. Available: UGX ${walletBalance.toLocaleString()}, Required: UGX ${op.amount.toLocaleString()}` });
+              continue;
+            }
+
+            // Balanced ledger entries: wallet cash_out + platform cash_in
+            const { error: topupLedgerErr } = await adminClient.rpc('create_ledger_transaction', {
+              entries: [
+                {
+                  user_id: partnerId,
+                  amount: op.amount,
+                  direction: "cash_out",
+                  category: "partner_funding",
+                  source_table: "investor_portfolios",
+                  source_id: op.source_id,
+                  description: `Wallet deduction for portfolio top-up — approved by Financial Ops`,
+                  currency: 'UGX',
+                  ledger_scope: "wallet",
+                  transaction_date: new Date().toISOString(),
+                },
+                {
+                  user_id: partnerId,
+                  amount: op.amount,
+                  direction: "cash_in",
+                  category: "partner_funding",
+                  source_table: "investor_portfolios",
+                  source_id: op.source_id,
+                  description: `Capital received for portfolio top-up — Financial Ops verified`,
+                  currency: 'UGX',
+                  ledger_scope: "platform",
+                  transaction_date: new Date().toISOString(),
+                },
+              ],
+            });
+
+            if (topupLedgerErr) {
+              console.error(`[approve-wallet-op] Portfolio top-up ledger failed for ${op.id}:`, topupLedgerErr);
+              failedResults.push({ id: op.id, error: topupLedgerErr.message || 'Portfolio top-up ledger failed' });
+              continue;
+            }
+
+            // Update portfolio investment_amount
+            const { data: portfolio } = await adminClient
+              .from("investor_portfolios")
+              .select("investment_amount, portfolio_code, account_name")
+              .eq("id", op.source_id)
+              .single();
+
+            if (portfolio) {
+              const newAmount = Number(portfolio.investment_amount) + op.amount;
+              await adminClient
+                .from("investor_portfolios")
+                .update({ investment_amount: newAmount })
+                .eq("id", op.source_id);
+
+              console.log(`[approve-wallet-op] Portfolio ${op.source_id} capital updated: ${portfolio.investment_amount} → ${newAmount}`);
+
+              // Notify partner
+              const accountLabel = portfolio.account_name || portfolio.portfolio_code;
+              await adminClient.from("notifications").insert({
+                user_id: partnerId,
+                title: "✅ Portfolio Top-Up Approved",
+                message: `UGX ${op.amount.toLocaleString()} top-up for "${accountLabel}" has been approved by Financial Operations. New capital: UGX ${newAmount.toLocaleString()}.`,
+                type: "success",
+                metadata: { portfolio_id: op.source_id, amount: op.amount, new_capital: newAmount },
+              });
+
+              // Audit log
+              await adminClient.from("audit_logs").insert({
+                user_id: userId,
+                action_type: "approve_portfolio_topup",
+                table_name: "investor_portfolios",
+                record_id: op.source_id,
+                metadata: {
+                  partner_id: partnerId,
+                  amount: op.amount,
+                  previous_capital: Number(portfolio.investment_amount),
+                  new_capital: newAmount,
+                  pending_op_id: op.id,
+                  wallet_balance_before: walletBalance,
+                },
+              });
+            }
+          } catch (topupErr) {
+            console.error(`[approve-wallet-op] Portfolio top-up processing error for ${op.id}:`, topupErr);
+            failedResults.push({ id: op.id, error: 'Portfolio top-up processing failed' });
+            continue;
+          }
+        }
+
         // Mark as approved with payment details
         await adminClient
           .from("pending_wallet_operations")
@@ -576,6 +689,62 @@ Deno.serve(async (req) => {
             payment_reference: payment_reference || null,
           })
           .eq("id", op.id);
+
+        // ── Send Partner Wallet Deposit email to PARTNER on ROI payouts ──
+        // The partner is always op.user_id (managed/proxy payouts route cash via a
+        // proxy agent, but the partner owns the credited liability).
+        if (op.category === 'roi_payout' || op.category === 'supporter_platform_rewards') {
+          try {
+            const { data: partnerProfile } = await adminClient
+              .from("profiles")
+              .select("email, full_name")
+              .eq("id", op.user_id)
+              .maybeSingle();
+
+            if (partnerProfile?.email) {
+              const { data: partnerWallet } = await adminClient
+                .from("wallets")
+                .select("id")
+                .eq("user_id", op.user_id)
+                .maybeSingle();
+              const walletLast4 = partnerWallet?.id
+                ? partnerWallet.id.replace(/-/g, '').slice(-4)
+                : '';
+
+              const refId = op.reference_id || payment_reference || op.id;
+              const todayLabel = new Date().toLocaleDateString('en-GB', {
+                day: '2-digit', month: 'long', year: 'numeric',
+              });
+
+              await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${supabaseServiceKey}`,
+                },
+                body: JSON.stringify({
+                  templateName: "partner-wallet-deposit",
+                  recipientEmail: partnerProfile.email,
+                  idempotencyKey: `partner-wallet-deposit-${op.id}`,
+                  templateData: {
+                    partner_name: partnerProfile.full_name || "Partner",
+                    transaction_id: refId,
+                    amount: op.amount,
+                    currency: "UGX",
+                    date: todayLabel,
+                    wallet_id_last4: walletLast4,
+                    source: "Platform",
+                    company_name: "Welile",
+                    logo_url: "https://welilereceipts.com/welile-logo.png",
+                  },
+                }),
+              });
+              console.log(`[approve-wallet-op] Partner wallet deposit email queued for partner ${op.user_id}`);
+            }
+          } catch (emailErr) {
+            console.warn(`[approve-wallet-op] Partner wallet deposit email enqueue failed for ${op.id}:`, emailErr);
+          }
+        }
 
         // Notify the correct user(s)
         if (op.category === 'supporter_facilitation_capital' && portfolioInvestorId) {

@@ -2,12 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PhoneInput } from '@/components/ui/phone-input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useGeoCapture } from '@/hooks/useGeoCapture';
+import { useGeoLocation } from '@/hooks/useGeoLocation';
 import { useProfile } from '@/hooks/useProfile';
 import { hapticTap } from '@/lib/haptics';
 import { formatUGX } from '@/lib/rentCalculations';
@@ -57,7 +58,7 @@ function getDistanceMeters(lat1: number, lon1: number, lat2: number, lon2: numbe
 export function AgentVisitPaymentWizard({ open, onOpenChange, onSuccess, preselectedTenant }: AgentVisitPaymentWizardProps) {
   const { profile } = useProfile();
   const { toast } = useToast();
-  const { loading: gpsLoading, captureLocation } = useGeoCapture();
+  const { loading: gpsLoading, captureLocation } = useGeoLocation();
 
   // Wizard state
   const [step, setStep] = useState<WizardStep>('search');
@@ -587,11 +588,13 @@ export function AgentVisitPaymentWizard({ open, onOpenChange, onSuccess, presele
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Phone Number</Label>
-                  <Input
+                  <PhoneInput
                     placeholder="0771234567"
                     value={momoPhone}
-                    onChange={(e) => setMomoPhone(e.target.value)}
-                    type="tel"
+                    onChange={(v) => setMomoPhone(v)}
+                    onContactPicked={({ name }) => {
+                      if (name && !momoPayerName.trim()) setMomoPayerName(name);
+                    }}
                     style={{ fontSize: '16px' }}
                   />
                 </div>

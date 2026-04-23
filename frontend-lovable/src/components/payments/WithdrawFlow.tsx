@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import StepperModal, { Step } from './StepperModal';
 import ConfirmSummaryCard from './ConfirmSummaryCard';
 import ProcessingScreen from './ProcessingScreen';
@@ -66,7 +66,38 @@ export default function WithdrawFlow({
   const [paymentStatus, setPaymentStatus] = useState<'success' | 'failed'>('success');
   const [withdrawalRef, setWithdrawalRef] = useState('');
 
-  const maxAmount = source === 'available' ? availableBalance : roiBalance;
+  // Withdrawable = withdrawable_balance + advance_balance (advance is recoverable
+  // user money). Float is operational/company money and stays locked.
+  const [floatBalance, setFloatBalance] = useState<number>(0);
+  const [advanceBalance, setAdvanceBalance] = useState<number>(0);
+  const [userRoles, setUserRoles] = useState<string[]>([]);
+
+  // The "available" source now represents withdrawable + advance combined.
+  const combinedAvailable = availableBalance + advanceBalance;
+  const maxAmount = source === 'available' ? combinedAvailable : roiBalance;
+
+  useEffect(() => {
+    if (!open || !user) return;
+    let cancelled = false;
+    (async () => {
+      const [walletRes, rolesRes] = await Promise.all([
+        supabase
+          .from('wallets')
+          .select('float_balance, advance_balance')
+          .eq('user_id', user.id)
+          .maybeSingle(),
+        supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id),
+      ]);
+      if (cancelled) return;
+      setFloatBalance(Number(walletRes.data?.float_balance ?? 0));
+      setAdvanceBalance(Number(walletRes.data?.advance_balance ?? 0));
+      setUserRoles((rolesRes.data ?? []).map((r: any) => r.role));
+    })();
+    return () => { cancelled = true; };
+  }, [open, user]);
 
   const handleReset = () => {
     setCurrentStep(0);
@@ -146,6 +177,47 @@ export default function WithdrawFlow({
       setPaymentStatus('success');
       toast.success('Withdrawal request submitted! Please wait for manager approval before funds are released.');
       onSuccess?.();
+
+      // Fire-and-forget: if this user is a funder/partner, send disbursement confirmation email
+      try {
+        const sb: any = supabase;
+        const profileRes: any = await sb.from('profiles').select('email, full_name').eq('id', user.id).maybeSingle();
+        const portfolioRes: any = await sb.from('investor_portfolios').select('portfolio_code').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle();
+        const roleRes: any = await sb.from('user_roles').select('role').eq('user_id', user.id).eq('role', 'supporter').maybeSingle();
+
+        const email = profileRes.data?.email;
+        const isFunder = !!roleRes.data || !!portfolioRes.data;
+
+        if (email && isFunder) {
+          const payoutMethodLabel =
+            payoutMode === 'mobile_money' ? `${momoProvider} Mobile Money (${momoNumber.trim()})` :
+            payoutMode === 'bank_transfer' ? `${bankName} - ${bankAccountNumber.trim()}` :
+            'Cash Pickup at Office';
+
+          await supabase.functions.invoke('send-transactional-email', {
+            body: {
+              templateName: 'returns-disbursement-confirmation',
+              recipientEmail: email,
+              idempotencyKey: `partner-withdraw-${user.id}-${ref}`,
+              templateData: {
+                partner_name: profileRes.data?.full_name || 'Partner',
+                transaction_id: ref,
+                portfolio_code: portfolioRes.data?.portfolio_code || '',
+                amount,
+                currency: 'UGX',
+                date: new Date().toISOString(),
+                payout_method: payoutMethodLabel,
+                company_name: 'Welile',
+                logo_url: 'https://welilereceipts.com/welile-logo.png',
+                is_managed_by_agent: false,
+                agent_name: '',
+              },
+            },
+          });
+        }
+      } catch (emailErr) {
+        console.warn('[WithdrawFlow] Disbursement email enqueue failed (non-blocking):', emailErr);
+      }
     } catch (error: any) {
       console.error('Withdrawal failed:', error);
       setPaymentStatus('failed');
@@ -182,10 +254,14 @@ export default function WithdrawFlow({
                     <Wallet className="w-5 h-5 text-primary" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-semibold">Available Balance</h4>
-                    <p className="text-sm text-muted-foreground">Ready to withdraw</p>
+                    <h4 className="font-semibold">Available to Withdraw</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {advanceBalance > 0
+                        ? `Withdrawable + Advance combined`
+                        : 'Ready to withdraw'}
+                    </p>
                   </div>
-                  <span className="font-bold text-lg">{formatCurrency(availableBalance, 'UGX')}</span>
+                  <span className="font-bold text-lg">{formatCurrency(combinedAvailable, 'UGX')}</span>
                 </div>
               </Card>
               
@@ -205,6 +281,40 @@ export default function WithdrawFlow({
                 </div>
               </Card>
             </div>
+
+            {(floatBalance > 0 || advanceBalance > 0) && (
+              <div className="rounded-lg border border-dashed border-border bg-muted/30 p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold text-foreground">Wallet bucket breakdown</p>
+                  {userRoles.length > 1 && (
+                    <span className="text-[10px] text-muted-foreground">
+                      {userRoles.length} active roles
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">💰 Withdrawable</span>
+                  <span className="font-medium text-foreground">{formatCurrency(availableBalance, 'UGX')}</span>
+                </div>
+                {advanceBalance > 0 && (
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">📋 Advance (also withdrawable)</span>
+                    <span className="font-medium text-emerald-600">{formatCurrency(advanceBalance, 'UGX')}</span>
+                  </div>
+                )}
+                {floatBalance > 0 && (
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">🔒 Operational Float (locked)</span>
+                    <span className="font-medium text-muted-foreground">{formatCurrency(floatBalance, 'UGX')}</span>
+                  </div>
+                )}
+                <p className="text-[10px] text-muted-foreground leading-relaxed pt-1 border-t border-border/40">
+                  <span className="font-semibold text-foreground">Withdrawable</span> and <span className="font-semibold text-foreground">Advance</span> are both yours to withdraw.
+                  <span className="font-semibold text-foreground"> Operational Float </span>
+                  is company money reserved for agent/partner operations and cannot be withdrawn.
+                </p>
+              </div>
+            )}
           </div>
         );
 

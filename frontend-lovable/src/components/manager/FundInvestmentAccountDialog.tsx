@@ -128,32 +128,18 @@ export function FundInvestmentAccountDialog({ open, onOpenChange, account, onSuc
 
     setSaving(true);
     try {
-      const session = await supabase.auth.getSession();
-      const token = session.data.session?.access_token;
-      
-      const payload = {
-        portfolioId: account.id,
-        amount: topUpAmount,
-        notes: notes.trim(),
-        payment_method: paymentMethod,
-        is_proxy_funding: paymentMethod === 'proxy_agent',
-        source_wallet_user_id: paymentMethod === 'proxy_agent' ? proxyAgent?.agentId : undefined,
-      };
-
-      const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-      const reqRes = await fetch(`${backendUrl}/api/v2/cfo/portfolios/${account.id}/topup`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Idempotency-Key': crypto.randomUUID()
+      const { data, error } = await supabase.functions.invoke('manager-portfolio-topup', {
+        body: {
+          portfolio_id: account.id,
+          amount: topUpAmount,
+          notes: notes.trim(),
+          payment_method: paymentMethod,
+          source_wallet_user_id: paymentMethod === 'proxy_agent' ? proxyAgent?.agentId : undefined,
         },
-        body: JSON.stringify(payload)
       });
 
-      const data = await reqRes.json();
-      if (!reqRes.ok) throw new Error(data.error || 'Failed to process top-up');
-
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
 
       toast({
         title: `${formatUGX(topUpAmount)} top-up processed`,

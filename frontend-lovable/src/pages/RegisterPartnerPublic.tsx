@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { formatUGX } from '@/lib/rentCalculations';
 import { UGANDA_BANKS } from '@/lib/ugandaBanks';
+import { validateFullName } from '@/lib/authValidation';
 import {
   UserPlus, CheckCircle2, AlertCircle, Phone, User, Mail, MapPin,
   Loader2, Banknote, X, TrendingUp, Wallet
@@ -35,6 +36,7 @@ const ROI_RATE = 0.15;
 
 export default function RegisterPartnerPublic() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const agentId = searchParams.get('agent');
   const token = searchParams.get('token');
 
@@ -100,7 +102,7 @@ export default function RegisterPartnerPublic() {
   }, [agentId, token]);
 
   const canSubmit = !!(
-    fullName.trim() && phone.trim() && email.trim() && residence.trim() &&
+    validateFullName(fullName).valid && phone.trim() && email.trim() && residence.trim() &&
     amount >= 100000 && payoutMethod &&
     (payoutMethod === 'bank_transfer'
       ? bankName && accountName.trim() && accountNumber.trim()
@@ -114,9 +116,15 @@ export default function RegisterPartnerPublic() {
     setError(null);
 
     try {
+      const nameCheck = validateFullName(fullName);
+      if (!nameCheck.valid) {
+        setError(nameCheck.error);
+        setSubmitting(false);
+        return;
+      }
       const payload: Record<string, unknown> = {
         token, agent_id: agentId,
-        full_name: fullName.trim(),
+        full_name: nameCheck.trimmed,
         phone: phone.trim(),
         email: email.trim(),
         residence: residence.trim(),
@@ -135,6 +143,27 @@ export default function RegisterPartnerPublic() {
 
       const { data, error: fnErr } = await supabase.functions.invoke('submit-partner-form', { body: payload });
       if (fnErr || data?.error) throw new Error(data?.error || fnErr?.message || 'Submission failed');
+      // Auto sign-in: backend returns temp credentials for newly-created partners.
+      // Existing users skip sign-in (no password available) — they see the success screen.
+      if (data?.auth_email && data?.auth_password) {
+        try {
+          await supabase.auth.signOut();
+          const { error: signInErr } = await supabase.auth.signInWithPassword({
+            email: data.auth_email,
+            password: data.auth_password,
+          });
+          if (signInErr) {
+            console.warn('[RegisterPartnerPublic] Auto sign-in failed:', signInErr.message);
+            setSubmitted(true);
+            return;
+          }
+          // Persistent session — user stays signed in across browser restarts until explicit sign-out.
+          navigate('/dashboard', { replace: true });
+          return;
+        } catch (signInErr) {
+          console.warn('[RegisterPartnerPublic] Auto sign-in threw:', signInErr);
+        }
+      }
       setSubmitted(true);
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.');

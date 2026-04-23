@@ -1,5 +1,9 @@
 import { useState } from 'react';
+import { AgentOpsHomeView, type DateRange } from './agent-ops-v2/AgentOpsHomeView';
+import { AgentOpsBottomNav, type BottomTab } from './agent-ops-v2/AgentOpsBottomNav';
 import { AdvanceRequestsQueue } from '@/components/ops/AdvanceRequestsQueue';
+import { BusinessAdvanceQueue } from '@/components/ops/BusinessAdvanceQueue';
+import { RentHistoryVerificationQueue } from '@/components/ops/RentHistoryVerificationQueue';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { KPICard } from './KPICard';
@@ -16,24 +20,36 @@ import { AgentTaskManager } from './AgentTaskManager';
 import { AgentEscalationQueue } from './AgentEscalationQueue';
 import { ServiceCentreVerificationQueue } from './ServiceCentreVerificationQueue';
 import { SubAgentVerificationQueue } from './SubAgentVerificationQueue';
+import { TenantToSubAgentPanel } from './TenantToSubAgentPanel';
 import { AgentOpsFloatPayoutReview } from '@/components/agent/AgentOpsFloatPayoutReview';
+import { AgentBalancesPanel } from './AgentBalancesPanel';
+import { LendingAgentsPanel } from './LendingAgentsPanel';
 import { UserProfileDialog } from '@/components/supporter/UserProfileDialog';
+import { TrustCaptureTab } from './TrustCaptureTab';
+import { AgentPerformanceReport } from './AgentPerformanceReport';
+import { AgentAllocationReport } from './AgentAllocationReport';
 import { 
   Users, Banknote, DollarSign, Search, UserPlus, Trophy, BarChart3, 
   ClipboardList, AlertTriangle, Building2, Wallet, Bell, ArrowLeftRight,
-  ChevronLeft, Briefcase, TrendingUp, UsersRound
+  ChevronLeft, Briefcase, TrendingUp, UsersRound, PiggyBank, HandCoins, ShieldCheck, FileBarChart, Network
 } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { format } from 'date-fns';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
-type ActiveView = null | 'pipeline' | 'brief' | 'directory' | 'connector' | 'performance' | 'lifecycle' | 'tasks' | 'escalations' | 'service-centres' | 'sub-agents' | 'float-payouts' | 'alerts' | 'leaderboard' | 'earnings' | 'transfers' | 'advance-requests';
+type ActiveView = null | 'pipeline' | 'brief' | 'directory' | 'connector' | 'performance' | 'lifecycle' | 'tasks' | 'escalations' | 'service-centres' | 'sub-agents' | 'promote-tenant' | 'float-payouts' | 'alerts' | 'leaderboard' | 'earnings' | 'transfers' | 'advance-requests' | 'balances' | 'lending-agents' | 'trust-capture' | 'performance-report' | 'allocation-report';
 
 const NAV_ITEMS: { key: ActiveView; icon: any; label: string; color: string; priority?: boolean }[] = [
+  { key: 'performance-report', icon: FileBarChart, label: 'Performance Report', color: 'bg-teal-600', priority: true },
+  { key: 'allocation-report', icon: Network, label: 'Allocations & Repayment', color: 'bg-indigo-600', priority: true },
+  { key: 'trust-capture', icon: ShieldCheck, label: 'Trust Capture', color: 'bg-primary', priority: true },
   { key: 'pipeline', icon: Briefcase, label: 'Pipeline', color: 'bg-primary', priority: true },
+  { key: 'balances', icon: PiggyBank, label: 'Agent Balances', color: 'bg-emerald-600', priority: true },
+  { key: 'lending-agents', icon: HandCoins, label: 'Lending Agents', color: 'bg-violet-600', priority: true },
   { key: 'service-centres', icon: Building2, label: 'Service Centres', color: 'bg-orange-500', priority: true },
   { key: 'sub-agents', icon: UsersRound, label: 'Sub-Agents', color: 'bg-amber-600', priority: true },
+  { key: 'promote-tenant', icon: ArrowLeftRight, label: 'Tenant → Sub-Agent', color: 'bg-fuchsia-600', priority: true },
   { key: 'directory', icon: Search, label: 'Agents', color: 'bg-blue-500', priority: true },
   { key: 'tasks', icon: ClipboardList, label: 'Tasks', color: 'bg-emerald-500', priority: true },
   { key: 'escalations', icon: AlertTriangle, label: 'Escalations', color: 'bg-red-500' },
@@ -52,7 +68,25 @@ const NAV_ITEMS: { key: ActiveView; icon: any; label: string; color: string; pri
 export function AgentOpsDashboard() {
   const [activeView, setActiveView] = useState<ActiveView>(null);
   const [selectedAgent, setSelectedAgent] = useState<any>(null);
+  const [bottomTab, setBottomTab] = useState<BottomTab>('home');
+  const [dateRange, setDateRange] = useState<DateRange>('24h');
   const isMobile = useIsMobile();
+
+  const { data: kpis, isLoading: kpisLoading } = useQuery({
+    queryKey: ['agent-ops-kpis'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_agent_ops_kpis');
+      if (error) throw error;
+      const row = Array.isArray(data) ? data[0] : data;
+      return {
+        agents: Number(row?.agents ?? 0),
+        earnings_total: Number(row?.earnings_total ?? 0),
+        commissions_total: Number(row?.commissions_total ?? 0),
+      };
+    },
+    staleTime: 60_000,
+    refetchOnMount: 'always',
+  });
 
   const { data: earnings, isLoading } = useQuery({
     queryKey: ['exec-agent-earnings'],
@@ -111,9 +145,9 @@ export function AgentOpsDashboard() {
     });
   };
 
-  const totalEarnings = (earnings || []).reduce((s, e) => s + e.amount, 0);
-  const totalCommissions = (commissions || []).reduce((s, c) => s + c.amount, 0);
-  const uniqueAgents = new Set((earnings || []).map(e => e.agent_id)).size;
+  const totalEarnings = kpis?.earnings_total ?? 0;
+  const totalCommissions = kpis?.commissions_total ?? 0;
+  const uniqueAgents = kpis?.agents ?? 0;
 
   const agentTotals: Record<string, number> = {};
   (earnings || []).forEach(e => {
@@ -147,6 +181,9 @@ export function AgentOpsDashboard() {
   // Render sub-view content
   const renderSubView = () => {
     switch (activeView) {
+      case 'trust-capture': return <TrustCaptureTab />;
+      case 'performance-report': return <AgentPerformanceReport />;
+      case 'allocation-report': return <AgentAllocationReport />;
       case 'pipeline': return <AgentOpsPipelineHub />;
       case 'brief': return <AgentOpsBrief />;
       case 'directory': return <AgentDirectory />;
@@ -157,8 +194,17 @@ export function AgentOpsDashboard() {
       case 'escalations': return <AgentEscalationQueue />;
       case 'service-centres': return <ServiceCentreVerificationQueue />;
       case 'sub-agents': return <SubAgentVerificationQueue />;
+      case 'promote-tenant': return <TenantToSubAgentPanel />;
       case 'float-payouts': return <AgentOpsFloatPayoutReview />;
-      case 'advance-requests': return <AdvanceRequestsQueue stage="agent_ops" />;
+      case 'balances': return <AgentBalancesPanel />;
+      case 'lending-agents': return <LendingAgentsPanel />;
+      case 'advance-requests': return (
+        <div className="space-y-6">
+          <AdvanceRequestsQueue stage="agent_ops" />
+          <BusinessAdvanceQueue stage="agent_ops" />
+          <RentHistoryVerificationQueue dept="agent_ops" />
+        </div>
+      );
       case 'alerts': return <AgentAlertFeed />;
       case 'transfers': return (
         <div className="rounded-2xl border border-border bg-card p-3">
@@ -228,36 +274,108 @@ export function AgentOpsDashboard() {
     );
   }
 
-  // HOME VIEW: KPIs + Quick Nav Grid
+  // Map a bottom-nav tab → opening the matching sub-view
+  const handleBottomNav = (tab: BottomTab) => {
+    setBottomTab(tab);
+    if (tab === 'home') {
+      setActiveView(null);
+      return;
+    }
+    if (tab === 'pipeline') {
+      setActiveView('pipeline');
+      return;
+    }
+    if (tab === 'agents') {
+      setActiveView('directory');
+      return;
+    }
+    if (tab === 'finance') {
+      setActiveView('balances');
+      return;
+    }
+    // 'more' just shows the grouped grid below — keep activeView=null
+    setActiveView(null);
+  };
+
+  const handleOpenSection = (key: string) => {
+    setActiveView(key as ActiveView);
+  };
+
+  // Grouped sections for the "More" tab
+  const MORE_GROUPS: { title: string; keys: ActiveView[] }[] = [
+    { title: '🧩 Operations', keys: ['trust-capture', 'escalations', 'tasks'] },
+    { title: '👥 Agent Network', keys: ['sub-agents', 'promote-tenant', 'lending-agents'] },
+    { title: '🏢 Business', keys: ['service-centres', 'advance-requests'] },
+    { title: '📊 Insights', keys: ['leaderboard', 'performance-report', 'allocation-report', 'performance', 'lifecycle', 'alerts', 'brief'] },
+    { title: '🔗 System', keys: ['connector', 'transfers', 'float-payouts', 'earnings'] },
+  ];
+
+  // HOME VIEW
   return (
     <div className="space-y-4">
-      {/* KPIs — compact on mobile */}
-      <div className="grid grid-cols-3 gap-2">
-        <KPICard title="Agents" value={uniqueAgents} icon={Users} loading={isLoading} />
-        <KPICard title="Earnings" value={fmt(totalEarnings)} icon={Banknote} loading={isLoading} color="bg-green-500/10 text-green-600" />
-        <KPICard title="Commissions" value={fmt(totalCommissions)} icon={DollarSign} color="bg-blue-500/10 text-blue-600" />
+      {/* Greeting header */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-base sm:text-lg font-bold text-foreground">Good day 👋</h2>
+          <p className="text-xs text-muted-foreground">Agent Operations Manager</p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => setActiveView('alerts')}
+            className="relative h-9 w-9 rounded-full border border-border bg-card flex items-center justify-center hover:border-primary/30 active:scale-95 transition-all touch-manipulation"
+            aria-label="Notifications"
+          >
+            <Bell className="h-4 w-4 text-foreground" />
+            <span className="absolute top-1 right-1 h-1.5 w-1.5 rounded-full bg-primary" />
+          </button>
+        </div>
       </div>
 
-      {/* Quick Nav Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
-        {NAV_ITEMS.map((item) => (
-          <button
-            key={item.key}
-            onClick={() => setActiveView(item.key)}
-            className={cn(
-              "flex flex-col items-center gap-2 p-4 rounded-2xl border border-border bg-card",
-              "active:scale-95 transition-all touch-manipulation min-h-[88px]",
-              "hover:shadow-md hover:border-primary/30",
-              item.priority && "ring-1 ring-primary/20"
-            )}
-          >
-            <div className={cn("p-3 rounded-xl shadow-sm", item.color)}>
-              <item.icon className="h-5 w-5 text-white" />
-            </div>
-            <span className="text-xs sm:text-sm font-semibold text-center leading-tight">{item.label}</span>
-          </button>
-        ))}
-      </div>
+      {bottomTab !== 'more' ? (
+        <AgentOpsHomeView
+          range={dateRange}
+          onRangeChange={setDateRange}
+          onOpenSection={handleOpenSection}
+        />
+      ) : (
+        <div className="space-y-5 pb-20 sm:pb-4">
+          {MORE_GROUPS.map((group) => (
+            <section key={group.title} className="space-y-2">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
+                {group.title}
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+                {group.keys.map((key) => {
+                  const item = NAV_ITEMS.find((n) => n.key === key);
+                  if (!item) return null;
+                  return (
+                    <button
+                      key={item.key}
+                      onClick={() => setActiveView(item.key)}
+                      className={cn(
+                        'flex flex-col items-center gap-2 p-3 rounded-2xl border border-border bg-card',
+                        'active:scale-95 transition-all touch-manipulation min-h-[84px]',
+                        'hover:shadow-md hover:border-primary/30',
+                      )}
+                    >
+                      <div className={cn('p-2.5 rounded-xl shadow-sm', item.color)}>
+                        <item.icon className="h-4 w-4 text-white" />
+                      </div>
+                      <span className="text-[11px] sm:text-xs font-semibold text-center leading-tight">
+                        {item.label}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
+        </div>
+      )}
+
+      {/* Mobile bottom nav */}
+      <AgentOpsBottomNav active={bottomTab} onChange={handleBottomNav} />
 
       <UserProfileDialog open={!!selectedAgent} onOpenChange={(open) => !open && setSelectedAgent(null)} user={selectedAgent} />
     </div>

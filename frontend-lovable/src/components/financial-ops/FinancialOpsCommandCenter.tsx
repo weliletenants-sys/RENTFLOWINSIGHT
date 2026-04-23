@@ -9,10 +9,12 @@ import { ScaleDashboard } from './ScaleDashboard';
 import { FloatPayoutVerification } from './FloatPayoutVerification';
 import { FinOpsWithdrawalVerification } from './FinOpsWithdrawalVerification';
 import { WalletDeductionPanel } from './WalletDeductionPanel';
+import { LandlordPayoutsQueue } from './LandlordPayoutsQueue';
 import { LedgerHub } from '@/components/ledgers/LedgerHub';
 import { PendingWalletOperationsWidget } from '@/components/manager/PendingWalletOperationsWidget';
 import { DepositStatsPanel } from './DepositStatsPanel';
 import { WalletOverviewCard } from './WalletOverviewCard';
+
 
 import { OpportunitySummaryForm } from '@/components/manager/OpportunitySummaryForm';
 import { AgentRequisitionForm } from './AgentRequisitionForm';
@@ -87,6 +89,7 @@ export function FinancialOpsCommandCenter({ requirePaymentRef }: { requirePaymen
               <Banknote className="h-5 w-5 text-destructive" />
               Withdrawals & Payouts
             </h2>
+            <LandlordPayoutsQueue />
             <FinOpsWithdrawalVerification />
             <PendingWalletOperationsWidget requirePaymentRef={requirePaymentRef} />
             <FloatPayoutVerification />
@@ -178,6 +181,7 @@ export function FinancialOpsCommandCenter({ requirePaymentRef }: { requirePaymen
               <p className="text-xs text-muted-foreground">Retractions, corrections & penalties</p>
             </div>
           </button>
+
 
           {/* Ledger */}
           <button

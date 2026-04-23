@@ -2,6 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { runShadowAudit } from "../_shared/shadowLogger.ts";
 import { shadowValidatePoolFunding } from "../_shared/shadowValidation.ts";
 import { fetchShadowConfig, shouldSample } from "../_shared/shadowConfig.ts";
+import { buildPartnershipEmailRequest } from "./partnership-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -187,7 +188,7 @@ Deno.serve(async (req) => {
 
     const agentId = existingPortfolio?.agent_id ?? user.id;
 
-    const { error: portfolioErr } = await adminClient.from("investor_portfolios").insert({
+    const { data: insertedPortfolio, error: portfolioErr } = await adminClient.from("investor_portfolios").insert({
       investor_id: user.id,
       agent_id: agentId,
       investment_amount: amount,
@@ -201,11 +202,14 @@ Deno.serve(async (req) => {
       next_roi_date: firstPayoutDate,
       maturity_date: maturityStr,
       total_roi_earned: 0,
-    });
+    }).select("id").maybeSingle();
 
     if (portfolioErr) {
       console.error("[fund-rent-pool] Portfolio creation failed:", portfolioErr.message);
     }
+
+    const portfolioCreatedThisRun = !portfolioErr && !!insertedPortfolio?.id;
+    const newPortfolioId = insertedPortfolio?.id ?? referenceId;
 
     // Read updated balance after trigger
     const { data: updatedWallet } = await adminClient
@@ -252,6 +256,42 @@ Deno.serve(async (req) => {
       }),
     }).catch(() => {});
 
+    // Partnership Agreement email — sent on every NEW portfolio creation (fire-and-forget)
+    if (portfolioCreatedThisRun) {
+      try {
+        const { data: profile } = await adminClient
+          .from("profiles")
+          .select("email, full_name")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        const emailRequest = buildPartnershipEmailRequest({
+          portfolioCreatedThisRun,
+          recipientEmail: profile?.email,
+          userId: user.id,
+          newPortfolioId: String(newPortfolioId),
+          partnerName: profile?.full_name,
+          amount,
+          monthlyReward,
+          contributionDateIso: now.toISOString(),
+          firstPayoutDateIso: firstPayoutDate,
+          payoutDay: payout_day,
+        });
+
+        if (emailRequest) {
+          fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${supabaseServiceKey}`,
+            },
+            body: JSON.stringify(emailRequest),
+          }).catch((err) => console.warn("[fund-rent-pool] Partnership agreement email enqueue failed:", err));
+        }
+      } catch (emailErr) {
+        console.warn("[fund-rent-pool] Partnership agreement email lookup failed (non-blocking):", emailErr);
+      }
+    }
 
     return new Response(
       JSON.stringify({

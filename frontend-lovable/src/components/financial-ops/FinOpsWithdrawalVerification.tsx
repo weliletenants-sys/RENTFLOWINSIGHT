@@ -18,6 +18,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { UserAvatar } from '@/components/UserAvatar';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
+import { extractEdgeFunctionError } from '@/lib/extractEdgeFunctionError';
 
 interface WithdrawalRequest {
   id: string;
@@ -51,10 +52,12 @@ export function FinOpsWithdrawalVerification() {
   const [processing, setProcessing] = useState<string | null>(null);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [approveOpen, setApproveOpen] = useState(false);
+  
   const [selected, setSelected] = useState<WithdrawalRequest | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [reference, setReference] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<string>('');
+  
   const [activeTab, setActiveTab] = useState<ActiveTab>('pending');
 
   const fetchProfiles = async (data: any[]) => {
@@ -124,8 +127,10 @@ export function FinOpsWithdrawalVerification() {
           payment_method: paymentMethod,
         },
       });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+      if (error || data?.error) {
+        const msg = await extractEdgeFunctionError({ data, error }, 'Failed to approve');
+        throw new Error(msg);
+      }
 
       toast.success('Withdrawal approved & completed!');
       setPendingRequests(prev => prev.filter(r => r.id !== selected.id));
@@ -148,7 +153,10 @@ export function FinOpsWithdrawalVerification() {
       const { data, error: rejectErr } = await supabase.functions.invoke('reject-withdrawal', {
         body: { withdrawal_ids: [selected.id], reason: rejectionReason.trim(), withdrawal_type: 'wallet' },
       });
-      if (rejectErr) throw rejectErr;
+      if (rejectErr) {
+        const msg = await extractEdgeFunctionError({ data, error: rejectErr }, 'Failed to reject');
+        throw new Error(msg);
+      }
 
       const result = data?.results?.find((r: any) => r.id === selected.id);
       if (result?.status !== 'rejected') {
@@ -170,6 +178,7 @@ export function FinOpsWithdrawalVerification() {
       setProcessing(null);
     }
   };
+
 
   const getPayoutLabel = (req: WithdrawalRequest) => {
     const method = req.payout_method || 'mobile_money';
@@ -330,15 +339,17 @@ export function FinOpsWithdrawalVerification() {
             </p>
             {ageBadge}
           </div>
-          <Button
-            size="sm"
-            className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
-            onClick={() => { setSelected(req); setApproveOpen(true); }}
-            disabled={!!processing}
-          >
-            <CheckCircle className="h-3 w-3 mr-1" />
-            Re-Approve & Complete
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+              onClick={() => { setSelected(req); setApproveOpen(true); }}
+              disabled={!!processing}
+            >
+              <CheckCircle className="h-3 w-3 mr-1" />
+              Re-Approve & Pay
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -550,6 +561,7 @@ export function FinOpsWithdrawalVerification() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
     </>
   );
 }

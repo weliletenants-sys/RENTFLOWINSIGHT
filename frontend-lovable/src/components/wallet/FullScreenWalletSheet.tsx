@@ -53,9 +53,10 @@ export function FullScreenWalletSheet({ open, onOpenChange }: FullScreenWalletSh
   const { user, role } = useAuth();
   const { profile } = useProfile();
   const isAgent = role === 'agent';
-  const { commissionBalance, floatBalance } = useAgentBalances();
+  const { commissionBalance, withdrawableBalance } = useAgentBalances();
+  const { floatBalance: walletFloatBalance } = useAgentBalances();
   const displayBalance = wallet?.balance || 0;
-  const realWithdrawableBalance = Math.max(0, Math.min(displayBalance, commissionBalance));
+  const realWithdrawableBalance = Math.max(0, withdrawableBalance);
   const balanceLabel = 'Total Balance';
   const [sendOpen, setSendOpen] = useState(false);
   const [depositOpen, setDepositOpen] = useState(false);
@@ -197,7 +198,7 @@ export function FullScreenWalletSheet({ open, onOpenChange }: FullScreenWalletSh
                   <WalletDisclaimer variant="dark" />
                   {isAgent && (
                     <p className="text-[11px] text-white/60 mt-2">
-                      Withdrawable: <CompactAmount value={realWithdrawableBalance} className="text-white/80 border-0" /> · Locked: <CompactAmount value={floatBalance} className="text-white/80 border-0" />
+                      Withdrawable: <CompactAmount value={realWithdrawableBalance} className="text-white/80 border-0" /> · Float (tenant collections): <CompactAmount value={walletFloatBalance} className="text-white/80 border-0" />
                     </p>
                   )}
                 </div>
@@ -441,7 +442,13 @@ export function FullScreenWalletSheet({ open, onOpenChange }: FullScreenWalletSh
 
       {/* Dialogs */}
       <SendMoneyDialog open={sendOpen} onOpenChange={setSendOpen} />
-      <DepositFlow open={depositOpen} onOpenChange={setDepositOpen} />
+      <DepositFlow
+        open={depositOpen}
+        onOpenChange={setDepositOpen}
+        {...(isAgent
+          ? { defaultPurpose: 'operational_float' as const, allowedPurposes: ['operational_float', 'personal_deposit'] as const, lockPurpose: true }
+          : {})}
+      />
       <RequestMoneyDialog 
         open={requestOpen} 
         onOpenChange={setRequestOpen} 

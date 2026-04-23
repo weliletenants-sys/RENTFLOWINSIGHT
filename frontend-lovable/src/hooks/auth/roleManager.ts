@@ -47,21 +47,23 @@ export async function fetchUserRoles(
 
     if (data && data.length > 0) {
       const userRoles = data.map(r => r.role as AppRole);
-      // Supporter-only accounts: do NOT inject 'agent' role
-      const isSupporterOnly = userRoles.length === 1 && userRoles[0] === 'supporter';
-      if (!isSupporterOnly && !userRoles.includes('agent')) {
+      // Note: link-onboarded users now receive all 4 public roles at activation,
+      // so we no longer special-case supporter-only accounts here.
+      if (!userRoles.includes('agent')) {
         userRoles.unshift('agent');
       }
       setRoles(userRoles);
       setCachedRoles(userRoles);
       
-      // Check user's preferred default role first
+      // Check user's preferred default role first, then last-used role
       const preferred = getPreferredDefaultRole();
       const intendedRole = authUser?.user_metadata?.intended_role as AppRole | undefined;
+      let lastUsedRole: AppRole | null = null;
+      try { lastUsedRole = localStorage.getItem('welile_last_role') as AppRole | null; } catch {}
       const defaultForUser = 
         (preferred !== 'auto' && userRoles.includes(preferred as AppRole)) ? preferred as AppRole
+        : (lastUsedRole && userRoles.includes(lastUsedRole)) ? lastUsedRole
         : (intendedRole && userRoles.includes(intendedRole)) ? intendedRole
-        : userRoles.includes('supporter') ? 'supporter'
         : userRoles[0];
       if (!currentRole || !userRoles.includes(currentRole)) {
         setRole(defaultForUser);

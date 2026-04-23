@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { logSystemEvent } from "../_shared/eventLogger.ts";
+import { checkTreasuryGuard } from "../_shared/treasuryGuard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -76,6 +77,10 @@ Deno.serve(async (req) => {
     const safeRejectionReason = typeof rejection_reason === 'string' ? rejection_reason.trim().slice(0, 1000) : undefined;
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Treasury guard: block credits when paused (deposits credit user wallets)
+    const guardBlock = await checkTreasuryGuard(supabaseAdmin, "credit");
+    if (guardBlock) return guardBlock;
 
     const { data: isManagerRole } = await supabaseAdmin
       .from("user_roles")
@@ -165,6 +170,128 @@ Deno.serve(async (req) => {
             throw new Error(`Deposit ledger entry failed: ${depositLedgerErr.message}`);
           }
 
+          // ── Operational Float Sweep ──
+          // If an agent deposits with purpose=operational_float, sweep the credited
+          // amount from their personal wallet into their agent_landlord_float bucket
+          // so it can be used to pay landlords/tenants (NOT their personal wallet).
+          let sweptToFloat = 0;
+          {
+            const explicitFloat = depositRequest.deposit_purpose === 'operational_float';
+            const ambiguousPurpose = !depositRequest.deposit_purpose
+              || depositRequest.deposit_purpose === 'other';
+
+            // Look up agent role once
+            const { data: agentRoleRow } = await supabaseAdmin
+              .from('user_roles')
+              .select('role')
+              .eq('user_id', depositRequest.user_id)
+              .eq('role', 'agent')
+              .maybeSingle();
+
+            const isAgent = !!agentRoleRow;
+
+            // Detect proxy-agent role: these agents fund partner portfolios from
+            // their wallet ledger (via coo-create-portfolio) and must NOT have
+            // their deposits swept into landlord-payout float.
+            const { data: proxyRow } = await supabaseAdmin
+              .from('proxy_agent_assignments')
+              .select('id')
+              .eq('agent_id', depositRequest.user_id)
+              .eq('is_active', true)
+              .eq('approval_status', 'approved')
+              .limit(1)
+              .maybeSingle();
+            const isProxyAgent = !!proxyRow;
+
+            if (isAgent && isProxyAgent && !explicitFloat) {
+              console.log(
+                `[approve-deposit] Skipping float sweep — user ${depositRequest.user_id} is a proxy agent; deposit stays in wallet for partner portfolio funding`
+              );
+            }
+
+            // Sweep when:
+            //  (a) explicitly tagged operational_float (always honoured), OR
+            //  (b) ambiguous purpose AND agent is NOT a proxy agent.
+            const shouldSweep = isAgent
+              && !(isProxyAgent && !explicitFloat)
+              && (explicitFloat || ambiguousPurpose);
+            const autoRouted = isAgent && !explicitFloat && ambiguousPurpose;
+
+            if (shouldSweep) {
+              const sweepAmount = Number(depositRequest.amount);
+              const { error: sweepLedgerErr } = await supabaseAdmin.rpc('create_ledger_transaction', {
+                entries: [
+                  {
+                    user_id: depositRequest.user_id,
+                    amount: sweepAmount,
+                    direction: 'cash_out',
+                    category: 'agent_float_deposit',
+                    ledger_scope: 'wallet',
+                    source_table: 'deposit_requests',
+                    source_id: depositRequest.id,
+                    reference_id: depositRequest.transaction_id || depositRequest.id,
+                    description: autoRouted
+                      ? `Auto-routed to operational float — agent deposit w/ ambiguous purpose (${depositRequest.provider || 'mobile money'})`
+                      : `Sweep to operational float (${depositRequest.provider || 'mobile money'})`,
+                    currency: 'UGX',
+                    transaction_date: new Date().toISOString(),
+                  },
+                  {
+                    user_id: depositRequest.user_id,
+                    direction: 'cash_in',
+                    amount: sweepAmount,
+                    category: 'agent_float_deposit',
+                    ledger_scope: 'platform',
+                    source_table: 'deposit_requests',
+                    source_id: depositRequest.id,
+                    description: 'Operational float credited to agent landlord float',
+                    currency: 'UGX',
+                    transaction_date: new Date().toISOString(),
+                  },
+                ],
+              });
+
+              if (sweepLedgerErr) {
+                console.error(`[approve-deposit] Float sweep ledger failed for ${depositRequest.id}:`, sweepLedgerErr.message);
+              } else {
+                // Note: agent_landlord_float is updated automatically by the
+                // general_ledger_route_buckets trigger on agent_float_deposit entries.
+                await supabaseAdmin.from('agent_float_funding').insert({
+                  agent_id: depositRequest.user_id,
+                  amount: sweepAmount,
+                  status: 'approved',
+                  funded_by: user.id,
+                  bank_reference: depositRequest.transaction_id,
+                  bank_name: depositRequest.provider,
+                  notes: autoRouted
+                    ? `Auto-routed agent deposit (ambiguous purpose) via ${depositRequest.provider || 'mobile money'} (deposit ${depositRequest.id})`
+                    : `Self-deposit operational float via ${depositRequest.provider || 'mobile money'} (deposit ${depositRequest.id})`,
+                });
+
+                // Audit the auto-routing override so it is traceable
+                if (autoRouted) {
+                  await supabaseAdmin.from('audit_logs').insert({
+                    user_id: user.id,
+                    action_type: 'auto_routed_to_float',
+                    table_name: 'deposit_requests',
+                    record_id: depositRequest.id,
+                    reason: `Agent deposit ${depositRequest.id} (UGX ${sweepAmount}) had no/ambiguous purpose — auto-routed to operational float by approve-deposit safety net.`,
+                    metadata: {
+                      agent_id: depositRequest.user_id,
+                      amount: sweepAmount,
+                      original_purpose: depositRequest.deposit_purpose ?? null,
+                      provider: depositRequest.provider ?? null,
+                      transaction_id: depositRequest.transaction_id ?? null,
+                    },
+                  } as any);
+                }
+
+                sweptToFloat = sweepAmount;
+                console.log(`[approve-deposit] Swept UGX ${sweepAmount} to operational float for agent ${depositRequest.user_id}${autoRouted ? ' (auto-routed)' : ''}`);
+              }
+            }
+          }
+
           // ── Step 1: Auto-deduct rent repayment ──
           // The sync_wallet_from_ledger trigger has now credited the wallet.
           let repaymentApplied = 0;
@@ -245,7 +372,7 @@ Deno.serve(async (req) => {
                 availableBalance -= repaymentApplied;
 
                 // ── Credit agent commission via RPC (single-writer — RPC owns commission) ──
-                if (depositRequest.agent_id && rentRequestId) {
+                if (rentRequestId) {
                   await supabaseAdmin.rpc("credit_agent_rent_commission", {
                     p_rent_request_id: rentRequestId,
                     p_repayment_amount: repaymentApplied,
@@ -334,7 +461,7 @@ Deno.serve(async (req) => {
                 });
 
                 // Credit agent commission via RPC (single-writer)
-                if (depositRequest.agent_id) {
+                if (activeSub.rent_request_id) {
                   await supabaseAdmin.rpc("credit_agent_rent_commission", {
                     p_rent_request_id: activeSub.rent_request_id,
                     p_repayment_amount: debtCleared,
@@ -418,7 +545,7 @@ Deno.serve(async (req) => {
                 });
 
                 // Credit agent commission via RPC (single-writer)
-                if (depositRequest.agent_id) {
+                if (activeSub.rent_request_id) {
                   await supabaseAdmin.rpc("credit_agent_rent_commission", {
                     p_rent_request_id: activeSub.rent_request_id,
                     p_repayment_amount: prepaidAmount,

@@ -11,9 +11,11 @@ import { formatUGX } from '@/lib/rentCalculations';
 import { format } from 'date-fns';
 import {
   Banknote, QrCode, Search, CheckCircle2, Loader2, Building2,
-  Clock, Smartphone, Wallet, Bell, UserCheck, ArrowRight, Phone, CreditCard,
+  Smartphone, Wallet, Bell, TrendingUp, Clock, Hash,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { extractEdgeFunctionError } from '@/lib/extractEdgeFunctionError';
+import { WithdrawalPayoutCard } from '@/components/withdrawals/WithdrawalPayoutCard';
 
 export function AgentCashPayoutsTab() {
   const { user } = useAuth();
@@ -39,20 +41,83 @@ export function AgentCashPayoutsTab() {
   });
 
   // ALL pending/approved withdrawal requests
+  // NOTE: no FK exists between withdrawal_requests.user_id and profiles.id,
+  // so we cannot use a PostgREST embed. We fetch profiles separately and join client-side.
   const { data: allWithdrawals = [], isLoading: loadingAll } = useQuery({
     queryKey: ['cashout-agent-all-withdrawals'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('withdrawal_requests')
-        .select('*, profiles:user_id(full_name, phone)')
-        .in('status', ['pending', 'requested', 'manager_approved', 'cfo_approved', 'approved', 'fin_ops_approved'])
+        .select('*')
+        .in('status', ['pending', 'requested', 'manager_approved', 'cfo_approved'])
         .order('created_at', { ascending: true });
       if (error) throw error;
-      return data || [];
+      const rows = data || [];
+      if (rows.length === 0) return rows;
+
+      const userIds = Array.from(new Set(rows.map((r: any) => r.user_id).filter(Boolean)));
+      const { data: profs } = await supabase
+        .from('profiles')
+        .select('id, full_name, phone')
+        .in('id', userIds);
+      const map = new Map((profs || []).map((p: any) => [p.id, p]));
+      return rows.map((r: any) => ({ ...r, profiles: map.get(r.user_id) || null }));
     },
     enabled: !!isCashoutAgent,
     staleTime: 30_000,
     refetchOnWindowFocus: true,
+  });
+
+  // Daily stats: ONLY count actual cash payouts handled by THIS cash-out agent today.
+  // Sources counted:
+  //   1. payout_codes marked 'paid' by this agent (cash pickup via WPO code)
+  //   2. withdrawal_requests assigned to this cashout agent and completed today
+  // We DO NOT include withdrawals where this user is merely 'processed_by' through
+  // other approval flows — that would falsely inflate the cash-paid figure.
+  const { data: dailyStats } = useQuery({
+    queryKey: ['cashout-agent-daily-stats', user?.id, isCashoutAgent?.id],
+    queryFn: async () => {
+      if (!user || !isCashoutAgent?.id) return { codesCount: 0, totalAmount: 0, avgMinutes: 0 };
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      const startIso = startOfDay.toISOString();
+
+      const { data: codes } = await supabase
+        .from('payout_codes')
+        .select('amount, created_at, paid_at')
+        .eq('paid_by', user.id)
+        .eq('status', 'paid')
+        .gte('paid_at', startIso);
+
+      // Only count withdrawals this agent has actually CONFIRMED PAID
+      // (status='completed' + processed_by=self + processed_at set today).
+      // A "claim" only sets assigned_cashout_agent_id/dispatched_at — it must NEVER count here.
+      const { data: wreqs } = await supabase
+        .from('withdrawal_requests')
+        .select('amount, created_at, processed_at, payout_method, status, processed_by')
+        .eq('assigned_cashout_agent_id', isCashoutAgent.id)
+        .eq('processed_by', user.id)
+        .eq('status', 'completed')
+        .in('payout_method', ['cash', 'cash_pickup'])
+        .not('processed_at', 'is', null)
+        .gte('processed_at', startIso);
+
+      const rows = [
+        ...(codes || []).map((r: any) => ({ amount: Number(r.amount || 0), created_at: r.created_at, finished_at: r.paid_at })),
+        ...(wreqs || []).map((r: any) => ({ amount: Number(r.amount || 0), created_at: r.created_at, finished_at: r.processed_at })),
+      ];
+
+      const codesCount = rows.length;
+      const totalAmount = rows.reduce((sum, r) => sum + r.amount, 0);
+      const durations = rows
+        .filter(r => r.created_at && r.finished_at)
+        .map(r => (new Date(r.finished_at).getTime() - new Date(r.created_at).getTime()) / 60000);
+      const avgMinutes = durations.length ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
+
+      return { codesCount, totalAmount, avgMinutes };
+    },
+    enabled: !!user && !!isCashoutAgent?.id,
+    staleTime: 60_000,
   });
 
   // Realtime subscription
@@ -71,23 +136,45 @@ export function AgentCashPayoutsTab() {
     return () => { supabase.removeChannel(channel); };
   }, [isCashoutAgent, qc]);
 
-  // Claim a withdrawal request
+  // Auto-release stale claims (>10min) — client-side ticker so the UI updates
+  // immediately even between cron runs. Refreshes the list every 30s while open.
+  useEffect(() => {
+    if (!isCashoutAgent) return;
+    const tick = setInterval(() => {
+      qc.invalidateQueries({ queryKey: ['cashout-agent-all-withdrawals'] });
+    }, 30_000);
+    return () => clearInterval(tick);
+  }, [isCashoutAgent, qc]);
+
+  // Claim a withdrawal request — ATOMIC: only succeeds if no one else has claimed it.
+  // The `.is('assigned_cashout_agent_id', null)` guard makes the UPDATE a single-row
+  // race-safe operation. If two agents click "Claim" at the same instant, only the
+  // first transaction commits; the second matches 0 rows and we surface a clear error.
   const claimWithdrawal = useMutation({
     mutationFn: async (withdrawalId: string) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('withdrawal_requests')
         .update({
           assigned_cashout_agent_id: isCashoutAgent?.id,
           dispatched_at: new Date().toISOString(),
         } as any)
-        .eq('id', withdrawalId);
+        .eq('id', withdrawalId)
+        .is('assigned_cashout_agent_id', null) // race guard
+        .select('id');
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('Already claimed by another agent — refreshing queue');
+      }
     },
     onSuccess: () => {
       toast.success('✅ Withdrawal claimed — proceed with payout');
       qc.invalidateQueries({ queryKey: ['cashout-agent-all-withdrawals'] });
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any) => {
+      toast.error(e.message);
+      // Refresh so the lost-race row disappears from this agent's view immediately.
+      qc.invalidateQueries({ queryKey: ['cashout-agent-all-withdrawals'] });
+    },
   });
 
   // Complete withdrawal via edge function (ledger-backed)
@@ -96,12 +183,16 @@ export function AgentCashPayoutsTab() {
       const { data, error } = await supabase.functions.invoke('approve-withdrawal', {
         body: { withdrawal_id: id, reference: reference.trim(), payment_method: method },
       });
-      if (error) throw new Error(error.message || 'Failed to process withdrawal');
-      if (data?.error) throw new Error(data.error);
+      if (error || data?.error) {
+        const msg = await extractEdgeFunctionError({ data, error }, 'Failed to process withdrawal');
+        throw new Error(msg);
+      }
       return data;
     },
     onSuccess: (data) => {
-      toast.success(`✅ Payout completed — ${formatUGX(data?.amount || 0)} sent`);
+      const commission = Number(data?.cashout_commission || 0);
+      const baseMsg = `✅ Payout completed — ${formatUGX(data?.amount || 0)} sent`;
+      toast.success(commission > 0 ? `${baseMsg} · You earned ${formatUGX(commission)} (1%)` : baseMsg);
       qc.invalidateQueries({ queryKey: ['cashout-agent-all-withdrawals'] });
     },
     onError: (e: any) => toast.error(e.message),
@@ -140,17 +231,69 @@ export function AgentCashPayoutsTab() {
 
   if (!isCashoutAgent) return null;
 
-  // Split by method
-  const momoWithdrawals = allWithdrawals.filter((w: any) => ['mobile_money', 'mtn_mobile_money', 'airtel_money'].includes(w.payout_method));
-  const bankWithdrawals = allWithdrawals.filter((w: any) => w.payout_method === 'bank_transfer');
-  const cashWithdrawals = allWithdrawals.filter((w: any) => ['cash', 'cash_pickup'].includes(w.payout_method) || !w.payout_method);
+  // My ACTIVE claims (claimed by me, awaiting my confirmation) — shown separately
+  // at the top so I can complete them. They are EXCLUDED from the main queue and
+  // its pending count to prevent double-payment by me or Financial Ops.
+  const myActiveClaims = allWithdrawals.filter(
+    (w: any) => w.assigned_cashout_agent_id === isCashoutAgent?.id,
+  );
 
-  // My claimed vs unclaimed
-  const myClaimedIds = new Set(allWithdrawals.filter((w: any) => w.assigned_cashout_agent_id === isCashoutAgent?.id).map((w: any) => w.id));
-  const totalPending = allWithdrawals.length;
+  // Available queue: only UNCLAIMED withdrawals. Items claimed by anyone (me or
+  // another agent) are hidden until either confirmed paid (gone forever) or the
+  // 10-minute cron auto-releases them back here.
+  const availableWithdrawals = allWithdrawals.filter(
+    (w: any) => !w.assigned_cashout_agent_id,
+  );
+
+  // Split by method (queue only)
+  const momoWithdrawals = availableWithdrawals.filter((w: any) => ['mobile_money', 'mtn_mobile_money', 'airtel_money'].includes(w.payout_method));
+  const bankWithdrawals = availableWithdrawals.filter((w: any) => w.payout_method === 'bank_transfer');
+  const cashWithdrawals = availableWithdrawals.filter((w: any) => ['cash', 'cash_pickup'].includes(w.payout_method) || !w.payout_method);
+
+  const myClaimedIds = new Set(myActiveClaims.map((w: any) => w.id));
+  const totalPending = availableWithdrawals.length;
 
   return (
     <div className="space-y-4">
+      {/* Role identity banner */}
+      <div className="flex items-start gap-2 p-2.5 rounded-lg bg-primary/5 border border-primary/20">
+        <Banknote className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+        <div className="text-[11px] text-foreground/80 leading-snug">
+          You are operating as a <span className="font-semibold text-primary">Merchant Agent</span>. You execute user withdrawal payouts via <span className="font-medium">Mobile Money, Bank, or Cash</span> — claim a request, send the money externally, then enter the proof (TID or payout code) to confirm. Financial Ops shares this queue and handles exceptions &amp; high-value payouts.
+        </div>
+      </div>
+
+      {/* Daily summary */}
+      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            Today's Merchant Payouts
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-3 gap-2 pt-0">
+          <div className="space-y-1">
+            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              <Hash className="h-3 w-3" /> Payouts completed
+            </div>
+            <div className="text-lg font-bold text-foreground">{dailyStats?.codesCount ?? 0}</div>
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              <TrendingUp className="h-3 w-3" /> Amount paid
+            </div>
+            <div className="text-lg font-bold text-primary">{formatUGX(dailyStats?.totalAmount ?? 0)}</div>
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              <Clock className="h-3 w-3" /> Avg time
+            </div>
+            <div className="text-lg font-bold text-foreground">
+              {dailyStats?.avgMinutes ? `${Math.round(dailyStats.avgMinutes)}m` : '—'}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Live status banner */}
       {totalPending > 0 && (
         <div className="flex items-center gap-2 p-2 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-700 dark:text-orange-400">
@@ -159,13 +302,14 @@ export function AgentCashPayoutsTab() {
         </div>
       )}
 
-      {/* Payout Code Verification */}
+      {/* Payout Code Verification — for users who came in person with a WPO code */}
       <Card className="border-2 border-primary/30 bg-primary/5">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center gap-2">
             <QrCode className="h-4 w-4 text-primary" />
-            Verify Payout Code
+            Verify Cash Pickup Code (optional)
           </CardTitle>
+          <p className="text-[10px] text-muted-foreground mt-1">Use this only when a user came in person with a pre-generated WPO-XXXXX cash pickup code. For Mobile Money, Bank, or coordinated cash payouts, claim from the queue below instead.</p>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex gap-2">
@@ -203,7 +347,32 @@ export function AgentCashPayoutsTab() {
         </CardContent>
       </Card>
 
-      {/* Withdrawal Requests by channel */}
+      {myActiveClaims.length > 0 && (
+        <Card className="border-amber-500/40 bg-amber-500/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-semibold uppercase tracking-wide flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
+              <Clock className="h-3.5 w-3.5" />
+              My Active Claims · {myActiveClaims.length} · 10 min to confirm
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {myActiveClaims.map((w: any) => (
+              <WithdrawalPayoutCard
+                key={w.id}
+                withdrawal={w}
+                isClaimed
+                isClaimedByOther={false}
+                onClaim={() => claimWithdrawal.mutate(w.id)}
+                onComplete={completeWithdrawal.mutate}
+                isClaimPending={claimWithdrawal.isPending}
+                isCompletePending={completeWithdrawal.isPending}
+              />
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Withdrawal Requests by channel — UNCLAIMED only */}
       <Tabs defaultValue="all">
         <TabsList className="w-full">
           <TabsTrigger value="all" className="flex-1 gap-1">
@@ -225,7 +394,7 @@ export function AgentCashPayoutsTab() {
         </TabsList>
 
         {['all', 'momo', 'bank', 'cash'].map(tab => {
-          const items = tab === 'all' ? allWithdrawals : tab === 'momo' ? momoWithdrawals : tab === 'bank' ? bankWithdrawals : cashWithdrawals;
+          const items = tab === 'all' ? availableWithdrawals : tab === 'momo' ? momoWithdrawals : tab === 'bank' ? bankWithdrawals : cashWithdrawals;
           const emptyMsg = tab === 'all' ? 'No pending withdrawals' : `No pending ${tab} payouts`;
           return (
             <TabsContent key={tab} value={tab} className="space-y-2 mt-3">
@@ -255,144 +424,4 @@ export function AgentCashPayoutsTab() {
   );
 }
 
-function WithdrawalPayoutCard({
-  withdrawal,
-  isClaimed,
-  isClaimedByOther,
-  onClaim,
-  onComplete,
-  isClaimPending,
-  isCompletePending,
-}: {
-  withdrawal: any;
-  isClaimed: boolean;
-  isClaimedByOther: boolean;
-  onClaim: () => void;
-  onComplete: (data: { id: string; reference: string; method: string }) => void;
-  isClaimPending: boolean;
-  isCompletePending: boolean;
-}) {
-  const [reference, setReference] = useState('');
-
-  const method = withdrawal.payout_method || 'cash';
-  const isMoMo = ['mobile_money', 'mtn_mobile_money', 'airtel_money'].includes(method);
-  const isBank = method === 'bank_transfer';
-  const isCash = !isMoMo && !isBank;
-
-  const borderColor = isBank ? 'border-l-blue-500' : isMoMo ? 'border-l-yellow-500' : 'border-l-green-600';
-  const methodLabel = isBank ? 'Bank Transfer' : isMoMo ? 'Mobile Money' : 'Cash';
-  const MethodIcon = isBank ? Building2 : isMoMo ? Smartphone : Banknote;
-
-  const recipientName = withdrawal.profiles?.full_name || 'Unknown';
-  const recipientPhone = withdrawal.profiles?.phone || '—';
-
-  return (
-    <Card className={`border-l-4 ${borderColor} ${isClaimedByOther ? 'opacity-50' : ''}`}>
-      <CardContent className="p-3 space-y-2.5">
-        {/* Header: Recipient + Amount */}
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="font-bold text-sm">{recipientName}</p>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-              <Phone className="h-3 w-3" />
-              {recipientPhone}
-            </div>
-          </div>
-          <div className="text-right">
-            <p className="font-black text-lg text-primary">{formatUGX(withdrawal.amount)}</p>
-            <Badge variant="outline" className="text-[9px] gap-1">
-              <MethodIcon className="h-3 w-3" />
-              {methodLabel}
-            </Badge>
-          </div>
-        </div>
-
-        {/* Recipient Payout Details — always visible */}
-        <div className="rounded-lg bg-muted/50 p-2.5 space-y-1.5 text-xs">
-          <p className="font-semibold text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
-            <CreditCard className="h-3 w-3 inline mr-1" />
-            Payout Details
-          </p>
-          {isBank && (
-            <>
-              <div className="flex justify-between"><span className="text-muted-foreground">Bank</span><span className="font-medium">{withdrawal.bank_name || '—'}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Account #</span><span className="font-mono font-bold">{withdrawal.bank_account_number || '—'}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Account Name</span><span className="font-medium">{withdrawal.bank_account_name || '—'}</span></div>
-            </>
-          )}
-          {isMoMo && (
-            <>
-              <div className="flex justify-between"><span className="text-muted-foreground">Provider</span><span className="font-medium">{withdrawal.mobile_money_provider || method}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Number</span><span className="font-mono font-bold">{withdrawal.mobile_money_number || recipientPhone}</span></div>
-              {withdrawal.mobile_money_name && (
-                <div className="flex justify-between"><span className="text-muted-foreground">Name on MoMo</span><span className="font-medium">{withdrawal.mobile_money_name}</span></div>
-              )}
-            </>
-          )}
-          {isCash && (
-            <div className="flex justify-between"><span className="text-muted-foreground">Contact</span><span className="font-mono font-bold">{recipientPhone}</span></div>
-          )}
-        </div>
-
-        {/* Status + Time */}
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="text-[9px]">{withdrawal.status?.replace(/_/g, ' ')}</Badge>
-          <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            {format(new Date(withdrawal.created_at), 'MMM d, HH:mm')}
-          </span>
-          {isClaimed && (
-            <Badge className="text-[9px] bg-green-600 gap-1">
-              <UserCheck className="h-3 w-3" />
-              Claimed by you
-            </Badge>
-          )}
-          {isClaimedByOther && (
-            <Badge variant="outline" className="text-[9px] text-muted-foreground">Claimed by another agent</Badge>
-          )}
-        </div>
-
-        {withdrawal.reason && (
-          <p className="text-[10px] text-muted-foreground italic">"{withdrawal.reason}"</p>
-        )}
-
-        {/* Actions */}
-        {isClaimedByOther ? null : !isClaimed ? (
-          /* Step 1: Claim */
-          <Button
-            className="w-full h-10 gap-2 font-semibold"
-            variant="outline"
-            onClick={onClaim}
-            disabled={isClaimPending}
-          >
-            {isClaimPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <><UserCheck className="h-4 w-4" /> Claim This Withdrawal</>}
-          </Button>
-        ) : (
-          /* Step 2: Enter reference + confirm payout */
-          <div className="space-y-2 pt-1 border-t border-border/50">
-            <p className="text-[10px] font-semibold text-primary">
-              <ArrowRight className="h-3 w-3 inline mr-1" />
-              {isBank ? 'Enter bank transfer reference after depositing' : isMoMo ? 'Enter MoMo TID after sending' : 'Enter cash voucher / receipt number'}
-            </p>
-            <div className="flex gap-2">
-              <Input
-                placeholder={isBank ? 'Bank reference / TID...' : isMoMo ? 'MoMo Transaction ID...' : 'Cash voucher number...'}
-                value={reference}
-                onChange={e => setReference(e.target.value)}
-                className="text-xs h-10 font-mono"
-              />
-              <Button
-                className="h-10 gap-1 px-4"
-                disabled={!reference.trim() || reference.trim().length < 3 || isCompletePending}
-                onClick={() => onComplete({ id: withdrawal.id, reference, method: methodLabel })}
-              >
-                {isCompletePending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
-                Confirm Paid
-              </Button>
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
+// WithdrawalPayoutCard moved to src/components/withdrawals/WithdrawalPayoutCard.tsx
