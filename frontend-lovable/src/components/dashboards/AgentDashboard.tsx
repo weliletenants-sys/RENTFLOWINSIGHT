@@ -53,6 +53,7 @@ import { CommissionCelebrationModal } from '@/components/agent/CommissionCelebra
 import { useBusinessAdvanceCommissionListener } from '@/hooks/useBusinessAdvanceCommissionListener';
 import { useAgentEarnings } from '@/hooks/useAgentEarnings';
 import { AgentDashboardSkeleton } from '@/components/skeletons/DashboardSkeletons';
+import { WalletHeroSkeleton, MetricRowSkeleton, ListSectionSkeleton } from '@/components/skeletons/SectionSkeletons';
 
 import { hapticTap } from '@/lib/haptics';
 import { AgentAgreementBanner } from '@/components/agent/agreement';
@@ -254,9 +255,15 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
     }
   };
 
-  if (loading && isOnline && !hasLoadedOnce) {
+  // Progressive rendering: header + cached/empty widgets paint immediately;
+  // skeleton placeholders fill data-bound regions until the snapshot lands.
+  // We only fall back to the full-page skeleton if the user is OFFLINE with
+  // no cache (nothing else can render anyway).
+  const showFullSkeleton = loading && !isOnline && !hasLoadedOnce;
+  if (showFullSkeleton) {
     return <AgentDashboardSkeleton />;
   }
+  const dataLoading = loading && !hasLoadedOnce;
 
   const handleRefresh = async () => {
     await Promise.all([refreshOfflineData(), refreshEarnings(), refreshWallet(), refreshBalances()]);
@@ -319,7 +326,8 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
         </div>
 
         {/* Wallet Hero Card — always visible */}
-        <UnifiedWalletHeroCard
+        {wallet ? (
+          <UnifiedWalletHeroCard
           balance={walletFloatBalance + commissionBalance + (otherBalance ?? 0)}
           role="agent"
           floatBalance={walletFloatBalance}
@@ -355,7 +363,10 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
               </button>
             </div>
           }
-        />
+          />
+        ) : (
+          <WalletHeroSkeleton />
+        )}
 
         {/* Tab Navigation */}
         <AgentHubTabs active={activeTab} onChange={setActiveTab} />
