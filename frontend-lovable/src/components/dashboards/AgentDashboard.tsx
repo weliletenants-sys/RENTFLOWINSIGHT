@@ -7,6 +7,7 @@ import { User } from '@supabase/supabase-js';
 import AiIdButton from '@/components/ai-id/AiIdButton';
 import { UnifiedWalletHeroCard } from '@/components/wallet/UnifiedWalletHeroCard';
 import { AgentRiskExposureCard } from '@/components/agent/AgentRiskExposureCard';
+import { EarnedSinceLastWithdrawalCard } from '@/components/agent/EarnedSinceLastWithdrawalCard';
 
 import { Button } from '@/components/ui/button';
 import { 
@@ -45,6 +46,7 @@ import { UserAvatar } from '@/components/UserAvatar';
 import { AgentDepositDialog } from '@/components/agent/AgentDepositDialog';
 import { UnifiedRegistrationDialog } from '@/components/agent/UnifiedRegistrationDialog';
 import { RegisterSubAgentDialog } from '@/components/agent/RegisterSubAgentDialog';
+import { SubAgentsPanel } from '@/components/agent/SubAgentsPanel';
 import AgentRentRequestDialog from '@/components/agent/AgentRentRequestDialog';
 import BusinessAdvanceRequestDialog from '@/components/agent/BusinessAdvanceRequestDialog';
 import { CommissionCelebrationModal } from '@/components/agent/CommissionCelebrationModal';
@@ -138,7 +140,7 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
   const { profile } = useProfile();
   const { refreshEarnings, totalEarnings } = useAgentEarnings();
   const { wallet, refreshWallet } = useWallet();
-  const { commissionBalance, withdrawableBalance, refetch: refreshBalances } = useAgentBalances();
+  const { commissionBalance, withdrawableBalance, otherBalance, refetch: refreshBalances } = useAgentBalances();
   const { floatBalance: walletFloatBalance } = useAgentBalances();
   // Kept for the lower AgentLandlordFloatCard / sheets (CFO escrow, NOT the wallet float)
   const { floatBalance: landlordPayoutFloat } = useAgentLandlordFloat();
@@ -318,11 +320,12 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
 
         {/* Wallet Hero Card — always visible */}
         <UnifiedWalletHeroCard
-          balance={walletFloatBalance + commissionBalance}
+          balance={walletFloatBalance + commissionBalance + (otherBalance ?? 0)}
           role="agent"
           floatBalance={walletFloatBalance}
           commissionBalance={commissionBalance}
           withdrawableBalance={realWithdrawableBalance}
+          otherBalance={otherBalance}
           onOpenWallet={() => setShowWallet(true)}
           quickActions={
             <div className="flex items-center gap-2.5">
@@ -435,6 +438,7 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
         {activeTab === 'money' && (
           <div className="space-y-5 animate-in fade-in duration-200">
             <AgentRiskExposureCard />
+            <EarnedSinceLastWithdrawalCard />
             <AgentLandlordFloatCard
               onPayLandlord={() => { hapticTap(); setFloatAllocationsOpen(true); }}
               onOpenRecovery={() => { hapticTap(); setRecoveryLedgerOpen(true); }}
@@ -526,6 +530,13 @@ export default function AgentDashboard({ user, signOut, currentRole, availableRo
               ))}
             </div>
             <ShareRentRecorderCard />
+          </div>
+        )}
+
+        {/* === SUB AGENTS TAB === Team management */}
+        {activeTab === 'subagents' && (
+          <div className="space-y-5 animate-in fade-in duration-200">
+            <SubAgentsPanel agentId={user.id} onInviteSubAgent={handleInviteSubAgent} />
           </div>
         )}
 

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { roleToSlug } from '@/lib/roleRoutes';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -136,7 +137,7 @@ export default function DepositsManagement() {
   // Redirect non-managers
   useEffect(() => {
     if (!authLoading && (!user || role !== 'manager')) {
-      navigate('/dashboard');
+      navigate(roleToSlug(role));
     }
   }, [user, role, authLoading, navigate]);
 
@@ -359,13 +360,21 @@ export default function DepositsManagement() {
 
       const results = data?.results || [];
       const successCount = results.filter((r: any) => r.status === 'approved').length;
-      const failCount = results.filter((r: any) => r.status === 'error').length;
+      const failures = results.filter((r: any) => r.status === 'error');
+      const failCount = failures.length;
 
       if (successCount > 0) {
         toast.success(`Approved ${successCount} deposit${successCount > 1 ? 's' : ''}`);
       }
       if (failCount > 0) {
-        toast.error(`Failed to approve ${failCount} deposit${failCount > 1 ? 's' : ''}`);
+        const reasons = failures
+          .map((f: any) => f?.error || f?.reason)
+          .filter(Boolean)
+          .slice(0, 3)
+          .join(' • ');
+        toast.error(`Failed to approve ${failCount} deposit${failCount > 1 ? 's' : ''}`, {
+          description: reasons || undefined,
+        });
       }
     } catch (error: any) {
       toast.error(error.message || 'Bulk approve failed');
@@ -397,13 +406,21 @@ export default function DepositsManagement() {
 
       const results = data?.results || [];
       const successCount = results.filter((r: any) => r.status === 'rejected').length;
-      const failCount = results.filter((r: any) => r.status === 'error').length;
+      const failures = results.filter((r: any) => r.status === 'error');
+      const failCount = failures.length;
 
       if (successCount > 0) {
         toast.success(`Rejected ${successCount} deposit${successCount > 1 ? 's' : ''}`);
       }
       if (failCount > 0) {
-        toast.error(`Failed to reject ${failCount} deposit${failCount > 1 ? 's' : ''}`);
+        const reasons = failures
+          .map((f: any) => f?.error || f?.reason)
+          .filter(Boolean)
+          .slice(0, 3)
+          .join(' • ');
+        toast.error(`Failed to reject ${failCount} deposit${failCount > 1 ? 's' : ''}`, {
+          description: reasons || undefined,
+        });
       }
     } catch (error: any) {
       toast.error(error.message || 'Bulk reject failed');

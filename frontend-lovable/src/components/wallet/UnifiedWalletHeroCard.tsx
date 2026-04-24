@@ -17,6 +17,8 @@ interface UnifiedWalletHeroCardProps {
   floatBalance?: number;
   commissionBalance?: number;
   withdrawableBalance?: number;
+  /** Agent-specific: withdrawable funds NOT classified as commission (CFO admin credits etc.) */
+  otherBalance?: number;
   /** Callback when user taps balance area or "View Wallet" */
   onOpenWallet?: () => void;
   /** Supporter metric card taps */
@@ -52,6 +54,7 @@ export function UnifiedWalletHeroCard({
   floatBalance,
   commissionBalance,
   withdrawableBalance,
+  otherBalance,
   onOpenWallet,
   onHousesTap,
   onReturnTap,

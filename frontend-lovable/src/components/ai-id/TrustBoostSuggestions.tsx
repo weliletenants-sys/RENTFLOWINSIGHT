@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { roleToSlug } from '@/lib/roleRoutes';
 import { Sparkles, ChevronRight, MapPin, Home, Wallet, Users, IdCard, Activity, Trophy } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -47,7 +48,7 @@ export function TrustBoostSuggestions({ profile, showForSelfOnly = true }: Props
       title: 'Catch up on rent to boost your score',
       description: `Your on-time rate is ${profile.payment_history.on_time_rate}%. Pay on time to reach 90%+.`,
       cta: 'View Rent Plans',
-      action: () => navigate('/tenant'),
+      action: () => navigate('/dashboard/tenant'),
       priority: 8,
     });
   }
@@ -136,7 +137,7 @@ export function TrustBoostSuggestions({ profile, showForSelfOnly = true }: Props
       title: 'Visit late-paying tenants',
       description: `Only ${profile.agent_performance.healthy_tenants} of ${profile.agent_performance.qualifying_tenants} tenants are paying ≥50%. Capture trust signals to nudge collections and grow your vouch limit.`,
       cta: 'Open Agent Hub',
-      action: () => navigate('/dashboard'),
+      action: () => navigate('/dashboard/tenant'),
       priority: 10,
     });
   }

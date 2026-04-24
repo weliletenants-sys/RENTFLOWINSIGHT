@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { target_user_id, amount, reason, operation, wallet_category, platform_category, financial_impact, category_label, sub_category } = await req.json();
+    const { target_user_id, amount, reason, operation, wallet_category, platform_category, financial_impact, category_label, sub_category, confirm_non_commission } = await req.json();
     const op = operation === "debit" ? "debit" : "credit";
     const callerRoles = (roles || []).map((r: any) => r.role);
 
@@ -71,6 +71,40 @@ Deno.serve(async (req) => {
     const walletCat = ALLOWED_CATEGORIES.includes(wallet_category) ? wallet_category : 'system_balance_correction';
     const platformCat = ALLOWED_CATEGORIES.includes(platform_category) ? platform_category : 'system_balance_correction';
     const impact = ['revenue', 'expense', 'neutral'].includes(financial_impact) ? financial_impact : 'neutral';
+
+    // ── Guardrail: warn CFO when crediting an AGENT under a non-commission category
+    // that routes to their withdrawable bucket (admin reimbursements, marketing, etc.).
+    // These funds become withdrawable but won't show as commission earnings.
+    // Sometimes legitimate (admin reimbursements) — so this is a CONFIRM step, not a block.
+    const WITHDRAWABLE_CATEGORIES = new Set([
+      'roi_wallet_credit', 'agent_commission_earned', 'system_balance_correction', 'wallet_transfer',
+      'marketing_expense', 'research_development_expense', 'general_admin_expense',
+      'payroll_expense', 'tax_expense', 'interest_expense', 'equipment_expense',
+    ]);
+    if (
+      op === 'credit' &&
+      target_user_id &&
+      WITHDRAWABLE_CATEGORIES.has(walletCat) &&
+      walletCat !== 'agent_commission_earned' &&
+      !confirm_non_commission
+    ) {
+      const { data: targetRoles } = await adminClient
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', target_user_id)
+        .eq('role', 'agent');
+      if (targetRoles && targetRoles.length > 0) {
+        return new Response(JSON.stringify({
+          code: 'CONFIRM_NON_COMMISSION_AGENT_CREDIT',
+          message: `Recipient is an agent. Crediting them under '${walletCat}' will appear in their withdrawable bucket but NOT as commission. Re-submit with confirm_non_commission=true to proceed.`,
+          suggested_category: 'agent_commission_earned',
+          chosen_category: walletCat,
+        }), {
+          status: 409,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
 
     // Validate inputs — shadow on failure paths
     if (!target_user_id || typeof target_user_id !== "string") {
@@ -112,7 +146,7 @@ Deno.serve(async (req) => {
     // Ensure wallet exists
     const { data: existingWallet } = await adminClient
       .from("wallets")
-      .select("id, balance")
+      .select("id, balance, withdrawable_balance, float_balance")
       .eq("user_id", target_user_id)
       .single();
 
@@ -171,33 +205,86 @@ Deno.serve(async (req) => {
       }
     } else {
       console.log("[cfo-direct-credit] Creating DEBIT ledger entries for", target_user_id, "amount:", amount);
+      // Bucket-aware split for debits: if the chosen wallet category routes
+      // to the withdrawable bucket but it can't cover the amount, drain
+      // withdrawable first then take the remainder from float_balance via
+      // float_retraction. Categories that already route to float
+      // (system_balance_correction / wallet_transfer for agents) just pass through.
+      const WITHDRAWABLE_ROUTE = new Set([
+        'roi_wallet_credit', 'agent_commission_earned', 'wallet_deduction',
+        'marketing_expense', 'research_development_expense', 'general_admin_expense',
+        'payroll_expense', 'tax_expense', 'interest_expense', 'equipment_expense',
+        'access_fee_collected', 'registration_fee_collected',
+      ]);
+      const withdrawable = Number(existingWallet?.withdrawable_balance ?? 0);
+      const floatBal = Number(existingWallet?.float_balance ?? 0);
+
+      let primaryAmount = amount;
+      let floatOverflow = 0;
+      if (WITHDRAWABLE_ROUTE.has(walletCat) && withdrawable < amount && (withdrawable + floatBal) >= amount) {
+        primaryAmount = withdrawable;
+        floatOverflow = amount - withdrawable;
+      }
+
+      const nowIso = new Date().toISOString();
+      const entries: any[] = [];
+
+      if (primaryAmount > 0) {
+        entries.push({
+          user_id: target_user_id,
+          amount: primaryAmount,
+          direction: 'cash_out',
+          category: walletCat,
+          ledger_scope: 'wallet',
+          source_table: 'cfo_direct_credit',
+          reference_id: refId,
+          description: `CFO Debit [${category_label || walletCat}]: ${reason}`,
+          currency: 'UGX',
+          transaction_date: nowIso,
+        });
+        entries.push({
+          user_id: userId,
+          direction: 'cash_in',
+          amount: primaryAmount,
+          category: platformCat,
+          ledger_scope: 'platform',
+          source_table: 'cfo_direct_credit',
+          reference_id: refId,
+          description: `${targetProfile.full_name} → Platform [${impact}]: ${reason}`,
+          currency: 'UGX',
+          transaction_date: nowIso,
+        });
+      }
+
+      if (floatOverflow > 0) {
+        entries.push({
+          user_id: target_user_id,
+          amount: floatOverflow,
+          direction: 'cash_out',
+          category: 'agent_float_settlement',
+          ledger_scope: 'wallet',
+          source_table: 'cfo_direct_credit',
+          reference_id: refId,
+          description: `CFO Debit (float portion) [${category_label || walletCat}]: ${reason}`,
+          currency: 'UGX',
+          transaction_date: nowIso,
+        });
+        entries.push({
+          user_id: userId,
+          direction: 'cash_in',
+          amount: floatOverflow,
+          category: platformCat,
+          ledger_scope: 'platform',
+          source_table: 'cfo_direct_credit',
+          reference_id: refId,
+          description: `${targetProfile.full_name} float → Platform [${impact}]: ${reason}`,
+          currency: 'UGX',
+          transaction_date: nowIso,
+        });
+      }
+
       const { error: rpcErr } = await adminClient.rpc('create_ledger_transaction', {
-        entries: [
-          {
-            user_id: target_user_id,
-            amount,
-            direction: 'cash_out',
-            category: walletCat,
-            ledger_scope: 'wallet',
-            source_table: 'cfo_direct_credit',
-            reference_id: refId,
-            description: `CFO Debit [${category_label || walletCat}]: ${reason}`,
-            currency: 'UGX',
-            transaction_date: new Date().toISOString(),
-          },
-          {
-            user_id: userId,
-            direction: 'cash_in',
-            amount,
-            category: platformCat,
-            ledger_scope: 'platform',
-            source_table: 'cfo_direct_credit',
-            reference_id: refId,
-            description: `${targetProfile.full_name} → Platform [${impact}]: ${reason}`,
-            currency: 'UGX',
-            transaction_date: new Date().toISOString(),
-          },
-        ],
+        entries,
         skip_balance_check: true,
       });
       if (rpcErr) {
@@ -248,7 +335,7 @@ Deno.serve(async (req) => {
     fetch(`${supabaseUrl}/functions/v1/notify-managers`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${serviceKey}` },
-      body: JSON.stringify({ title: "💳 Welile Technologies Finance", body: "Activity: wallet credit", url: "/manager" }),
+      body: JSON.stringify({ title: "💳 Welile Technologies Finance", body: "Activity: wallet credit", url: "/dashboard/manager" }),
     }).catch(() => {});
 
     // Push notification to target user (fire-and-forget)
@@ -257,7 +344,7 @@ Deno.serve(async (req) => {
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${serviceKey}` },
       body: JSON.stringify({
         userIds: [target_user_id],
-        payload: { title: op === "credit" ? "💰 Welile Technologies Finance" : "💸 Wallet Debited", body: `UGX ${amount.toLocaleString()} ${verb} your wallet by Welile Technologies Finance`, url: "/dashboard", type: "success" },
+        payload: { title: op === "credit" ? "💰 Welile Technologies Finance" : "💸 Wallet Debited", body: `UGX ${amount.toLocaleString()} ${verb} your wallet by Welile Technologies Finance`, url: "/dashboard/funder", type: "success" },
       }),
     }).catch(() => {});
 

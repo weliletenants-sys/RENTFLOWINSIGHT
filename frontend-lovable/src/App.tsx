@@ -111,6 +111,7 @@ const CMODashboardPage = lazy(() => import('./pages/cmo/Dashboard'));
 const CRMDashboardPage = lazy(() => import('./pages/crm/Dashboard'));
 const CFODashboardPage = lazy(() => import('./pages/cfo/Dashboard'));
 const InvestorReportPage = lazy(() => import('./pages/cfo/InvestorReportPage'));
+const MoneyFlowTracePage = lazy(() => import('./pages/cfo/MoneyFlowTrace'));
 const COODashboardPage = lazy(() => import('./pages/coo/Dashboard'));
 const HRDashboardPage = lazy(() => import('./pages/hr/Dashboard'));
 const HREmployeeProfilePage = lazy(() => import('./pages/hr/EmployeeProfile'));
@@ -262,7 +263,14 @@ function AppRoutes() {
           <Route path="/r/:code" element={<ResolveShortLink />} />
           <Route path="/profile/:aiId" element={<HolisticProfile />} />
           <Route path="/id/:aiId" element={<HolisticProfile publicMode />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          {/* Persona-specific dashboards. URL is the source of truth for which
+              public-role view to render. Internal `supporter` role is exposed
+              as `/dashboard/funder` (BOU/CMA terminology). */}
+          <Route path="/dashboard/tenant" element={<Dashboard />} />
+          <Route path="/dashboard/agent" element={<Dashboard />} />
+          <Route path="/dashboard/landlord" element={<Dashboard />} />
+          <Route path="/dashboard/funder" element={<Dashboard />} />
+          <Route path="/dashboard/manager" element={<Dashboard />} />
           <Route path="/select-role" element={<SelectRole />} />
           <Route path="/transactions" element={<TransactionHistory />} />
           <Route path="/financial-statement" element={<FinancialStatement />} />
@@ -327,6 +335,7 @@ function AppRoutes() {
           <Route path="/ceo/dashboard" element={<RoleGuard allowedRoles={['ceo', 'super_admin', 'cto']}><CEODashboardPage /></RoleGuard>} />
           <Route path="/cfo/dashboard" element={<RoleGuard allowedRoles={['cfo', 'super_admin', 'cto']}><CFODashboardPage /></RoleGuard>} />
           <Route path="/cfo/investor-report" element={<RoleGuard allowedRoles={['cfo', 'ceo', 'coo', 'super_admin', 'cto']}><InvestorReportPage /></RoleGuard>} />
+          <Route path="/cfo/money-flow-trace" element={<RoleGuard allowedRoles={['cfo', 'ceo', 'coo', 'super_admin', 'cto', 'manager']}><MoneyFlowTracePage /></RoleGuard>} />
           <Route path="/coo/dashboard" element={<RoleGuard allowedRoles={['coo', 'super_admin', 'cto']}><COODashboardPage /></RoleGuard>} />
           <Route path="/cmo/dashboard" element={<RoleGuard allowedRoles={['cmo', 'super_admin', 'cto']}><CMODashboardPage /></RoleGuard>} />
           <Route path="/crm/dashboard" element={<RoleGuard allowedRoles={['crm', 'super_admin', 'cto']}><CRMDashboardPage /></RoleGuard>} />

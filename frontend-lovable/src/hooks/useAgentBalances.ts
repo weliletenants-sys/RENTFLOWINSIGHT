@@ -9,6 +9,8 @@ export interface AgentSplitBalances {
   advanceBalance: number;
   /** True commission balance: sum(agent_commission_earned cash_in) − sum(commission cash_out). Always ≥ 0. */
   commissionBalance: number;
+  /** Withdrawable funds NOT classified as commission (e.g. CFO admin-expense credits). Review with CFO. */
+  otherBalance: number;
   totalBalance: number;
 }
 
@@ -84,14 +86,19 @@ export function useAgentBalances(agentId?: string) {
         commissionBalance = rawWithdrawable; // fallback to legacy behavior
       }
 
-      // INVARIANT: withdrawable balance ALWAYS equals commission balance for agents.
-      // The wallet's stored withdrawable_balance can lag behind ledger truth, so the
-      // commission ledger is the source of truth for what the agent can cash out.
-      const withdrawableBalance = commissionBalance;
-      if (Math.abs(rawWithdrawable - commissionBalance) > 0.01) {
-        console.warn(
-          '[useAgentBalances] withdrawable/commission drift',
-          { agentId: effectiveId, rawWithdrawable, commissionBalance }
+      // Withdrawable balance is the truth from the wallet row (what the user can actually
+      // cash out). Commission balance is ledger-derived (what they earned). The gap is
+      // "other" — typically CFO admin-expense credits that landed in withdrawable but
+      // aren't earnings.
+      const withdrawableBalance = rawWithdrawable;
+      const otherBalance = Math.max(0, rawWithdrawable - commissionBalance);
+      // After role-aware routing fix (2026-04-23), withdrawable should equal commission balance
+      // for agents. Any drift means a non-commission credit landed in withdrawable — log so we
+      // can catch missed categories in the router, but don't alarm the user.
+      if (otherBalance > 1) {
+        console.info(
+          '[useAgentBalances] withdrawable/commission drift (non-commission funds in withdrawable)',
+          { agentId: effectiveId, rawWithdrawable, commissionBalance, otherBalance }
         );
       }
 
@@ -100,11 +107,17 @@ export function useAgentBalances(agentId?: string) {
         floatBalance,
         advanceBalance,
         commissionBalance,
+        otherBalance,
         totalBalance: withdrawableBalance + floatBalance,
       };
     },
     enabled: !!effectiveId,
-    staleTime: 15_000,
+    // Treat balances as always-stale: the wallet is the most safety-critical
+    // value the user sees. We must never gate a withdraw button on a 15s-old
+    // cached zero. Realtime invalidations will still keep it fresh between
+    // renders; this just stops React Query from serving a stale snapshot.
+    staleTime: 0,
+    gcTime: 30_000,
     refetchOnMount: 'always',
     refetchOnWindowFocus: true,
     retry: 2,
@@ -115,6 +128,7 @@ export function useAgentBalances(agentId?: string) {
     floatBalance: data?.floatBalance ?? 0,
     advanceBalance: data?.advanceBalance ?? 0,
     commissionBalance: data?.commissionBalance ?? 0,
+    otherBalance: data?.otherBalance ?? 0,
     totalBalance: data?.totalBalance ?? 0,
     isLoading,
     error,

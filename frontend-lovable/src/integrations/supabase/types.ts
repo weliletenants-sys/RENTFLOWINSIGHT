@@ -812,6 +812,39 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_daily_commission_reports: {
+        Row: {
+          agent_id: string
+          commission: number
+          created_at: string
+          id: string
+          report_date: string
+          total_transactions: number
+          total_value: number
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          commission?: number
+          created_at?: string
+          id?: string
+          report_date: string
+          total_transactions?: number
+          total_value?: number
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          commission?: number
+          created_at?: string
+          id?: string
+          report_date?: string
+          total_transactions?: number
+          total_value?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       agent_delivery_confirmations: {
         Row: {
           agent_id: string
@@ -7365,6 +7398,63 @@ export type Database = {
           },
         ]
       }
+      phantom_wallet_drift: {
+        Row: {
+          created_at: string
+          detection_run_id: string | null
+          drift_amount: number
+          drift_type: string
+          first_detected_at: string
+          id: string
+          last_detected_at: string
+          ledger_net: number
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          status: string
+          updated_at: string
+          user_id: string
+          wallet_balance: number
+        }
+        Insert: {
+          created_at?: string
+          detection_run_id?: string | null
+          drift_amount: number
+          drift_type: string
+          first_detected_at?: string
+          id?: string
+          last_detected_at?: string
+          ledger_net: number
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          wallet_balance: number
+        }
+        Update: {
+          created_at?: string
+          detection_run_id?: string | null
+          drift_amount?: number
+          drift_type?: string
+          first_detected_at?: string
+          id?: string
+          last_detected_at?: string
+          ledger_net?: number
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          wallet_balance?: number
+        }
+        Relationships: []
+      }
       platform_expense_transfers: {
         Row: {
           agent_id: string
@@ -11270,6 +11360,54 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_overdraw_events: {
+        Row: {
+          advance_after: number | null
+          advance_before: number | null
+          attempted_balance: number
+          clamped_to: number
+          created_at: string
+          delta_lost: number | null
+          float_after: number | null
+          float_before: number | null
+          id: string
+          trigger_op: string | null
+          user_id: string
+          withdrawable_after: number | null
+          withdrawable_before: number | null
+        }
+        Insert: {
+          advance_after?: number | null
+          advance_before?: number | null
+          attempted_balance: number
+          clamped_to?: number
+          created_at?: string
+          delta_lost?: number | null
+          float_after?: number | null
+          float_before?: number | null
+          id?: string
+          trigger_op?: string | null
+          user_id: string
+          withdrawable_after?: number | null
+          withdrawable_before?: number | null
+        }
+        Update: {
+          advance_after?: number | null
+          advance_before?: number | null
+          attempted_balance?: number
+          clamped_to?: number
+          created_at?: string
+          delta_lost?: number | null
+          float_after?: number | null
+          float_before?: number | null
+          id?: string
+          trigger_op?: string | null
+          user_id?: string
+          withdrawable_after?: number | null
+          withdrawable_before?: number | null
+        }
+        Relationships: []
+      }
       wallet_transactions: {
         Row: {
           amount: number
@@ -11294,6 +11432,39 @@ export type Database = {
           id?: string
           recipient_id?: string
           sender_id?: string
+        }
+        Relationships: []
+      }
+      wallet_unrouted_movements: {
+        Row: {
+          amount: number
+          bucket_returned: string | null
+          category: string
+          created_at: string
+          direction: string
+          id: string
+          sign_returned: number | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          bucket_returned?: string | null
+          category: string
+          created_at?: string
+          direction: string
+          id?: string
+          sign_returned?: number | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          bucket_returned?: string | null
+          category?: string
+          created_at?: string
+          direction?: string
+          id?: string
+          sign_returned?: number | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -11893,6 +12064,7 @@ export type Database = {
         Returns: boolean
       }
       derive_welile_ai_id: { Args: { p_user_id: string }; Returns: string }
+      detect_phantom_wallet_drift: { Args: never; Returns: Json }
       detect_velocity_abuse: {
         Args: { p_threshold?: number; p_window_minutes?: number }
         Returns: {
@@ -11957,6 +12129,13 @@ export type Database = {
           title: string
           total_monthly_cost: number
           verified: boolean
+        }[]
+      }
+      generate_daily_merchant_commission_report: {
+        Args: { p_date?: string }
+        Returns: {
+          agents_processed: number
+          total_commission: number
         }[]
       }
       generate_employee_id: { Args: { _full_name: string }; Returns: string }
@@ -12588,6 +12767,7 @@ export type Database = {
           phone: string
         }[]
       }
+      test_wallet_drift_fix: { Args: never; Returns: Json }
       update_agent_collection_streak: {
         Args: { p_agent_id: string }
         Returns: undefined
@@ -12628,13 +12808,21 @@ export type Database = {
         Args: { p_ledger_id: string; p_reason: string }
         Returns: undefined
       }
-      wallet_route_for_category: {
-        Args: { p_category: string; p_direction: string }
-        Returns: {
-          bucket: string
-          sign: number
-        }[]
-      }
+      wallet_route_for_category:
+        | {
+            Args: { p_category: string; p_direction: string }
+            Returns: {
+              bucket: string
+              sign: number
+            }[]
+          }
+        | {
+            Args: { p_category: string; p_direction: string; p_user_id: string }
+            Returns: {
+              bucket: string
+              sign: number
+            }[]
+          }
     }
     Enums: {
       ai_priority: "low" | "medium" | "high" | "critical"

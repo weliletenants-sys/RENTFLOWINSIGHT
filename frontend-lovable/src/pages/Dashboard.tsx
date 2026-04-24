@@ -1,10 +1,12 @@
 import { useEffect, useState, useCallback, useRef, Suspense, lazy, memo } from 'react';
 
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth, AppRole } from '@/hooks/useAuth';
+import { roleToSlug, slugToRole } from '@/lib/roleRoutes';
 import { useProfile } from '@/hooks/useProfile';
 import AddRoleDialog from '@/components/AddRoleDialog';
 import BottomRoleSwitcher from '@/components/BottomRoleSwitcher';
+import PersonaShareSheet from '@/components/PersonaShareSheet';
 // FloatingChatButton removed — chat accessible only via nav
 
 import { ISOLATED_ROLES, roleDashboardRoutes } from '@/components/layout/executiveSidebarConfig';
@@ -97,6 +99,7 @@ function DashboardContent() {
 
   const { profile } = useProfile();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   
   // INSTANT: Use preloaded session cache for immediate display
@@ -127,7 +130,22 @@ function DashboardContent() {
     };
   }, []);
 
-  // Auto-default qualified investors (≥100K deployed) to Funder dashboard on INITIAL load only
+  // URL is source of truth for which persona view is shown
+  const urlRole = slugToRole(location.pathname);
+
+  // Keep auth.role aligned with the URL persona (so hooks reading useAuth().role
+  // see the right value). This is a side-effect of URL-driven routing.
+  useEffect(() => {
+    if (loading || !user || roles.length === 0) return;
+    if (!urlRole) return;
+    if (urlRole === role) return;
+    // Only auto-switch into roles the user already has, to avoid silent grants.
+    if (roles.includes(urlRole)) {
+      switchRole(urlRole);
+    }
+  }, [urlRole, role, roles, user, loading, switchRole]);
+
+  // Auto-default qualified investors (≥100K deployed) to /funder on INITIAL load only
   const hasAutoDefaulted = useRef(false);
   useEffect(() => {
     if (loading || !user || roles.length === 0) return;
@@ -136,11 +154,11 @@ function DashboardContent() {
     if (areAllRolesUnlocked()) return;
     const preferred = getPreferredDefaultRole();
     if (preferred !== 'auto') return;
-    if (role !== 'supporter' && roles.includes('supporter')) {
-      switchRole('supporter');
+    if (urlRole !== 'supporter' && roles.includes('supporter')) {
+      navigate('/dashboard/funder', { replace: true });
     }
     hasAutoDefaulted.current = true;
-  }, [loading, user, roles, role, isQualifiedInvestor, switchRole]);
+  }, [loading, user, roles, urlRole, isQualifiedInvestor, navigate]);
 
   // Handle role switch via URL param (e.g. after tenant/supporter activation)
   // Gate on !loading && roles.length > 0 to prevent race with fetchUserRoles
@@ -150,11 +168,12 @@ function DashboardContent() {
     if (!requestedRole) return;
     const validRoles: AppRole[] = ['tenant', 'agent', 'landlord', 'supporter', 'manager'];
     if (validRoles.includes(requestedRole) && roles.includes(requestedRole)) {
-      switchRole(requestedRole);
+      navigate(roleToSlug(requestedRole), { replace: true });
+      return;
     }
     searchParams.delete('role');
     setSearchParams(searchParams, { replace: true });
-  }, [searchParams, user, loading, roles, switchRole, setSearchParams]);
+  }, [searchParams, user, loading, roles, navigate, setSearchParams]);
 
   // Redirect executive/internal roles to their isolated dashboards
   useEffect(() => {
@@ -225,18 +244,19 @@ function DashboardContent() {
     }
   }, [user, loading, roles, cachedRoles, navigate]);
 
-  // Use cached role for instant display while loading
+  // URL is the source of truth. Fall back to auth.role only when URL doesn't
+  // map to a persona (shouldn't normally happen on persona routes).
   const getDefaultRole = (availableRoles: AppRole[]): AppRole | null => {
     if (availableRoles.length === 0) return null;
-    // Check user's preferred default role
     const preferred = getPreferredDefaultRole();
     if (preferred !== 'auto' && availableRoles.includes(preferred as AppRole)) return preferred as AppRole;
-    // Fallback to supporter
     if (availableRoles.includes('supporter')) return 'supporter';
     return availableRoles[0];
   };
-  
-  const displayRole = role || (showCachedUI && cachedRoles.length > 0 ? getDefaultRole(cachedRoles) : null);
+
+  const displayRole = urlRole
+    || role
+    || (showCachedUI && cachedRoles.length > 0 ? getDefaultRole(cachedRoles) : null);
   const displayRoles = roles.length > 0 ? roles : cachedRoles;
 
   // 🚫 FROZEN ACCOUNT - Block all access
@@ -367,6 +387,7 @@ function DashboardContent() {
       <Suspense fallback={<DashboardLoadingFallback />}>
         {renderDashboard()}
       </Suspense>
+      <PersonaShareSheet currentSlug={roleToSlug(displayRole)} />
       {isPublicRole && (
         <BottomRoleSwitcher currentRole={displayRole} onRoleChange={handlePublicRoleSwitch} />
       )}
