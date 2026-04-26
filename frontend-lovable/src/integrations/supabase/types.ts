@@ -2549,6 +2549,51 @@ export type Database = {
           },
         ]
       }
+      agent_vouch_limit_history: {
+        Row: {
+          agent_id: string
+          change_source: string
+          collection_amount: number | null
+          collection_id: string | null
+          created_at: string
+          delta_ugx: number | null
+          id: string
+          metadata: Json
+          new_earned_ugx: number | null
+          new_effective_limit_ugx: number | null
+          previous_earned_ugx: number | null
+          previous_effective_limit_ugx: number | null
+        }
+        Insert: {
+          agent_id: string
+          change_source: string
+          collection_amount?: number | null
+          collection_id?: string | null
+          created_at?: string
+          delta_ugx?: number | null
+          id?: string
+          metadata?: Json
+          new_earned_ugx?: number | null
+          new_effective_limit_ugx?: number | null
+          previous_earned_ugx?: number | null
+          previous_effective_limit_ugx?: number | null
+        }
+        Update: {
+          agent_id?: string
+          change_source?: string
+          collection_amount?: number | null
+          collection_id?: string | null
+          created_at?: string
+          delta_ugx?: number | null
+          id?: string
+          metadata?: Json
+          new_earned_ugx?: number | null
+          new_effective_limit_ugx?: number | null
+          previous_earned_ugx?: number | null
+          previous_effective_limit_ugx?: number | null
+        }
+        Relationships: []
+      }
       ai_chat_messages: {
         Row: {
           content: string
@@ -3627,39 +3672,54 @@ export type Database = {
       daily_platform_stats: {
         Row: {
           active_users_30d: number
+          agents_earning_30d: number
           created_at: string
           daily_transaction_volume: number
           id: string
+          landlords_active_90d: number
+          landlords_dormant: number
           new_users_today: number
+          partners_with_portfolios: number
           referral_pct: number
           retention_pct: number
           stat_date: string
+          tenants_impacted_total: number
           total_users: number
           updated_at: string
           users_by_role: Json | null
         }
         Insert: {
           active_users_30d?: number
+          agents_earning_30d?: number
           created_at?: string
           daily_transaction_volume?: number
           id?: string
+          landlords_active_90d?: number
+          landlords_dormant?: number
           new_users_today?: number
+          partners_with_portfolios?: number
           referral_pct?: number
           retention_pct?: number
           stat_date?: string
+          tenants_impacted_total?: number
           total_users?: number
           updated_at?: string
           users_by_role?: Json | null
         }
         Update: {
           active_users_30d?: number
+          agents_earning_30d?: number
           created_at?: string
           daily_transaction_volume?: number
           id?: string
+          landlords_active_90d?: number
+          landlords_dormant?: number
           new_users_today?: number
+          partners_with_portfolios?: number
           referral_pct?: number
           retention_pct?: number
           stat_date?: string
+          tenants_impacted_total?: number
           total_users?: number
           updated_at?: string
           users_by_role?: Json | null
@@ -4368,6 +4428,279 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      field_collections: {
+        Row: {
+          agent_id: string
+          amount: number
+          captured_at: string
+          client_uuid: string
+          confirmed_at: string | null
+          confirmed_by: string | null
+          confirmed_collection_id: string | null
+          created_at: string
+          id: string
+          latitude: number | null
+          location_name: string | null
+          longitude: number | null
+          notes: string | null
+          rejected_reason: string | null
+          status: string
+          synced_at: string
+          tenant_id: string | null
+          tenant_name: string
+          tenant_phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          amount: number
+          captured_at?: string
+          client_uuid: string
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          confirmed_collection_id?: string | null
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          location_name?: string | null
+          longitude?: number | null
+          notes?: string | null
+          rejected_reason?: string | null
+          status?: string
+          synced_at?: string
+          tenant_id?: string | null
+          tenant_name: string
+          tenant_phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          amount?: number
+          captured_at?: string
+          client_uuid?: string
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          confirmed_collection_id?: string | null
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          location_name?: string | null
+          longitude?: number | null
+          notes?: string | null
+          rejected_reason?: string | null
+          status?: string
+          synced_at?: string
+          tenant_id?: string | null
+          tenant_name?: string
+          tenant_phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "field_collections_confirmed_collection_id_fkey"
+            columns: ["confirmed_collection_id"]
+            isOneToOne: false
+            referencedRelation: "agent_collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      field_deposit_batch_audit: {
+        Row: {
+          actor_id: string | null
+          actor_role: string | null
+          batch_id: string
+          created_at: string
+          details: Json
+          event: string
+          id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_role?: string | null
+          batch_id: string
+          created_at?: string
+          details?: Json
+          event: string
+          id?: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_role?: string | null
+          batch_id?: string
+          created_at?: string
+          details?: Json
+          event?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "field_deposit_batch_audit_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "field_deposit_batches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      field_deposit_batch_items: {
+        Row: {
+          agent_collection_id: string | null
+          allocation_id: string | null
+          amount: number
+          batch_id: string
+          commission_amount: number
+          created_at: string
+          field_collection_id: string
+          id: string
+        }
+        Insert: {
+          agent_collection_id?: string | null
+          allocation_id?: string | null
+          amount: number
+          batch_id: string
+          commission_amount?: number
+          created_at?: string
+          field_collection_id: string
+          id?: string
+        }
+        Update: {
+          agent_collection_id?: string | null
+          allocation_id?: string | null
+          amount?: number
+          batch_id?: string
+          commission_amount?: number
+          created_at?: string
+          field_collection_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "field_deposit_batch_items_agent_collection_id_fkey"
+            columns: ["agent_collection_id"]
+            isOneToOne: false
+            referencedRelation: "agent_collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "field_deposit_batch_items_allocation_id_fkey"
+            columns: ["allocation_id"]
+            isOneToOne: false
+            referencedRelation: "agent_landlord_float_allocations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "field_deposit_batch_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "field_deposit_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "field_deposit_batch_items_field_collection_id_fkey"
+            columns: ["field_collection_id"]
+            isOneToOne: true
+            referencedRelation: "field_collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      field_deposit_batches: {
+        Row: {
+          agent_id: string
+          channel: string
+          created_at: string
+          declared_total: number
+          finops_proof_entered: string | null
+          finops_verified_at: string | null
+          finops_verified_by: string | null
+          id: string
+          notes: string | null
+          proof_image_url: string | null
+          proof_reference: string | null
+          proof_submitted_at: string | null
+          rejection_reason: string | null
+          status: string
+          surplus_total: number
+          tagged_total: number
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          channel: string
+          created_at?: string
+          declared_total: number
+          finops_proof_entered?: string | null
+          finops_verified_at?: string | null
+          finops_verified_by?: string | null
+          id?: string
+          notes?: string | null
+          proof_image_url?: string | null
+          proof_reference?: string | null
+          proof_submitted_at?: string | null
+          rejection_reason?: string | null
+          status?: string
+          surplus_total?: number
+          tagged_total?: number
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          channel?: string
+          created_at?: string
+          declared_total?: number
+          finops_proof_entered?: string | null
+          finops_verified_at?: string | null
+          finops_verified_by?: string | null
+          id?: string
+          notes?: string | null
+          proof_image_url?: string | null
+          proof_reference?: string | null
+          proof_submitted_at?: string | null
+          rejection_reason?: string | null
+          status?: string
+          surplus_total?: number
+          tagged_total?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      field_deposit_commission_config: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          max_rate: number
+          min_rate: number
+          notes: string | null
+          rate: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          max_rate?: number
+          min_rate?: number
+          notes?: string | null
+          rate: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          max_rate?: number
+          min_rate?: number
+          notes?: string | null
+          rate?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
       }
       financial_agents: {
         Row: {
@@ -6667,6 +7000,48 @@ export type Database = {
         }
         Relationships: []
       }
+      nfc_cards: {
+        Row: {
+          card_id: string
+          created_at: string
+          hmac_signature_preview: string | null
+          id: string
+          last_used_at: string | null
+          pin_hash: string
+          pinless_limit: number
+          revoked_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          card_id: string
+          created_at?: string
+          hmac_signature_preview?: string | null
+          id?: string
+          last_used_at?: string | null
+          pin_hash: string
+          pinless_limit?: number
+          revoked_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          card_id?: string
+          created_at?: string
+          hmac_signature_preview?: string | null
+          id?: string
+          last_used_at?: string | null
+          pin_hash?: string
+          pinless_limit?: number
+          revoked_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string | null
@@ -6702,6 +7077,114 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      offline_collection_submissions: {
+        Row: {
+          agent_id: string
+          amount: number
+          captured_at: string
+          created_at: string
+          draft_id: string
+          failure_reason: string | null
+          gps_accuracy: number | null
+          gps_lat: number | null
+          gps_lng: number | null
+          id: string
+          notes: string | null
+          processed_at: string | null
+          proof_path: string | null
+          proof_type: string
+          provisional_receipt_no: string
+          rent_request_id: string
+          server_collection_id: string | null
+          server_receipt_no: string | null
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          amount: number
+          captured_at: string
+          created_at?: string
+          draft_id: string
+          failure_reason?: string | null
+          gps_accuracy?: number | null
+          gps_lat?: number | null
+          gps_lng?: number | null
+          id?: string
+          notes?: string | null
+          processed_at?: string | null
+          proof_path?: string | null
+          proof_type: string
+          provisional_receipt_no: string
+          rent_request_id: string
+          server_collection_id?: string | null
+          server_receipt_no?: string | null
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          amount?: number
+          captured_at?: string
+          created_at?: string
+          draft_id?: string
+          failure_reason?: string | null
+          gps_accuracy?: number | null
+          gps_lat?: number | null
+          gps_lng?: number | null
+          id?: string
+          notes?: string | null
+          processed_at?: string | null
+          proof_path?: string | null
+          proof_type?: string
+          provisional_receipt_no?: string
+          rent_request_id?: string
+          server_collection_id?: string | null
+          server_receipt_no?: string | null
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offline_collection_submissions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "manager_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "offline_collection_submissions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offline_collection_submissions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "referral_leaderboard"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "offline_collection_submissions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "user_financial_summaries"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "offline_collection_submissions_rent_request_id_fkey"
+            columns: ["rent_request_id"]
+            isOneToOne: false
+            referencedRelation: "rent_requests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       onboarding_targets: {
         Row: {
@@ -11076,6 +11559,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_ui_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          updated_at: string
+          user_id: string
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          updated_at?: string
+          user_id: string
+          value: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          updated_at?: string
+          user_id?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       vendors: {
         Row: {
           active: boolean
@@ -11611,6 +12121,7 @@ export type Database = {
       }
       welile_trust_score_cache: {
         Row: {
+          agent_earned_vouch_ugx: number
           ai_id: string
           borrowing_limit_ugx: number
           breakdown: Json
@@ -11623,6 +12134,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          agent_earned_vouch_ugx?: number
           ai_id: string
           borrowing_limit_ugx?: number
           breakdown?: Json
@@ -11635,6 +12147,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          agent_earned_vouch_ugx?: number
           ai_id?: string
           borrowing_limit_ugx?: number
           breakdown?: Json
@@ -11718,6 +12231,7 @@ export type Database = {
           bank_name: string | null
           cfo_approved_at: string | null
           cfo_approved_by: string | null
+          client_request_id: string | null
           coo_approved_at: string | null
           coo_approved_by: string | null
           created_at: string
@@ -11762,6 +12276,7 @@ export type Database = {
           bank_name?: string | null
           cfo_approved_at?: string | null
           cfo_approved_by?: string | null
+          client_request_id?: string | null
           coo_approved_at?: string | null
           coo_approved_by?: string | null
           created_at?: string
@@ -11806,6 +12321,7 @@ export type Database = {
           bank_name?: string | null
           cfo_approved_at?: string | null
           cfo_approved_by?: string | null
+          client_request_id?: string | null
           coo_approved_at?: string | null
           coo_approved_by?: string | null
           created_at?: string
@@ -12117,6 +12633,14 @@ export type Database = {
         }[]
       }
       compute_daily_stats: { Args: never; Returns: undefined }
+      confirm_field_collection: {
+        Args: {
+          p_field_collection_id: string
+          p_notes?: string
+          p_tenant_id?: string
+        }
+        Returns: Json
+      }
       create_direct_conversation: {
         Args: { other_user_id: string }
         Returns: string
@@ -12363,6 +12887,10 @@ export type Database = {
           withdrawable_balance: number
         }[]
       }
+      get_agent_vouch_limit_ugx: {
+        Args: { p_agent_id: string }
+        Returns: number
+      }
       get_agent_workload_summary: { Args: never; Returns: Json }
       get_agents_hub:
         | {
@@ -12445,6 +12973,16 @@ export type Database = {
         Args: { phone_variants: string[] }
         Returns: {
           email: string
+        }[]
+      }
+      get_field_deposit_commission_config: {
+        Args: never
+        Returns: {
+          max_rate: number
+          min_rate: number
+          notes: string
+          rate: number
+          updated_at: string
         }[]
       }
       get_financial_ops_pulse: { Args: never; Returns: Json }
@@ -12657,6 +13195,7 @@ export type Database = {
         Args: { _conversation_id: string; _user_id: string }
         Returns: boolean
       }
+      is_financial_ops_staff: { Args: { p_user: string }; Returns: boolean }
       is_parent_agent: { Args: { _agent_id: string }; Returns: boolean }
       is_proxy_for: {
         Args: { _agent_id: string; _beneficiary_id: string }
@@ -12728,6 +13267,14 @@ export type Database = {
         Returns: Json
       }
       process_monthly_referral_rewards: { Args: never; Returns: undefined }
+      process_verified_field_deposit: {
+        Args: {
+          p_batch_id: string
+          p_finops_proof_entered: string
+          p_finops_user: string
+        }
+        Returns: Json
+      }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
@@ -12737,6 +13284,17 @@ export type Database = {
         }[]
       }
       recalculate_credit_limit: { Args: { p_user_id: string }; Returns: number }
+      recompute_agent_earned_vouch:
+        | { Args: { p_agent_id: string }; Returns: number }
+        | {
+            Args: {
+              p_agent_id: string
+              p_change_source?: string
+              p_collection_amount?: number
+              p_collection_id?: string
+            }
+            Returns: undefined
+          }
       recompute_trust_score: { Args: { p_user_id: string }; Returns: undefined }
       recompute_trust_scores_batch: {
         Args: { p_limit?: number }
@@ -12789,6 +13347,10 @@ export type Database = {
       refresh_financial_summaries: { Args: never; Returns: undefined }
       refund_agent_float_for_payout: {
         Args: { p_payout_id: string; p_reason: string }
+        Returns: Json
+      }
+      reject_field_collection: {
+        Args: { p_field_collection_id: string; p_reason: string }
         Returns: Json
       }
       release_stale_cashout_claims: {
@@ -12971,6 +13533,12 @@ export type Database = {
               sign: number
             }[]
           }
+      welile_agent_vouch_max_ugx: { Args: never; Returns: number }
+      welile_agent_vouch_min_ugx: { Args: never; Returns: number }
+      welile_agent_vouch_multiplier: { Args: never; Returns: number }
+      welile_default_agent_vouch_floor_ugx:
+        | { Args: never; Returns: number }
+        | { Args: { p_agent_id: string }; Returns: number }
     }
     Enums: {
       ai_priority: "low" | "medium" | "high" | "critical"
@@ -13077,6 +13645,7 @@ export type Database = {
         | "login_success"
         | "listing_created"
         | "listing_approved"
+        | "deposit_failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -13315,6 +13884,7 @@ export const Constants = {
         "login_success",
         "listing_created",
         "listing_approved",
+        "deposit_failed",
       ],
     },
   },
