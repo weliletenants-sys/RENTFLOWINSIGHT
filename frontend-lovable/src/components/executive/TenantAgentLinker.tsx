@@ -14,7 +14,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { TenantReassignmentSuggestions } from './TenantReassignmentSuggestions';
-import { useGeoLocation } from '@/hooks/useGeoLocationHook';
+import { useGeoLocation } from '@/hooks/useGeoLocation';
 
 interface SelectedUser {
   id: string;

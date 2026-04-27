@@ -15,7 +15,7 @@ import {
   MessageCircle, Pencil, UsersRound, Zap, Bot,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useGeoLocation } from '@/hooks/useGeoLocationHook';
+import { useGeoLocation } from '@/hooks/useGeoLocation';
 import { createShortLink } from '@/lib/createShortLink';
 import { AgentTenantCollectDialog } from './AgentTenantCollectDialog';
 import { ReverseAllocationDialog } from './ReverseAllocationDialog';

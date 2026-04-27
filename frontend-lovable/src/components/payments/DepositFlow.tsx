@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, CheckCircle2, Phone, Calendar, Clock, Hash, AlertCircle, History, Building2, Banknote, Upload, Receipt, Copy, ShieldAlert } from 'lucide-react';
+import { Loader2, CheckCircle2, Phone, Calendar, Clock, Hash, AlertCircle, History, Building2, Banknote, Upload, Receipt, Copy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -22,19 +22,12 @@ interface DepositFlowProps {
   allowedPurposes?: DepositPurpose[];
   /** Hide the purpose grid behind a "Change purpose" link. */
   lockPurpose?: boolean;
-  /**
-   * Force a mandatory purpose-choice screen BEFORE the channel/form.
-   * When true: no defaultPurpose is applied, and the user must explicitly
-   * pick a purpose (from allowedPurposes) before continuing. Eliminates
-   * the "tap-through and mis-bucket" failure mode for agents.
-   */
-  requirePurposeChoice?: boolean;
 }
 
 const DEPOSIT_PURPOSES: { id: DepositPurpose; label: string; emoji: string; desc: string }[] = [
   { id: 'operational_float', emoji: '🏘️', label: 'Operational Float', desc: 'Cash collected from tenants in the field' },
   { id: 'personal_deposit', emoji: '💰', label: 'Personal Deposit', desc: 'Your own money top-up' },
-  { id: 'partnership_deposit', emoji: '🤝', label: 'Supporter Wallet Top-Up', desc: 'Top up your supporter wallet. Funds stay in your wallet until you choose to fund tenants or build a portfolio.' },
+  { id: 'partnership_deposit', emoji: '🤝', label: 'Partnership Deposit', desc: 'Money from or for a supporter/partner' },
   { id: 'personal_rent_repayment', emoji: '🏠', label: 'Personal Rent Repayment', desc: 'Paying your own rent' },
   { id: 'other', emoji: '📝', label: 'Other', desc: 'Specify your own reason' },
 ];
@@ -57,11 +50,9 @@ const BANK_DETAILS = {
 
 const QUICK_AMOUNTS = [50000, 100000, 250000, 500000];
 
-export default function DepositFlow({ open, onOpenChange, defaultPurpose, allowedPurposes, lockPurpose, requirePurposeChoice }: DepositFlowProps) {
+export default function DepositFlow({ open, onOpenChange, defaultPurpose, allowedPurposes, lockPurpose }: DepositFlowProps) {
   const navigate = useNavigate();
-  const [step, setStep] = useState<'purpose' | 'channel' | 'form' | 'submitting' | 'success'>(
-    requirePurposeChoice ? 'purpose' : 'channel'
-  );
+  const [step, setStep] = useState<'channel' | 'form' | 'submitting' | 'success'>('channel');
   const [channel, setChannel] = useState<DepositChannel>('momo');
   const [momoProvider, setMomoProvider] = useState<'mtn' | 'airtel'>('mtn');
   const [amount, setAmount] = useState('');
@@ -71,40 +62,21 @@ export default function DepositFlow({ open, onOpenChange, defaultPurpose, allowe
   const [transactionDate, setTransactionDate] = useState('');
   const [transactionTime, setTransactionTime] = useState('');
   const [reason, setReason] = useState('');
-  const [depositPurpose, setDepositPurpose] = useState<DepositPurpose | ''>(
-    requirePurposeChoice ? '' : (defaultPurpose ?? '')
-  );
+  const [depositPurpose, setDepositPurpose] = useState<DepositPurpose | ''>(defaultPurpose ?? '');
   const [showPurposeGrid, setShowPurposeGrid] = useState<boolean>(!lockPurpose);
   const [bankSlipFile, setBankSlipFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tidError, setTidError] = useState('');
-  // Audit: capture the exact moment the user picked the purpose + which UI surface asked them.
-  const [purposeChosenAt, setPurposeChosenAt] = useState<string | null>(null);
-  const [purposeEntryPoint, setPurposeEntryPoint] = useState<'gate' | 'default' | 'in_form'>(
-    requirePurposeChoice ? 'gate' : (defaultPurpose ? 'default' : 'in_form')
-  );
 
   // Re-apply default when dialog re-opens
   useEffect(() => {
-    if (open && requirePurposeChoice) {
-      // Force a fresh choice every time the dialog opens
-      setStep('purpose');
-      setDepositPurpose('');
-      setReason('');
-      setShowPurposeGrid(false);
-      setPurposeChosenAt(null);
-      setPurposeEntryPoint('gate');
-      return;
-    }
     if (open && defaultPurpose) {
       setDepositPurpose(defaultPurpose);
       const purposeLabel = DEPOSIT_PURPOSES.find(p => p.id === defaultPurpose)?.label;
       if (purposeLabel && defaultPurpose !== 'other') setReason(purposeLabel);
       setShowPurposeGrid(!lockPurpose);
-      setPurposeChosenAt(new Date().toISOString());
-      setPurposeEntryPoint('default');
     }
-  }, [open, defaultPurpose, lockPurpose, requirePurposeChoice]);
+  }, [open, defaultPurpose, lockPurpose]);
 
   const validateTid = (value: string, provider?: 'mtn' | 'airtel') => {
     const upper = value.trim().toUpperCase();
@@ -233,13 +205,6 @@ export default function DepositFlow({ open, onOpenChange, defaultPurpose, allowe
           transaction_date: txDateTime.toISOString(),
           notes,
           deposit_purpose: depositPurpose,
-          purpose_audit: {
-            chosen_purpose: depositPurpose,
-            chosen_at: purposeChosenAt ?? new Date().toISOString(),
-            chosen_by: user.id,
-            entry_point: purposeEntryPoint,
-            required_choice: !!requirePurposeChoice,
-          },
         } as any);
 
       if (depositError) throw depositError;
@@ -265,7 +230,7 @@ export default function DepositFlow({ open, onOpenChange, defaultPurpose, allowe
   };
 
   const handleClose = () => {
-    setStep(requirePurposeChoice ? 'purpose' : 'channel');
+    setStep('channel');
     setChannel('momo');
     setMomoProvider('mtn');
     setAmount('');
@@ -275,7 +240,7 @@ export default function DepositFlow({ open, onOpenChange, defaultPurpose, allowe
     setTransactionDate('');
     setTransactionTime('');
     setReason('');
-    setDepositPurpose(requirePurposeChoice ? '' : (defaultPurpose ?? ''));
+    setDepositPurpose(defaultPurpose ?? '');
     setShowPurposeGrid(!lockPurpose);
     setBankSlipFile(null);
     onOpenChange(false);
@@ -313,66 +278,9 @@ export default function DepositFlow({ open, onOpenChange, defaultPurpose, allowe
             <Loader2 className="h-10 w-10 animate-spin mx-auto text-primary" />
             <p className="text-muted-foreground">Submitting...</p>
           </div>
-        ) : step === 'purpose' ? (
-          /* ─── Mandatory Purpose Choice (agents) ─── */
-          <div className="space-y-3">
-            <div className="flex items-start gap-2 p-3 bg-warning/10 rounded-lg border border-warning/30">
-              <ShieldAlert className="h-4 w-4 text-warning shrink-0 mt-0.5" />
-              <div className="space-y-0.5">
-                <p className="text-xs font-semibold text-foreground">Choose what this deposit is for</p>
-                <p className="text-[11px] text-muted-foreground">
-                  Operational Float (company cash) and Personal Deposit (your own money) land in different wallet buckets and follow different rules. Pick carefully — you cannot change this after submission.
-                </p>
-              </div>
-            </div>
-            <div className="grid gap-3">
-              {DEPOSIT_PURPOSES
-                .filter((p) => !allowedPurposes || allowedPurposes.includes(p.id))
-                .map((p) => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => {
-                      setDepositPurpose(p.id);
-                      if (p.id !== 'other') setReason(p.label);
-                      else setReason('');
-                      setShowPurposeGrid(false);
-                      setPurposeChosenAt(new Date().toISOString());
-                      setPurposeEntryPoint('gate');
-                      setStep('channel');
-                    }}
-                    className="flex items-start gap-3 p-4 rounded-xl border-2 border-border text-left transition-all hover:border-primary hover:bg-primary/5 hover:shadow-md active:scale-[0.98] touch-manipulation"
-                  >
-                    <span className="text-2xl shrink-0">{p.emoji}</span>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-sm">{p.label}</p>
-                      <p className="text-[11px] text-muted-foreground">{p.desc}</p>
-                      {p.id === 'operational_float' && (
-                        <p className="text-[10px] text-primary font-medium mt-1">
-                          → Restricted to landlord disbursements. Not withdrawable.
-                        </p>
-                      )}
-                      {p.id === 'personal_deposit' && (
-                        <p className="text-[10px] text-emerald-600 font-medium mt-1">
-                          → Lands in your withdrawable wallet. You can cash out to MoMo.
-                        </p>
-                      )}
-                    </div>
-                  </button>
-                ))}
-            </div>
-          </div>
         ) : step === 'channel' ? (
           /* ─── Channel Selection ─── */
           <div className="space-y-3">
-            {requirePurposeChoice && depositPurpose && (
-              <button
-                onClick={() => setStep('purpose')}
-                className="text-xs text-primary font-medium flex items-center gap-1"
-              >
-                ← Change purpose ({DEPOSIT_PURPOSES.find(p => p.id === depositPurpose)?.label})
-              </button>
-            )}
             <p className="text-sm text-muted-foreground">Choose how you want to deposit</p>
             <div className="grid gap-3">
               {[
@@ -403,18 +311,17 @@ export default function DepositFlow({ open, onOpenChange, defaultPurpose, allowe
           </div>
         ) : (
           /* ─── Form ─── */
-          <div className="space-y-4 w-full max-w-full">
+          <div className="space-y-4">
             {/* Back to channel */}
-            <button onClick={() => setStep('channel')} className="text-xs text-primary font-medium flex items-center gap-1 flex-wrap break-words">
-              <span>←</span>
-              <span className="break-words">Change deposit method ({getProviderLabel()})</span>
+            <button onClick={() => setStep('channel')} className="text-xs text-primary font-medium flex items-center gap-1">
+              ← Change deposit method ({getProviderLabel()})
             </button>
 
             {/* ─── MoMo Instructions (Tab-Based) ─── */}
             {channel === 'momo' && (
               <div className="space-y-3">
                 {/* Provider Tabs */}
-                <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => { setMomoProvider('mtn'); validateTid(transactionId, 'mtn'); }}
@@ -520,9 +427,9 @@ export default function DepositFlow({ open, onOpenChange, defaultPurpose, allowe
                     ['Currency', BANK_DETAILS.currency],
                     ['SWIFT Code', BANK_DETAILS.swiftCode],
                   ].map(([label, value]) => (
-                    <div key={label} className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-2">
-                      <span className="text-muted-foreground shrink-0">{label}</span>
-                      <span className="font-mono font-semibold sm:text-right break-all">{value}</span>
+                    <div key={label} className="flex justify-between">
+                      <span className="text-muted-foreground">{label}</span>
+                      <span className="font-mono font-semibold text-right">{value}</span>
                     </div>
                   ))}
                 </div>
@@ -557,9 +464,9 @@ export default function DepositFlow({ open, onOpenChange, defaultPurpose, allowe
             <div className="space-y-2">
               <Label className="text-xs">Amount (UGX)</Label>
               <Input type="number" placeholder="Enter amount" value={amount} onChange={(e) => setAmount(e.target.value)} min="500" className="text-lg font-semibold h-11" />
-              <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-1.5">
                 {QUICK_AMOUNTS.map((amt) => (
-                  <Button key={amt} type="button" variant={amount === String(amt) ? 'default' : 'outline'} size="sm" className="text-xs h-7 w-full sm:w-auto" onClick={() => setAmount(String(amt))}>
+                  <Button key={amt} type="button" variant={amount === String(amt) ? 'default' : 'outline'} size="sm" className="text-xs h-7" onClick={() => setAmount(String(amt))}>
                     {formatCurrency(amt)}
                   </Button>
                 ))}
@@ -653,7 +560,7 @@ export default function DepositFlow({ open, onOpenChange, defaultPurpose, allowe
             )}
 
             {/* ─── Date & Time ─── */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1.5">
                 <Label className="text-xs flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> Date</Label>
                 <Input type="date" value={transactionDate} onChange={(e) => setTransactionDate(e.target.value)} min={sevenDaysAgo} max={today} className="h-10 text-xs" />
@@ -666,7 +573,7 @@ export default function DepositFlow({ open, onOpenChange, defaultPurpose, allowe
 
             {/* ─── Deposit Purpose ─── */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center justify-between">
                 <Label className="text-xs flex items-center gap-1"><AlertCircle className="h-3.5 w-3.5" /> Deposit Purpose *</Label>
                 {lockPurpose && depositPurpose && (
                   <button
@@ -679,18 +586,18 @@ export default function DepositFlow({ open, onOpenChange, defaultPurpose, allowe
                 )}
               </div>
               {lockPurpose && depositPurpose && !showPurposeGrid && (
-                <div className="flex items-start gap-2 p-2.5 rounded-xl border-2 border-primary bg-primary/10">
-                  <span className="text-base shrink-0">{DEPOSIT_PURPOSES.find(p => p.id === depositPurpose)?.emoji}</span>
-                  <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 p-2.5 rounded-xl border-2 border-primary bg-primary/10">
+                  <span className="text-base">{DEPOSIT_PURPOSES.find(p => p.id === depositPurpose)?.emoji}</span>
+                  <div className="min-w-0">
                     <p className="font-semibold text-xs">{DEPOSIT_PURPOSES.find(p => p.id === depositPurpose)?.label}</p>
-                    <p className="text-[10px] text-muted-foreground break-words">
+                    <p className="text-[10px] text-muted-foreground truncate">
                       {DEPOSIT_PURPOSES.find(p => p.id === depositPurpose)?.desc}
                     </p>
                   </div>
                 </div>
               )}
               {(showPurposeGrid || !lockPurpose) && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {DEPOSIT_PURPOSES.filter(p => !allowedPurposes || allowedPurposes.includes(p.id)).map((p) => (
                   <button
                     key={p.id}
@@ -700,19 +607,17 @@ export default function DepositFlow({ open, onOpenChange, defaultPurpose, allowe
                       if (p.id !== 'other') setReason(p.label);
                       else setReason('');
                       if (lockPurpose) setShowPurposeGrid(false);
-                      setPurposeChosenAt(new Date().toISOString());
-                      setPurposeEntryPoint((prev) => (prev === 'gate' ? 'gate' : 'in_form'));
                     }}
-                    className={`flex items-start gap-2 p-2.5 rounded-xl border-2 text-left transition-all text-xs ${
+                    className={`flex items-center gap-2 p-2.5 rounded-xl border-2 text-left transition-all text-xs ${
                       depositPurpose === p.id
                         ? 'border-primary bg-primary/10 shadow-sm'
                         : 'border-border hover:border-primary/40'
                     }`}
                   >
-                    <span className="text-base shrink-0">{p.emoji}</span>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-semibold break-words">{p.label}</p>
-                      <p className="text-[10px] text-muted-foreground break-words line-clamp-2">{p.desc}</p>
+                    <span className="text-base">{p.emoji}</span>
+                    <div className="min-w-0">
+                      <p className="font-semibold truncate">{p.label}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">{p.desc}</p>
                     </div>
                   </button>
                 ))}

@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useGeoLocation } from '@/hooks/useGeoLocationHook';
+import { useGeoLocation } from '@/hooks/useGeoLocation';
 import { useProfile } from '@/hooks/useProfile';
 import { MapPin, Loader2, CheckCircle2, User, Phone, Home, Banknote } from 'lucide-react';
 import { formatUGX } from '@/lib/rentCalculations';

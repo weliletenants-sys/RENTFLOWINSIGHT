@@ -5,13 +5,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Clock, CheckCircle2, XCircle, Loader2, Phone, Calendar, Hash, Download, MessageCircle, ShieldCheck, Target } from 'lucide-react';
+import { ArrowLeft, Clock, CheckCircle2, XCircle, Loader2, Phone, Calendar, Hash, Download, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { downloadDepositReceipt, buildDepositReceiptWhatsApp, type DepositReceiptData } from '@/lib/receiptPdf';
 import { shareViaWhatsApp } from '@/lib/shareReceipt';
-import { useAuth } from '@/hooks/useAuth';
-import { canViewDepositPurpose } from '@/lib/depositPurposeVisibility';
 
 interface DepositRequest {
   id: string;
@@ -25,54 +23,10 @@ interface DepositRequest {
   rejection_reason: string | null;
   approved_at: string | null;
   rejected_at: string | null;
-  deposit_purpose?: string | null;
-  purpose_audit?: {
-    chosen_purpose?: string;
-    chosen_at?: string;
-    chosen_by?: string;
-    entry_point?: 'gate' | 'default' | 'in_form';
-    required_choice?: boolean;
-  } | null;
 }
-
-const PURPOSE_LABELS: Record<string, string> = {
-  operational_float: 'Operational Float',
-  personal_deposit: 'Personal Deposit',
-  partnership_deposit: 'Supporter Wallet Top-Up',
-  personal_rent_repayment: 'Personal Rent Repayment',
-  other: 'Other',
-};
-
-const ENTRY_POINT_LABELS: Record<string, string> = {
-  gate: 'Forced choice screen',
-  default: 'Pre-selected default',
-  in_form: 'Picked in form',
-};
-
-const purposeLabel = (d: DepositRequest): string | null => {
-  const p = d.purpose_audit?.chosen_purpose ?? d.deposit_purpose ?? null;
-  if (!p) return null;
-  return PURPOSE_LABELS[p] ?? p;
-};
-
-const purposeBadgeClass = (p: string | null) => {
-  switch (p) {
-    case 'operational_float':
-      return 'bg-primary/15 text-primary border-primary/30';
-    case 'personal_deposit':
-      return 'bg-emerald-500/15 text-emerald-700 border-emerald-500/30';
-    case 'partnership_deposit':
-      return 'bg-violet-500/15 text-violet-700 border-violet-500/30';
-    case 'personal_rent_repayment':
-      return 'bg-amber-500/15 text-amber-700 border-amber-500/30';
-    default:
-      return 'bg-muted text-muted-foreground border-border';
-  }
-};
 
 export default function DepositHistory() {
   const navigate = useNavigate();
-  const { role } = useAuth();
   const [deposits, setDeposits] = useState<DepositRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -95,7 +49,7 @@ export default function DepositHistory() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setDeposits((data || []) as unknown as DepositRequest[]);
+      setDeposits(data || []);
     } catch (error) {
       console.error('Error fetching deposits:', error);
     } finally {
@@ -197,20 +151,9 @@ export default function DepositHistory() {
                     <CardTitle className="text-xl">
                       {formatCurrency(deposit.amount)}
                     </CardTitle>
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-2">
                       {getStatusBadge(deposit.status)}
                       {getProviderBadge(deposit.provider)}
-                      {purposeLabel(deposit) && (
-                        <Badge
-                          variant="outline"
-                          className={purposeBadgeClass(
-                            deposit.purpose_audit?.chosen_purpose ?? deposit.deposit_purpose ?? null
-                          )}
-                        >
-                          <Target className="h-3 w-3 mr-1" />
-                          {purposeLabel(deposit)}
-                        </Badge>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -260,54 +203,6 @@ export default function DepositHistory() {
                   </div>
                 )}
 
-                {/* ─── Purpose Audit Trail (role-scoped) ─── */}
-                {(() => {
-                  const purpose =
-                    deposit.purpose_audit?.chosen_purpose ?? deposit.deposit_purpose ?? null;
-                  if (!canViewDepositPurpose(purpose, role)) return null;
-                  return (
-                  <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 space-y-1.5">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-primary">
-                      <ShieldCheck className="h-3.5 w-3.5" />
-                      Purpose Audit
-                    </div>
-                    <div className="grid gap-1 text-[11px] text-muted-foreground">
-                      <div className="flex justify-between gap-2">
-                        <span>Chosen purpose:</span>
-                        <span className="font-medium text-foreground">
-                          {PURPOSE_LABELS[purpose ?? ''] ?? purpose}
-                        </span>
-                      </div>
-                      {deposit.purpose_audit?.chosen_at && (
-                        <div className="flex justify-between gap-2">
-                          <span>Chosen at:</span>
-                          <span className="font-medium text-foreground">
-                            {format(new Date(deposit.purpose_audit.chosen_at), 'MMM d, yyyy h:mm:ss a')}
-                          </span>
-                        </div>
-                      )}
-                      {deposit.purpose_audit?.entry_point && (
-                        <div className="flex justify-between gap-2">
-                          <span>How chosen:</span>
-                          <span className="font-medium text-foreground">
-                            {ENTRY_POINT_LABELS[deposit.purpose_audit.entry_point] ?? deposit.purpose_audit.entry_point}
-                            {deposit.purpose_audit.required_choice ? ' (required)' : ''}
-                          </span>
-                        </div>
-                      )}
-                      {deposit.purpose_audit?.chosen_by && (
-                        <div className="flex justify-between gap-2">
-                          <span>Chosen by:</span>
-                          <span className="font-mono text-[10px] text-foreground truncate max-w-[60%]">
-                            {deposit.purpose_audit.chosen_by}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  );
-                })()}
-
                 {/* Receipt Actions */}
                 <div className="flex gap-2 pt-2 border-t border-border/50">
                   <Button
@@ -324,7 +219,6 @@ export default function DepositHistory() {
                         createdAt: deposit.created_at,
                         approvedAt: deposit.approved_at,
                         notes: deposit.notes,
-                        purpose: purposeLabel(deposit),
                       };
                       downloadDepositReceipt(receiptData);
                       toast.success('Receipt downloaded!');
@@ -347,7 +241,6 @@ export default function DepositHistory() {
                         createdAt: deposit.created_at,
                         approvedAt: deposit.approved_at,
                         notes: deposit.notes,
-                        purpose: purposeLabel(deposit),
                       };
                       const text = buildDepositReceiptWhatsApp(receiptData);
                       shareViaWhatsApp(text);

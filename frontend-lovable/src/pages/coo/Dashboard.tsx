@@ -1,4 +1,4 @@
-import { usePersistedActiveTab } from '@/hooks/usePersistedActiveTab';
+import { useState } from 'react';
 import { AdvanceRequestsQueue } from '@/components/ops/AdvanceRequestsQueue';
 import { BusinessAdvanceQueue } from '@/components/ops/BusinessAdvanceQueue';
 import ExecutiveDashboardLayout from '@/components/layout/ExecutiveDashboardLayout';
@@ -57,7 +57,7 @@ const quickNavItems: QuickNavItem[] = [
 ];
 
 export default function COODashboardPage() {
-  const [activeTab, setActiveTab] = usePersistedActiveTab('coo');
+  const [activeTab, setActiveTab] = useState('overview');
   const isMobile = useIsMobile();
 
   const handleNavTo = (tab: string) => {

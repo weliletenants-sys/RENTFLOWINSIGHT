@@ -24,7 +24,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { usePhoneDuplicateCheck } from '@/hooks/usePhoneDuplicateCheck';
-import { useGeoLocation } from '@/hooks/useGeoLocationHook';
+import { useGeoLocation } from '@/hooks/useGeoLocation';
 import { Loader2 as LoaderIcon, Navigation } from 'lucide-react';
 
 const HOUSE_CATEGORIES = [

@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, ReactNode } from 'react';
-import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth, type AppRole } from '@/hooks/useAuth';
 import { roleToSlug } from '@/lib/roleRoutes';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { LogOut, Menu, X, ArrowLeft, RotateCcw } from 'lucide-react';
+import { LogOut, Menu, X, ArrowLeft } from 'lucide-react';
 import RoleSwitcher from '@/components/RoleSwitcher';
 import { SidebarSkeleton, TopBarSkeleton } from '@/components/skeletons/SectionSkeletons';
 import { executiveSidebarConfig, roleLabels, roleDashboardRoutes } from './executiveSidebarConfig';
@@ -26,8 +26,6 @@ export default function ExecutiveDashboardLayout({
 }: ExecutiveDashboardLayoutProps) {
   const { user, roles, signOut, switchRole, addRole } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [checkingProfile, setCheckingProfile] = useState(true);
   const loggedRef = useRef(false);
@@ -50,67 +48,6 @@ export default function ExecutiveDashboardLayout({
 
   const sections: SidebarSection[] = executiveSidebarConfig[role] || [];
   const displayRole = roleLabels[role as AppRole] || role.toUpperCase();
-
-  /**
-   * Sync ?tab=<id> from the URL → activeTab state. This means a deep link like
-   * /cfo/dashboard?tab=platform-impact opens that view AND highlights the row.
-   */
-  useEffect(() => {
-    const urlTab = searchParams.get('tab');
-    if (urlTab && urlTab !== activeTab) {
-      onTabChange(urlTab);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
-
-  /**
-   * When a sidebar tab is clicked, push the tab id into the URL so refresh /
-   * link sharing keeps the highlight. Route items still navigate to their URL.
-   */
-  const handleItemClick = (item: { id: string; route?: string }) => {
-    if (item.route) {
-      navigate(item.route);
-      return;
-    }
-    onTabChange(item.id);
-    const next = new URLSearchParams(searchParams);
-    next.set('tab', item.id);
-    setSearchParams(next, { replace: true });
-  };
-
-  /**
-   * A sidebar item is "active" when:
-   *  - it has a route AND the current pathname starts with that route, OR
-   *  - it is a tab-style item whose id matches activeTab.
-   */
-  const isItemActive = (item: { id: string; route?: string }) => {
-    if (item.route) {
-      return location.pathname === item.route ||
-        location.pathname.startsWith(item.route + '/');
-    }
-    return activeTab === item.id;
-  };
-
-  /**
-   * Clear the persisted sidebar tab for THIS role+route combo and reset the
-   * dashboard back to the default overview view. Mirrors the storage key
-   * convention used by `usePersistedActiveTab`.
-   */
-  const handleResetSelection = () => {
-    try {
-      window.localStorage.removeItem(
-        `dashboard:${role}:${location.pathname}:activeTab`,
-      );
-    } catch {
-      /* storage unavailable */
-    }
-    onTabChange('overview');
-    if (searchParams.get('tab')) {
-      const next = new URLSearchParams(searchParams);
-      next.delete('tab');
-      setSearchParams(next, { replace: true });
-    }
-  };
 
   const handleRoleChange = (newRole: AppRole) => {
     switchRole(newRole);
@@ -139,13 +76,17 @@ export default function ExecutiveDashboardLayout({
                 key={item.id}
                 type="button"
                 onClick={() => {
-                  handleItemClick(item);
+                  if (item.route) {
+                    navigate(item.route);
+                  } else {
+                    onTabChange(item.id);
+                  }
                   onItemClick?.();
                 }}
                 className={cn(
                   'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors select-none',
                   'active:scale-[0.98] active:bg-primary/15',
-                  isItemActive(item)
+                  activeTab === item.id
                     ? 'bg-primary/10 text-primary font-semibold'
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                 )}
@@ -160,16 +101,6 @@ export default function ExecutiveDashboardLayout({
       ))}
 
       <div className="px-2 pt-4 border-t border-border mx-2">
-        <button
-          type="button"
-          onClick={() => { handleResetSelection(); onItemClick?.(); }}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors select-none active:scale-[0.98] mb-1"
-          style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-          title="Clear saved sidebar selection and return to Overview"
-        >
-          <RotateCcw className="h-4 w-4 shrink-0" />
-          <span>Reset sidebar selection</span>
-        </button>
         <button
           type="button"
           onClick={() => { handleExit(); onItemClick?.(); }}
