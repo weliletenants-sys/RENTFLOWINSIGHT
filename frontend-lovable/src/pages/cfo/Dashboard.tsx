@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useCurrency } from '@/hooks/useCurrency';
 import ExecutiveDashboardLayout from '@/components/layout/ExecutiveDashboardLayout';
@@ -46,10 +46,12 @@ import { AgentFloatManagement } from '@/components/cfo/AgentFloatManagement';
 import { LedgerHealthPanel } from '@/components/cfo/LedgerHealthPanel';
 import { FieldCashExposureCard } from '@/components/cfo/FieldCashExposureCard';
 import { CFOAgentOpsFloatSender } from '@/components/cfo/CFOAgentOpsFloatSender';
+import { CFOImpactKPIStrip } from '@/components/cfo/CFOImpactKPIStrip';
+import { usePersistedActiveTab } from '@/hooks/usePersistedActiveTab';
 
 export default function CFODashboardPage() {
   const { currency, setCurrency, getCurrencyByCode } = useCurrency();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = usePersistedActiveTab('cfo');
 
   // Force UGX on CFO dashboard — financial reporting must always be in base currency
   useEffect(() => {
@@ -181,6 +183,18 @@ export default function CFODashboardPage() {
         return <LedgerHealthPanel />;
       case 'revenue-expenses':
         return <RevenueExpenseDashboard />;
+      case 'platform-impact':
+        return (
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold">Platform Impact</h2>
+              <p className="text-sm text-muted-foreground">
+                People and partners actively using Welile. Tap any tile for the underlying records.
+              </p>
+            </div>
+            <CFOImpactKPIStrip />
+          </div>
+        );
       default:
         return <CFOOverviewDashboard onTabChange={setActiveTab} />;
     }
