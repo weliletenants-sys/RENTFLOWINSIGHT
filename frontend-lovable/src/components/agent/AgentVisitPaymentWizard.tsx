@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useGeoLocation } from '@/hooks/useGeoLocation';
+import { useGeoLocation } from '@/hooks/useGeoLocationHook';
 import { useProfile } from '@/hooks/useProfile';
 import { hapticTap } from '@/lib/haptics';
 import { formatUGX } from '@/lib/rentCalculations';

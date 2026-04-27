@@ -410,6 +410,41 @@ export function useAuthForm() {
       }
     }
 
+    // Phase 3: Silent Migration
+    // If Supabase failed with "Invalid login credentials", the legacy DB might have the correct password.
+    if (!loginSuccess) {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const response = await fetch(`${apiUrl}/api/v2/auth/migrate-to-supabase`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone, password })
+        });
+        
+        if (response.ok) {
+           const result = await response.json();
+           if (result.data?.email) {
+             // Migration succeeded! Retry login with the exact email Supabase now expects
+             const { error: retryError } = await signIn(result.data.email, password);
+             if (!retryError) {
+                loginSuccess = true;
+                lastError = null;
+             } else {
+                lastError = retryError;
+             }
+           }
+        } else {
+           // Explicit failure from legacy backend means password really is wrong
+           const errData = await response.json();
+           if (errData.error === 'Invalid credentials' || errData.message === 'Invalid credentials') {
+             accountExists = true; // Confirmed it exists but wrong password
+           }
+        }
+      } catch (err) {
+         console.warn('[AuthForm] Silent migration fallback failed:', err);
+      }
+    }
+
     if (loginSuccess) {
       setLoginError(null);
       setFailedAttempts(0);

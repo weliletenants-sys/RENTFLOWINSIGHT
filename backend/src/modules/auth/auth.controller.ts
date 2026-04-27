@@ -46,6 +46,30 @@ export class AuthController {
       }
     }
   };
+
+  /**
+   * Endpoint: POST /auth/migrate-to-supabase
+   */
+  public migrateToSupabase = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { phone, password } = req.body;
+
+      if (!phone || !password) {
+        return sendError(res, 'Phone and password are required', 400);
+      }
+
+      const result = await this.service.migrateToSupabase(phone, password);
+      
+      return sendSuccess(res, result, 'Successfully migrated to Supabase');
+    } catch (error: any) {
+      if (error.message.includes('Invalid') || error.message.includes('frozen')) {
+        return sendError(res, error.message, 401);
+      } else {
+        console.error('[AuthController] migrateToSupabase error:', error);
+        return sendError(res, 'Internal Server Error processing migration.', 500);
+      }
+    }
+  };
 }
 
 export const authController = new AuthController();

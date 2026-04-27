@@ -26,7 +26,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { useGeoLocation } from '@/hooks/useGeoLocation';
+import { useGeoLocation } from '@/hooks/useGeoLocationHook';
 
 interface UnverifiedRequest {
   id: string;

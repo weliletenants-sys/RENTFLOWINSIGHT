@@ -17,6 +17,7 @@
     "@casl/ability": "^6.8.0",
     "@casl/prisma": "^1.6.2",
     "@prisma/client": "^5.22.0",
+    "@supabase/supabase-js": "^2.104.1",
     "africastalking": "^0.7.9",
     "bcrypt": "^5.1.1",
     "bullmq": "^5.74.1",

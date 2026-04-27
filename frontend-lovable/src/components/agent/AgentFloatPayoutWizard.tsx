@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useGeoLocation } from '@/hooks/useGeoLocation';
+import { useGeoLocation } from '@/hooks/useGeoLocationHook';
 import { useLandlordOtp } from '@/hooks/useLandlordOtp';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
