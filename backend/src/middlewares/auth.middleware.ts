@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { createRemoteJWKSet, jwtVerify } from 'jose';
+import jwt from 'jsonwebtoken';
 
 // ─── Type augmentation: identity context forwarded through the request pipeline ──
 declare global {
@@ -17,44 +17,7 @@ declare global {
   }
 }
 
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://wirntoujqoyjobfhyelc.supabase.co';
-const SUPABASE_ISSUER = process.env.SUPABASE_ISSUER || `${SUPABASE_URL}/auth/v1`;
-const SUPABASE_AUDIENCE = process.env.SUPABASE_AUDIENCE || 'authenticated';
-const JWKS_URI = `${SUPABASE_URL}/auth/v1/keys`;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
-
-console.log(`[AUTH-INIT] Configuring JWKS JWT Auth Pipeline`);
-console.log(`[AUTH-INIT] Target JWKS URL: ${JWKS_URI}`);
-
-// One-time boot probe
-(async () => {
-  try {
-    const res = await fetch(JWKS_URI, { headers: { apikey: SUPABASE_ANON_KEY } });
-    console.log(`[AUTH-INIT] JWKS fetch status: ${res.status} ${res.statusText}`);
-  } catch (err: any) {
-    console.error(`[AUTH-INIT] Failed to probe JWKS URL at boot:`, err.message);
-  }
-})();
-
-const JWKS = createRemoteJWKSet(new URL(JWKS_URI), {
-  timeoutDuration: 5000, 
-  cooldownDuration: 30000,
-  fetcher: async (url, options) => {
-    try {
-      const res = await fetch(url, {
-        ...options,
-        headers: { apikey: SUPABASE_ANON_KEY }
-      });
-      if (!res.ok) {
-        console.error(`[AUTH] JWKS fetch failed with status ${res.status}`);
-      }
-      return res;
-    } catch (err: any) {
-      console.error(`[AUTH] Hard JWKS fetch crash:`, err.message);
-      throw err;
-    }
-  }
-});
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback_development_secret_key_only';
 
 const verifyAndExtractToken = async (req: Request) => {
   let token = req.cookies?.user_session || req.cookies?.admin_session;
@@ -74,12 +37,12 @@ const verifyAndExtractToken = async (req: Request) => {
     return { sub: '999', email: 'dev@localhost', phone: undefined as string | undefined };
   }
 
-  const { payload } = await jwtVerify(token, JWKS, {
-    issuer: SUPABASE_ISSUER,
-    audience: SUPABASE_AUDIENCE,
+  return new Promise<any>((resolve, reject) => {
+    jwt.verify(token, JWT_SECRET, (err: any, decoded: any) => {
+      if (err) return reject(err);
+      resolve(decoded);
+    });
   });
-
-  return payload;
 };
 
 /**

@@ -1,0 +1,125 @@
+=== admin/adminAuth.routes.ts ===
+import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
+import { adminAuthController } from './adminAuth.controller';
+
+const router = Router();
+
+const loginLimiter = rateLimit({
+  windowMs: 3 * 60 * 1000, // 3 minutes cooldown
+  max: 3, // Maximum 3 attempts
+  message: {
+      status: 'error',
+      error: 'Too Many Requests',
+    detail: 'Too many admin login attempts. Please try again in 3 minutes.'
+  }
+});
+
+router.post('/login', loginLimiter, adminAuthController.adminLogin);
+router.post('/logout', adminAuthController.adminLogout);
+
+export default router;
+
+=== agents/agents.routes.ts ===
+import { Router } from 'express';
+import { agentsController } from './agents.controller';
+import { ensureAuthenticated, rolesGuard } from '../../shared/middleware/auth.middleware';
+
+const router = Router();
+
+// Securing all agent roots to specifically AGENT profiles
+router.use(ensureAuthenticated);
+router.use(rolesGuard(['AGENT', 'MANAGER', 'ADMIN']));
+
+router.post('/tenants/tokens/generate', agentsController.generateTenantFormToken);
+
+export default router;
+
+=== auth/auth.routes.ts ===
+import { Router } from 'express';
+import { authController } from './auth.controller';
+
+const router = Router();
+
+router.post('/login', authController.login);
+router.post('/register', authController.register);
+router.post('/migrate-to-supabase', authController.migrateToSupabase);
+router.post('/request-otp', authController.requestOtp);
+router.post('/verify-otp', authController.verifyOtp);
+router.post('/request-password-reset', authController.requestPasswordResetOtp);
+router.post('/reset-password', authController.resetPasswordWithOtp);
+router.post('/admin-reset-password', authController.adminResetPassword);
+router.delete('/admin-delete-user', authController.adminDeleteUser);
+
+export default router;
+
+=== cfo/cfo.routes.ts ===
+import { Router } from 'express';
+import { cfoController } from './cfo.controller';
+import { attachRequestId } from '../../shared/middleware/request-id.middleware';
+import { supabaseAuthGuard } from '../../middlewares/auth.middleware';
+import { authorize } from '../../middlewares/rbac.middleware';
+
+const router = Router();
+
+// Middleware enforces that the requester is a CFO or authorized.
+// Ensures idempotency header is checked.
+router.post(
+  '/portfolios/:id/topup',
+  supabaseAuthGuard,
+  authorize({ roles: ['CFO', 'CEO', 'MANAGER'] }),
+  attachRequestId,
+  cfoController.processPortfolioTopUp
+);
+
+router.post(
+  '/portfolios/:id/merge-pending',
+  supabaseAuthGuard,
+  authorize({ roles: ['CFO', 'CEO', 'MANAGER'] }),
+  attachRequestId,
+  cfoController.mergePendingTopUps
+);
+
+export default router;
+
+=== ledger/ledger.routes.ts ===
+import { Router } from 'express';
+import { LedgerController } from './ledger.controller';
+import { authenticate } from '../../middlewares/auth.middleware';
+import { authorize } from '../../middlewares/rbac.middleware';
+
+const router = Router();
+
+// Endpoint: GET /admin/system/health/finance
+// STRICT RESTRICTION: Only Admin scopes (executives, developers) should execute table aggregations
+router.get('/health/finance', 
+    authenticate, 
+    authorize({ roles: ['ADMIN', 'COO', 'CFO'], scopes: ['ledger.health.read'] }), 
+    LedgerController.getHealth
+);
+
+// Endpoint: POST /admin/system/transfer
+// ONLY Operations roles should execute core manual ledger routing
+router.post('/transfer', 
+    authenticate, 
+    authorize({ roles: ['ADMIN', 'CFO', 'FINOPS'], scopes: ['ledger.transfer.execute'] }), 
+    LedgerController.transfer
+);
+
+export default router;
+
+
+=== payments/payments.routes.ts ===
+import { Router } from 'express';
+import { paymentsController } from './payments.controller';
+// Assume an authMiddleware exists or import from shared/
+// import { authGuard } from '../../shared/middleware/auth.middleware';
+
+const router = Router();
+
+// POST /payments/rent
+// router.post('/rent', authGuard, paymentsController.payRent);
+router.post('/rent', paymentsController.payRent);
+
+export default router;
+

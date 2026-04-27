@@ -1,0 +1,183 @@
+{
+  "info": {
+    "_postman_id": "84e569a3-00e1-4947-a463-0b4d1c88f604",
+    "name": "Welile Custom Auth API",
+    "description": "Postman Collection to test the newly migrated native OTP and Auth endpoints in the Welile Node.js backend.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Request OTP",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"phone\": \"0772123456\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/request-otp",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "request-otp"
+          ]
+        },
+        "description": "Triggers the backend to generate a 6-digit OTP and store it natively in `otp_verifications`."
+      },
+      "response": []
+    },
+    {
+      "name": "2. Verify OTP & Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"phone\": \"0772123456\",\n    \"otp\": \"123456\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/verify-otp",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "verify-otp"
+          ]
+        },
+        "description": "Exchanges the OTP for a native JWT token, bypassing Supabase Magic Links."
+      },
+      "response": []
+    },
+    {
+      "name": "3. Create New User (Register)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"phone\": \"0772999888\",\n    \"fullName\": \"Test Tenant\",\n    \"password\": \"SecurePass123!\",\n    \"role\": \"TENANT\",\n    \"nationalId\": \"CM12345678ABCD\",\n    \"referrerId\": \"optional-agent-uuid\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/register",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "register"
+          ]
+        },
+        "description": "Registers a new user natively. Equivalent to legacy Supabase trigger: it creates the `profiles` record, inserts a default `wallets` balance, assigns `user_roles`, and maps `referrals`."
+      },
+      "response": []
+    },
+    {
+      "name": "4. Legacy Password Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"phone\": \"0772999888\",\n    \"password\": \"SecurePass123!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "description": "Logs in via legacy password hashes securely mapped to JWT."
+      },
+      "response": []
+    },
+    {
+      "name": "5. Request Password Reset OTP",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"phone\": \"0772999888\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/request-password-reset",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "request-password-reset"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "6. Reset Password via OTP",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"phone\": \"0772999888\",\n    \"otp\": \"123456\",\n    \"newPassword\": \"NewPassword456!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/reset-password",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "reset-password"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api/v2",
+      "type": "string"
+    }
+  ]
+}

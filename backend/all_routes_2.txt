@@ -1,0 +1,204 @@
+=== repayments/repayments.routes.ts ===
+import { Router } from 'express';
+import { RepaymentsController } from './repayments.controller';
+import { ensureAuthenticated, rolesGuard } from '../../shared/middleware/auth.middleware';
+import { paymentLimiter } from '../../shared/middleware/rate-limiter.middleware';
+import { attachRequestId } from '../../shared/middleware/request-id.middleware';
+
+const router = Router();
+const controller = new RepaymentsController();
+
+// Universal V2 Middleware stack applied strictly at the boundary
+router.use(attachRequestId);
+router.use(paymentLimiter);
+
+// Protect bounds utilizing Authentication structurally natively mapped
+router.use(ensureAuthenticated);
+
+// --- RESTful Execution Boundaries ---
+
+// 1. Tenant specifically clearing bounds
+router.post('/tenant', rolesGuard(['tenant']), controller.repayByTenant.bind(controller));
+
+// 2. Agent explicitly clearing Tenant bounds
+router.post('/agent', rolesGuard(['agent', 'admin']), controller.repayByAgent.bind(controller));
+
+// Further automations / schedulers logically hook here in Phase 3
+// e.g. router.post('/automated-scheduler', ...)
+
+export default router;
+
+=== risk/risk.routes.ts ===
+import { Router, Request, Response } from 'express';
+import prisma from '../../prisma/prisma.client';
+import { authenticate } from '../../middlewares/auth.middleware';
+import { authorize } from '../../middlewares/rbac.middleware';
+import { LedgerService } from '../ledger/ledger.service';
+
+const router = Router();
+
+// ==========================================
+// PENDING INVESTIGATIONS LISTING
+// ==========================================
+router.get('/reviews',
+    authenticate,
+    authorize({ roles: ['ADMIN', 'FINOPS'], scopes: ['risk.review.execute'] }),
+    async (req: Request, res: Response) => {
+        try {
+            const pending = await prisma.riskReview.findMany({
+                where: { status: 'PENDING' },
+                orderBy: { createdAt: 'desc' }
+            });
+            return res.json({ data: pending });
+        } catch (error: any) {
+            return res.status(500).json({ error: error.message });
+        }
+    }
+);
+
+// ==========================================
+// ATOMIC OVERRIDE ACTIONS
+// ==========================================
+router.post('/review/:id/approve',
+    authenticate,
+    authorize({ roles: ['ADMIN', 'FINOPS'], scopes: ['risk.review.execute'] }),
+    async (req: Request, res: Response) => {
+        try {
+            const reviewId = req.params.id;
+            const actorId = req.user?.id!;
+
+            // We must execute sequentially in a transaction to block double-payouts permanently
+            await prisma.$transaction(async (tx) => {
+                // Optimistic locking using where constraints is inherently atomic in Postgres
+                const review = await tx.riskReview.findUnique({ where: { id: reviewId } });
+                
+                if (!review) throw new Error("Review record not found");
+                if (review.status !== 'PENDING') throw new Error(`Already Handled: Risk rule is permanently ${review.status}`);
+
+                // Mark the state globally isolated for the Recovery Worker to pick up
+                await tx.riskReview.update({
+                    where: { id: reviewId, status: 'PENDING' }, // Enforce transition lock
+                    data: {
+                        status: 'APPROVED_PENDING_EXECUTION',
+                        decidedBy: actorId,
+                        decidedAt: new Date()
+                    }
+                });
+
+                // Write native explicitly audit tracked logs for Manual overrides
+                await tx.auditLogs.create({
+                    data: {
+                        user_id: actorId,
+                        actor_role: req.user?.role || 'UNKNOWN',
+                        action_type: 'risk.review.approve_pending_execution',
+                        target_id: reviewId,
+                        metadata: { eventId: review.event_id, amount: review.amount }
+                    }
+                });
+
+                // NO Ledger Execution Here. 
+                // The Risk Worker handles ledger transfers asynchronously to secure reconciliation mapping.
+            });
+
+            return res.json({ message: 'Risk review marked for execution. The background worker will process the financial transfer safely.' });
+        } catch (error: any) {
+            console.error(`[RISK OVERRIDE] Failed to execute Approval path for ${req.params.id}`, error);
+            // Translate generic errors safely back matching conflict logic
+            if (error.message.includes('Already Handled')) {
+                return res.status(409).json({ error: error.message });
+            }
+            return res.status(500).json({ error: 'Manual Risk Approval Engine Failed to Process.' });
+        }
+    }
+);
+
+router.post('/review/:id/reject',
+    authenticate,
+    authorize({ roles: ['ADMIN', 'FINOPS'], scopes: ['risk.review.execute'] }),
+    async (req: Request, res: Response) => {
+        try {
+            const reviewId = req.params.id;
+            const actorId = req.user?.id!;
+
+            await prisma.$transaction(async (tx) => {
+                const review = await tx.riskReview.findUnique({ where: { id: reviewId } });
+                
+                if (!review) throw new Error("Review record not found");
+                if (review.status !== 'PENDING') throw new Error(`Already Handled: Risk rule is permanently ${review.status}`);
+
+                await tx.riskReview.update({
+                    where: { id: reviewId },
+                    data: {
+                        status: 'REJECTED',
+                        decidedBy: actorId,
+                        decidedAt: new Date()
+                    }
+                });
+
+                await tx.auditLogs.create({
+                    data: {
+                        user_id: actorId,
+                        actor_role: req.user?.role || 'UNKNOWN',
+                        action_type: 'risk.review.reject',
+                        target_id: reviewId,
+                        metadata: { eventId: review.event_id }
+                    }
+                });
+            });
+
+            return res.json({ message: 'Risk systematically isolated and blocked permanently.' });
+        } catch (error: any) {
+             if (error.message.includes('Already Handled')) {
+                 return res.status(409).json({ error: error.message });
+             }
+             return res.status(500).json({ error: 'Manual Risk Reject Engine Failed.' });
+        }
+    }
+);
+
+export default router;
+
+=== roi/roi.routes.ts ===
+import { Router } from 'express';
+import { roiController } from './roi.controller';
+
+const router = Router();
+
+// POST /roi/run-cycle
+router.post('/run-cycle', roiController.runCycle);
+
+export default router;
+
+=== tenants/tenants.routes.ts ===
+import { Router } from 'express';
+import { tenantsController } from './tenants.controller';
+import { ensureAuthenticated, rolesGuard } from '../../shared/middleware/auth.middleware';
+
+const router = Router();
+
+import { paymentLimiter } from '../../shared/middleware/rate-limiter.middleware';
+
+// Specifically constrain these module boundaries down strictly to TENANTS
+router.use(ensureAuthenticated);
+router.use(rolesGuard(['TENANT']));
+
+router.post('/rent/pay', paymentLimiter, tenantsController.payRent);
+
+export default router;
+
+=== users/users.routes.ts ===
+import { Router } from 'express';
+import { usersController } from './users.controller';
+import { authenticate } from '../../middlewares/auth.middleware';
+
+const router = Router();
+
+// All users routes are protected by the Supabase JWKS zero-trust identity gate.
+// This ensures req.user.id === supabase_user_id, which is the golden rule of silent migration.
+router.use(authenticate);
+
+router.get('/me', usersController.getMe);
+router.patch('/me', usersController.patchMe);
+
+export default router;
+

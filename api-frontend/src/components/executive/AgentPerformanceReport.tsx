@@ -1,0 +1,895 @@
+import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Download, FileBarChart, Search, X, Users, HandCoins, TrendingUp, PiggyBank, Percent, Wallet, Info, Calendar, Filter } from 'lucide-react';
+import { format, startOfWeek, endOfWeek, subWeeks, startOfMonth, endOfMonth } from 'date-fns';
+import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+import { generateAgentPerformancePdf, AgentPerfRow, AgentPerfTotals } from '@/lib/agentPerformanceReportPdf';
+
+type RangePreset = 'this-week' | 'last-week' | 'this-month' | 'last-7' | 'last-30' | 'last-90' | 'all';
+type PaymentSource = 'all' | 'agent_collections' | 'repayments' | 'merchant';
+type StatusFilter = 'all' | 'critical' | 'low' | 'moderate' | 'good' | 'excellent';
+
+const getRange = (preset: RangePreset): { start: Date | null; end: Date } => {
+  const now = new Date();
+  switch (preset) {
+    case 'this-week': return { start: startOfWeek(now, { weekStartsOn: 1 }), end: endOfWeek(now, { weekStartsOn: 1 }) };
+    case 'last-week': {
+      const lw = subWeeks(now, 1);
+      return { start: startOfWeek(lw, { weekStartsOn: 1 }), end: endOfWeek(lw, { weekStartsOn: 1 }) };
+    }
+    case 'this-month': return { start: startOfMonth(now), end: endOfMonth(now) };
+    case 'last-30': {
+      const start = new Date(now); start.setDate(start.getDate() - 29); start.setHours(0, 0, 0, 0);
+      const end = new Date(now); end.setHours(23, 59, 59, 999);
+      return { start, end };
+    }
+    case 'last-90': {
+      const start = new Date(now); start.setDate(start.getDate() - 89); start.setHours(0, 0, 0, 0);
+      const end = new Date(now); end.setHours(23, 59, 59, 999);
+      return { start, end };
+    }
+    case 'all': return { start: null, end: now };
+    case 'last-7':
+    default: {
+      const start = new Date(now); start.setDate(start.getDate() - 6); start.setHours(0, 0, 0, 0);
+      const end = new Date(now); end.setHours(23, 59, 59, 999);
+      return { start, end };
+    }
+  }
+};
+
+// Status is derived from EFFICIENCY % (collected ÷ expected weekly)
+const statusForEfficiency = (eff: number): AgentPerfRow['status'] => {
+  if (eff >= 100) return 'excellent';
+  if (eff >= 80) return 'good';
+  if (eff >= 60) return 'moderate';
+  if (eff >= 40) return 'low';
+  return 'critical';
+};
+
+const STATUS_BADGE: Record<AgentPerfRow['status'], { label: string; cls: string; dot: string }> = {
+  excellent: { label: 'Excellent', cls: 'bg-emerald-100 text-emerald-700 border-emerald-300', dot: 'bg-emerald-700' },
+  good:      { label: 'Good',      cls: 'bg-emerald-50 text-emerald-600 border-emerald-200',  dot: 'bg-emerald-500' },
+  moderate:  { label: 'Moderate',  cls: 'bg-amber-100 text-amber-700 border-amber-300',       dot: 'bg-amber-500'   },
+  low:       { label: 'Low',       cls: 'bg-orange-100 text-orange-700 border-orange-300',    dot: 'bg-orange-500'  },
+  critical:  { label: 'Critical',  cls: 'bg-red-100 text-red-700 border-red-300',             dot: 'bg-red-500'     },
+};
+
+const fmt = (n: number) => Math.round(n).toLocaleString();
+const fmtPct = (n: number) => `${n.toFixed(1)}%`;
+
+// ============= Column-header filter helpers =============
+type NumericKey =
+  | 'tenants_total' | 'daily_portfolio' | 'expected_weekly' | 'collected'
+  | 'efficiency' | 'gap' | 'payments' | 'pct_paid'
+  | 'commission' | 'interest' | 'wallet_total';
+type Range = { min?: number; max?: number };
+type StatusKey = AgentPerfRow['status'];
+type ColFilters = {
+  name: string;
+  status: Set<StatusKey>;
+  ranges: Partial<Record<NumericKey, Range>>;
+};
+const EMPTY_FILTERS: ColFilters = { name: '', status: new Set(), ranges: {} };
+
+const isRangeActive = (r?: Range) =>
+  !!r && ((r.min !== undefined && !Number.isNaN(r.min)) || (r.max !== undefined && !Number.isNaN(r.max)));
+
+function HeaderFilter({
+  active,
+  align = 'center',
+  children,
+  onClear,
+ }: { active: boolean; align?: 'start' | 'center' | 'end'; children: React.ReactNode; onClear?: () => void }) {
+  return (
+    <span className="inline-flex items-center gap-0.5">
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          onClick={(e) => e.stopPropagation()}
+          className={cn(
+            'inline-flex h-5 w-5 items-center justify-center rounded hover:bg-white/20 transition-colors relative',
+            active && 'bg-white/25'
+          )}
+          aria-label="Filter column"
+        >
+          <Filter className="h-3 w-3" />
+          {active && <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-yellow-300 ring-1 ring-slate-900" />}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align={align} className="w-60 p-3 space-y-2">
+        {children}
+      </PopoverContent>
+    </Popover>
+    {active && onClear && (
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onClear(); }}
+        className="inline-flex h-4 w-4 items-center justify-center rounded hover:bg-white/25 text-white/90"
+        aria-label="Clear this filter"
+        title="Clear this filter"
+      >
+        <X className="h-3 w-3" />
+      </button>
+    )}
+    </span>
+  );
+}
+
+function TextFilter({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="space-y-2">
+      <Label className="text-xs font-semibold">Search agent name</Label>
+      <Input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Contains…"
+        className="h-8 text-sm"
+        autoFocus
+      />
+      {value && (
+        <Button variant="ghost" size="sm" className="h-7 w-full text-xs" onClick={() => onChange('')}>
+          <X className="h-3 w-3 mr-1" /> Clear
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function NumericRangeFilter({
+  label, value, onChange,
+}: { label: string; value?: Range; onChange: (r?: Range) => void }) {
+  const [min, setMin] = useState<string>(value?.min !== undefined ? String(value.min) : '');
+  const [max, setMax] = useState<string>(value?.max !== undefined ? String(value.max) : '');
+  const apply = () => {
+    const minN = min === '' ? undefined : Number(min);
+    const maxN = max === '' ? undefined : Number(max);
+    if (minN === undefined && maxN === undefined) { onChange(undefined); return; }
+    onChange({ min: minN, max: maxN });
+  };
+  const clear = () => { setMin(''); setMax(''); onChange(undefined); };
+  return (
+    <div className="space-y-2">
+      <Label className="text-xs font-semibold">{label}</Label>
+      <div className="flex items-center gap-1.5">
+        <Input type="number" inputMode="numeric" value={min} onChange={(e) => setMin(e.target.value)}
+          placeholder="Min" className="h-8 text-sm" />
+        <span className="text-muted-foreground text-xs">–</span>
+        <Input type="number" inputMode="numeric" value={max} onChange={(e) => setMax(e.target.value)}
+          placeholder="Max" className="h-8 text-sm" />
+      </div>
+      <div className="flex gap-1.5">
+        <Button size="sm" className="h-7 flex-1 text-xs" onClick={apply}>Apply</Button>
+        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={clear}>Clear</Button>
+      </div>
+    </div>
+  );
+}
+
+function StatusMultiFilter({
+  value, onChange,
+}: { value: Set<StatusKey>; onChange: (next: Set<StatusKey>) => void }) {
+  const options: StatusKey[] = ['excellent', 'good', 'moderate', 'low', 'critical'];
+  const toggle = (k: StatusKey) => {
+    const next = new Set(value);
+    if (next.has(k)) next.delete(k); else next.add(k);
+    onChange(next);
+  };
+  return (
+    <div className="space-y-2">
+      <Label className="text-xs font-semibold">Filter by status</Label>
+      <div className="space-y-1.5">
+        {options.map((k) => (
+          <label key={k} className="flex items-center gap-2 cursor-pointer text-sm">
+            <Checkbox checked={value.has(k)} onCheckedChange={() => toggle(k)} />
+            <span className={cn('inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-semibold border', STATUS_BADGE[k].cls)}>
+              {STATUS_BADGE[k].label}
+            </span>
+          </label>
+        ))}
+      </div>
+      {value.size > 0 && (
+        <Button variant="ghost" size="sm" className="h-7 w-full text-xs" onClick={() => onChange(new Set())}>
+          <X className="h-3 w-3 mr-1" /> Clear
+        </Button>
+      )}
+    </div>
+  );
+}
+
+export function AgentPerformanceReport() {
+  const [preset, setPreset] = useState<RangePreset>('last-7');
+  const [paymentSource, setPaymentSource] = useState<PaymentSource>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [agentSearch, setAgentSearch] = useState('');
+  const [minCollected, setMinCollected] = useState('');
+  // Per-column header filters
+  const [colFilters, setColFilters] = useState<ColFilters>(EMPTY_FILTERS);
+  const setRange = (key: NumericKey, range?: Range) =>
+    setColFilters(prev => {
+      const ranges = { ...prev.ranges };
+      if (!range) delete ranges[key]; else ranges[key] = range;
+      return { ...prev, ranges };
+    });
+  const range = useMemo(() => getRange(preset), [preset]);
+  const startISO = range.start ? range.start.toISOString() : null;
+  const endISO = range.end.toISOString();
+  const periodLabel = range.start
+    ? `${format(range.start, 'MMM d')} – ${format(range.end, 'MMM d, yyyy')}`
+    : `All time · as of ${format(range.end, 'MMM d, yyyy')}`;
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['agent-perf-report', startISO, endISO, paymentSource],
+    queryFn: async () => {
+      // Helper: paginated fetch (up to 20k rows)
+      const fetchAll = async <T,>(builder: () => any): Promise<T[]> => {
+        const PAGE = 1000;
+        const out: T[] = [];
+        let from = 0;
+        for (let p = 0; p < 20; p++) {
+          const { data, error } = await builder().range(from, from + PAGE - 1);
+          if (error) {
+            console.error('[AgentPerformanceReport] fetchAll error:', error);
+            toast.error(`Report query failed: ${error.message}`);
+            throw error;
+          }
+          if (!data || data.length === 0) break;
+          out.push(...(data as T[]));
+          if (data.length < PAGE) break;
+          from += PAGE;
+        }
+        return out;
+      };
+
+      // ============ PULL ALL PAYMENT SOURCES ============
+      // 1) agent_collections (cash collected by agents in field)
+      const collections = (paymentSource === 'all' || paymentSource === 'agent_collections')
+        ? await fetchAll<{ agent_id: string; amount: number; tenant_id: string | null; created_at: string }>(() => {
+            let q = supabase.from('agent_collections').select('agent_id, amount, tenant_id, created_at');
+            if (startISO) q = q.gte('created_at', startISO);
+            return q.lte('created_at', endISO);
+          })
+        : [];
+
+      // 2) repayments (tenant direct payments via merchant — attributed to agent)
+      const repayments = (paymentSource === 'all' || paymentSource === 'repayments')
+        ? await fetchAll<{ rent_request_id: string | null; tenant_id: string | null; amount: number; created_at: string }>(() => {
+            let q = supabase.from('repayments').select('rent_request_id, tenant_id, amount, created_at');
+            if (startISO) q = q.gte('created_at', startISO);
+            return q.lte('created_at', endISO);
+          })
+        : [];
+
+      // 3) tenant_merchant_payments (direct merchant pay-ins by tenant) — attribute via rent_request → agent
+      const merchantRaw = (paymentSource === 'all' || paymentSource === 'merchant')
+        ? await fetchAll<{ tenant_id: string | null; agent_id: string | null; amount: number; created_at: string }>(() => {
+            let q = supabase.from('tenant_merchant_payments').select('tenant_id, agent_id, amount, created_at');
+            if (startISO) q = q.gte('created_at', startISO);
+            return q.lte('created_at', endISO);
+          })
+        : [];
+
+      // Pull earnings in window (for interest)
+      const earnings = await fetchAll<{ agent_id: string; amount: number; earning_type: string; created_at: string }>(() => {
+        let q = supabase.from('agent_earnings').select('agent_id, amount, earning_type, created_at');
+        if (startISO) q = q.gte('created_at', startISO);
+        return q.lte('created_at', endISO);
+      });
+
+      // Pull rent_requests for tenant counts AND daily_portfolio.
+      // We need TWO scopes:
+      //  - rentReqsAll: ALL-time, used to attribute merchant payments (rent_request_id → agent_id),
+      //    because a payment in this range may belong to a request created earlier.
+      //  - rentReqsInRange: scoped to the selected date range (by created_at), used for tenants_total
+      //    so the "X/Y" denominator reflects the chosen period, not lifetime assignments.
+      const rentReqsAll = await fetchAll<{ id: string; agent_id: string | null; tenant_id: string | null; created_at: string; daily_repayment: number | null; status: string | null; amount_repaid: number | null; total_repayment: number | null }>(() =>
+        supabase.from('rent_requests').select('id, agent_id, tenant_id, created_at, daily_repayment, status, amount_repaid, total_repayment').not('agent_id', 'is', null)
+      );
+      const rentReqsInRange = startISO
+        ? rentReqsAll.filter(r => r.created_at >= startISO && r.created_at <= endISO)
+        : rentReqsAll;
+
+      // Build tenant_id → agent_id map (most-recent rent_request) for merchant payments missing agent_id
+      const tenantAgentMap: Record<string, { agent_id: string; created_at: string }> = {};
+      rentReqsAll.forEach(r => {
+        if (!r.tenant_id || !r.agent_id) return;
+        const cur = tenantAgentMap[r.tenant_id];
+        if (!cur || r.created_at > cur.created_at) {
+          tenantAgentMap[r.tenant_id] = { agent_id: r.agent_id, created_at: r.created_at };
+        }
+      });
+
+      // Build rent_request_id → agent_id map (used to attribute repayments, which carry no agent_id)
+      const requestAgentMap: Record<string, string> = {};
+      rentReqsAll.forEach(r => {
+        if (r.id && r.agent_id) requestAgentMap[r.id] = r.agent_id;
+      });
+
+      // Resolve repayments → attributed agent (via rent_request_id, fall back to tenant→agent map)
+      type ResolvedRepayment = { agent_id: string; tenant_id: string | null; amount: number };
+      const repaymentsResolved: ResolvedRepayment[] = repayments
+        .map(r => {
+          const aid = (r.rent_request_id ? requestAgentMap[r.rent_request_id] : undefined)
+            || (r.tenant_id ? tenantAgentMap[r.tenant_id]?.agent_id : undefined);
+          return aid ? { agent_id: aid, tenant_id: r.tenant_id, amount: Number(r.amount || 0) } : null;
+        })
+        .filter((x): x is ResolvedRepayment => x !== null);
+
+      // Resolve merchant payments → attributed agent (prefer direct agent_id, fall back to tenant→agent map)
+      type ResolvedPayment = { agent_id: string; tenant_id: string | null; amount: number };
+      const merchantResolved: ResolvedPayment[] = merchantRaw
+        .map(m => {
+          const aid = m.agent_id || (m.tenant_id ? tenantAgentMap[m.tenant_id]?.agent_id : undefined);
+          return aid ? { agent_id: aid, tenant_id: m.tenant_id, amount: Number(m.amount || 0) } : null;
+        })
+        .filter((x): x is ResolvedPayment => x !== null);
+
+      const agentIds = Array.from(new Set([
+        ...collections.map(c => c.agent_id),
+        ...repaymentsResolved.map(r => r.agent_id),
+        ...merchantResolved.map(m => m.agent_id),
+        ...earnings.map(e => e.agent_id),
+        ...rentReqsInRange.map(r => r.agent_id as string),
+      ].filter(Boolean)));
+
+      let profilesMap: Record<string, string> = {};
+      if (agentIds.length) {
+        const BATCH = 50;
+        for (let i = 0; i < agentIds.length; i += BATCH) {
+          const { data: profs } = await supabase
+            .from('profiles')
+            .select('id, full_name')
+            .in('id', agentIds.slice(i, i + BATCH));
+          (profs || []).forEach(p => { profilesMap[p.id] = p.full_name || p.id.slice(0, 8); });
+        }
+      }
+
+      // Aggregate per agent
+      type Agg = {
+        collected: number; payments: number;
+        interest: number; commissionEarnings: number;
+        tenantsPaid: Set<string>; tenantsTotal: Set<string>;
+        bySource: { agent_collections: number; repayments: number; merchant: number };
+      };
+      const agg: Record<string, Agg> = {};
+      const ensure = (id: string): Agg => agg[id] ??= {
+        collected: 0, payments: 0, interest: 0, commissionEarnings: 0,
+        tenantsPaid: new Set(), tenantsTotal: new Set(),
+        bySource: { agent_collections: 0, repayments: 0, merchant: 0 },
+      };
+
+      collections.forEach(c => {
+        const a = ensure(c.agent_id);
+        const amt = Number(c.amount || 0);
+        a.collected += amt;
+        a.bySource.agent_collections += amt;
+        a.payments += 1;
+        if (c.tenant_id) { a.tenantsPaid.add(c.tenant_id); a.tenantsTotal.add(c.tenant_id); }
+      });
+      repaymentsResolved.forEach(r => {
+        const a = ensure(r.agent_id);
+        const amt = r.amount;
+        a.collected += amt;
+        a.bySource.repayments += amt;
+        a.payments += 1;
+        if (r.tenant_id) { a.tenantsPaid.add(r.tenant_id); a.tenantsTotal.add(r.tenant_id); }
+      });
+      merchantResolved.forEach(m => {
+        const a = ensure(m.agent_id);
+        a.collected += m.amount;
+        a.bySource.merchant += m.amount;
+        a.payments += 1;
+        if (m.tenant_id) { a.tenantsPaid.add(m.tenant_id); a.tenantsTotal.add(m.tenant_id); }
+      });
+      earnings.forEach(e => {
+        const a = ensure(e.agent_id);
+        const type = String(e.earning_type || '').toLowerCase();
+        if (type.includes('interest')) a.interest += Number(e.amount || 0);
+        else if (type.includes('commission')) a.commissionEarnings += Number(e.amount || 0);
+      });
+      rentReqsInRange.forEach(r => {
+        if (!r.agent_id || !r.tenant_id) return;
+        ensure(r.agent_id).tenantsTotal.add(r.tenant_id);
+      });
+
+      // Compute Daily Portfolio per agent = sum(daily_repayment) of ACTIVE rent requests
+      // Active = not fully_repaid / not cancelled / not defaulted, and outstanding > 0.
+      const ACTIVE_STATUSES = new Set(['funded', 'disbursed', 'repaying', 'tenant_ops_approved', 'agent_verified']);
+      const dailyPortfolioByAgent: Record<string, number> = {};
+      const activeTenantsByAgent: Record<string, Set<string>> = {};
+      rentReqsAll.forEach(r => {
+        if (!r.agent_id) return;
+        const status = (r.status || '').toLowerCase();
+        const outstanding = Number(r.total_repayment || 0) - Number(r.amount_repaid || 0);
+        const isActive = ACTIVE_STATUSES.has(status) && outstanding > 0;
+        if (!isActive) return;
+        dailyPortfolioByAgent[r.agent_id] = (dailyPortfolioByAgent[r.agent_id] || 0) + Number(r.daily_repayment || 0);
+        if (r.tenant_id) {
+          (activeTenantsByAgent[r.agent_id] ??= new Set()).add(r.tenant_id);
+        }
+      });
+      // Make sure every agent with a portfolio is in the agg
+      Object.keys(dailyPortfolioByAgent).forEach(id => ensure(id));
+
+      const rows: AgentPerfRow[] = Object.entries(agg).map(([id, a]) => {
+        // Use ledger commission if present, else 5% of collected as display fallback
+        const commission = a.commissionEarnings > 0 ? a.commissionEarnings : a.collected * 0.10;
+        const wallet_total = commission + a.interest;
+        const activeTenantCount = activeTenantsByAgent[id]?.size || 0;
+        const tenantsTotal = activeTenantCount || a.tenantsTotal.size || a.tenantsPaid.size;
+        const tenantsPaid = a.tenantsPaid.size;
+        const pctPaid = tenantsTotal ? (tenantsPaid / tenantsTotal) * 100 : 0;
+        const rate = a.collected ? (wallet_total / a.collected) * 100 : 0;
+        const dailyPortfolio = dailyPortfolioByAgent[id] || 0;
+        const expectedWeekly = dailyPortfolio * 7;
+        const efficiency = expectedWeekly ? (a.collected / expectedWeekly) * 100 : 0;
+        const gap = expectedWeekly - a.collected;
+        return {
+          rank: 0,
+          agent_name: profilesMap[id] || id.slice(0, 8),
+          tenants_paid: tenantsPaid,
+          tenants_total: tenantsTotal,
+          pct_paid: pctPaid,
+          collected: a.collected,
+          payments: a.payments,
+          commission,
+          interest: a.interest,
+          wallet_total,
+          rate,
+          status: statusForEfficiency(efficiency),
+          source_breakdown: a.bySource,
+          daily_portfolio: dailyPortfolio,
+          expected_weekly: expectedWeekly,
+          efficiency,
+          gap,
+        };
+      })
+      .filter(r => r.tenants_total > 0 || (r.daily_portfolio || 0) > 0)
+      .sort((x, y) => (y.daily_portfolio || 0) - (x.daily_portfolio || 0) || y.collected - x.collected)
+      .map((r, i) => ({ ...r, rank: i + 1 }));
+
+      const totals: AgentPerfTotals = rows.reduce((t, r) => ({
+        collected: t.collected + r.collected,
+        payments: t.payments + r.payments,
+        commission: t.commission + r.commission,
+        interest: t.interest + r.interest,
+        wallet_total: t.wallet_total + r.wallet_total,
+        tenants_paid: t.tenants_paid + r.tenants_paid,
+        tenants_total: t.tenants_total + r.tenants_total,
+        daily_portfolio: (t.daily_portfolio || 0) + (r.daily_portfolio || 0),
+        expected_weekly: (t.expected_weekly || 0) + (r.expected_weekly || 0),
+        gap: (t.gap || 0) + (r.gap || 0),
+      }), { collected: 0, payments: 0, commission: 0, interest: 0, wallet_total: 0, tenants_paid: 0, tenants_total: 0, daily_portfolio: 0, expected_weekly: 0, gap: 0 });
+
+      return { rows, totals };
+    },
+    staleTime: 60_000,
+  });
+
+  const rawRows = data?.rows || [];
+  // Apply client-side filters
+  const minColNum = Number(minCollected) || 0;
+  const search = agentSearch.trim().toLowerCase();
+  const rows = useMemo(() => {
+    let out = rawRows;
+    if (statusFilter !== 'all') out = out.filter(r => r.status === statusFilter);
+    if (search) out = out.filter(r => r.agent_name.toLowerCase().includes(search));
+    if (minColNum > 0) out = out.filter(r => r.collected >= minColNum);
+    // Column-header filters (AND-combined)
+    const nameQ = colFilters.name.trim().toLowerCase();
+    if (nameQ) out = out.filter(r => r.agent_name.toLowerCase().includes(nameQ));
+    if (colFilters.status.size > 0) out = out.filter(r => colFilters.status.has(r.status));
+    for (const [key, rng] of Object.entries(colFilters.ranges) as [NumericKey, Range][]) {
+      if (!isRangeActive(rng)) continue;
+      out = out.filter(r => {
+        const v = Number((r as any)[key] ?? 0);
+        if (rng.min !== undefined && !Number.isNaN(rng.min) && v < rng.min) return false;
+        if (rng.max !== undefined && !Number.isNaN(rng.max) && v > rng.max) return false;
+        return true;
+      });
+    }
+    // Re-rank after filtering
+    return out.map((r, i) => ({ ...r, rank: i + 1 }));
+  }, [rawRows, statusFilter, search, minColNum, colFilters]);
+  const totals: AgentPerfTotals = useMemo(() => rows.reduce((t, r) => ({
+    collected: t.collected + r.collected,
+    payments: t.payments + r.payments,
+    commission: t.commission + r.commission,
+    interest: t.interest + r.interest,
+    wallet_total: t.wallet_total + r.wallet_total,
+    tenants_paid: t.tenants_paid + r.tenants_paid,
+    tenants_total: t.tenants_total + r.tenants_total,
+    daily_portfolio: (t.daily_portfolio || 0) + (r.daily_portfolio || 0),
+    expected_weekly: (t.expected_weekly || 0) + (r.expected_weekly || 0),
+    gap: (t.gap || 0) + (r.gap || 0),
+  }), { collected: 0, payments: 0, commission: 0, interest: 0, wallet_total: 0, tenants_paid: 0, tenants_total: 0, daily_portfolio: 0, expected_weekly: 0, gap: 0 }), [rows]);
+
+  const overallEfficiency = (totals.expected_weekly || 0) > 0 ? (totals.collected / (totals.expected_weekly || 1)) * 100 : 0;
+
+  const activeColFilterCount =
+    (colFilters.name ? 1 : 0) +
+    (colFilters.status.size > 0 ? 1 : 0) +
+    Object.values(colFilters.ranges).filter(isRangeActive).length;
+
+  const activeFilterCount =
+    (paymentSource !== 'all' ? 1 : 0) +
+    (statusFilter !== 'all' ? 1 : 0) +
+    (search ? 1 : 0) +
+    (minColNum > 0 ? 1 : 0) +
+    activeColFilterCount;
+
+  const handleDownloadPdf = async () => {
+    if (!rows.length) { toast.error('No data to export'); return; }
+    try {
+      const blob = await generateAgentPerformancePdf({
+        rows, totals, periodLabel, startDate: range.start || range.end, endDate: range.end,
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `agent_performance_${range.start ? format(range.start, 'yyyy-MM-dd') + '_' : ''}${format(range.end, 'yyyy-MM-dd')}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('PDF downloaded');
+    } catch (e: any) {
+      toast.error('Failed to generate PDF', { description: e?.message });
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl border border-border bg-card p-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-teal-600 text-white shadow-sm">
+            <FileBarChart className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-base sm:text-lg font-bold leading-tight">Agent Performance & Wallet Earnings</h2>
+            <p className="text-xs text-muted-foreground">{periodLabel}</p>
+          </div>
+        </div>
+        <div className="flex gap-2 items-center">
+          <Select value={preset} onValueChange={(v) => setPreset(v as RangePreset)}>
+            <SelectTrigger className="w-[140px] h-9"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Time</SelectItem>
+              <SelectItem value="last-7">Last 7 Days</SelectItem>
+              <SelectItem value="last-30">Last 30 Days</SelectItem>
+              <SelectItem value="last-90">Last 90 Days</SelectItem>
+              <SelectItem value="this-week">This Week</SelectItem>
+              <SelectItem value="last-week">Last Week</SelectItem>
+              <SelectItem value="this-month">This Month</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button onClick={handleDownloadPdf} className="h-9 gap-2" disabled={isLoading || !rows.length}>
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">Download PDF</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Filters bar */}
+      <div className="rounded-2xl border border-border bg-card p-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative flex-1 min-w-[180px]">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              value={agentSearch}
+              onChange={(e) => setAgentSearch(e.target.value)}
+              placeholder="Search agent…"
+              className="pl-8 h-9 text-sm"
+            />
+          </div>
+          <Select value={paymentSource} onValueChange={(v) => setPaymentSource(v as PaymentSource)}>
+            <SelectTrigger className="w-[170px] h-9"><SelectValue placeholder="Payment source" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Payment Sources</SelectItem>
+              <SelectItem value="agent_collections">Agent Cash Collections</SelectItem>
+              <SelectItem value="repayments">Tenant Repayments</SelectItem>
+              <SelectItem value="merchant">Merchant Pay-ins</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
+            <SelectTrigger className="w-[140px] h-9"><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="excellent">Excellent</SelectItem>
+              <SelectItem value="good">Good</SelectItem>
+              <SelectItem value="moderate">Moderate</SelectItem>
+              <SelectItem value="low">Low</SelectItem>
+              <SelectItem value="critical">Critical</SelectItem>
+            </SelectContent>
+          </Select>
+          <Input
+            type="number"
+            inputMode="numeric"
+            value={minCollected}
+            onChange={(e) => setMinCollected(e.target.value)}
+            placeholder="Min UGX collected"
+            className="w-[160px] h-9 text-sm"
+          />
+          {activeFilterCount > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 gap-1 text-xs"
+              onClick={() => { setPaymentSource('all'); setStatusFilter('all'); setAgentSearch(''); setMinCollected(''); setColFilters(EMPTY_FILTERS); }}
+            >
+              <X className="h-3 w-3" /> Clear ({activeFilterCount})
+            </Button>
+          )}
+          <span className="text-[11px] text-muted-foreground ml-auto">
+            Showing {rows.length} of {rawRows.length} agents
+          </span>
+        </div>
+      </div>
+
+      {/* KPI strip — 6 colored summary cards (mimics the reference) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+        {[
+          { icon: Users,       label: 'Total Active Tenants', value: String(totals.tenants_total),                      tint: 'bg-blue-600',    text: 'text-blue-700' },
+          { icon: HandCoins,   label: 'Total Daily Portfolio', value: `UGX ${fmt(totals.daily_portfolio || 0)}`,        tint: 'bg-emerald-600', text: 'text-emerald-700' },
+          { icon: TrendingUp,  label: 'Expected Weekly (7 Days)', value: `UGX ${fmt(totals.expected_weekly || 0)}`,    tint: 'bg-purple-600',  text: 'text-purple-700' },
+          { icon: PiggyBank,   label: 'Total Collected',      value: `UGX ${fmt(totals.collected)}`,                    tint: 'bg-sky-600',     text: 'text-sky-700' },
+          { icon: Percent,     label: 'Overall Efficiency',   value: fmtPct(overallEfficiency),                         tint: 'bg-orange-500',  text: 'text-orange-600' },
+          { icon: Wallet,      label: 'Total Wallet',         value: `UGX ${fmt(totals.wallet_total)}`,                 tint: 'bg-teal-600',    text: 'text-teal-700' },
+        ].map((kpi, idx) => (
+          <div key={idx} className="rounded-xl border border-border bg-card p-3 flex items-center gap-3">
+            <div className={cn('h-10 w-10 rounded-full flex items-center justify-center text-white shrink-0', kpi.tint)}>
+              <kpi.icon className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold leading-tight">{kpi.label}</div>
+              <div className={cn('text-base font-extrabold mt-0.5 truncate', kpi.text)}>{kpi.value}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Table — desktop */}
+      <div className="hidden md:block rounded-2xl border border-border bg-card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="text-white sticky top-0">
+              {/* Group row */}
+              <tr className="text-[11px] uppercase tracking-wide">
+                <th className="bg-slate-800 px-2 py-2 text-center font-bold border-r border-slate-700" colSpan={2}>&nbsp;</th>
+                <th className="bg-blue-700 px-2 py-2 text-center font-bold border-r border-blue-800" colSpan={3}>Portfolio (What They Manage)</th>
+                <th className="bg-emerald-700 px-2 py-2 text-center font-bold border-r border-emerald-800" colSpan={3}>Collection Performance</th>
+                <th className="bg-amber-600 px-2 py-2 text-center font-bold border-r border-amber-700" colSpan={2}>Activity</th>
+                <th className="bg-purple-700 px-2 py-2 text-center font-bold border-r border-purple-800" colSpan={3}>Earnings</th>
+                <th className="bg-slate-800 px-2 py-2 text-center font-bold">Status<br/><span className="text-[9px] font-normal normal-case opacity-80">(By Efficiency)</span></th>
+              </tr>
+              {/* Sub-header row */}
+              <tr className="text-[11px]">
+                <th className="bg-slate-700 px-2 py-2 text-center font-semibold w-10">#</th>
+                <th className="bg-slate-700 px-2 py-2 text-left font-semibold">
+                  <span className="inline-flex items-center gap-1.5">Agent Name
+                    <HeaderFilter active={!!colFilters.name} align="start" onClear={() => setColFilters(p => ({ ...p, name: '' }))}>
+                      <TextFilter value={colFilters.name} onChange={(v) => setColFilters(p => ({ ...p, name: v }))} />
+                    </HeaderFilter>
+                  </span>
+                </th>
+                <th className="bg-blue-600 px-2 py-2 text-center font-semibold">
+                  <span className="inline-flex items-center gap-1.5">Active<br/>Tenants
+                    <HeaderFilter active={isRangeActive(colFilters.ranges.tenants_total)} onClear={() => setRange('tenants_total', undefined)}>
+                      <NumericRangeFilter label="Active Tenants" value={colFilters.ranges.tenants_total} onChange={(r) => setRange('tenants_total', r)} />
+                    </HeaderFilter>
+                  </span>
+                </th>
+                <th className="bg-blue-600 px-2 py-2 text-right font-semibold">
+                  <span className="inline-flex items-center gap-1.5 justify-end">Daily Portfolio<br/>(UGX)
+                    <HeaderFilter active={isRangeActive(colFilters.ranges.daily_portfolio)} align="end" onClear={() => setRange('daily_portfolio', undefined)}>
+                      <NumericRangeFilter label="Daily Portfolio (UGX)" value={colFilters.ranges.daily_portfolio} onChange={(r) => setRange('daily_portfolio', r)} />
+                    </HeaderFilter>
+                  </span>
+                </th>
+                <th className="bg-blue-600 px-2 py-2 text-right font-semibold">
+                  <span className="inline-flex items-center gap-1.5 justify-end">Expected Weekly<br/>(7 Days) (UGX)
+                    <HeaderFilter active={isRangeActive(colFilters.ranges.expected_weekly)} align="end" onClear={() => setRange('expected_weekly', undefined)}>
+                      <NumericRangeFilter label="Expected Weekly (UGX)" value={colFilters.ranges.expected_weekly} onChange={(r) => setRange('expected_weekly', r)} />
+                    </HeaderFilter>
+                  </span>
+                </th>
+                <th className="bg-emerald-600 px-2 py-2 text-right font-semibold">
+                  <span className="inline-flex items-center gap-1.5 justify-end">Collected<br/>(UGX)
+                    <HeaderFilter active={isRangeActive(colFilters.ranges.collected)} align="end" onClear={() => setRange('collected', undefined)}>
+                      <NumericRangeFilter label="Collected (UGX)" value={colFilters.ranges.collected} onChange={(r) => setRange('collected', r)} />
+                    </HeaderFilter>
+                  </span>
+                </th>
+                <th className="bg-emerald-600 px-2 py-2 text-right font-semibold">
+                  <span className="inline-flex items-center gap-1.5 justify-end">Efficiency<br/>(%)
+                    <HeaderFilter active={isRangeActive(colFilters.ranges.efficiency)} align="end" onClear={() => setRange('efficiency', undefined)}>
+                      <NumericRangeFilter label="Efficiency (%)" value={colFilters.ranges.efficiency} onChange={(r) => setRange('efficiency', r)} />
+                    </HeaderFilter>
+                  </span>
+                </th>
+                <th className="bg-emerald-600 px-2 py-2 text-right font-semibold">
+                  <span className="inline-flex items-center gap-1.5 justify-end">Gap<br/>(UGX)
+                    <HeaderFilter active={isRangeActive(colFilters.ranges.gap)} align="end" onClear={() => setRange('gap', undefined)}>
+                      <NumericRangeFilter label="Gap (UGX)" value={colFilters.ranges.gap} onChange={(r) => setRange('gap', r)} />
+                    </HeaderFilter>
+                  </span>
+                </th>
+                <th className="bg-amber-500 px-2 py-2 text-right font-semibold">
+                  <span className="inline-flex items-center gap-1.5 justify-end">Payments<br/>(Count)
+                    <HeaderFilter active={isRangeActive(colFilters.ranges.payments)} align="end" onClear={() => setRange('payments', undefined)}>
+                      <NumericRangeFilter label="Payments (Count)" value={colFilters.ranges.payments} onChange={(r) => setRange('payments', r)} />
+                    </HeaderFilter>
+                  </span>
+                </th>
+                <th className="bg-amber-500 px-2 py-2 text-right font-semibold">
+                  <span className="inline-flex items-center gap-1.5 justify-end">% Paid
+                    <HeaderFilter active={isRangeActive(colFilters.ranges.pct_paid)} align="end" onClear={() => setRange('pct_paid', undefined)}>
+                      <NumericRangeFilter label="% Paid" value={colFilters.ranges.pct_paid} onChange={(r) => setRange('pct_paid', r)} />
+                    </HeaderFilter>
+                  </span>
+                </th>
+                <th className="bg-purple-600 px-2 py-2 text-right font-semibold">
+                  <span className="inline-flex items-center gap-1.5 justify-end">10% Commission<br/>(UGX)
+                    <HeaderFilter active={isRangeActive(colFilters.ranges.commission)} align="end" onClear={() => setRange('commission', undefined)}>
+                      <NumericRangeFilter label="Commission (UGX)" value={colFilters.ranges.commission} onChange={(r) => setRange('commission', r)} />
+                    </HeaderFilter>
+                  </span>
+                </th>
+                <th className="bg-purple-600 px-2 py-2 text-right font-semibold">
+                  <span className="inline-flex items-center gap-1.5 justify-end">0.5% Interest<br/>(UGX)
+                    <HeaderFilter active={isRangeActive(colFilters.ranges.interest)} align="end" onClear={() => setRange('interest', undefined)}>
+                      <NumericRangeFilter label="Interest (UGX)" value={colFilters.ranges.interest} onChange={(r) => setRange('interest', r)} />
+                    </HeaderFilter>
+                  </span>
+                </th>
+                <th className="bg-purple-600 px-2 py-2 text-right font-semibold">
+                  <span className="inline-flex items-center gap-1.5 justify-end">Total Wallet<br/>(UGX)
+                    <HeaderFilter active={isRangeActive(colFilters.ranges.wallet_total)} align="end" onClear={() => setRange('wallet_total', undefined)}>
+                      <NumericRangeFilter label="Total Wallet (UGX)" value={colFilters.ranges.wallet_total} onChange={(r) => setRange('wallet_total', r)} />
+                    </HeaderFilter>
+                  </span>
+                </th>
+                <th className="bg-slate-700 px-2 py-2 text-center font-semibold">
+                  <span className="inline-flex items-center gap-1.5 justify-center">Status
+                    <HeaderFilter active={colFilters.status.size > 0} align="end" onClear={() => setColFilters(p => ({ ...p, status: new Set() }))}>
+                      <StatusMultiFilter value={colFilters.status} onChange={(s) => setColFilters(p => ({ ...p, status: s }))} />
+                    </HeaderFilter>
+                  </span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <tr key={i} className="border-b border-border">
+                    {Array.from({ length: 14 }).map((_, j) => (
+                      <td key={j} className="px-3 py-2.5"><Skeleton className="h-4 w-full" /></td>
+                    ))}
+                  </tr>
+                ))
+              ) : rows.length === 0 ? (
+                <tr><td colSpan={14} className="px-3 py-12 text-center text-muted-foreground">No agent activity in this period</td></tr>
+              ) : (
+                rows.map((r, i) => {
+                  const eff = r.efficiency || 0;
+                  const effCls = eff >= 100 ? 'text-emerald-700 font-bold'
+                    : eff >= 80 ? 'text-emerald-600 font-semibold'
+                    : eff >= 60 ? 'text-amber-600 font-semibold'
+                    : eff >= 40 ? 'text-orange-600 font-semibold'
+                    : 'text-red-600 font-semibold';
+                  const gap = r.gap || 0;
+                  const gapCls = gap > 0 ? 'text-red-600' : gap < 0 ? 'text-emerald-600' : 'text-muted-foreground';
+                  const pctPaidCls = r.pct_paid >= 75 ? 'text-emerald-600 font-semibold' : r.pct_paid >= 50 ? 'text-amber-600' : r.pct_paid >= 25 ? 'text-orange-600' : 'text-red-600';
+                  return (
+                    <tr key={i} className={cn('border-b border-border hover:bg-muted/40 transition-colors', i % 2 === 0 ? 'bg-card' : 'bg-muted/20')}>
+                      <td className="px-2 py-2 text-center text-muted-foreground">{r.rank}</td>
+                      <td className="px-2 py-2 font-semibold whitespace-nowrap">{r.agent_name}</td>
+                      <td className="px-2 py-2 text-center font-medium">{r.tenants_total}</td>
+                      <td className="px-2 py-2 text-right font-mono">{fmt(r.daily_portfolio || 0)}</td>
+                      <td className="px-2 py-2 text-right font-mono">{fmt(r.expected_weekly || 0)}</td>
+                      <td className="px-2 py-2 text-right font-mono font-semibold">{fmt(r.collected)}</td>
+                      <td className={cn('px-2 py-2 text-right font-mono', effCls)}>{fmtPct(eff)}</td>
+                      <td className={cn('px-2 py-2 text-right font-mono', gapCls)}>{fmt(gap)}</td>
+                      <td className="px-2 py-2 text-right">{r.payments}</td>
+                      <td className={cn('px-2 py-2 text-right font-mono', pctPaidCls)}>{fmtPct(r.pct_paid)}</td>
+                      <td className="px-2 py-2 text-right font-mono text-emerald-700">{fmt(r.commission)}</td>
+                      <td className="px-2 py-2 text-right font-mono text-blue-600">{fmt(r.interest)}</td>
+                      <td className="px-2 py-2 text-right font-mono font-bold">{fmt(r.wallet_total)}</td>
+                      <td className="px-2 py-2 text-center">
+                        <span className={cn('inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold border', STATUS_BADGE[r.status].cls)}>
+                          {STATUS_BADGE[r.status].label}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+            {!isLoading && rows.length > 0 && (
+              <tfoot>
+                <tr className="bg-slate-800 text-white font-bold">
+                  <td className="px-2 py-3" />
+                  <td className="px-2 py-3">TOTALS</td>
+                  <td className="px-2 py-3 text-center">{totals.tenants_total}</td>
+                  <td className="px-2 py-3 text-right font-mono">{fmt(totals.daily_portfolio || 0)}</td>
+                  <td className="px-2 py-3 text-right font-mono">{fmt(totals.expected_weekly || 0)}</td>
+                  <td className="px-2 py-3 text-right font-mono">{fmt(totals.collected)}</td>
+                  <td className="px-2 py-3 text-right font-mono">{fmtPct(overallEfficiency)}</td>
+                  <td className="px-2 py-3 text-right font-mono">{fmt(totals.gap || 0)}</td>
+                  <td className="px-2 py-3 text-right">{totals.payments}</td>
+                  <td className="px-2 py-3 text-right font-mono">{totals.tenants_total ? fmtPct((totals.tenants_paid / totals.tenants_total) * 100) : '0.0%'}</td>
+                  <td className="px-2 py-3 text-right font-mono">{fmt(totals.commission)}</td>
+                  <td className="px-2 py-3 text-right font-mono">{fmt(totals.interest)}</td>
+                  <td className="px-2 py-3 text-right font-mono">{fmt(totals.wallet_total)}</td>
+                  <td className="px-2 py-3 text-center">—</td>
+                </tr>
+              </tfoot>
+            )}
+          </table>
+        </div>
+        {/* Status Guide footer */}
+        <div className="border-t border-border bg-muted/30 px-4 py-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px]">
+          <span className="font-bold uppercase tracking-wide text-muted-foreground">Status Guide (By Efficiency %)</span>
+          <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-emerald-700" /> Excellent: ≥ 100%</span>
+          <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-emerald-500" /> Good: 80% – 99%</span>
+          <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-amber-500" /> Moderate: 60% – 79%</span>
+          <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-orange-500" /> Low: 40% – 59%</span>
+          <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-red-500" /> Critical: &lt; 40%</span>
+          <span className="ml-auto flex items-center gap-1.5 text-muted-foreground"><Info className="h-3.5 w-3.5" /> Expected Weekly = Daily Portfolio × 7 · Efficiency = Collected ÷ Expected Weekly · Gap = Expected − Collected</span>
+          <span className="flex items-center gap-1.5 text-muted-foreground"><Calendar className="h-3.5 w-3.5" /> {periodLabel}</span>
+        </div>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="md:hidden space-y-2">
+        {isLoading ? (
+          Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32 w-full rounded-xl" />)
+        ) : rows.length === 0 ? (
+          <div className="rounded-xl border border-border bg-card p-6 text-center text-muted-foreground text-sm">No agent activity in this period</div>
+        ) : (
+          <>
+            {rows.map((r, i) => (
+              <div key={i} className="rounded-xl border border-border bg-card p-3 space-y-2">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="text-xs text-muted-foreground">#{r.rank}</div>
+                    <div className="font-semibold">{r.agent_name}</div>
+                  </div>
+                  <span className={cn('px-2 py-0.5 rounded-md text-[10px] font-semibold border', STATUS_BADGE[r.status].cls)}>
+                    {STATUS_BADGE[r.status].label}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div><div className="text-muted-foreground">Tenants</div><div className="font-semibold">{r.tenants_paid}/{r.tenants_total}</div></div>
+                  <div><div className="text-muted-foreground">Collected</div><div className="font-semibold">{fmt(r.collected)}</div></div>
+                  <div><div className="text-muted-foreground">Payments</div><div className="font-semibold">{r.payments}</div></div>
+                  <div><div className="text-muted-foreground">Commission</div><div className="font-semibold text-emerald-600">{fmt(r.commission)}</div></div>
+                  <div><div className="text-muted-foreground">Interest</div><div className="font-semibold text-blue-600">{fmt(r.interest)}</div></div>
+                  <div><div className="text-muted-foreground">Wallet</div><div className="font-bold">{fmt(r.wallet_total)}</div></div>
+                </div>
+              </div>
+            ))}
+            <div className="rounded-xl border-2 border-blue-600 bg-blue-50 dark:bg-blue-950/30 p-3 space-y-2">
+              <div className="font-bold text-blue-700 dark:text-blue-400">TOTALS</div>
+              <div className="grid grid-cols-3 gap-2 text-xs">
+                <div><div className="text-muted-foreground">Tenants</div><div className="font-bold">{totals.tenants_paid}/{totals.tenants_total}</div></div>
+                <div><div className="text-muted-foreground">Collected</div><div className="font-bold">{fmt(totals.collected)}</div></div>
+                <div><div className="text-muted-foreground">Wallet</div><div className="font-bold">{fmt(totals.wallet_total)}</div></div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

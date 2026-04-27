@@ -2,7 +2,6 @@ import { AuthRepository } from './auth.repository';
 // Using bcrypt internally for stable cross-platform native Node.js hashing
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { createClient } from '@supabase/supabase-js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_development_secret_key_only';
 const JWT_EXPIRES_IN = '24h'; // Configurable duration
@@ -83,7 +82,7 @@ export class AuthService {
   /**
    * Hashes plain text securely and passes parameters explicitly into the Repository insertion block.
    */
-  async registerNative(phone: string, fullName: string, rawPasswordString: string, role: string = 'TENANT') {
+  async registerNative(phone: string, fullName: string, rawPasswordString: string, role: string = 'TENANT', nationalId?: string, referrerId?: string) {
     if (!phone || !fullName || !rawPasswordString) {
       throw new Error('Phone, Full Name, and Password are strictly required');
     }
@@ -99,7 +98,9 @@ export class AuthService {
       phone,
       full_name: fullName,
       password_hash: hashed,
-      role
+      role,
+      national_id: nationalId,
+      referrer_id: referrerId
     });
 
     // Provide automatic login on registration
@@ -115,96 +116,187 @@ export class AuthService {
   }
 
   /**
-   * Silently authenticates against the legacy AWS RDS database and forces the credential into Supabase Auth.
+   * Generates and sends a 6-digit OTP for login
    */
-  async migrateToSupabase(phone: string, rawPasswordString: string) {
-    if (!phone || !rawPasswordString) {
-      throw new Error('Phone and Password are strictly required');
+  async requestOtp(phone: string) {
+    if (!phone) throw new Error('Phone number is required');
+
+    // Clean phone
+    const digits = phone.replace(/\D/g, "");
+    if (digits.length < 9) throw new Error('Invalid phone number');
+
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60000); // 10 minutes from now
+
+    // Normalize phone to format with 0
+    const normalizedPhone = '0' + digits.slice(-9);
+
+    await this.repository.createOtpVerification(normalizedPhone, otpCode, expiresAt);
+
+    // TODO: Integrate actual SMS provider here (Africa's Talking, Twilio, etc.)
+    console.log(`[AuthService] Generated OTP for ${normalizedPhone}: ${otpCode}`);
+
+    return { success: true, message: 'OTP sent successfully' };
+  }
+
+  /**
+   * Verifies an OTP and logs the user in, returning a native JWT
+   */
+  async verifyOtpAndLogin(phone: string, otp: string) {
+    if (!phone || !otp) throw new Error('Phone and OTP are required');
+
+    const digits = phone.replace(/\D/g, "");
+    const last9 = digits.slice(-9);
+    const phoneVariants = [`0${last9}`, `256${last9}`, last9, `+256${last9}`];
+
+    const otpRecord = await this.repository.findValidOtp(phoneVariants, otp);
+
+    if (!otpRecord) {
+      const expiredRecord = await this.repository.findExpiredOtp(phoneVariants, otp);
+      if (expiredRecord) {
+        throw new Error('Code expired. Please request a new one.');
+      }
+      throw new Error('Invalid code. Please check and try again.');
     }
 
-    const normalizedPhone = phone.replace(/[^0-9]/g, '').length >= 9 
-      ? '0' + phone.replace(/[^0-9]/g, '').slice(-9)
-      : phone;
+    if (otpRecord.attempts >= 5) {
+      throw new Error('Too many attempts. Please request a new code.');
+    }
 
-    let user = await this.repository.findProfileByPhone(normalizedPhone);
+    await this.repository.incrementOtpAttempts(otpRecord.id, otpRecord.attempts);
+    await this.repository.markOtpVerified(otpRecord.id);
+
+    // Find the user profile using the variants
+    let user = null;
+    for (const variant of phoneVariants) {
+      user = await this.repository.findProfileByPhone(variant);
+      if (user) break;
+    }
+
     if (!user) {
-       user = await this.repository.findProfileByPhone(phone);
-    }
-
-    if (!user || !user.password_hash) {
-      throw new Error('Invalid credentials');
-    }
-
-    const isValid = await bcrypt.compare(rawPasswordString, user.password_hash);
-    if (!isValid) {
-      throw new Error('Invalid credentials');
+      throw new Error('No account found with this phone number. Please sign up first.');
     }
 
     if (user.is_frozen) {
       throw new Error('This account has been frozen.');
     }
 
-    const supabaseUrl = process.env.SUPABASE_URL || '';
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-    
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Supabase admin credentials are not configured in backend.');
-    }
+    await this.repository.updateLastActive(user.id);
 
-    const supabaseAdmin = createClient(supabaseUrl, supabaseKey, {
-      auth: { autoRefreshToken: false, persistSession: false }
-    });
+    const tokenPayload = {
+      sub: user.id,
+      id: user.id,
+      role: user.role || 'USER',
+      phone: user.phone
+    };
 
-    // 1. First try to update the user if they already exist in Supabase with the exact legacy profile ID
-    const { data: existingUser, error: getUserError } = await supabaseAdmin.auth.admin.getUserById(user.id);
-    
-    if (existingUser?.user) {
-      // User exists, just update their password to match the legacy db!
-      const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(user.id, {
-        password: rawPasswordString
-      });
-      if (updateError) {
-        console.error('[AuthService] Supabase password sync failed:', updateError);
-        throw new Error('Failed to sync password with Supabase');
+    const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+
+    return {
+      success: true,
+      token, // The frontend apiClient expects 'token' or parses it
+      user: {
+        id: user.id,
+        phone: user.phone,
+        fullName: user.full_name
       }
-      return { success: true, email: existingUser.user.email, id: user.id };
+    };
+  }
+
+  /**
+   * Generates and sends a 6-digit OTP specifically for password reset
+   */
+  async requestPasswordResetOtp(phone: string) {
+    if (!phone) throw new Error('Phone number is required');
+
+    const digits = phone.replace(/\D/g, "");
+    if (digits.length < 9) throw new Error('Invalid phone number');
+
+    const last9 = digits.slice(-9);
+    const phoneVariants = [`0${last9}`, `256${last9}`, last9, `+256${last9}`];
+
+    let user = null;
+    for (const variant of phoneVariants) {
+      user = await this.repository.findProfileByPhone(variant);
+      if (user) break;
     }
 
-    // 2. User does not exist by ID. Try to find them by email.
-    const last9 = normalizedPhone.slice(-9);
-    // Determine the email to search for / create
-    let emailToUse = user.email;
-    if (!emailToUse) {
-      emailToUse = `256${last9}@welile.user`; // fallback synthetic email
+    if (!user) {
+      throw new Error('No account found with this phone number.');
     }
 
-    // Since we don't have SQL access to insert the UUID, we rely on Supabase createUser.
-    // If we just create them, they get a new UUID in Supabase which breaks profile mapping.
-    // However, if the frontend can successfully log in using the email we return,
-    // the frontend might recreate the profile or the edge function might sync it.
-    // Let's create the user anyway.
-    const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-      email: emailToUse,
-      password: rawPasswordString,
-      email_confirm: true,
-      user_metadata: { full_name: user.full_name }
-    });
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 60 * 60000); // 1 hour
+    const resetKey = `reset_${last9}`;
 
-    if (createError) {
-      // If it failed because the user already exists (e.g. they registered directly in Supabase but their profile wasn't found by ID)
-      if (createError.message.toLowerCase().includes('already exists') || createError.message.toLowerCase().includes('already registered')) {
-         // Find them by email (we need all users or list users with filter)
-         const { data: listData } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-         const match = listData?.users.find(u => u.email === emailToUse);
-         if (match) {
-            await supabaseAdmin.auth.admin.updateUserById(match.id, { password: rawPasswordString });
-            return { success: true, email: match.email, id: match.id };
-         }
-      }
-      console.error('[AuthService] Supabase user creation failed:', createError);
-      throw new Error('Failed to provision user in Supabase');
+    await this.repository.createOtpVerification(resetKey, otpCode, expiresAt);
+
+    console.log(`[AuthService] Password Reset OTP for ***${last9.slice(-4)}: ${otpCode}`);
+
+    return { success: true, message: 'Reset code sent' };
+  }
+
+  /**
+   * Verifies reset OTP and updates the password
+   */
+  async resetPasswordWithOtp(phone: string, otp: string, newPassword: string) {
+    if (!phone || !otp || !newPassword) {
+      throw new Error('Phone, OTP, and new password are required');
+    }
+    if (newPassword.length < 6) {
+      throw new Error('Password must be at least 6 characters');
     }
 
-    return { success: true, email: newUser.user.email, id: newUser.user.id };
+    const digits = phone.replace(/\D/g, "");
+    const last9 = digits.slice(-9);
+    const resetKey = `reset_${last9}`;
+
+    const otpRecord = await this.repository.findValidOtp([resetKey], otp);
+
+    if (!otpRecord) {
+      throw new Error('No valid reset code found or code is incorrect.');
+    }
+
+    if (otpRecord.attempts >= 5) {
+      throw new Error('Too many failed attempts. Please request a new code.');
+    }
+
+    await this.repository.incrementOtpAttempts(otpRecord.id, otpRecord.attempts);
+    await this.repository.markOtpVerified(otpRecord.id);
+
+    const phoneVariants = [`0${last9}`, `256${last9}`, last9, `+256${last9}`];
+    let user = null;
+    for (const variant of phoneVariants) {
+      user = await this.repository.findProfileByPhone(variant);
+      if (user) break;
+    }
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 12);
+    await this.repository.updatePassword(user.id, hashed);
+
+    return { success: true, message: 'Password reset successfully' };
+  }
+
+  /**
+   * Admin direct password reset
+   */
+  async adminResetPassword(userId: string, newPassword: string) {
+    if (!userId || !newPassword) throw new Error('userId and newPassword required');
+    const hashed = await bcrypt.hash(newPassword, 12);
+    await this.repository.updatePassword(userId, hashed);
+    return { success: true, message: 'Password reset successfully' };
+  }
+
+  /**
+   * Admin delete user
+   */
+  async adminDeleteUser(userId: string) {
+    if (!userId) throw new Error('userId required');
+    await this.repository.deleteUser(userId);
+    return { success: true, message: 'User deleted' };
   }
 }

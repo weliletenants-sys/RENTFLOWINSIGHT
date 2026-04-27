@@ -3162,3 +3162,5 @@ model AuthSessions {
   @@index([session_token])
   @@map("auth_sessions")
 }
+
+

@@ -1,0 +1,351 @@
+openapi: 3.0.3
+info:
+  title: Welile RENTFLOWINSIGHT Backend API
+  version: 2.0.0
+  description: >
+    Comprehensive OpenAPI specification for the Welile backend APIs. This covers the
+    native Domain-Driven Design (DDD) v2 routes, handling core functionalities such as
+    authentication, payments, ledgers, risk, ROI, and domain-specific roles (CFO, Agents, Tenants).
+
+servers:
+  - url: http://localhost:5173/api/v2
+    description: Local V2 API Server
+  - url: https://api.welile.com/api/v2
+    description: Production V2 API Server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Native Backend JWT or Supabase Token
+
+security:
+  - bearerAuth: []
+
+paths:
+  # ==========================================
+  # AUTHENTICATION
+  # ==========================================
+  /auth/login:
+    post:
+      summary: Login via password
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, password]
+              properties:
+                phone: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: Successful authentication
+
+  /auth/register:
+    post:
+      summary: Register a new profile
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, fullName, password]
+              properties:
+                phone: { type: string }
+                fullName: { type: string }
+                password: { type: string }
+                role: { type: string, default: "TENANT" }
+                nationalId: { type: string }
+                referrerId: { type: string }
+      responses:
+        '201':
+          description: Profile created successfully
+
+  /auth/request-otp:
+    post:
+      summary: Request a login OTP via SMS
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone]
+              properties:
+                phone: { type: string }
+      responses:
+        '200':
+          description: OTP requested
+
+  /auth/verify-otp:
+    post:
+      summary: Verify OTP and Login
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, otp]
+              properties:
+                phone: { type: string }
+                otp: { type: string }
+      responses:
+        '200':
+          description: Successfully authenticated with JWT returned
+
+  /auth/request-password-reset:
+    post:
+      summary: Request an OTP to reset password
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone]
+              properties:
+                phone: { type: string }
+      responses:
+        '200':
+          description: Password reset OTP requested
+
+  /auth/reset-password:
+    post:
+      summary: Reset password using OTP
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, otp, newPassword]
+              properties:
+                phone: { type: string }
+                otp: { type: string }
+                newPassword: { type: string }
+      responses:
+        '200':
+          description: Password reset successfully
+
+  /auth/admin-reset-password:
+    post:
+      summary: Direct password reset by Administrator
+      tags: [Auth, Admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id, new_password]
+              properties:
+                user_id: { type: string }
+                new_password: { type: string }
+      responses:
+        '200':
+          description: Password reset successfully
+
+  /auth/admin-delete-user:
+    delete:
+      summary: Permanently delete a user profile
+      tags: [Auth, Admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id]
+              properties:
+                user_id: { type: string }
+      responses:
+        '200':
+          description: User deleted successfully
+
+  # ==========================================
+  # USERS
+  # ==========================================
+  /users/me:
+    get:
+      summary: Get current authenticated user profile
+      tags: [Users]
+      responses:
+        '200':
+          description: Profile retrieved
+    patch:
+      summary: Update current authenticated user profile
+      tags: [Users]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Profile updated
+
+  # ==========================================
+  # AGENTS
+  # ==========================================
+  /agents/tenants/tokens/generate:
+    post:
+      summary: Generate a registration form token for a tenant
+      tags: [Agents]
+      responses:
+        '200':
+          description: Form token generated
+
+  # ==========================================
+  # TENANTS & PAYMENTS
+  # ==========================================
+  /tenants/rent/pay:
+    post:
+      summary: Initiate rent payment bounded directly to the tenant's context
+      tags: [Tenants, Payments]
+      responses:
+        '200':
+          description: Payment initiated successfully
+
+  /payments/rent:
+    post:
+      summary: Generic rent payment gateway
+      tags: [Payments]
+      responses:
+        '200':
+          description: Payment initiated successfully
+
+  /repayments/tenant:
+    post:
+      summary: Process loan/credit repayment securely bound to the tenant context
+      tags: [Repayments]
+      responses:
+        '200':
+          description: Repayment processed
+
+  /repayments/agent:
+    post:
+      summary: Process credit collection/repayment via an Agent
+      tags: [Repayments]
+      responses:
+        '200':
+          description: Repayment processed
+
+  # ==========================================
+  # LEDGER & CFO SYSTEM
+  # ==========================================
+  /admin/system/health/finance:
+    get:
+      summary: Get internal financial ledger health check
+      tags: [Ledger, Admin]
+      responses:
+        '200':
+          description: Financial health metrics
+
+  /admin/system/transfer:
+    post:
+      summary: Execute manual internal ledger routing and transfers
+      tags: [Ledger, Admin]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Transfer executed
+
+  /cfo/portfolios/{id}/topup:
+    post:
+      summary: Process an explicit top-up request into an Investor Portfolio
+      tags: [CFO]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Top-up processed
+
+  /cfo/portfolios/{id}/merge-pending:
+    post:
+      summary: Merge pending manual top-ups into the active portfolio balance
+      tags: [CFO]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Top-ups merged
+
+  # ==========================================
+  # RISK & OPERATIONS
+  # ==========================================
+  /risk/reviews:
+    get:
+      summary: List all pending risk investigations and manual reviews
+      tags: [Risk]
+      responses:
+        '200':
+          description: Pending risk items retrieved
+
+  /risk/review/{id}/approve:
+    post:
+      summary: Atomically approve a pending risk item overriding holds
+      tags: [Risk]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Risk review approved
+
+  /risk/review/{id}/reject:
+    post:
+      summary: Permanently reject and block a pending risk item
+      tags: [Risk]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Risk review rejected
+
+  # ==========================================
+  # ROI ENGINE
+  # ==========================================
+  /roi/run-cycle:
+    post:
+      summary: Execute the batch ROI computation cycle for investors
+      tags: [ROI]
+      responses:
+        '200':
+          description: ROI cycle processed
