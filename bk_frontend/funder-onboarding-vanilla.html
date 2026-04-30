@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welile Funder Onboarding</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    h1, h2, h3, h4, h5, h6 { font-family: 'Manrope', sans-serif; }
+    
+    /* Simple Animation Classes to replace Framer Motion */
+    .slide-enter {
+      opacity: 0;
+      transform: translateX(40px);
+      transition: opacity 0.35s ease-out, transform 0.35s ease-out;
+    }
+    .slide-enter-active {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    .fade-up {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+    }
+    .fade-up-active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .step-dot {
+      transition: width 0.3s, background-color 0.3s;
+    }
+    .choice-card {
+      transition: all 0.2s ease;
+    }
+  </style>
+
+  <!-- Lucide Icons Vanilla -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-[#FAFAFA] min-h-screen font-sans flex overflow-hidden text-gray-900">
+
+  <!-- LEFT COLUMN -->
+  <div class="hidden lg:flex lg:w-1/2 relative bg-slate-900 overflow-hidden items-center justify-center">
+    <div class="absolute inset-0 bg-black/30 z-10 mix-blend-multiply"></div>
+    <img src="/agent-hero.jpeg" alt="Background" class="absolute inset-0 w-full h-full object-cover z-0" onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'" />
+    <div class="relative z-20 p-12 flex flex-col items-center justify-center h-full text-center text-white">
+      <h2 class="text-4xl lg:text-5xl font-black mb-4 tracking-tight drop-shadow-xl leading-tight">Fund The Future<br />Of Housing</h2>
+      <p class="text-lg text-white/90 font-medium max-w-md drop-shadow-md">Empower verified tenants and grow your active capital with steady, managed returns.</p>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="w-full lg:w-1/2 flex flex-col h-screen shadow-2xl z-20 bg-[#FAFAFA]">
+    
+    <!-- Header -->
+    <div class="bg-white/90 backdrop-blur-sm border-b border-gray-100 shrink-0 sticky top-0 z-20">
+      <div class="flex items-center justify-center pt-5 pb-2 gap-1.5" id="step-dots">
+        <div class="h-1.5 rounded-full step-dot w-6 bg-[#6c11d4]" id="dot-1"></div>
+        <div class="h-1.5 rounded-full step-dot w-1.5 bg-[#DDD6FE]" id="dot-2"></div>
+        <div class="h-1.5 rounded-full step-dot w-1.5 bg-[#DDD6FE]" id="dot-3"></div>
+      </div>
+      <div class="px-6 lg:px-[18px] pb-3 flex items-center justify-between">
+        <button id="btn-back" class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 hover:bg-gray-100 transition">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        </button>
+        <p id="step-label" class="text-[11px] font-black text-gray-800 tracking-widest uppercase">Welcome</p>
+        <div class="w-8"></div>
+      </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="flex-1 overflow-y-auto px-6 py-8 lg:px-[18px]">
+      <div class="max-w-md mx-auto w-full relative">
+        
+        <!-- STEP 1 -->
+        <div id="step-1" class="slide-enter slide-enter-active space-y-7 absolute w-full top-0 left-0">
+          <div class="pt-2">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-8 h-8 rounded-xl bg-[#6c11d4]/10 flex items-center justify-center">
+                <i data-lucide="shield" class="w-4 h-4 text-[#6c11d4]"></i>
+              </div>
+              <span class="text-xs font-bold text-[#6c11d4] tracking-wide uppercase">Welile Housing Partner</span>
+            </div>
+            <h2 class="text-2xl font-black text-gray-900 tracking-tight leading-[1.15]">
+              Put Your Money<br /><span class="text-[#6c11d4]">to Work for Families.</span>
+            </h2>
+            <p class="text-xs text-gray-500 mt-2 leading-relaxed">
+              You contribute capital. Welile pays rent for verified tenants, manages collections, and credits your wallet every 30 days. You don't manage anything.
+            </p>
+          </div>
+
+          <div class="space-y-3">
+            <div class="flex items-start gap-3 rounded-xl p-3 border bg-white border-gray-100 shadow-sm">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-purple-50 text-[#6c11d4]">
+                <i data-lucide="home" class="w-4 h-4"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[13px] font-bold text-gray-800">You Fund the Rent</p>
+                <p class="text-[11px] text-gray-500 leading-relaxed">Your capital enters the Rent Management Pool. Welile deploys it to pay landlords on behalf of verified tenants.</p>
+              </div>
+            </div>
+            
+            <div class="relative flex items-start gap-3 rounded-xl p-3 border bg-[#F3F0FF] border-[#6c11d4]/25 shadow-sm shadow-purple-100">
+              <i data-lucide="badge-check" class="absolute -top-1 -right-1 drop-shadow-md text-[#6c11d4] fill-white w-5 h-5"></i>
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-[#6c11d4] text-white">
+                <i data-lucide="banknote" class="w-4 h-4"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[13px] font-bold text-[#6c11d4]">15% Monthly, Every 30 Days</p>
+                <p class="text-[11px] text-gray-500 leading-relaxed">You earn 15% of your active contribution each month, credited to your wallet automatically on a strict 30-day cycle.</p>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-3 rounded-xl p-3 border bg-white border-gray-100 shadow-sm">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-purple-50 text-[#6c11d4]">
+                <i data-lucide="shield" class="w-4 h-4"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[13px] font-bold text-gray-800">Fully Managed by Welile</p>
+                <p class="text-[11px] text-gray-500 leading-relaxed">We verify tenants, manage collections, and handle all repayments. You see anonymised Virtual Houses, never personal details.</p>
+              </div>
+            </div>
+          </div>
+
+          <label class="flex items-start gap-3 bg-gray-50 border border-gray-100 rounded-xl p-4 cursor-pointer select-none">
+            <input type="checkbox" id="check-understood" class="hidden" />
+            <div id="box-understood" class="w-5 h-5 rounded border-2 shrink-0 mt-0.5 flex items-center justify-center transition-colors border-gray-300">
+              <i data-lucide="check" class="w-3 h-3 text-white hidden" id="icon-understood"></i>
+            </div>
+            <p class="text-[12.5px] text-gray-500 leading-snug">
+              I understand I am a capital facilitator, not a lender. Welile manages tenant relationships, collections, and monthly payouts.
+            </p>
+          </label>
+        </div>
+
+        <!-- STEP 2 -->
+        <div id="step-2" class="slide-enter space-y-6 absolute w-full top-0 left-0 hidden pointer-events-none">
+          <div>
+            <h2 class="text-[22px] font-black text-gray-900 tracking-tight leading-tight">How Would You Like<br />to Contribute?</h2>
+            <p class="text-xs text-gray-400 mt-1.5">Choose your contribution style — you can always adjust later.</p>
+          </div>
+
+          <div class="space-y-3">
+            <button id="choice-tenant" class="w-full text-left p-4 rounded-2xl border-2 transition-all duration-200 relative overflow-hidden border-gray-100 bg-white hover:border-purple-200 choice-card">
+              <div class="flex items-start gap-3 relative z-10">
+                <div id="icon-bg-tenant" class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors bg-purple-50 text-[#6c11d4]">
+                  <i data-lucide="home" class="w-5 h-5"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-2 mb-0.5">
+                    <h4 class="font-bold text-gray-900 text-[13px]">Support a Tenant</h4>
+                    <span id="badge-tenant" class="text-[9px] font-black px-2 py-0.5 rounded-full shrink-0 bg-purple-100 text-[#6c11d4]">15% Monthly</span>
+                  </div>
+                  <p class="text-[11px] text-gray-500 leading-relaxed">Your contribution is matched to a specific rent need. A real family gets housed, and you earn a monthly participation reward on what you put in.</p>
+                </div>
+              </div>
+              <div id="check-bg-tenant" class="absolute top-0 right-0 w-5 h-5 rounded-full bg-[#6c11d4] flex items-center justify-center hidden scale-0 transition-transform">
+                <i data-lucide="check" class="w-3 h-3 text-white"></i>
+              </div>
+            </button>
+
+            <button id="choice-pool" class="w-full text-left p-4 rounded-2xl border-2 transition-all duration-200 relative overflow-hidden border-gray-100 bg-white hover:border-purple-200 choice-card">
+              <div class="flex items-start gap-3 relative z-10">
+                <div id="icon-bg-pool" class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors bg-purple-50 text-[#6c11d4]">
+                  <i data-lucide="trending-up" class="w-5 h-5"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-2 mb-0.5">
+                    <h4 class="font-bold text-gray-900 text-[13px]">Grow Your Contribution</h4>
+                    <span id="badge-pool" class="text-[9px] font-black px-2 py-0.5 rounded-full shrink-0 bg-purple-100 text-[#6c11d4]">Compounding</span>
+                  </div>
+                  <p class="text-[11px] text-gray-500 leading-relaxed">Add to the housing pool. Your monthly rewards build on themselves — each cycle your base grows and so does the next reward.</p>
+                </div>
+              </div>
+              <div id="check-bg-pool" class="absolute top-0 right-0 w-5 h-5 rounded-full bg-[#6c11d4] flex items-center justify-center hidden scale-0 transition-transform">
+                <i data-lucide="check" class="w-3 h-3 text-white"></i>
+              </div>
+            </button>
+          </div>
+
+          <!-- Dynamic Graph Area -->
+          <div id="graph-container" class="hidden bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+            <div class="flex items-start justify-between mb-3 gap-3">
+              <div class="flex-1 min-w-0">
+                <p id="graph-title" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Monthly rewards · 12 months</p>
+                <div class="flex items-center gap-1.5 mt-1.5 bg-purple-50 border border-purple-100 rounded-xl px-3 py-1.5">
+                  <span class="text-[11px] font-bold text-[#6c11d4] shrink-0">USh</span>
+                  <input type="text" id="graph-input" inputmode="numeric" value="1,000,000" class="flex-1 min-w-0 bg-transparent text-sm font-black text-[#1C1C2E] outline-none w-full" />
+                </div>
+              </div>
+              <span id="graph-badge" class="text-[11px] font-black px-2.5 py-1 rounded-full bg-purple-100 text-[#6c11d4] shrink-0 mt-4">+15% / mo</span>
+            </div>
+            
+            <svg viewBox="0 0 320 140" class="w-full" id="graph-svg" style="touch-action: none;">
+              <!-- Graph lines will be rendered via JS -->
+            </svg>
+
+            <div class="flex justify-between items-center pt-2 border-t border-gray-50 mt-1">
+              <div>
+                <p class="text-[10px] text-gray-400">After 12 months</p>
+                <p id="graph-footer-sub" class="text-[10px] text-gray-400 mt-0.5">+150,000 / mo reward</p>
+              </div>
+              <p id="graph-footer-total" class="text-base font-black text-[#6c11d4]">1,000,000</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div id="step-3" class="slide-enter space-y-5 absolute w-full top-0 left-0 hidden pointer-events-none">
+          <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1C1433] via-[#261B4A] to-[#1C1433] px-4 py-3">
+            <div class="absolute inset-0 opacity-[0.06] pointer-events-none" style="background-image: linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px); background-size: 24px 24px;"></div>
+            <div class="relative z-10 flex items-center justify-between">
+              <div>
+                <p class="text-[9px] font-black text-purple-400 uppercase tracking-[0.1em] mb-0.5">Secure Registration</p>
+                <h2 class="text-lg font-black text-white tracking-tight leading-snug">Create Your<br />Funder Account</h2>
+              </div>
+              <div class="flex flex-col items-center gap-1">
+                <div class="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center">
+                  <i data-lucide="shield" class="w-5 h-5 text-purple-300"></i>
+                </div>
+                <span class="text-[9px] text-purple-400 font-bold">256-BIT</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white border border-gray-100 rounded-2xl p-4 space-y-3">
+            <div class="flex gap-3">
+              <div class="space-y-1 flex-1">
+                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">First Name</label>
+                <input type="text" id="inp-first" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 outline-none focus:bg-white focus:border-[#6c11d4]" />
+              </div>
+              <div class="space-y-1 flex-1">
+                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Last Name</label>
+                <input type="text" id="inp-last" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 outline-none focus:bg-white focus:border-[#6c11d4]" />
+              </div>
+            </div>
+            <div class="space-y-1">
+              <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Email</label>
+              <div class="relative">
+                <i data-lucide="mail" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4"></i>
+                <input type="email" id="inp-email" class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-3 text-sm text-gray-900 outline-none focus:bg-white focus:border-[#6c11d4]" />
+              </div>
+            </div>
+            <div class="space-y-1">
+              <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Phone</label>
+              <div class="relative">
+                <i data-lucide="phone" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4"></i>
+                <input type="tel" id="inp-phone" class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-3 text-sm text-gray-900 outline-none focus:bg-white focus:border-[#6c11d4]" />
+              </div>
+            </div>
+            <div class="h-px bg-gray-100"></div>
+            <div class="space-y-1">
+              <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Password</label>
+              <div class="relative">
+                <i data-lucide="lock" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4"></i>
+                <input type="password" id="inp-pw" placeholder="Min. 8 characters" class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-11 py-3 text-sm text-gray-900 outline-none focus:bg-white focus:border-[#6c11d4]" />
+                <button type="button" id="btn-show-pw" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-0.5">
+                  <i data-lucide="eye" id="icon-show-pw" class="w-4 h-4"></i>
+                </button>
+              </div>
+              <!-- Strength meter -->
+              <div id="pw-strength-container" class="overflow-hidden px-1 hidden transition-all duration-300">
+                <div class="flex gap-1 mt-1.5 mb-1" id="pw-bars">
+                  <div class="flex-1 h-[3px] rounded-full bg-gray-200 transition-colors duration-300"></div>
+                  <div class="flex-1 h-[3px] rounded-full bg-gray-200 transition-colors duration-300"></div>
+                  <div class="flex-1 h-[3px] rounded-full bg-gray-200 transition-colors duration-300"></div>
+                  <div class="flex-1 h-[3px] rounded-full bg-gray-200 transition-colors duration-300"></div>
+                </div>
+                <p class="text-[10px] font-bold" id="pw-strength-text"></p>
+              </div>
+            </div>
+            <div class="space-y-1">
+              <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1">Confirm Password</label>
+              <div class="relative">
+                <i data-lucide="lock" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4"></i>
+                <input type="password" id="inp-pw2" placeholder="Re-enter password" class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-11 py-3 text-sm text-gray-900 outline-none focus:bg-white transition-all" />
+                <button type="button" id="btn-show-pw2" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-0.5">
+                  <i data-lucide="eye" id="icon-show-pw2" class="w-4 h-4"></i>
+                </button>
+                <div id="match-badge" class="absolute right-9 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full flex items-center justify-center hidden">
+                  <i data-lucide="check" id="match-icon" class="w-2.5 h-2.5 text-white"></i>
+                </div>
+              </div>
+              <p id="pw-match-error" class="text-[10px] text-red-500 font-semibold mt-0.5 pl-1 hidden opacity-0 transition-opacity">Passwords don't match</p>
+            </div>
+          </div>
+
+          <label class="flex items-start gap-3 cursor-pointer bg-gray-50 border border-gray-100 rounded-xl p-3 select-none">
+            <input type="checkbox" id="check-terms" class="hidden" />
+            <div id="box-terms" class="w-5 h-5 rounded-md border-2 shrink-0 mt-0.5 flex items-center justify-center transition-all border-gray-300">
+              <i data-lucide="check" class="w-3 h-3 text-white hidden" id="icon-terms"></i>
+            </div>
+            <p class="text-[12px] text-gray-500 leading-snug">
+              I agree to Welile's <span class="text-[#6c11d4] font-semibold">Terms of Service</span> and <span class="text-[#6c11d4] font-semibold">Privacy Policy</span>.
+            </p>
+          </label>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer CTA -->
+    <div class="px-6 pb-5 pt-3 bg-white border-t border-gray-100 shrink-0 lg:px-[18px]">
+      <div class="max-w-md mx-auto w-full relative z-50">
+        <button id="btn-next" class="w-full py-3 rounded-xl font-bold text-[14px] flex items-center justify-center gap-2 transition-all duration-200 bg-gray-200 text-gray-400 cursor-not-allowed">
+          Confirm above to continue <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        </button>
+        <p id="step-footer-text" class="text-center text-[10px] font-bold text-gray-400 tracking-wider uppercase mt-2">
+          Step 1 / 3
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Icons
+    lucide.createIcons();
+
+    // State
+    let step = 1;
+    let understoodRole = false;
+    let investPath = null; // 'tenant' or 'pool'
+    let agreedToTerms = false;
+
+    // Elements
+    const els = {
+      step1: document.getElementById('step-1'),
+      step2: document.getElementById('step-2'),
+      step3: document.getElementById('step-3'),
+      dot1: document.getElementById('dot-1'),
+      dot2: document.getElementById('dot-2'),
+      dot3: document.getElementById('dot-3'),
+      stepLabel: document.getElementById('step-label'),
+      stepFooter: document.getElementById('step-footer-text'),
+      btnNext: document.getElementById('btn-next'),
+      btnBack: document.getElementById('btn-back'),
+      
+      chkUnderstood: document.getElementById('check-understood'),
+      boxUnderstood: document.getElementById('box-understood'),
+      iconUnderstood: document.getElementById('icon-understood'),
+      
+      choiceTenant: document.getElementById('choice-tenant'),
+      choicePool: document.getElementById('choice-pool'),
+      iconBgTenant: document.getElementById('icon-bg-tenant'),
+      badgeTenant: document.getElementById('badge-tenant'),
+      checkBgTenant: document.getElementById('check-bg-tenant'),
+      iconBgPool: document.getElementById('icon-bg-pool'),
+      badgePool: document.getElementById('badge-pool'),
+      checkBgPool: document.getElementById('check-bg-pool'),
+
+      graphContainer: document.getElementById('graph-container'),
+      graphTitle: document.getElementById('graph-title'),
+      graphBadge: document.getElementById('graph-badge'),
+      graphInput: document.getElementById('graph-input'),
+      graphSvg: document.getElementById('graph-svg'),
+      graphSub: document.getElementById('graph-footer-sub'),
+      graphTotal: document.getElementById('graph-footer-total'),
+
+      inpFirst: document.getElementById('inp-first'),
+      inpLast: document.getElementById('inp-last'),
+      inpEmail: document.getElementById('inp-email'),
+      inpPhone: document.getElementById('inp-phone'),
+      inpPw: document.getElementById('inp-pw'),
+      inpPw2: document.getElementById('inp-pw2'),
+      btnShowPw: document.getElementById('btn-show-pw'),
+      btnShowPw2: document.getElementById('btn-show-pw2'),
+      pwStrengthContainer: document.getElementById('pw-strength-container'),
+      pwBars: document.getElementById('pw-bars'),
+      pwStrengthText: document.getElementById('pw-strength-text'),
+      matchBadge: document.getElementById('match-badge'),
+      matchIcon: document.getElementById('match-icon'),
+      pwMatchError: document.getElementById('pw-match-error'),
+
+      chkTerms: document.getElementById('check-terms'),
+      boxTerms: document.getElementById('box-terms'),
+      iconTerms: document.getElementById('icon-terms')
+    };
+
+    // Step 1: Checkbox logic
+    els.chkUnderstood.addEventListener('change', (e) => {
+      understoodRole = e.target.checked;
+      if(understoodRole) {
+        els.boxUnderstood.classList.replace('border-gray-300', 'border-[#6c11d4]');
+        els.boxUnderstood.classList.add('bg-[#6c11d4]');
+        els.iconUnderstood.classList.remove('hidden');
+      } else {
+        els.boxUnderstood.classList.replace('border-[#6c11d4]', 'border-gray-300');
+        els.boxUnderstood.classList.remove('bg-[#6c11d4]');
+        els.iconUnderstood.classList.add('hidden');
+      }
+      updateButton();
+    });
+
+    // Step 2: Choice logic
+    const updateChoices = () => {
+      // Reset
+      [els.choiceTenant, els.choicePool].forEach(el => {
+        el.classList.replace('border-[#6c11d4]', 'border-gray-100');
+        el.classList.replace('bg-[#F3F0FF]', 'bg-white');
+      });
+      [els.iconBgTenant, els.iconBgPool].forEach(el => {
+        el.classList.replace('bg-[#6c11d4]', 'bg-purple-50');
+        el.classList.replace('text-white', 'text-[#6c11d4]');
+      });
+      [els.badgeTenant, els.badgePool].forEach(el => {
+        el.classList.replace('bg-[#6c11d4]', 'bg-purple-100');
+        el.classList.replace('text-white', 'text-[#6c11d4]');
+      });
+      [els.checkBgTenant, els.checkBgPool].forEach(el => {
+        el.classList.add('hidden', 'scale-0');
+      });
+
+      // Apply
+      if (investPath === 'tenant') {
+        els.choiceTenant.classList.replace('border-gray-100', 'border-[#6c11d4]');
+        els.choiceTenant.classList.replace('bg-white', 'bg-[#F3F0FF]');
+        els.iconBgTenant.classList.replace('bg-purple-50', 'bg-[#6c11d4]');
+        els.iconBgTenant.classList.replace('text-[#6c11d4]', 'text-white');
+        els.badgeTenant.classList.replace('bg-purple-100', 'bg-[#6c11d4]');
+        els.badgeTenant.classList.replace('text-[#6c11d4]', 'text-white');
+        els.checkBgTenant.classList.remove('hidden');
+        setTimeout(() => els.checkBgTenant.classList.remove('scale-0'), 10);
+      } else if (investPath === 'pool') {
+        els.choicePool.classList.replace('border-gray-100', 'border-[#6c11d4]');
+        els.choicePool.classList.replace('bg-white', 'bg-[#F3F0FF]');
+        els.iconBgPool.classList.replace('bg-purple-50', 'bg-[#6c11d4]');
+        els.iconBgPool.classList.replace('text-[#6c11d4]', 'text-white');
+        els.badgePool.classList.replace('bg-purple-100', 'bg-[#6c11d4]');
+        els.badgePool.classList.replace('text-[#6c11d4]', 'text-white');
+        els.checkBgPool.classList.remove('hidden');
+        setTimeout(() => els.checkBgPool.classList.remove('scale-0'), 10);
+      }
+
+      if(investPath) {
+        els.graphContainer.classList.remove('hidden');
+        renderGraph();
+      }
+      updateButton();
+    };
+
+    els.choiceTenant.addEventListener('click', () => { investPath = 'tenant'; updateChoices(); });
+    els.choicePool.addEventListener('click', () => { investPath = 'pool'; updateChoices(); });
+
+    // Format currency
+    const fmt = (n) => {
+      if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+      if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+      return n.toString();
+    };
+
+    // Graph Logic
+    els.graphInput.addEventListener('input', (e) => {
+      let val = e.target.value.replace(/[^0-9]/g, '');
+      if(val) e.target.value = Number(val).toLocaleString();
+      renderGraph();
+    });
+
+    const renderGraph = () => {
+      if(!investPath) return;
+      els.graphTitle.innerText = investPath === 'tenant' ? 'Monthly rewards · 12 months' : 'Compounding growth · 12 months';
+      els.graphBadge.innerText = investPath === 'tenant' ? '+15% / mo' : 'Compounds';
+      
+      let p = Number(els.graphInput.value.replace(/,/g, '')) || 1000000;
+      if(p < 10000) p = 10000;
+
+      let pts = [];
+      let bal = p;
+      for (let m = 0; m <= 12; m++) {
+        pts.push(bal);
+        if (investPath === 'tenant') bal += p * 0.15;
+        else bal = bal * 1.15;
+      }
+
+      const W = 320, H = 140, PT = 12, PR = 12, PB = 28, PL = 8;
+      const innerW = W - PL - PR, innerH = H - PT - PB;
+      const minV = p, maxV = pts[12], range = maxV - minV || 1;
+      
+      const xOf = (i) => PL + (i / 12) * innerW;
+      const yOf = (v) => PT + innerH - ((v - minV) / range) * innerH;
+
+      let pathD = pts.map((v, i) => \`\${i === 0 ? 'M' : 'L'}\${xOf(i).toFixed(1)},\${yOf(v).toFixed(1)}\`).join(' ');
+      let areaD = pathD + \` L\${xOf(12).toFixed(1)},\${(PT + innerH).toFixed(1)} L\${PL.toFixed(1)},\${(PT + innerH).toFixed(1)} Z\`;
+      
+      const color = investPath === 'pool' ? '#6c11d4' : '#7B2AC5';
+
+      els.graphSvg.innerHTML = \`
+        <defs>
+          <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="\${color}" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="\${color}" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d="\${areaD}" fill="url(#areaGrad)"></path>
+        <path d="\${pathD}" fill="none" stroke="\${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+        \${pts.map((_,i) => i % (investPath==='pool'?3:2) === 0 && i !== 0 ? \`<text x="\${xOf(i)}" y="\${H - 6}" text-anchor="middle" font-size="8" fill="#9CA3AF">M\${i}</text>\` : '').join('')}
+      \`;
+
+      if(investPath === 'tenant') {
+        els.graphSub.innerText = \`+\${fmt(p * 0.15)} / mo reward\`;
+      } else {
+        els.graphSub.innerText = \`\${((pts[12] / p - 1) * 100).toFixed(0)}% total growth\`;
+      }
+      els.graphTotal.innerText = pts[12].toLocaleString();
+    };
+
+    // Step 3: Checkbox & Inputs
+    els.chkTerms.addEventListener('change', (e) => {
+      agreedToTerms = e.target.checked;
+      if(agreedToTerms) {
+        els.boxTerms.classList.replace('border-gray-300', 'border-[#6c11d4]');
+        els.boxTerms.classList.add('bg-[#6c11d4]');
+        els.iconTerms.classList.remove('hidden');
+      } else {
+        els.boxTerms.classList.replace('border-[#6c11d4]', 'border-gray-300');
+        els.boxTerms.classList.remove('bg-[#6c11d4]');
+        els.iconTerms.classList.add('hidden');
+      }
+      updateButton();
+    });
+
+    [els.inpFirst, els.inpLast, els.inpEmail, els.inpPhone, els.inpPw, els.inpPw2].forEach(el => {
+      el.addEventListener('input', updateButton);
+    });
+
+    // Password Toggle & Strength
+    let showPw = false;
+    els.btnShowPw.addEventListener('click', () => {
+      showPw = !showPw;
+      els.inpPw.type = showPw ? 'text' : 'password';
+      els.btnShowPw.innerHTML = \`<i data-lucide="\${showPw ? 'eye-off' : 'eye'}" class="w-4 h-4"></i>\`;
+      lucide.createIcons();
+    });
+
+    let showPw2 = false;
+    els.btnShowPw2.addEventListener('click', () => {
+      showPw2 = !showPw2;
+      els.inpPw2.type = showPw2 ? 'text' : 'password';
+      els.btnShowPw2.innerHTML = \`<i data-lucide="\${showPw2 ? 'eye-off' : 'eye'}" class="w-4 h-4"></i>\`;
+      lucide.createIcons();
+    });
+
+    const getStrength = (pw) => {
+      let score = 0;
+      if (pw.length >= 8) score++;
+      if (/[A-Z]/.test(pw)) score++;
+      if (/[0-9]/.test(pw)) score++;
+      if (/[^A-Za-z0-9]/.test(pw)) score++;
+      const map = [
+        { label: 'Too short', color: '#EF4444' },
+        { label: 'Weak', color: '#F97316' },
+        { label: 'Fair', color: '#EAB308' },
+        { label: 'Good', color: '#22C55E' },
+        { label: 'Strong', color: '#6c11d4' },
+      ];
+      return { score, ...map[score] };
+    };
+
+    els.inpPw.addEventListener('input', () => {
+      const pw = els.inpPw.value;
+      if (pw.length > 0) {
+        els.pwStrengthContainer.classList.remove('hidden');
+        const st = getStrength(pw);
+        
+        const bars = Array.from(els.pwBars.children);
+        bars.forEach((bar, i) => {
+          bar.style.backgroundColor = i < st.score ? st.color : '#E5E7EB';
+        });
+
+        els.pwStrengthText.style.color = st.color;
+        els.pwStrengthText.innerHTML = \`\${st.label} \${st.score < 4 ? '<span class="text-gray-400 font-normal"> — use uppercase, numbers &amp; symbols</span>' : ''}\`;
+      } else {
+        els.pwStrengthContainer.classList.add('hidden');
+      }
+      updatePasswordMatch();
+    });
+
+    els.inpPw2.addEventListener('input', () => {
+      updatePasswordMatch();
+    });
+
+    const updatePasswordMatch = () => {
+      const pw1 = els.inpPw.value;
+      const pw2 = els.inpPw2.value;
+      const isMatch = pw1 === pw2 && pw1.length > 0;
+      const hasLength = pw2.length > 0;
+
+      if (hasLength) {
+        els.matchBadge.classList.remove('hidden');
+        if (isMatch) {
+          els.inpPw2.classList.replace('border-gray-200', 'border-emerald-400');
+          els.inpPw2.classList.replace('border-red-400', 'border-emerald-400');
+          els.matchBadge.classList.replace('bg-red-400', 'bg-emerald-500');
+          els.matchBadge.innerHTML = \`<i data-lucide="check" class="w-2.5 h-2.5 text-white"></i>\`;
+          els.pwMatchError.classList.add('hidden');
+          els.pwMatchError.classList.remove('opacity-100');
+        } else {
+          els.inpPw2.classList.replace('border-gray-200', 'border-red-400');
+          els.inpPw2.classList.replace('border-emerald-400', 'border-red-400');
+          els.matchBadge.classList.replace('bg-emerald-500', 'bg-red-400');
+          els.matchBadge.innerHTML = \`<i data-lucide="x" class="w-2.5 h-2.5 text-white"></i>\`;
+          els.pwMatchError.classList.remove('hidden');
+          setTimeout(() => els.pwMatchError.classList.add('opacity-100'), 10);
+        }
+        lucide.createIcons();
+      } else {
+        els.matchBadge.classList.add('hidden');
+        els.inpPw2.classList.remove('border-emerald-400', 'border-red-400');
+        els.inpPw2.classList.add('border-gray-200');
+        els.pwMatchError.classList.add('hidden');
+        els.pwMatchError.classList.remove('opacity-100');
+      }
+    };
+
+    // Validation
+    const isValid = () => {
+      if(step === 1) return understoodRole;
+      if(step === 2) return investPath !== null;
+      if(step === 3) {
+        const eOk = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(els.inpEmail.value);
+        const nOk = els.inpFirst.value.length >= 2 && els.inpLast.value.length >= 2;
+        const pOk = els.inpPw.value.length >= 8 && els.inpPw.value === els.inpPw2.value;
+        const phOk = els.inpPhone.value.trim().length >= 7;
+        return eOk && nOk && pOk && phOk && agreedToTerms;
+      }
+      return false;
+    };
+
+    // Render Steps
+    const renderStep = () => {
+      [els.step1, els.step2, els.step3].forEach((el, i) => {
+        if(i + 1 === step) {
+          el.classList.remove('hidden', 'pointer-events-none');
+          el.classList.add('slide-enter-active');
+        } else {
+          el.classList.add('hidden', 'pointer-events-none');
+          el.classList.remove('slide-enter-active');
+        }
+      });
+      
+      const labels = ['Welcome', 'Support', 'Create Account'];
+      els.stepLabel.innerText = labels[step - 1];
+      els.stepFooter.innerText = \`Step \${step} / 3\`;
+
+      [els.dot1, els.dot2, els.dot3].forEach((dot, i) => {
+        dot.style.width = i + 1 === step ? '24px' : '6px';
+        dot.style.backgroundColor = i + 1 <= step ? '#6c11d4' : '#DDD6FE';
+      });
+
+      updateButton();
+    };
+
+    const updateButton = () => {
+      const valid = isValid();
+      if(valid) {
+        els.btnNext.className = step === 3 
+          ? "w-full py-3 rounded-xl font-bold text-[14px] flex items-center justify-center gap-2 transition-all duration-200 bg-[#6c11d4] text-white shadow-sm hover:opacity-90 cursor-pointer"
+          : "w-full py-3 rounded-xl font-bold text-[14px] flex items-center justify-center gap-2 transition-all duration-200 bg-[#6c11d4] text-white shadow-sm hover:bg-[#7B2AC5] cursor-pointer";
+        
+        els.btnNext.innerHTML = step === 3 
+          ? \`Create Account <i data-lucide="check" class="w-4 h-4"></i>\`
+          : \`Continue <i data-lucide="chevron-right" class="w-4 h-4"></i>\`;
+      } else {
+        els.btnNext.className = "w-full py-3 rounded-xl font-bold text-[14px] flex items-center justify-center gap-2 transition-all duration-200 bg-gray-200 text-gray-400 cursor-not-allowed";
+        const msg = step === 1 ? 'Confirm above to continue' : step === 2 ? 'Choose a contribution style' : 'Fill in all fields to continue';
+        els.btnNext.innerHTML = \`<i data-lucide="lock" class="w-4 h-4"></i> \${msg}\`;
+      }
+      lucide.createIcons();
+    };
+
+    // Navigation
+    els.btnNext.addEventListener('click', () => {
+      if(!isValid()) return;
+      if(step < 3) {
+        step++;
+        renderStep();
+      } else {
+        els.btnNext.innerHTML = \`Creating Account...\`;
+        els.btnNext.classList.add('opacity-75');
+        setTimeout(() => {
+          alert('Account Created successfully!');
+          window.location.href = '/funder';
+        }, 1500);
+      }
+    });
+
+    els.btnBack.addEventListener('click', () => {
+      if(step > 1) {
+        step--;
+        renderStep();
+      } else {
+        window.location.href = '/funder/login';
+      }
+    });
+
+    // Init
+    updateButton();
+  </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+/*
+ * Welile Platform - Design Token: Colors
+ * Import this file once (via index.css) and reference variables anywhere.
+ * Usage in Tailwind: bg-[var(--color-primary)]
+ * Usage in CSS/inline: color: var(--color-primary)
+ */
+:root {
+  /* Brand Primary */
+  --color-primary:          #6C11D4;   /* Main purple */
+  --color-primary-dark:     #580CAE;   /* Hover / pressed state */
+  --color-primary-darker:   #420885;   /* Active / deep */
+  --color-primary-light:    #EBE0F9;   /* Faint surface / backgrounds */
+  --color-primary-faint:    #F6F1FD;   /* Ultra-light page background */
+  --color-primary-border:   #DCCCFA;   /* Subtle border */
+  --color-primary-shadow:   rgba(108, 17, 212, 0.18); /* Box shadow tint */
+
+  /* Text on Primary */
+  --color-on-primary:       #FFFFFF;
+
+  /* Accent / Success */
+  --color-success:          #10B981;
+  --color-success-dark:     #059669;
+
+  /* Warning */
+  --color-warning:          #F59E0B;
+  --color-warning-bg:       #FFFBEB;
+  --color-warning-border:   #FDE68A;
+}
+
+/* button:active {
+  outline: 2px solid var(--color-primary-darker); */
+/* } */
+button{
+  cursor: pointer;
+}
