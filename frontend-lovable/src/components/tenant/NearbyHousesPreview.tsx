@@ -143,7 +143,7 @@ function MiniHouseCard({ listing }: { listing: HouseListing }) {
         {/* Daily rate */}
         <div className="p-2 rounded-lg bg-success/10 border border-success/20">
           <p className="text-lg font-black text-success leading-none">{formatUGX(listing.daily_rate)}</p>
-          <p className="text-[10px] text-muted-foreground mt-0.5">per day · pay as you stay</p>
+          <p className="text-[10px] text-muted-foreground mt-0.5">per day Â· pay as you stay</p>
         </div>
 
         {/* Mini map */}

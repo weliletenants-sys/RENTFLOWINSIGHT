@@ -61,6 +61,9 @@ const COMPLETED_PROXY_WITHDRAWAL_STATUSES = [
   'completed',
   'approved',
   'fin_ops_approved',
+  'expired',
+  'processed',
+  'disbursed',
 ] as const;
 
 export function ProxyPartnerFunds() {
@@ -130,6 +133,8 @@ export function ProxyPartnerFunds() {
       }
       // Only show records that went through the full Partner Ops → COO → CFO pipeline
       // These records have coo_approved_by stamped in metadata by the COO approval step
+      // Filter out 'expired' ones that are older than 14 days to clear the spot
+      const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
       const { data: pwoData, error: pwoError } = await supabase
         .from('pending_wallet_operations')
         .select('id, amount, linked_party, source_id, description, metadata, created_at')
@@ -138,6 +143,7 @@ export function ProxyPartnerFunds() {
         .eq('status', 'approved')
         .in('reviewed_by', cfoIds)
         .not('metadata->coo_approved_by', 'is', null)
+        .gte('created_at', fourteenDaysAgo)
         .order('created_at', { ascending: false });
 
       if (pwoError) throw pwoError;
@@ -217,14 +223,13 @@ export function ProxyPartnerFunds() {
         supabase
           .from('withdrawal_requests')
           .select('linked_party, amount, status, reason')
-          .eq('user_id', user.id)
-          .in('status', [...COMPLETED_PROXY_WITHDRAWAL_STATUSES])
-          .not('linked_party', 'is', null),
+          .in('linked_party', uniquePartnerIds)
+          .in('status', [...COMPLETED_PROXY_WITHDRAWAL_STATUSES]),
         // Active (pending/processing) withdrawal requests
         supabase
           .from('withdrawal_requests')
           .select('id, linked_party, status, reason')
-          .eq('user_id', user.id)
+          .in('linked_party', uniquePartnerIds)
           .in('status', [...ACTIVE_PROXY_WITHDRAWAL_STATUSES]),
       ]);
 

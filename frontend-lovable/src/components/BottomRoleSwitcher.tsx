@@ -1,4 +1,5 @@
-import { memo, useState } from 'react';
+import { memo, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Home, Users, Wallet, Building2, ShieldCheck, Lock } from 'lucide-react';
@@ -74,9 +75,12 @@ const BottomRoleSwitcher = memo(function BottomRoleSwitcher({ currentRole, onRol
   const showStaffTab = hasStaffRole && !['tenant', 'agent', 'landlord', 'supporter'].includes(currentRole);
   const cols = showStaffTab ? 5 : 4;
 
-  return (
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const navContent = (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border/40 pb-[env(safe-area-inset-bottom,0px)]">
+      <nav className="fixed bottom-0 left-0 right-0 z-[100] bg-background/95 backdrop-blur-sm border-t border-border/40 pb-[env(safe-area-inset-bottom,0px)]">
         <div className={cn("grid max-w-lg mx-auto", cols === 5 ? "grid-cols-5" : "grid-cols-4")}>
           {PUBLIC_ROLES.map(({ role, label, icon: Icon }) => {
             const isActive = role === currentRole;
@@ -139,6 +143,9 @@ const BottomRoleSwitcher = memo(function BottomRoleSwitcher({ currentRole, onRol
       />
     </>
   );
+
+  if (!mounted) return null;
+  return createPortal(navContent, document.body);
 });
 
 export default BottomRoleSwitcher;

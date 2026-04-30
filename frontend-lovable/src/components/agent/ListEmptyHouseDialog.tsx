@@ -153,7 +153,7 @@ export function ListEmptyHouseDialog({ open, onOpenChange, onSuccess }: ListEmpt
         if (landlord?.id) {
           landlordId = landlord.id;
         } else if (form.landlord_name.trim()) {
-          // Landlord doesn't exist yet — create one so the listing links properly
+          // Landlord doesn't exist yet â€” create one so the listing links properly
           const { data: newLandlord } = await supabase
             .from('landlords')
             .insert({
@@ -243,7 +243,7 @@ export function ListEmptyHouseDialog({ open, onOpenChange, onSuccess }: ListEmpt
       }
 
       toast.success('House listed successfully!', {
-        description: `Daily rate: ${formatUGX(pricing.dailyRate)}/day · UGX 5,000 bonus on landlord verification`,
+        description: `Daily rate: ${formatUGX(pricing.dailyRate)}/day Â· UGX 5,000 bonus on landlord verification`,
       });
       onSuccess?.();
       onOpenChange(false);
@@ -277,7 +277,7 @@ export function ListEmptyHouseDialog({ open, onOpenChange, onSuccess }: ListEmpt
             List Empty House
           </DialogTitle>
           <DialogDescription>
-            Register an available rental · Earn UGX 5,000 on verification
+            Register an available rental Â· Earn UGX 5,000 on verification
           </DialogDescription>
         </DialogHeader>
 
@@ -315,7 +315,7 @@ export function ListEmptyHouseDialog({ open, onOpenChange, onSuccess }: ListEmpt
             </label>
           </div>
 
-          {/* Caretaker Section — only if landlord has no smartphone */}
+          {/* Caretaker Section â€” only if landlord has no smartphone */}
           {!form.landlord_has_smartphone && (
             <div className="space-y-3 p-3 rounded-xl bg-accent/30 border border-accent/50">
               <div className="flex items-center gap-2">
@@ -347,7 +347,7 @@ export function ListEmptyHouseDialog({ open, onOpenChange, onSuccess }: ListEmpt
 
               {form.caretaker_type === 'self' && (
                 <p className="text-xs text-success font-medium bg-success/10 rounded-lg p-2 text-center">
-                  ✅ You'll be registered as the caretaker for this rental
+                  âœ… You'll be registered as the caretaker for this rental
                 </p>
               )}
 
@@ -508,11 +508,11 @@ export function ListEmptyHouseDialog({ open, onOpenChange, onSuccess }: ListEmpt
               className="w-full"
             >
               <MapPin className="h-4 w-4 mr-2" />
-              {geoLoading ? 'Getting location...' : position ? '📍 GPS Captured' : 'Capture GPS Location'}
+              {geoLoading ? 'Getting location...' : position ? 'ðŸ“ GPS Captured' : 'Capture GPS Location'}
             </Button>
           </div>
 
-          {/* LC1 Chairperson — Required */}
+          {/* LC1 Chairperson â€” Required */}
           <div className="space-y-3 p-3 rounded-xl bg-primary/5 border border-primary/20">
             <div className="flex items-center gap-2">
               <Shield className="h-4 w-4 text-primary" />
@@ -548,7 +548,7 @@ export function ListEmptyHouseDialog({ open, onOpenChange, onSuccess }: ListEmpt
               />
               {existingLc1Options.length > 0 && (
                 <div className="mt-2 p-2 bg-primary/5 border border-primary/20 rounded-lg text-xs">
-                  <p className="font-semibold text-primary mb-1.5">✅ Existing LC1 Chairpersons in {form.village}:</p>
+                  <p className="font-semibold text-primary mb-1.5">âœ… Existing LC1 Chairpersons in {form.village}:</p>
                   <div className="space-y-1">
                     {existingLc1Options.map((lc1, idx) => (
                       <button
@@ -560,7 +560,7 @@ export function ListEmptyHouseDialog({ open, onOpenChange, onSuccess }: ListEmpt
                         }}
                         className="block w-full text-left px-2 py-1.5 hover:bg-primary/10 rounded transition-colors"
                       >
-                        <span className="font-medium">{lc1.name}</span> · <span className="text-muted-foreground">{lc1.phone}</span>
+                        <span className="font-medium">{lc1.name}</span> Â· <span className="text-muted-foreground">{lc1.phone}</span>
                       </button>
                     ))}
                   </div>
@@ -574,11 +574,11 @@ export function ListEmptyHouseDialog({ open, onOpenChange, onSuccess }: ListEmpt
             <p className="text-xs font-semibold text-muted-foreground uppercase">Amenities</p>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { key: 'has_water', label: '💧 Water' },
-                { key: 'has_electricity', label: '⚡ Electricity' },
-                { key: 'has_security', label: '🔒 Security' },
-                { key: 'has_parking', label: '🚗 Parking' },
-                { key: 'is_furnished', label: '🛋️ Furnished' },
+                { key: 'has_water', label: 'ðŸ’§ Water' },
+                { key: 'has_electricity', label: 'âš¡ Electricity' },
+                { key: 'has_security', label: 'ðŸ”’ Security' },
+                { key: 'has_parking', label: 'ðŸš— Parking' },
+                { key: 'is_furnished', label: 'ðŸ›‹ï¸ Furnished' },
               ].map(a => (
                 <label key={a.key} className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 cursor-pointer">
                   <Checkbox
@@ -593,7 +593,7 @@ export function ListEmptyHouseDialog({ open, onOpenChange, onSuccess }: ListEmpt
 
           {/* Bonus reminder */}
           <div className="p-2 rounded-lg bg-chart-4/10 border border-chart-4/20 text-center">
-            <p className="text-xs text-chart-4 font-semibold">💰 You earn UGX 5,000 when this landlord is verified</p>
+            <p className="text-xs text-chart-4 font-semibold">ðŸ’° You earn UGX 5,000 when this landlord is verified</p>
           </div>
 
           <Button type="submit" className="w-full" disabled={submitting}>

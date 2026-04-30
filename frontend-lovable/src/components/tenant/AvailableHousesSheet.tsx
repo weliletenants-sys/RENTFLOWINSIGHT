@@ -162,7 +162,7 @@ function HouseCard({ listing }: { listing: HouseListing }) {
         <div className="p-4 rounded-xl bg-gradient-to-br from-success/20 to-success/10 border-2 border-success/30">
           <p className="text-xs text-muted-foreground uppercase font-semibold mb-1">Daily Rent</p>
           <p className="text-3xl font-black text-success leading-none mb-1">{formatUGX(listing.daily_rate)}</p>
-          <p className="text-xs text-muted-foreground font-medium">per day · pay as you stay</p>
+          <p className="text-xs text-muted-foreground font-medium">per day Â· pay as you stay</p>
         </div>
 
         {/* Specs */}
@@ -260,7 +260,7 @@ export function AvailableHousesSheet({ open, onOpenChange }: AvailableHousesShee
             <Home className="h-5 w-5 text-primary" />
             {hasGPS && geo.city
               ? `Houses Near ${geo.city}`
-              : 'Available Houses — Daily Rent'}
+              : 'Available Houses â€” Daily Rent'}
           </SheetTitle>
 
           <div className="relative">
@@ -314,7 +314,7 @@ export function AvailableHousesSheet({ open, onOpenChange }: AvailableHousesShee
             <>
               <p className="text-xs text-muted-foreground">
                 {filtered.length} house{filtered.length !== 1 ? 's' : ''} available
-                {hasGPS ? ' · sorted by distance' : ''}
+                {hasGPS ? ' Â· sorted by distance' : ''}
               </p>
               {filtered.map(listing => (
                 <HouseCard key={listing.id} listing={listing} />
